@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	slog.Info("Starting Fleet Daemon", "version", version.GetVersion())
+	slog.With("version", version.GetVersion()).Info("Starting Fleet Daemon")
 
 	daemon, err := daemon.NewFleetDaemon()
 	if err != nil {

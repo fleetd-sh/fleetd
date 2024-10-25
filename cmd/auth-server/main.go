@@ -38,20 +38,20 @@ func main() {
 
 	d, err := db.New(dbURL)
 	if err != nil {
-		slog.Error("Failed to open database", "error", err)
+		slog.With("error", err).Error("Failed to open database")
 		os.Exit(1)
 	}
 
 	// Run migrations
 	if err := migrations.MigrateUp(d); err != nil {
-		slog.Error("Failed to run migrations", "error", err)
+		slog.With("error", err).Error("Failed to run migrations")
 		os.Exit(1)
 	}
 
 	// Initialize AuthService
 	authService, err := auth.NewAuthService(d)
 	if err != nil {
-		slog.Error("Failed to create auth service", "error", err)
+		slog.With("error", err).Error("Failed to create auth service")
 		os.Exit(1)
 	}
 
@@ -61,13 +61,13 @@ func main() {
 	mux.Handle(path, handler)
 
 	// Start the server
-	slog.Info("Starting auth server", "address", listenAddr)
+	slog.With("address", listenAddr).Info("Starting auth server")
 	err = http.ListenAndServe(
 		listenAddr,
 		h2c.NewHandler(mux, &http2.Server{}),
 	)
 	if err != nil {
-		slog.Error("Failed to start server", "error", err)
+		slog.With("error", err).Error("Failed to start server")
 		os.Exit(1)
 	}
 }
