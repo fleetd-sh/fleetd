@@ -11,15 +11,16 @@ service MetricsService {
 }
 
 message Metric {
-  string name = 1;
-  double value = 2;
-  google.protobuf.Timestamp timestamp = 3;
-  map<string, string> tags = 4;
+  string measurement = 1;
+  map<string, string> tags = 2;
+  map<string, double> fields = 3;
+  google.protobuf.Timestamp timestamp = 4;
 }
 
 message SendMetricsRequest {
   string device_id = 1;
   repeated Metric metrics = 2;
+  string precision = 3;  // Optional: "ns", "us", "ms", "s"
 }
 
 message SendMetricsResponse {

@@ -65,44 +65,29 @@ func (mc *MetricCollector) collectAndSendMetrics() {
 	diskStat, _ := disk.Usage("/")
 	netStat, _ := net.IOCounters(false)
 
-	now := timestamppb.New(time.Now())
+	now := timestamppb.Now()
 
 	metrics := []*metricspb.Metric{
 		{
-			Name:      "cpu_usage",
-			Value:     cpuPercent[0],
+			Measurement: "system_metrics",
+			Tags: map[string]string{
+				"device_id": mc.config.DeviceID,
+			},
+			Fields: map[string]float64{
+				"cpu_usage":          cpuPercent[0],
+				"memory_usage":       float64(vmStat.UsedPercent),
+				"disk_usage":         float64(diskStat.UsedPercent),
+				"network_bytes_sent": float64(netStat[0].BytesSent),
+				"network_bytes_recv": float64(netStat[0].BytesRecv),
+			},
 			Timestamp: now,
-			Tags:      map[string]string{"device_id": mc.config.DeviceID},
-		},
-		{
-			Name:      "memory_usage",
-			Value:     float64(vmStat.UsedPercent),
-			Timestamp: now,
-			Tags:      map[string]string{"device_id": mc.config.DeviceID},
-		},
-		{
-			Name:      "disk_usage",
-			Value:     float64(diskStat.UsedPercent),
-			Timestamp: now,
-			Tags:      map[string]string{"device_id": mc.config.DeviceID, "mount": "/"},
-		},
-		{
-			Name:      "network_bytes_sent",
-			Value:     float64(netStat[0].BytesSent),
-			Timestamp: now,
-			Tags:      map[string]string{"device_id": mc.config.DeviceID},
-		},
-		{
-			Name:      "network_bytes_recv",
-			Value:     float64(netStat[0].BytesRecv),
-			Timestamp: now,
-			Tags:      map[string]string{"device_id": mc.config.DeviceID},
 		},
 	}
 
 	req := connect.NewRequest(&metricspb.SendMetricsRequest{
-		DeviceId: mc.config.DeviceID,
-		Metrics:  metrics,
+		DeviceId:  mc.config.DeviceID,
+		Metrics:   metrics,
+		Precision: "s", // Assuming second precision
 	})
 
 	resp, err := mc.client.SendMetrics(context.Background(), req)
