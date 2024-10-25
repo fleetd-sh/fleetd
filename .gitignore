@@ -1,0 +1,16 @@
+bin/
+.DS_Store
+
+tmp/
+
+# editor
+.idea/
+.vscode/
+.settings/
+.cursorrules
+
+# env
+.env*
+
+# closed-source
+platform/
