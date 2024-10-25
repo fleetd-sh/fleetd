@@ -1,0 +1,11 @@
+[Unit]
+Description=Fleet daemon
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/fleetd
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
