@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"fleetd.sh/auth"
 	"fleetd.sh/device"
 	devicepb "fleetd.sh/gen/device/v1"
 	"fleetd.sh/internal/migrations"
 	"fleetd.sh/internal/testutil"
+	"fleetd.sh/pkg/authclient"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -28,7 +28,7 @@ func TestUpdateDevice(t *testing.T) {
 	}
 
 	// Initialize the service
-	authClient := auth.NewAuthClient("http://localhost:8081") // Mock auth client URL
+	authClient := authclient.NewClient("http://localhost:8081") // Mock auth client URL
 	service := device.NewDeviceService(db, authClient)
 
 	// Insert a test device

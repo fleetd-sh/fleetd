@@ -10,16 +10,16 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"fleetd.sh/auth"
 	devicepb "fleetd.sh/gen/device/v1"
+	"fleetd.sh/pkg/authclient"
 )
 
 type DeviceService struct {
 	db         *sql.DB
-	authClient *auth.AuthClient
+	authClient *authclient.Client
 }
 
-func NewDeviceService(db *sql.DB, authClient *auth.AuthClient) *DeviceService {
+func NewDeviceService(db *sql.DB, authClient *authclient.Client) *DeviceService {
 	return &DeviceService{
 		db:         db,
 		authClient: authClient,
