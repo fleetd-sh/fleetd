@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "fleetd.sh/gen/auth/v1;authv1";
+
+service AuthService {
+  rpc Authenticate(AuthenticateRequest) returns (AuthenticateResponse);
+  rpc GenerateAPIKey(GenerateAPIKeyRequest) returns (GenerateAPIKeyResponse);
+  rpc RevokeAPIKey(RevokeAPIKeyRequest) returns (RevokeAPIKeyResponse);
+}
+
+message AuthenticateRequest {
+  string api_key = 1;
+}
+
+message AuthenticateResponse {
+  bool authenticated = 1;
+  string device_id = 2;
+}
+
+message GenerateAPIKeyRequest {
+  string device_id = 1;
+}
+
+message GenerateAPIKeyResponse {
+  string api_key = 1;
+}
+
+message RevokeAPIKeyRequest {
+  string device_id = 1;
+}
+
+message RevokeAPIKeyResponse {
+  bool success = 1;
+}

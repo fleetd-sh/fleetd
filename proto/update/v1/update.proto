@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package update.v1;
+
+option go_package = "fleetd.sh/gen/update/v1;updatev1";
+
+import "google/protobuf/timestamp.proto";
+
+service UpdateService {
+  rpc CreateUpdatePackage(CreateUpdatePackageRequest) returns (CreateUpdatePackageResponse);
+  rpc GetAvailableUpdates(GetAvailableUpdatesRequest) returns (GetAvailableUpdatesResponse);
+}
+
+message UpdatePackage {
+  string id = 1;
+  string version = 2;
+  google.protobuf.Timestamp release_date = 3;
+  string change_log = 4;
+  string file_url = 5;
+  repeated string device_types = 6;
+}
+
+message CreateUpdatePackageRequest {
+  string id = 1;
+  string version = 2;
+  google.protobuf.Timestamp release_date = 3;
+  string change_log = 4;
+  string file_url = 5;
+  repeated string device_types = 6;
+}
+
+message CreateUpdatePackageResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetAvailableUpdatesRequest {
+  string device_type = 1;
+  google.protobuf.Timestamp last_update_date = 2;
+}
+
+message GetAvailableUpdatesResponse {
+  repeated UpdatePackage updates = 1;
+}

@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package device.v1;
+
+option go_package = "fleetd.sh/gen/device/v1;devicev1";
+
+import "google/protobuf/timestamp.proto";
+
+service DeviceService {
+  rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse);
+  rpc UnregisterDevice(UnregisterDeviceRequest) returns (UnregisterDeviceResponse);
+  rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
+  rpc ListDevices(ListDevicesRequest) returns (stream ListDevicesResponse);
+  rpc UpdateDeviceStatus(UpdateDeviceStatusRequest) returns (UpdateDeviceStatusResponse);
+  rpc UpdateDevice(UpdateDeviceRequest) returns (UpdateDeviceResponse);
+}
+
+message Device {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  string status = 4;
+  google.protobuf.Timestamp last_seen = 5;
+}
+
+message RegisterDeviceRequest {
+  string name = 1;
+  string type = 2;
+}
+
+message RegisterDeviceResponse {
+  string device_id = 1;
+  string api_key = 2;
+}
+
+message UnregisterDeviceRequest {
+  string device_id = 1;
+}
+
+message UnregisterDeviceResponse {
+  bool success = 1;
+}
+
+message GetDeviceRequest {
+  string device_id = 1;
+}
+
+message ListDevicesRequest {}
+
+message GetDeviceResponse {
+  Device device = 1;
+}
+
+message ListDevicesResponse {
+  Device device = 1;
+}
+
+message UpdateDeviceStatusRequest {
+  string device_id = 1;
+  string status = 2;
+}
+
+message UpdateDeviceStatusResponse {
+  bool success = 1;
+}
+
+message UpdateDeviceRequest {
+  string device_id = 1;
+  Device device = 2;
+}
+
+message UpdateDeviceResponse {
+  bool success = 1;
+}
