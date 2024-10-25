@@ -31,14 +31,14 @@ func main() {
 	// Open the database connection
 	d, err := db.New(dbURL)
 	if err != nil {
-		slog.Error("Failed to open database", "error", err)
+		slog.With("error", err).Error("Failed to open database")
 		os.Exit(1)
 	}
 	defer d.Close()
 
 	// Run migrations
 	if err := migrations.MigrateUp(d); err != nil {
-		slog.Error("Failed to run migrations", "error", err)
+		slog.With("error", err).Error("Failed to run migrations")
 		os.Exit(1)
 	}
 
@@ -57,9 +57,9 @@ func main() {
 	}
 
 	// Start the server
-	slog.Info("Starting update server", "address", listenAddr)
+	slog.With("address", listenAddr).Info("Starting update server")
 	if err := server.ListenAndServe(); err != nil {
-		slog.Error("Server error", "error", err)
+		slog.With("error", err).Error("Server error")
 		os.Exit(1)
 	}
 }

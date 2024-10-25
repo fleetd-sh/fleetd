@@ -28,7 +28,7 @@ func main() {
 
 	// Ensure the storage directory exists
 	if err := os.MkdirAll(storagePath, 0755); err != nil {
-		slog.Error("Failed to create storage directory", "error", err)
+		slog.With("error", err).Error("Failed to create storage directory")
 		os.Exit(1)
 	}
 
@@ -47,9 +47,9 @@ func main() {
 	}
 
 	// Start the server
-	slog.Info("Starting storage server", "address", listenAddr)
+	slog.With("address", listenAddr, "path", storagePath).Info("Starting storage server")
 	if err := server.ListenAndServe(); err != nil {
-		slog.Error("Server error", "error", err)
+		slog.With("error", err).Error("Server error")
 		os.Exit(1)
 	}
 }
