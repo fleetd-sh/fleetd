@@ -68,11 +68,11 @@ func (ds *DiscoveryService) StartBroadcasting() error {
 
 	go func() {
 		if err := ds.httpServer.ListenAndServe(); err != http.ErrServerClosed {
-			slog.Error("HTTP server error", "error", err)
+			slog.With("error", err).Error("HTTP server error")
 		}
 	}()
 
-	slog.Info("Discovery service started", "port", port)
+	slog.With("address", fmt.Sprintf(":%d", port)).Info("Discovery service started")
 	return nil
 }
 
@@ -87,7 +87,7 @@ func (ds *DiscoveryService) StopBroadcasting() {
 
 	if ds.httpServer != nil {
 		if err := ds.httpServer.Close(); err != nil {
-			slog.Error("Error closing HTTP server", "error", err)
+			slog.With("error", err).Error("Error closing HTTP server")
 		}
 		ds.httpServer = nil
 	}

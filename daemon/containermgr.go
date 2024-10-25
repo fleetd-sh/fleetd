@@ -39,7 +39,7 @@ func (cm *ContainerManager) Start() {
 		select {
 		case <-ticker.C:
 			if err := cm.ensureContainerRunning(); err != nil {
-				slog.Error("Error ensuring container is running", "error", err)
+				slog.With("error", err).Error("Error ensuring container is running")
 			}
 		case <-cm.stopCh:
 			return
@@ -108,7 +108,7 @@ func (cm *ContainerManager) UpdateContainer(ctx context.Context, containerName, 
 		return fmt.Errorf("failed to start new container: %v", err)
 	}
 
-	slog.Info("Container updated successfully", "containerName", containerName, "newImage", newImage)
+	slog.With("container_name", containerName, "new_image", newImage).Info("Container updated successfully")
 	return nil
 }
 
@@ -153,6 +153,6 @@ func (cm *ContainerManager) ManageTenantContainer(ctx context.Context, tenantID,
 		return fmt.Errorf("failed to start tenant container: %v", err)
 	}
 
-	slog.Info("Tenant container created and started", "tenantID", tenantID, "containerImage", containerImage)
+	slog.With("tenant_id", tenantID, "container_image", containerImage).Info("Tenant container created and started")
 	return nil
 }
