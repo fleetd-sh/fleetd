@@ -32,6 +32,7 @@ func NewContainerManager(cfg *Config) (*ContainerManager, error) {
 }
 
 func (cm *ContainerManager) Start() {
+	slog.Info("Container manager started")
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
@@ -42,6 +43,7 @@ func (cm *ContainerManager) Start() {
 				slog.With("error", err).Error("Error ensuring container is running")
 			}
 		case <-cm.stopCh:
+			slog.Info("Container manager stopped")
 			return
 		}
 	}
@@ -52,10 +54,11 @@ func (cm *ContainerManager) Stop() {
 }
 
 func (cm *ContainerManager) ensureContainerRunning() error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	containers, err := cm.client.ContainerList(ctx, container.ListOptions{})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to list containers: %w", err)
 	}
 
 	for _, c := range containers {
@@ -72,27 +75,31 @@ func (cm *ContainerManager) ensureContainerRunning() error {
 		Image: cm.config.ContainerImage,
 	}, nil, nil, nil, "")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create container: %w", err)
 	}
 
-	return cm.client.ContainerStart(ctx, resp.ID, container.StartOptions{})
+	if err := cm.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
+		return fmt.Errorf("failed to start container: %w", err)
+	}
+
+	return nil
 }
 
 func (cm *ContainerManager) UpdateContainer(ctx context.Context, containerName, newImage string) error {
 	// Pull the new image
 	_, err := cm.client.ImagePull(ctx, newImage, image.PullOptions{})
 	if err != nil {
-		return fmt.Errorf("failed to pull new image: %v", err)
+		return fmt.Errorf("failed to pull new image: %w", err)
 	}
 
 	// Stop the existing container
 	if err := cm.client.ContainerStop(ctx, containerName, container.StopOptions{}); err != nil {
-		return fmt.Errorf("failed to stop container: %v", err)
+		return fmt.Errorf("failed to stop container: %w", err)
 	}
 
 	// Remove the existing container
 	if err := cm.client.ContainerRemove(ctx, containerName, container.RemoveOptions{}); err != nil {
-		return fmt.Errorf("failed to remove container: %v", err)
+		return fmt.Errorf("failed to remove container: %w", err)
 	}
 
 	// Create a new container with the updated image
@@ -100,12 +107,12 @@ func (cm *ContainerManager) UpdateContainer(ctx context.Context, containerName, 
 		Image: newImage,
 	}, nil, nil, nil, containerName)
 	if err != nil {
-		return fmt.Errorf("failed to create new container: %v", err)
+		return fmt.Errorf("failed to create new container: %w", err)
 	}
 
 	// Start the new container
 	if err := cm.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
-		return fmt.Errorf("failed to start new container: %v", err)
+		return fmt.Errorf("failed to start new container: %w", err)
 	}
 
 	slog.With("container_name", containerName, "new_image", newImage).Info("Container updated successfully")
@@ -118,7 +125,7 @@ func (cm *ContainerManager) ManageTenantContainer(ctx context.Context, tenantID,
 	// Check if the container already exists
 	containers, err := cm.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
-		return fmt.Errorf("failed to list containers: %v", err)
+		return fmt.Errorf("failed to list containers: %w", err)
 	}
 
 	var existingContainer types.Container
@@ -136,8 +143,10 @@ func (cm *ContainerManager) ManageTenantContainer(ctx context.Context, tenantID,
 		}
 		// Ensure the container is running
 		if existingContainer.State != "running" {
+			slog.With("tenantID", tenantID, "containerName", containerName).Info("Starting existing container")
 			return cm.client.ContainerStart(ctx, existingContainer.ID, container.StartOptions{})
 		}
+		slog.With("tenantID", tenantID, "containerName", containerName).Info("Container already running and up-to-date")
 		return nil
 	}
 
@@ -146,11 +155,11 @@ func (cm *ContainerManager) ManageTenantContainer(ctx context.Context, tenantID,
 		Image: containerImage,
 	}, nil, nil, nil, containerName)
 	if err != nil {
-		return fmt.Errorf("failed to create tenant container: %v", err)
+		return fmt.Errorf("failed to create tenant container: %w", err)
 	}
 
 	if err := cm.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
-		return fmt.Errorf("failed to start tenant container: %v", err)
+		return fmt.Errorf("failed to start tenant container: %w", err)
 	}
 
 	slog.With("tenant_id", tenantID, "container_image", containerImage).Info("Tenant container created and started")
