@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package discovery.v1;
+
+option go_package = "fleetd.sh/gen/discovery/v1;discoveryv1";
+
+service DiscoveryService {
+  rpc ConfigureDevice(ConfigureDeviceRequest) returns (ConfigureDeviceResponse);
+}
+
+message ConfigureDeviceRequest {
+  string device_id = 1;
+  string fleet_api_url = 2;
+  string update_server_url = 3;
+  string metrics_server_url = 4;
+}
+
+message ConfigureDeviceResponse {
+  bool success = 1;
+  string message = 2;
+}

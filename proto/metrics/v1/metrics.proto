@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package metrics.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "fleetd.sh/gen/metrics/v1;metricsv1";
+
+service MetricsService {
+  rpc SendMetrics(SendMetricsRequest) returns (SendMetricsResponse);
+}
+
+message Metric {
+  string name = 1;
+  double value = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  map<string, string> tags = 4;
+}
+
+message SendMetricsRequest {
+  string device_id = 1;
+  repeated Metric metrics = 2;
+}
+
+message SendMetricsResponse {
+  bool success = 1;
+  string message = 2;
+}
