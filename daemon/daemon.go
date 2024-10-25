@@ -54,7 +54,7 @@ func (fd *FleetDaemon) Start() error {
 		ip, err := fd.discoveryService.GetIPAddress()
 		port := fd.discoveryService.GetPort()
 		if err == nil {
-			slog.Info("Device can be configured", "url", fmt.Sprintf("http://%s:%d/configure", ip, port))
+			slog.With("url", fmt.Sprintf("http://%s:%d/configure", ip, port)).Info("Device can be configured")
 		}
 	} else {
 		slog.Info("Device configured. Starting normal operations...")

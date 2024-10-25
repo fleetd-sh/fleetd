@@ -92,13 +92,11 @@ func (mc *MetricCollector) collectAndSendMetrics() {
 
 	resp, err := mc.client.SendMetrics(context.Background(), req)
 	if err != nil {
-		slog.Error("Error sending metrics", "error", err, "deviceID", mc.config.DeviceID)
+		slog.With("error", err, "device_id", mc.config.DeviceID).Error("Error sending metrics")
 		return
 	}
 
 	if !resp.Msg.Success {
-		slog.Warn("Metrics not accepted by server",
-			"message", resp.Msg.Message,
-			"deviceID", mc.config.DeviceID)
+		slog.With("message", resp.Msg.Message, "device_id", mc.config.DeviceID).Warn("Metrics not accepted by server")
 	}
 }

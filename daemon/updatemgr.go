@@ -43,7 +43,7 @@ func (um *UpdateManager) Start() {
 		select {
 		case <-ticker.C:
 			if err := um.checkAndApplyUpdate(); err != nil {
-				slog.Error("Error checking for updates", "error", err)
+				slog.With("error", err).Error("Error checking for updates")
 			}
 		case <-um.stopCh:
 			return
