@@ -49,7 +49,7 @@ func (fd *FleetDaemon) Start() error {
 	if !fd.config.IsConfigured() {
 		slog.Info("Device not configured. Starting discovery service...")
 		if err := fd.discoveryService.StartBroadcasting(); err != nil {
-			return fmt.Errorf("failed to start discovery service: %v", err)
+			return fmt.Errorf("failed to start discovery service: %w", err)
 		}
 		ip, err := fd.discoveryService.GetIPAddress()
 		port := fd.discoveryService.GetPort()

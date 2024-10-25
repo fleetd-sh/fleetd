@@ -50,12 +50,12 @@ func Load() (*Config, error) {
 
 	file, err := os.Open(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open config file: %v", err)
+		return nil, fmt.Errorf("failed to open config file: %w", err)
 	}
 	defer file.Close()
 
 	if err := json.NewDecoder(file).Decode(cfg); err != nil {
-		return nil, fmt.Errorf("failed to decode config file: %v", err)
+		return nil, fmt.Errorf("failed to decode config file: %w", err)
 	}
 
 	return cfg, nil
@@ -66,20 +66,20 @@ func (c *Config) Save() error {
 	defer c.mu.Unlock()
 
 	if err := os.MkdirAll(c.ConfigDir, 0755); err != nil {
-		return fmt.Errorf("failed to create config directory: %v", err)
+		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
 	configPath := filepath.Join(c.ConfigDir, defaultConfigFile)
 	file, err := os.Create(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to create config file: %v", err)
+		return fmt.Errorf("failed to create config file: %w", err)
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ") // Pretty-print the JSON
 	if err := encoder.Encode(c); err != nil {
-		return fmt.Errorf("failed to encode config: %v", err)
+		return fmt.Errorf("failed to encode config: %w", err)
 	}
 
 	return nil
