@@ -33,11 +33,11 @@ func (s *StorageService) PutObject(
 
 	path := filepath.Join(s.basePath, bucket, key)
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to create directory: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to create directory: %w", err))
 	}
 
 	if err := ioutil.WriteFile(path, data, 0644); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to write file: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to write file: %w", err))
 	}
 
 	return connect.NewResponse(&storagepb.PutObjectResponse{
@@ -56,12 +56,12 @@ func (s *StorageService) GetObject(
 	path := filepath.Join(s.basePath, bucket, key)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("object not found: %v", err))
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("object not found: %w", err))
 	}
 
 	fileInfo, err := os.Stat(path)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get file info: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get file info: %w", err))
 	}
 
 	return connect.NewResponse(&storagepb.GetObjectResponse{
@@ -96,7 +96,7 @@ func (s *StorageService) ListObjects(
 	})
 
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to list objects: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to list objects: %w", err))
 	}
 
 	return connect.NewResponse(&storagepb.ListObjectsResponse{
@@ -114,7 +114,7 @@ func (s *StorageService) DeleteObject(
 	path := filepath.Join(s.basePath, bucket, key)
 	err := os.Remove(path)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete object: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete object: %w", err))
 	}
 
 	return connect.NewResponse(&storagepb.DeleteObjectResponse{

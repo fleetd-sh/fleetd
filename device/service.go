@@ -33,7 +33,7 @@ func (s *DeviceService) RegisterDevice(
 	deviceID := uuid.New().String()
 	apiKey, err := s.authClient.GenerateAPIKey(ctx, deviceID)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to generate API key: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to generate API key: %w", err))
 	}
 
 	_, err = s.db.ExecContext(ctx, `
@@ -41,7 +41,7 @@ func (s *DeviceService) RegisterDevice(
 		VALUES (?, ?, ?, ?, ?)
 	`, deviceID, req.Msg.Name, req.Msg.Type, "REGISTERED", time.Now())
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert device: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert device: %w", err))
 	}
 
 	return connect.NewResponse(&devicepb.RegisterDeviceResponse{
@@ -56,12 +56,12 @@ func (s *DeviceService) UnregisterDevice(
 ) (*connect.Response[devicepb.UnregisterDeviceResponse], error) {
 	result, err := s.db.ExecContext(ctx, "DELETE FROM device WHERE id = ?", req.Msg.DeviceId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete device: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete device: %w", err))
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %w", err))
 	}
 
 	if rowsAffected == 0 {
@@ -70,7 +70,7 @@ func (s *DeviceService) UnregisterDevice(
 
 	success, err := s.authClient.RevokeAPIKey(ctx, req.Msg.DeviceId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to revoke API key: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to revoke API key: %w", err))
 	}
 
 	return connect.NewResponse(&devicepb.UnregisterDeviceResponse{
@@ -94,7 +94,7 @@ func (s *DeviceService) GetDevice(
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("device not found"))
 	}
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get device: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get device: %w", err))
 	}
 
 	return connect.NewResponse(&devicepb.GetDeviceResponse{
@@ -108,7 +108,7 @@ func (s *DeviceService) ListDevices(ctx context.Context, req *connect.Request[de
 		FROM device
 	`)
 	if err != nil {
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to query devices: %v", err))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to query devices: %w", err))
 	}
 	defer rows.Close()
 
@@ -117,7 +117,7 @@ func (s *DeviceService) ListDevices(ctx context.Context, req *connect.Request[de
 		var lastSeen time.Time
 		err := rows.Scan(&device.Id, &device.Name, &device.Type, &device.Status, &lastSeen)
 		if err != nil {
-			return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to scan device row: %v", err))
+			return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to scan device row: %w", err))
 		}
 		device.LastSeen = timestamppb.New(lastSeen)
 
@@ -129,7 +129,7 @@ func (s *DeviceService) ListDevices(ctx context.Context, req *connect.Request[de
 	}
 
 	if err := rows.Err(); err != nil {
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("error iterating device rows: %v", err))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("error iterating device rows: %w", err))
 	}
 
 	return nil
@@ -145,12 +145,12 @@ func (s *DeviceService) UpdateDeviceStatus(
 		WHERE id = ?
 	`, req.Msg.Status, time.Now(), req.Msg.DeviceId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update device status: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update device status: %w", err))
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %w", err))
 	}
 
 	if rowsAffected == 0 {
@@ -179,12 +179,12 @@ func (s *DeviceService) UpdateDevice(
 		WHERE id = ?
 	`, device.Name, device.Type, device.Status, device.LastSeen.AsTime(), req.Msg.DeviceId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update device: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update device: %w", err))
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %w", err))
 	}
 	if rowsAffected == 0 {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("device not found"))

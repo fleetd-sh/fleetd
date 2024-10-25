@@ -22,7 +22,7 @@ func GetIntFromEnv(key string, defaultValue int) (int, error) {
 	if value, exists := os.LookupEnv(key); exists {
 		intValue, err := strconv.Atoi(value)
 		if err != nil {
-			return defaultValue, fmt.Errorf("error converting %s to int: %v", key, err)
+			return defaultValue, fmt.Errorf("error converting %s to int: %w", key, err)
 		}
 		return intValue, nil
 	}
@@ -35,7 +35,7 @@ func GetDurationFromEnv(key string, defaultValue time.Duration) (time.Duration, 
 	if value, exists := os.LookupEnv(key); exists {
 		durationValue, err := time.ParseDuration(value)
 		if err != nil {
-			return defaultValue, fmt.Errorf("error parsing %s as duration: %v", key, err)
+			return defaultValue, fmt.Errorf("error parsing %s as duration: %w", key, err)
 		}
 		return durationValue, nil
 	}
@@ -48,7 +48,7 @@ func GetFloatFromEnv(key string, defaultValue float64) (float64, error) {
 	if value, exists := os.LookupEnv(key); exists {
 		floatValue, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return defaultValue, fmt.Errorf("error parsing %s as float: %v", key, err)
+			return defaultValue, fmt.Errorf("error parsing %s as float: %w", key, err)
 		}
 		return floatValue, nil
 	}

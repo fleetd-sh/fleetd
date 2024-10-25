@@ -53,7 +53,7 @@ func (ds *DiscoveryService) StartBroadcasting() error {
 	var err error
 	ds.server, err = zeroconf.Register(host, serviceName, domain, port, info, nil)
 	if err != nil {
-		return fmt.Errorf("failed to register mDNS service: %v", err)
+		return fmt.Errorf("failed to register mDNS service: %w", err)
 	}
 
 	// Start HTTP server for configuration

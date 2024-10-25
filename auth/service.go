@@ -33,7 +33,7 @@ func (s *AuthService) Authenticate(
 				Authenticated: false,
 			}), nil
 		}
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to query database: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to query database: %w", err))
 	}
 
 	return connect.NewResponse(&authpb.AuthenticateResponse{
@@ -50,7 +50,7 @@ func (s *AuthService) GenerateAPIKey(
 
 	_, err := s.db.ExecContext(ctx, "INSERT INTO api_key (api_key, device_id) VALUES (?, ?)", apiKey, req.Msg.DeviceId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert API key: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert API key: %w", err))
 	}
 
 	return connect.NewResponse(&authpb.GenerateAPIKeyResponse{
@@ -64,12 +64,12 @@ func (s *AuthService) RevokeAPIKey(
 ) (*connect.Response[authpb.RevokeAPIKeyResponse], error) {
 	result, err := s.db.ExecContext(ctx, "DELETE FROM api_key WHERE device_id = ?", req.Msg.DeviceId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete API key: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete API key: %w", err))
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %w", err))
 	}
 
 	return connect.NewResponse(&authpb.RevokeAPIKeyResponse{

@@ -47,7 +47,7 @@ func (s *UpdateService) CreateUpdatePackage(
 
 	deviceTypesJSON, err := json.Marshal(updatePackage.DeviceTypes)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to marshal device types: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to marshal device types: %w", err))
 	}
 
 	_, err = s.db.ExecContext(ctx, `
@@ -56,7 +56,7 @@ func (s *UpdateService) CreateUpdatePackage(
 	`, updatePackage.ID, updatePackage.Version, updatePackage.ReleaseDate, updatePackage.ChangeLog, updatePackage.FileURL, deviceTypesJSON)
 
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to create update package: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to create update package: %w", err))
 	}
 
 	return connect.NewResponse(&updatepb.CreateUpdatePackageResponse{
@@ -75,7 +75,7 @@ func (s *UpdateService) GetAvailableUpdates(
 		WHERE release_date > ?
 	`, req.Msg.LastUpdateDate.AsTime())
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to query available updates: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to query available updates: %w", err))
 	}
 	defer rows.Close()
 
@@ -92,12 +92,12 @@ func (s *UpdateService) GetAvailableUpdates(
 			&deviceTypesJSON,
 		)
 		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to scan update package: %v", err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to scan update package: %w", err))
 		}
 
 		err = json.Unmarshal(deviceTypesJSON, &updatePackage.DeviceTypes)
 		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to unmarshal device types: %v", err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to unmarshal device types: %w", err))
 		}
 
 		// Check if the requested device type is in the device types array
@@ -117,7 +117,7 @@ func (s *UpdateService) GetAvailableUpdates(
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("error iterating over rows: %v", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("error iterating over rows: %w", err))
 	}
 
 	return connect.NewResponse(&updatepb.GetAvailableUpdatesResponse{
