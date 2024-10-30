@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"time"
@@ -18,39 +18,42 @@ func GetStringFromEnv(key string, defaultValue string) string {
 
 // GetIntFromEnv retrieves an integer value from the environment variables.
 // If the key does not exist or cannot be converted to an int, it returns the default value and an error.
-func GetIntFromEnv(key string, defaultValue int) (int, error) {
+func GetIntFromEnv(key string, defaultValue int) int {
 	if value, exists := os.LookupEnv(key); exists {
 		intValue, err := strconv.Atoi(value)
 		if err != nil {
-			return defaultValue, fmt.Errorf("error converting %s to int: %w", key, err)
+			slog.With("key", key).With("value", value).With("error", err).Error("error converting to int, using default value")
+			return defaultValue
 		}
-		return intValue, nil
+		return intValue
 	}
-	return defaultValue, nil
+	return defaultValue
 }
 
 // GetDurationFromEnv retrieves a time duration from the environment variables.
 // The value should be in a format accepted by time.ParseDuration, like "300ms", "1.5h", or "2h45m".
-func GetDurationFromEnv(key string, defaultValue time.Duration) (time.Duration, error) {
+func GetDurationFromEnv(key string, defaultValue time.Duration) time.Duration {
 	if value, exists := os.LookupEnv(key); exists {
 		durationValue, err := time.ParseDuration(value)
 		if err != nil {
-			return defaultValue, fmt.Errorf("error parsing %s as duration: %w", key, err)
+			slog.With("key", key).With("value", value).With("error", err).Error("error parsing to duration, using default value")
+			return defaultValue
 		}
-		return durationValue, nil
+		return durationValue
 	}
-	return defaultValue, nil
+	return defaultValue
 }
 
 // GetFloatFromEnv retrieves a float value from the environment variables.
 // If the key does not exist or cannot be converted to a float, it returns the default value and an error.
-func GetFloatFromEnv(key string, defaultValue float64) (float64, error) {
+func GetFloatFromEnv(key string, defaultValue float64) float64 {
 	if value, exists := os.LookupEnv(key); exists {
 		floatValue, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return defaultValue, fmt.Errorf("error parsing %s as float: %w", key, err)
+			slog.With("key", key).With("value", value).With("error", err).Error("error parsing to float, using default value")
+			return defaultValue
 		}
-		return floatValue, nil
+		return floatValue
 	}
-	return defaultValue, nil
+	return defaultValue
 }
