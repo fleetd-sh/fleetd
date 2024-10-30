@@ -60,7 +60,7 @@ var (
 type StorageServiceClient interface {
 	PutObject(context.Context, *connect.Request[v1.PutObjectRequest]) (*connect.Response[v1.PutObjectResponse], error)
 	GetObject(context.Context, *connect.Request[v1.GetObjectRequest]) (*connect.Response[v1.GetObjectResponse], error)
-	ListObjects(context.Context, *connect.Request[v1.ListObjectsRequest]) (*connect.Response[v1.ListObjectsResponse], error)
+	ListObjects(context.Context, *connect.Request[v1.ListObjectsRequest]) (*connect.ServerStreamForClient[v1.ListObjectsResponse], error)
 	DeleteObject(context.Context, *connect.Request[v1.DeleteObjectRequest]) (*connect.Response[v1.DeleteObjectResponse], error)
 }
 
@@ -120,8 +120,8 @@ func (c *storageServiceClient) GetObject(ctx context.Context, req *connect.Reque
 }
 
 // ListObjects calls storage.v1.StorageService.ListObjects.
-func (c *storageServiceClient) ListObjects(ctx context.Context, req *connect.Request[v1.ListObjectsRequest]) (*connect.Response[v1.ListObjectsResponse], error) {
-	return c.listObjects.CallUnary(ctx, req)
+func (c *storageServiceClient) ListObjects(ctx context.Context, req *connect.Request[v1.ListObjectsRequest]) (*connect.ServerStreamForClient[v1.ListObjectsResponse], error) {
+	return c.listObjects.CallServerStream(ctx, req)
 }
 
 // DeleteObject calls storage.v1.StorageService.DeleteObject.
@@ -133,7 +133,7 @@ func (c *storageServiceClient) DeleteObject(ctx context.Context, req *connect.Re
 type StorageServiceHandler interface {
 	PutObject(context.Context, *connect.Request[v1.PutObjectRequest]) (*connect.Response[v1.PutObjectResponse], error)
 	GetObject(context.Context, *connect.Request[v1.GetObjectRequest]) (*connect.Response[v1.GetObjectResponse], error)
-	ListObjects(context.Context, *connect.Request[v1.ListObjectsRequest]) (*connect.Response[v1.ListObjectsResponse], error)
+	ListObjects(context.Context, *connect.Request[v1.ListObjectsRequest], *connect.ServerStream[v1.ListObjectsResponse]) error
 	DeleteObject(context.Context, *connect.Request[v1.DeleteObjectRequest]) (*connect.Response[v1.DeleteObjectResponse], error)
 }
 
@@ -155,7 +155,7 @@ func NewStorageServiceHandler(svc StorageServiceHandler, opts ...connect.Handler
 		connect.WithSchema(storageServiceGetObjectMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
-	storageServiceListObjectsHandler := connect.NewUnaryHandler(
+	storageServiceListObjectsHandler := connect.NewServerStreamHandler(
 		StorageServiceListObjectsProcedure,
 		svc.ListObjects,
 		connect.WithSchema(storageServiceListObjectsMethodDescriptor),
@@ -194,8 +194,8 @@ func (UnimplementedStorageServiceHandler) GetObject(context.Context, *connect.Re
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("storage.v1.StorageService.GetObject is not implemented"))
 }
 
-func (UnimplementedStorageServiceHandler) ListObjects(context.Context, *connect.Request[v1.ListObjectsRequest]) (*connect.Response[v1.ListObjectsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("storage.v1.StorageService.ListObjects is not implemented"))
+func (UnimplementedStorageServiceHandler) ListObjects(context.Context, *connect.Request[v1.ListObjectsRequest], *connect.ServerStream[v1.ListObjectsResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("storage.v1.StorageService.ListObjects is not implemented"))
 }
 
 func (UnimplementedStorageServiceHandler) DeleteObject(context.Context, *connect.Request[v1.DeleteObjectRequest]) (*connect.Response[v1.DeleteObjectResponse], error) {
