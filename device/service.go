@@ -36,12 +36,34 @@ func (s *DeviceService) RegisterDevice(
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to generate API key: %w", err))
 	}
 
-	_, err = s.db.ExecContext(ctx, `
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to begin transaction: %w", err))
+	}
+	defer tx.Rollback() // Will be ignored if tx.Commit() is called
+
+	// Insert device
+	_, err = tx.ExecContext(ctx, `
 		INSERT INTO device (id, name, type, status, last_seen)
 		VALUES (?, ?, ?, ?, ?)
-	`, deviceID, req.Msg.Name, req.Msg.Type, "REGISTERED", time.Now())
+	`, deviceID, req.Msg.Name, req.Msg.Type, "REGISTERED", time.Now().Format(time.RFC3339))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert device: %w", err))
+	}
+
+	// Insert device type
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO device_type (id)
+		VALUES (?)
+		ON CONFLICT (id) DO NOTHING
+	`, req.Msg.Type)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert device type: %w", err))
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to commit transaction: %w", err))
 	}
 
 	return connect.NewResponse(&devicepb.RegisterDeviceResponse{
@@ -83,12 +105,13 @@ func (s *DeviceService) GetDevice(
 	req *connect.Request[devicepb.GetDeviceRequest],
 ) (*connect.Response[devicepb.GetDeviceResponse], error) {
 	var device devicepb.Device
+	var lastSeenString string
 	err := s.db.QueryRowContext(ctx, "SELECT id, name, type, status, last_seen FROM device WHERE id = ?", req.Msg.DeviceId).Scan(
 		&device.Id,
 		&device.Name,
 		&device.Type,
 		&device.Status,
-		&device.LastSeen,
+		&lastSeenString,
 	)
 	if err == sql.ErrNoRows {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("device not found"))
@@ -96,6 +119,12 @@ func (s *DeviceService) GetDevice(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get device: %w", err))
 	}
+
+	lastSeen, err := time.Parse(time.RFC3339, lastSeenString)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to parse last seen time: %w", err))
+	}
+	device.LastSeen = timestamppb.New(lastSeen)
 
 	return connect.NewResponse(&devicepb.GetDeviceResponse{
 		Device: &device,
@@ -114,10 +143,14 @@ func (s *DeviceService) ListDevices(ctx context.Context, req *connect.Request[de
 
 	for rows.Next() {
 		var device devicepb.Device
-		var lastSeen time.Time
-		err := rows.Scan(&device.Id, &device.Name, &device.Type, &device.Status, &lastSeen)
+		var lastSeenString string
+		err := rows.Scan(&device.Id, &device.Name, &device.Type, &device.Status, &lastSeenString)
 		if err != nil {
 			return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to scan device row: %w", err))
+		}
+		lastSeen, err := time.Parse(time.RFC3339, lastSeenString)
+		if err != nil {
+			return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to parse last seen time: %w", err))
 		}
 		device.LastSeen = timestamppb.New(lastSeen)
 
@@ -143,7 +176,7 @@ func (s *DeviceService) UpdateDeviceStatus(
 		UPDATE device
 		SET status = ?, last_seen = ?
 		WHERE id = ?
-	`, req.Msg.Status, time.Now(), req.Msg.DeviceId)
+	`, req.Msg.Status, time.Now().UTC().Format(time.RFC3339), req.Msg.DeviceId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update device status: %w", err))
 	}
@@ -177,7 +210,7 @@ func (s *DeviceService) UpdateDevice(
 		UPDATE device
 		SET name = ?, type = ?, status = ?, last_seen = ?
 		WHERE id = ?
-	`, device.Name, device.Type, device.Status, device.LastSeen.AsTime(), req.Msg.DeviceId)
+	`, device.Name, device.Type, device.Status, device.LastSeen.AsTime().Format(time.RFC3339), req.Msg.DeviceId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update device: %w", err))
 	}
