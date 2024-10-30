@@ -8,6 +8,7 @@ option go_package = "fleetd.sh/gen/metrics/v1;metricsv1";
 
 service MetricsService {
   rpc SendMetrics(SendMetricsRequest) returns (SendMetricsResponse);
+  rpc GetMetrics(GetMetricsRequest) returns (stream GetMetricsResponse);
 }
 
 message Metric {
@@ -26,4 +27,15 @@ message SendMetricsRequest {
 message SendMetricsResponse {
   bool success = 1;
   string message = 2;
+}
+
+message GetMetricsRequest {
+  string device_id = 1;
+  google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp end_time = 3;
+  string measurement = 4;
+}
+
+message GetMetricsResponse {
+  Metric metric = 1;
 }

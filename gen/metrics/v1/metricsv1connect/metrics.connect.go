@@ -36,17 +36,22 @@ const (
 	// MetricsServiceSendMetricsProcedure is the fully-qualified name of the MetricsService's
 	// SendMetrics RPC.
 	MetricsServiceSendMetricsProcedure = "/metrics.v1.MetricsService/SendMetrics"
+	// MetricsServiceGetMetricsProcedure is the fully-qualified name of the MetricsService's GetMetrics
+	// RPC.
+	MetricsServiceGetMetricsProcedure = "/metrics.v1.MetricsService/GetMetrics"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
 	metricsServiceServiceDescriptor           = v1.File_metrics_v1_metrics_proto.Services().ByName("MetricsService")
 	metricsServiceSendMetricsMethodDescriptor = metricsServiceServiceDescriptor.Methods().ByName("SendMetrics")
+	metricsServiceGetMetricsMethodDescriptor  = metricsServiceServiceDescriptor.Methods().ByName("GetMetrics")
 )
 
 // MetricsServiceClient is a client for the metrics.v1.MetricsService service.
 type MetricsServiceClient interface {
 	SendMetrics(context.Context, *connect.Request[v1.SendMetricsRequest]) (*connect.Response[v1.SendMetricsResponse], error)
+	GetMetrics(context.Context, *connect.Request[v1.GetMetricsRequest]) (*connect.ServerStreamForClient[v1.GetMetricsResponse], error)
 }
 
 // NewMetricsServiceClient constructs a client for the metrics.v1.MetricsService service. By
@@ -65,12 +70,19 @@ func NewMetricsServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(metricsServiceSendMetricsMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		getMetrics: connect.NewClient[v1.GetMetricsRequest, v1.GetMetricsResponse](
+			httpClient,
+			baseURL+MetricsServiceGetMetricsProcedure,
+			connect.WithSchema(metricsServiceGetMetricsMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // metricsServiceClient implements MetricsServiceClient.
 type metricsServiceClient struct {
 	sendMetrics *connect.Client[v1.SendMetricsRequest, v1.SendMetricsResponse]
+	getMetrics  *connect.Client[v1.GetMetricsRequest, v1.GetMetricsResponse]
 }
 
 // SendMetrics calls metrics.v1.MetricsService.SendMetrics.
@@ -78,9 +90,15 @@ func (c *metricsServiceClient) SendMetrics(ctx context.Context, req *connect.Req
 	return c.sendMetrics.CallUnary(ctx, req)
 }
 
+// GetMetrics calls metrics.v1.MetricsService.GetMetrics.
+func (c *metricsServiceClient) GetMetrics(ctx context.Context, req *connect.Request[v1.GetMetricsRequest]) (*connect.ServerStreamForClient[v1.GetMetricsResponse], error) {
+	return c.getMetrics.CallServerStream(ctx, req)
+}
+
 // MetricsServiceHandler is an implementation of the metrics.v1.MetricsService service.
 type MetricsServiceHandler interface {
 	SendMetrics(context.Context, *connect.Request[v1.SendMetricsRequest]) (*connect.Response[v1.SendMetricsResponse], error)
+	GetMetrics(context.Context, *connect.Request[v1.GetMetricsRequest], *connect.ServerStream[v1.GetMetricsResponse]) error
 }
 
 // NewMetricsServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -95,10 +113,18 @@ func NewMetricsServiceHandler(svc MetricsServiceHandler, opts ...connect.Handler
 		connect.WithSchema(metricsServiceSendMetricsMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	metricsServiceGetMetricsHandler := connect.NewServerStreamHandler(
+		MetricsServiceGetMetricsProcedure,
+		svc.GetMetrics,
+		connect.WithSchema(metricsServiceGetMetricsMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/metrics.v1.MetricsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MetricsServiceSendMetricsProcedure:
 			metricsServiceSendMetricsHandler.ServeHTTP(w, r)
+		case MetricsServiceGetMetricsProcedure:
+			metricsServiceGetMetricsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -110,4 +136,8 @@ type UnimplementedMetricsServiceHandler struct{}
 
 func (UnimplementedMetricsServiceHandler) SendMetrics(context.Context, *connect.Request[v1.SendMetricsRequest]) (*connect.Response[v1.SendMetricsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("metrics.v1.MetricsService.SendMetrics is not implemented"))
+}
+
+func (UnimplementedMetricsServiceHandler) GetMetrics(context.Context, *connect.Request[v1.GetMetricsRequest], *connect.ServerStream[v1.GetMetricsResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("metrics.v1.MetricsService.GetMetrics is not implemented"))
 }
