@@ -49,11 +49,7 @@ func main() {
 	}
 
 	// Initialize AuthService
-	authService, err := auth.NewAuthService(d)
-	if err != nil {
-		slog.With("error", err).Error("Failed to create auth service")
-		os.Exit(1)
-	}
+	authService := auth.NewAuthService(d)
 
 	// Set up the server
 	mux := http.NewServeMux()
