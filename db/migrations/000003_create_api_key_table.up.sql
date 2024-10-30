@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS api_key (
-    api_key TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    key_hash TEXT PRIMARY KEY,
     device_id TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
