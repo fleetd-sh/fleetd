@@ -73,12 +73,12 @@ func (s *StorageService) GetObject(
 func (s *StorageService) ListObjects(
 	ctx context.Context,
 	req *connect.Request[storagepb.ListObjectsRequest],
-) (*connect.Response[storagepb.ListObjectsResponse], error) {
+	stream *connect.ServerStream[storagepb.ListObjectsResponse],
+) error {
 	bucket := req.Msg.Bucket
 	prefix := req.Msg.Prefix
 
 	path := filepath.Join(s.basePath, bucket, prefix)
-	var objects []*storagepb.ObjectInfo
 
 	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -86,22 +86,22 @@ func (s *StorageService) ListObjects(
 		}
 		if !info.IsDir() {
 			relPath, _ := filepath.Rel(filepath.Join(s.basePath, bucket), filePath)
-			objects = append(objects, &storagepb.ObjectInfo{
-				Key:          relPath,
-				Size:         info.Size(),
-				LastModified: timestamppb.New(info.ModTime()),
+			stream.Send(&storagepb.ListObjectsResponse{
+				Object: &storagepb.ObjectInfo{
+					Key:          relPath,
+					Size:         info.Size(),
+					LastModified: timestamppb.New(info.ModTime()),
+				},
 			})
 		}
 		return nil
 	})
 
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to list objects: %w", err))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to list objects: %w", err))
 	}
 
-	return connect.NewResponse(&storagepb.ListObjectsResponse{
-		Objects: objects,
-	}), nil
+	return nil
 }
 
 func (s *StorageService) DeleteObject(

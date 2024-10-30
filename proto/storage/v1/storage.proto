@@ -9,7 +9,7 @@ import "google/protobuf/timestamp.proto";
 service StorageService {
   rpc PutObject(PutObjectRequest) returns (PutObjectResponse);
   rpc GetObject(GetObjectRequest) returns (GetObjectResponse);
-  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
+  rpc ListObjects(ListObjectsRequest) returns (stream ListObjectsResponse);
   rpc DeleteObject(DeleteObjectRequest) returns (DeleteObjectResponse);
 }
 
@@ -40,7 +40,7 @@ message ListObjectsRequest {
 }
 
 message ListObjectsResponse {
-  repeated ObjectInfo objects = 1;
+  ObjectInfo object = 1;
 }
 
 message ObjectInfo {
