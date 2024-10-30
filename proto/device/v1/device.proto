@@ -21,6 +21,7 @@ message Device {
   string type = 3;
   string status = 4;
   google.protobuf.Timestamp last_seen = 5;
+  string version = 6;
 }
 
 message RegisterDeviceRequest {
