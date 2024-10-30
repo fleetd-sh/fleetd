@@ -28,13 +28,13 @@ build-all:
     just build storage-server
 
 test-all:
-    go test -v ./...
+    CGO_ENABLED=1 go test -v ./...
 
 test-package PACKAGE:
-    go test -v ./{{PACKAGE}}
+    CGO_ENABLED=1 go test -v ./{{PACKAGE}}
 
 test TEST:
-    go test -v ./... -run {{TEST}}
+    CGO_ENABLED=1 go test -v ./... -run {{TEST}}
 
 format:
     go fmt ./...
