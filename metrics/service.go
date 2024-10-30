@@ -13,18 +13,22 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 
 	metricspb "fleetd.sh/gen/metrics/v1"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type MetricsService struct {
 	writeAPI api.WriteAPIBlocking
+	queryAPI api.QueryAPI
 	org      string
 	bucket   string
 }
 
 func NewMetricsService(client influxdb2.Client, org, bucket string) *MetricsService {
 	writeAPI := client.WriteAPIBlocking(org, bucket)
+	queryAPI := client.QueryAPI(org)
 	return &MetricsService{
 		writeAPI: writeAPI,
+		queryAPI: queryAPI,
 		org:      org,
 		bucket:   bucket,
 	}
@@ -89,4 +93,77 @@ func (s *MetricsService) SendMetrics(
 		Success: true,
 		Message: "Metrics stored successfully",
 	}), nil
+}
+
+func (s *MetricsService) GetMetrics(
+	ctx context.Context,
+	req *connect.Request[metricspb.GetMetricsRequest],
+	stream *connect.ServerStream[metricspb.GetMetricsResponse],
+) error {
+	startTime, endTime := req.Msg.StartTime, req.Msg.EndTime
+	deviceID := req.Msg.DeviceId
+	measurement := req.Msg.Measurement
+
+	if startTime == nil || endTime == nil {
+		return connect.NewError(connect.CodeInvalidArgument, errors.New("start time and end time are required"))
+	}
+
+	// Construct the base Flux query
+	query := fmt.Sprintf(`
+		from(bucket:"%s")
+			|> range(start: %s, stop: %s)
+	`, s.bucket, startTime.AsTime().Format(time.RFC3339), endTime.AsTime().Format(time.RFC3339))
+
+	// Add optional filters
+	if measurement != "" {
+		query += fmt.Sprintf(`|> filter(fn: (r) => r._measurement == "%s")`, measurement)
+	}
+	if deviceID != "" {
+		query += fmt.Sprintf(`|> filter(fn: (r) => r.device_id == "%s")`, deviceID)
+	}
+
+	// Execute the query
+	result, err := s.queryAPI.Query(ctx, query)
+	if err != nil {
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to query metrics: %w", err))
+	}
+	defer result.Close()
+
+	// Process and stream the results
+	for result.Next() {
+		record := result.Record()
+		metric := &metricspb.Metric{
+			Measurement: record.Measurement(),
+			Tags:        make(map[string]string),
+			Fields:      make(map[string]float64),
+			Timestamp:   timestamppb.New(record.Time()),
+		}
+
+		// Add tags
+		for k, v := range record.Values() {
+			if k != "_value" && k != "_field" {
+				metric.Tags[k] = fmt.Sprintf("%v", v)
+			}
+		}
+
+		// Add field
+		fieldName := record.Field()
+		fieldValue, ok := record.Value().(float64)
+		if !ok {
+			slog.Warn("Unexpected field value type", "field", fieldName, "value", record.Value())
+			continue
+		}
+		metric.Fields[fieldName] = fieldValue
+
+		// Stream the metric
+		if err := stream.Send(&metricspb.GetMetricsResponse{Metric: metric}); err != nil {
+			return connect.NewError(connect.CodeInternal, fmt.Errorf("failed to send metric: %w", err))
+		}
+	}
+
+	if result.Err() != nil {
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("error processing query results: %w", result.Err()))
+	}
+
+	return nil
 }
