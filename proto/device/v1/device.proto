@@ -27,6 +27,7 @@ message Device {
 message RegisterDeviceRequest {
   string name = 1;
   string type = 2;
+  string version = 3;
 }
 
 message RegisterDeviceResponse {
