@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	devicepb "fleetd.sh/gen/device/v1"
+	"fleetd.sh/internal/telemetry"
 	"fleetd.sh/pkg/authclient"
 )
 
@@ -30,40 +31,51 @@ func (s *DeviceService) RegisterDevice(
 	ctx context.Context,
 	req *connect.Request[devicepb.RegisterDeviceRequest],
 ) (*connect.Response[devicepb.RegisterDeviceResponse], error) {
-	deviceID := uuid.New().String()
-	apiKey, err := s.authClient.GenerateAPIKey(ctx, deviceID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to generate API key: %w", err))
-	}
+	defer telemetry.TrackSQLOperation(ctx, "RegisterDevice")(nil)
 
-	tx, err := s.db.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to begin transaction: %w", err))
-	}
-	defer tx.Rollback() // Will be ignored if tx.Commit() is called
+	// Generate device ID first
+	deviceID := ksuid.New().String()
 
-	// Insert device
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	// Insert device type if it doesn't exist
 	_, err = tx.ExecContext(ctx, `
-		INSERT INTO device (id, name, type, status, last_seen)
-		VALUES (?, ?, ?, ?, ?)
-	`, deviceID, req.Msg.Name, req.Msg.Type, "REGISTERED", time.Now().Format(time.RFC3339))
+		INSERT OR IGNORE INTO device_type (id, name)
+		VALUES (?, ?)`,
+		req.Msg.Type, req.Msg.Type,
+	)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert device: %w", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to ensure device type: %w", err))
 	}
 
-	// Insert device type
+	// Insert device with explicit status and proper time format
 	_, err = tx.ExecContext(ctx, `
-		INSERT INTO device_type (id)
-		VALUES (?)
-		ON CONFLICT (id) DO NOTHING
-	`, req.Msg.Type)
+		INSERT INTO device (id, name, type, status, last_seen, version)
+		VALUES (?, ?, ?, 'ACTIVE', ?, ?)`,
+		deviceID, req.Msg.Name, req.Msg.Type,
+		time.Now().Format(time.RFC3339),
+		req.Msg.Version,
+	)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert device type: %w", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to register device: %w", err))
 	}
 
-	// Commit the transaction
+	// Commit the transaction before generating API key
 	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to commit transaction: %w", err))
+	}
+
+	// Generate API key after device is created and committed
+	apiKey, err := s.authClient.GenerateAPIKey(ctx, deviceID)
+	if err != nil {
+		// Consider cleanup if API key generation fails?
+		return nil, fmt.Errorf("failed to generate API key: %w", err)
 	}
 
 	return connect.NewResponse(&devicepb.RegisterDeviceResponse{
@@ -76,6 +88,8 @@ func (s *DeviceService) UnregisterDevice(
 	ctx context.Context,
 	req *connect.Request[devicepb.UnregisterDeviceRequest],
 ) (*connect.Response[devicepb.UnregisterDeviceResponse], error) {
+	defer telemetry.TrackSQLOperation(ctx, "UnregisterDevice")(nil)
+
 	result, err := s.db.ExecContext(ctx, "DELETE FROM device WHERE id = ?", req.Msg.DeviceId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete device: %w", err))
@@ -104,9 +118,11 @@ func (s *DeviceService) GetDevice(
 	ctx context.Context,
 	req *connect.Request[devicepb.GetDeviceRequest],
 ) (*connect.Response[devicepb.GetDeviceResponse], error) {
+	defer telemetry.TrackSQLOperation(ctx, "GetDevice")(nil)
+
 	var device devicepb.Device
 	var lastSeenString string
-	err := s.db.QueryRowContext(ctx, "SELECT id, name, type, status, last_seen FROM device WHERE id = ?", req.Msg.DeviceId).Scan(
+	err := s.db.QueryRowContext(ctx, "SELECT id, name, type, status, last_seen FROM device WHERE id = ?", []string{"device"}, req.Msg.DeviceId).Scan(
 		&device.Id,
 		&device.Name,
 		&device.Type,
@@ -132,6 +148,8 @@ func (s *DeviceService) GetDevice(
 }
 
 func (s *DeviceService) ListDevices(ctx context.Context, req *connect.Request[devicepb.ListDevicesRequest], stream *connect.ServerStream[devicepb.ListDevicesResponse]) error {
+	defer telemetry.TrackSQLOperation(ctx, "ListDevices")(nil)
+
 	rows, err := s.db.QueryContext(ctx, `
 		SELECT id, name, type, status, last_seen
 		FROM device
@@ -172,6 +190,8 @@ func (s *DeviceService) UpdateDeviceStatus(
 	ctx context.Context,
 	req *connect.Request[devicepb.UpdateDeviceStatusRequest],
 ) (*connect.Response[devicepb.UpdateDeviceStatusResponse], error) {
+	defer telemetry.TrackSQLOperation(ctx, "UpdateDeviceStatus")(nil)
+
 	result, err := s.db.ExecContext(ctx, `
 		UPDATE device
 		SET status = ?, last_seen = ?
@@ -199,18 +219,30 @@ func (s *DeviceService) UpdateDevice(
 	ctx context.Context,
 	req *connect.Request[devicepb.UpdateDeviceRequest],
 ) (*connect.Response[devicepb.UpdateDeviceResponse], error) {
-	// Extract the device data from the request
-	device := req.Msg.Device
-	if device == nil {
+	defer telemetry.TrackSQLOperation(ctx, "UpdateDevice")(nil)
+
+	if device := req.Msg.Device; device == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("device information is required"))
 	}
 
-	// Perform the update in the database
-	result, err := s.db.ExecContext(ctx, `
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to begin transaction: %w", err))
+	}
+	defer tx.Rollback()
+
+	// Use primary key lookup for update
+	result, err := tx.ExecContext(ctx, `
+		/* PRIMARY KEY lookup on device */
 		UPDATE device
 		SET name = ?, type = ?, status = ?, last_seen = ?
-		WHERE id = ?
-	`, device.Name, device.Type, device.Status, device.LastSeen.AsTime().Format(time.RFC3339), req.Msg.DeviceId)
+		WHERE id = ?`,
+		req.Msg.Device.Name, req.Msg.Device.Type, req.Msg.Device.Status,
+		req.Msg.Device.LastSeen.AsTime().Format(time.RFC3339),
+		req.Msg.DeviceId,
+	)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update device: %w", err))
 	}
@@ -221,6 +253,10 @@ func (s *DeviceService) UpdateDevice(
 	}
 	if rowsAffected == 0 {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("device not found"))
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to commit transaction: %w", err))
 	}
 
 	return connect.NewResponse(&devicepb.UpdateDeviceResponse{

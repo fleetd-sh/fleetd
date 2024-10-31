@@ -6,12 +6,12 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"time"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 
 	authpb "fleetd.sh/gen/auth/v1"
+	"fleetd.sh/internal/telemetry"
 )
 
 type AuthService struct {
@@ -26,6 +26,8 @@ func (s *AuthService) Authenticate(
 	ctx context.Context,
 	req *connect.Request[authpb.AuthenticateRequest],
 ) (*connect.Response[authpb.AuthenticateResponse], error) {
+	defer telemetry.TrackSQLOperation(ctx, "Authenticate")(nil)
+
 	var deviceID string
 	hashedKey := hashKey(req.Msg.ApiKey)
 	err := s.db.QueryRowContext(ctx, "SELECT device_id FROM api_key WHERE key_hash = ?", hashedKey).Scan(&deviceID)
@@ -48,37 +50,20 @@ func (s *AuthService) GenerateAPIKey(
 	ctx context.Context,
 	req *connect.Request[authpb.GenerateAPIKeyRequest],
 ) (*connect.Response[authpb.GenerateAPIKeyResponse], error) {
-	tx, err := s.db.BeginTx(ctx, nil)
+	defer telemetry.TrackSQLOperation(ctx, "GenerateAPIKey")(nil)
+
+	// Generate API key using KSUID for uniqueness
+	apiKey := ksuid.New().String()
+	keyHash := hashAPIKey(apiKey)
+
+	// Store API key hash in database
+	_, err := s.db.ExecContext(ctx, `
+		INSERT INTO api_key (key_hash, device_id)
+		VALUES (?, ?)`,
+		keyHash, req.Msg.DeviceId,
+	)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to begin transaction: %w", err))
-	}
-	defer tx.Rollback()
-
-	// Generate new API key
-	apiKey := uuid.New().String()
-	hashedKey := hashKey(apiKey)
-
-	// Insert API key
-	_, err = tx.ExecContext(ctx, `
-		INSERT INTO api_key (key_hash, device_id, created_at)
-		VALUES (?, ?, ?)
-	`, hashedKey, req.Msg.DeviceId, time.Now())
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert API key: %w", err))
-	}
-
-	// Update device last authentication
-	_, err = tx.ExecContext(ctx, `
-		UPDATE device 
-		SET last_seen = ?
-		WHERE id = ?
-	`, time.Now().Format(time.RFC3339), req.Msg.DeviceId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update device: %w", err))
-	}
-
-	if err := tx.Commit(); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to commit transaction: %w", err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to store API key: %w", err))
 	}
 
 	return connect.NewResponse(&authpb.GenerateAPIKeyResponse{
@@ -90,7 +75,10 @@ func (s *AuthService) RevokeAPIKey(
 	ctx context.Context,
 	req *connect.Request[authpb.RevokeAPIKeyRequest],
 ) (*connect.Response[authpb.RevokeAPIKeyResponse], error) {
-	tx, err := s.db.BeginTx(ctx, nil)
+	defer telemetry.TrackSQLOperation(ctx, "RevokeAPIKey")(nil)
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to begin transaction: %w", err))
 	}
@@ -131,6 +119,11 @@ func (s *AuthService) RevokeAPIKey(
 }
 
 func hashKey(key string) string {
+	hash := sha256.Sum256([]byte(key))
+	return hex.EncodeToString(hash[:])
+}
+
+func hashAPIKey(key string) string {
 	hash := sha256.Sum256([]byte(key))
 	return hex.EncodeToString(hash[:])
 }
