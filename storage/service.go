@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -11,6 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	storagepb "fleetd.sh/gen/storage/v1"
+	"fleetd.sh/internal/telemetry"
 )
 
 type StorageService struct {
@@ -27,6 +27,8 @@ func (s *StorageService) PutObject(
 	ctx context.Context,
 	req *connect.Request[storagepb.PutObjectRequest],
 ) (*connect.Response[storagepb.PutObjectResponse], error) {
+	defer telemetry.TrackDiskOperation(ctx, "PutObject")(nil)
+
 	bucket := req.Msg.Bucket
 	key := req.Msg.Key
 	data := req.Msg.Data
@@ -36,7 +38,7 @@ func (s *StorageService) PutObject(
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to create directory: %w", err))
 	}
 
-	if err := ioutil.WriteFile(path, data, 0644); err != nil {
+	if err := os.WriteFile(path, data, 0644); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to write file: %w", err))
 	}
 
@@ -50,11 +52,13 @@ func (s *StorageService) GetObject(
 	ctx context.Context,
 	req *connect.Request[storagepb.GetObjectRequest],
 ) (*connect.Response[storagepb.GetObjectResponse], error) {
+	defer telemetry.TrackDiskOperation(ctx, "GetObject")(nil)
+
 	bucket := req.Msg.Bucket
 	key := req.Msg.Key
 
 	path := filepath.Join(s.basePath, bucket, key)
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("object not found: %w", err))
 	}
@@ -75,6 +79,8 @@ func (s *StorageService) ListObjects(
 	req *connect.Request[storagepb.ListObjectsRequest],
 	stream *connect.ServerStream[storagepb.ListObjectsResponse],
 ) error {
+	defer telemetry.TrackDiskOperation(ctx, "ListObjects")(nil)
+
 	bucket := req.Msg.Bucket
 	prefix := req.Msg.Prefix
 
@@ -108,6 +114,8 @@ func (s *StorageService) DeleteObject(
 	ctx context.Context,
 	req *connect.Request[storagepb.DeleteObjectRequest],
 ) (*connect.Response[storagepb.DeleteObjectResponse], error) {
+	defer telemetry.TrackDiskOperation(ctx, "DeleteObject")(nil)
+
 	bucket := req.Msg.Bucket
 	key := req.Msg.Key
 

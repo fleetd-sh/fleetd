@@ -11,9 +11,10 @@ import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	metricspb "fleetd.sh/gen/metrics/v1"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	"fleetd.sh/internal/telemetry"
 )
 
 type MetricsService struct {
@@ -24,11 +25,9 @@ type MetricsService struct {
 }
 
 func NewMetricsService(client influxdb2.Client, org, bucket string) *MetricsService {
-	writeAPI := client.WriteAPIBlocking(org, bucket)
-	queryAPI := client.QueryAPI(org)
 	return &MetricsService{
-		writeAPI: writeAPI,
-		queryAPI: queryAPI,
+		writeAPI: client.WriteAPIBlocking(org, bucket),
+		queryAPI: client.QueryAPI(org),
 		org:      org,
 		bucket:   bucket,
 	}
@@ -38,60 +37,36 @@ func (s *MetricsService) SendMetrics(
 	ctx context.Context,
 	req *connect.Request[metricspb.SendMetricsRequest],
 ) (*connect.Response[metricspb.SendMetricsResponse], error) {
-	deviceID := req.Msg.DeviceId
-	metrics := req.Msg.Metrics
+	defer telemetry.TrackSQLOperation(ctx, "SendMetrics")(nil)
 
+	deviceID := req.Msg.DeviceId
 	if deviceID == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid device ID"))
 	}
 
-	if len(metrics) == 0 {
-		return connect.NewResponse(&metricspb.SendMetricsResponse{
-			Success: true,
-			Message: "No metrics to process",
-		}), nil
-	}
-
-	points := make([]*write.Point, 0, len(metrics))
-	for _, metric := range metrics {
-		if metric.Measurement == "" || metric.Timestamp == nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid metric data"))
-		}
-
-		fields := make(map[string]interface{}, len(metric.Fields))
-		for k, v := range metric.Fields {
+	points := make([]*write.Point, 0, len(req.Msg.Metrics))
+	for _, m := range req.Msg.Metrics {
+		fields := make(map[string]interface{})
+		for k, v := range m.Fields {
 			fields[k] = v
 		}
-		p := write.NewPoint(
-			metric.Measurement,
-			metric.Tags,
+
+		p := influxdb2.NewPoint(
+			m.Measurement,
+			m.Tags,
 			fields,
-			metric.Timestamp.AsTime(),
+			time.Now(),
 		)
 		points = append(points, p)
 	}
 
-	// Set a timeout for the write operation
-	writeCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	if err := s.writeAPI.WritePoint(writeCtx, points...); err != nil {
-		slog.With(
-			"error", err,
-			"count", len(points),
-		).Error("Failed to write points")
-
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to process metrics: %w", err))
+	err := s.writeAPI.WritePoint(ctx, points...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write metrics: %w", err)
 	}
-
-	slog.With(
-		"deviceID", deviceID,
-		"count", len(metrics),
-	).Info("Metrics stored successfully")
 
 	return connect.NewResponse(&metricspb.SendMetricsResponse{
 		Success: true,
-		Message: "Metrics stored successfully",
 	}), nil
 }
 
@@ -100,6 +75,7 @@ func (s *MetricsService) GetMetrics(
 	req *connect.Request[metricspb.GetMetricsRequest],
 	stream *connect.ServerStream[metricspb.GetMetricsResponse],
 ) error {
+
 	startTime, endTime := req.Msg.StartTime, req.Msg.EndTime
 	deviceID := req.Msg.DeviceId
 	measurement := req.Msg.Measurement
@@ -121,6 +97,8 @@ func (s *MetricsService) GetMetrics(
 	if deviceID != "" {
 		query += fmt.Sprintf(`|> filter(fn: (r) => r.device_id == "%s")`, deviceID)
 	}
+
+	defer telemetry.TrackInfluxOperation(ctx, "GetMetrics")(nil)
 
 	// Execute the query
 	result, err := s.queryAPI.Query(ctx, query)
