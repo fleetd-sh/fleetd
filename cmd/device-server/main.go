@@ -54,7 +54,7 @@ func main() {
 	}
 
 	// Run migrations
-	if err := migrations.MigrateUp(d); err != nil {
+	if _, _, err := migrations.MigrateUp(d); err != nil {
 		slog.With("error", err).Error("Failed to run migrations")
 		os.Exit(1)
 	}
