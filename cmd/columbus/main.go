@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -17,13 +18,13 @@ import (
 func main() {
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
-		log.Fatalln("Failed to initialize resolver:", err.Error())
+		slog.Error("Failed to initialize resolver", "error", err)
 	}
 
 	entries := make(chan *zeroconf.ServiceEntry)
 	go func(results <-chan *zeroconf.ServiceEntry) {
 		for entry := range results {
-			log.Println("Found device:", entry.HostName, "at", entry.AddrIPv4)
+			slog.With("host_name", entry.HostName, "ip", entry.AddrIPv4).Info("Found device")
 			configureDevice(entry)
 		}
 	}(entries)
@@ -32,7 +33,7 @@ func main() {
 	defer cancel()
 	err = resolver.Browse(ctx, "_fleet._tcp", "local.", entries)
 	if err != nil {
-		log.Fatalln("Failed to browse:", err.Error())
+		slog.Error("Failed to browse", "error", err)
 	}
 
 	<-ctx.Done()
