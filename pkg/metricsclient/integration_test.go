@@ -2,15 +2,18 @@ package metricsclient_test
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
-	metricspb "fleetd.sh/gen/metrics/v1"
+	metricsrpc "fleetd.sh/gen/metrics/v1/metricsv1connect"
 	"fleetd.sh/internal/config"
+	"fleetd.sh/internal/testutil"
+	"fleetd.sh/metrics"
 	"fleetd.sh/pkg/metricsclient"
 )
 
@@ -19,38 +22,61 @@ func TestMetricsClient_Integration(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	client := metricsclient.NewClient("http://localhost:50053")
-	ctx := context.Background()
+	// Start InfluxDB
+	influxContainer, err := testutil.StartInfluxDB(t)
+	require.NoError(t, err)
+	defer influxContainer.Close()
+
+	// Set up metrics service and server
+	metricsService := metrics.NewMetricsService(influxContainer.Client, influxContainer.Organization, influxContainer.Bucket)
+	metricsPath, metricsHandler := metricsrpc.NewMetricsServiceHandler(metricsService)
+
+	mux := http.NewServeMux()
+	mux.Handle(metricsPath, metricsHandler)
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	client := metricsclient.NewClient(server.URL)
 
 	t.Run("SendAndRetrieveMetrics", func(t *testing.T) {
-		deviceID := "test-device-001"
-		metric := &metricspb.Metric{
-			Measurement: "temperature",
-			Fields:      map[string]float64{"value": 25.5},
-			Timestamp:   timestamppb.Now(),
-		}
+		ctx := context.Background()
 
-		// Send metrics
-		success, err := client.SendMetrics(ctx, deviceID, []*metricspb.Metric{metric})
+		// Send metric
+		err := client.SendMetrics(ctx, []*metricsclient.Metric{
+			{
+				DeviceID:    "test-device-001",
+				Measurement: "temperature",
+				Fields:      map[string]float64{"value": 25.5},
+				Tags:        map[string]string{"device_id": "test-device-001", "type": "temperature"},
+				Timestamp:   time.Now(),
+			},
+		}, "s")
 		require.NoError(t, err)
-		assert.True(t, success)
 
 		// Wait for metrics to be processed
-		time.Sleep(time.Second)
+		time.Sleep(2 * time.Second)
 
-		// Retrieve metrics
-		from := timestamppb.New(time.Now().Add(-1 * time.Hour))
-		to := timestamppb.Now()
+		// Query with retry
+		var metrics []*metricsclient.Metric
+		require.Eventually(t, func() bool {
+			metricsCh, errCh := client.GetMetrics(
+				ctx,
+				&metricsclient.MetricQuery{
+					DeviceID:    "test-device-001",
+					Measurement: "temperature",
+					StartTime:   time.Now().Add(-1 * time.Hour),
+					EndTime:     time.Now(),
+				},
+			)
 
-		metricCh, errCh := client.GetMetrics(ctx, deviceID, "temperature", from, to)
+			for m := range metricsCh {
+				metrics = append(metrics, m)
+			}
+			err := <-errCh
+			return err == nil && len(metrics) > 0
+		}, 5*time.Second, 500*time.Millisecond, "Metrics not available after waiting")
 
-		var receivedMetrics []*metricspb.Metric
-		for m := range metricCh {
-			receivedMetrics = append(receivedMetrics, m)
-		}
-
-		require.NoError(t, <-errCh)
-		require.NotEmpty(t, receivedMetrics)
-		assert.Equal(t, metric.Measurement, receivedMetrics[0].Measurement)
+		assert.NotEmpty(t, metrics)
+		assert.Equal(t, 25.5, metrics[0].Fields["value"])
 	})
 }

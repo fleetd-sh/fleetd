@@ -2,39 +2,29 @@ package integration
 
 import (
 	"context"
-	"database/sql"
-	"encoding/json"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
-	"github.com/docker/go-connections/nat"
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	"golang.org/x/exp/rand"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
-	"io"
 
 	"fleetd.sh/auth"
 	"fleetd.sh/device"
 	authrpc "fleetd.sh/gen/auth/v1/authv1connect"
 	devicerpc "fleetd.sh/gen/device/v1/devicev1connect"
-	metricspb "fleetd.sh/gen/metrics/v1"
 	metricsrpc "fleetd.sh/gen/metrics/v1/metricsv1connect"
 	storagerpc "fleetd.sh/gen/storage/v1/storagev1connect"
-	updatepb "fleetd.sh/gen/update/v1"
 	updaterpc "fleetd.sh/gen/update/v1/updatev1connect"
 	"fleetd.sh/internal/migrations"
+	"fleetd.sh/internal/testutil"
 	"fleetd.sh/metrics"
 	"fleetd.sh/pkg/authclient"
 	"fleetd.sh/pkg/deviceclient"
@@ -100,11 +90,24 @@ func TestFleetdIntegration(t *testing.T) {
 		defer testDevice.Cleanup()
 	}
 
+	// Create test database
+	testDB := testutil.NewTestDB(t)
+	db := testDB.GetDB() // Get the underlying *sql.DB
+
+	// Run migrations
+	if _, _, err := migrations.MigrateUp(db); err != nil {
+		t.Fatalf("Failed to run migrations: %v", err)
+	}
+
 	// Register a test device
 	t.Run("DeviceRegistration", func(t *testing.T) {
 		ctx := context.Background()
 		client := deviceclient.NewClient(stack.DeviceServiceURL)
-		id, _, err := client.RegisterDevice(ctx, testDevice.Name, testDevice.DeviceType)
+		id, _, err := client.RegisterDevice(ctx, &deviceclient.NewDevice{
+			Name:    testDevice.Name,
+			Type:    testDevice.DeviceType,
+			Version: "v1.0.0",
+		})
 		assert.NoError(t, err)
 		testDevice.ID = id
 
@@ -112,7 +115,7 @@ func TestFleetdIntegration(t *testing.T) {
 		deviceCh, errorCh := client.ListDevices(ctx)
 		foundDevice := false
 		for device := range deviceCh {
-			if device.Id == testDevice.ID {
+			if device.ID == testDevice.ID {
 				foundDevice = true
 				assert.Equal(t, testDevice.Name, device.Name)
 				assert.Equal(t, testDevice.DeviceType, device.Type)
@@ -131,7 +134,8 @@ func TestFleetdIntegration(t *testing.T) {
 		client := metricsclient.NewClient(stack.MetricsServiceURL)
 
 		// Create metric with proper fields
-		metric := &metricspb.Metric{
+		metric := &metricsclient.Metric{
+			DeviceID:    testDevice.ID,
 			Measurement: "temperature",
 			Fields: map[string]float64{
 				"value": 25.5,
@@ -140,14 +144,13 @@ func TestFleetdIntegration(t *testing.T) {
 				"device_id": testDevice.ID,
 				"type":      "temperature",
 			},
-			Timestamp: timestamppb.Now(),
+			Timestamp: time.Now(),
 		}
 
 		// Send metrics with proper device ID
 		t.Log("Sending metric to InfluxDB")
-		success, err := client.SendMetrics(ctx, testDevice.ID, []*metricspb.Metric{metric})
+		err := client.SendMetrics(ctx, []*metricsclient.Metric{metric}, "s")
 		require.NoError(t, err)
-		assert.True(t, success)
 
 		// Wait for metrics to be processed
 		t.Log("Waiting for metrics to be processed")
@@ -157,10 +160,12 @@ func TestFleetdIntegration(t *testing.T) {
 		t.Log("Querying metrics")
 		metricsCh, errCh := client.GetMetrics(
 			ctx,
-			testDevice.ID,
-			"temperature",
-			timestamppb.New(time.Now().Add(-1*time.Hour)),
-			timestamppb.Now(),
+			&metricsclient.MetricQuery{
+				DeviceID:    testDevice.ID,
+				Measurement: "temperature",
+				StartTime:   time.Now().Add(-1 * time.Hour),
+				EndTime:     time.Now(),
+			},
 		)
 
 		// Add timeout for reading metrics
@@ -187,17 +192,37 @@ func TestFleetdIntegration(t *testing.T) {
 	t.Run("UpdateManagement", func(t *testing.T) {
 		ctx := context.Background()
 		client := updateclient.NewClient(stack.UpdateServiceURL)
-		// Create update package with matching device type
-		updateReq := &updatepb.CreateUpdatePackageRequest{
-			Version:     "1.0.1",
-			ReleaseDate: timestamppb.Now(),
+
+		// Create temp file for update package
+		f, err := os.CreateTemp("", "update-*.zip")
+		require.NoError(t, err)
+		defer os.Remove(f.Name())
+
+		// Write some content
+		content := []byte("test update content")
+		_, err = f.Write(content)
+		require.NoError(t, err)
+		f.Close()
+
+		// Calculate SHA256 checksum properly
+		hasher := sha256.New()
+		_, err = hasher.Write(content)
+		require.NoError(t, err)
+		checksum := "sha256:" + hex.EncodeToString(hasher.Sum(nil))
+
+		// Create update package with matching device type and checksum
+		req := &updateclient.Package{
+			Version:     "v1.0.1",
 			ChangeLog:   "Test update",
-			DeviceTypes: []string{testDevice.DeviceType}, // Match the device type used in registration
+			DeviceTypes: []string{testDevice.DeviceType},
+			FileURL:     f.Name(),
+			FileSize:    int64(len(content)),
+			Checksum:    checksum,
 		}
 
-		success, err := client.CreateUpdatePackage(ctx, updateReq)
+		pkgID, err := client.CreatePackage(ctx, req)
 		require.NoError(t, err)
-		assert.True(t, success)
+		assert.NotEmpty(t, pkgID)
 
 		// Wait for update to be processed
 		time.Sleep(2 * time.Second)
@@ -206,11 +231,19 @@ func TestFleetdIntegration(t *testing.T) {
 		updates, err := client.GetAvailableUpdates(
 			ctx,
 			"TEST_DEVICE",
-			timestamppb.New(time.Now().Add(-24*time.Hour)),
+			time.Now().Add(-24*time.Hour),
 		)
 		require.NoError(t, err)
 		require.NotEmpty(t, updates)
-		assert.Equal(t, "1.0.1", updates[0].Version)
+		assert.Equal(t, "v1.0.1", updates[0].Version)
+
+		// Delete update package
+		err = client.DeletePackage(ctx, pkgID)
+		require.NoError(t, err)
+
+		// Verify update package is deleted
+		_, err = client.GetPackage(ctx, pkgID)
+		require.Error(t, err)
 	})
 }
 
@@ -223,64 +256,43 @@ func setupStack(t *testing.T) (*Stack, error) {
 		return nil, fmt.Errorf("failed to create temp dir: %w", err)
 	}
 
-	// Set up Docker client for container management
-	t.Log("Setting up Docker client")
-	dockerClient, err := client.NewClientWithOpts(client.FromEnv)
+	// Start InfluxDB using shared helper
+	influxContainer, err := testutil.StartInfluxDB(t)
 	if err != nil {
 		os.RemoveAll(tempDir)
-		return nil, fmt.Errorf("failed to create Docker client: %w", err)
-	}
-	defer dockerClient.Close()
-
-	// Start InfluxDB container
-	t.Log("Starting InfluxDB container")
-	containerResp, influxdbURL, token, err := startInfluxDBContainer(t, dockerClient)
-	if err != nil {
-		os.RemoveAll(tempDir)
-		return nil, fmt.Errorf("failed to start InfluxDB container: %w", err)
+		return nil, fmt.Errorf("failed to start InfluxDB: %w", err)
 	}
 
 	t.Log("Setting up InfluxDB client",
-		"url", influxdbURL,
-		"token", token[:8]+"...",
-		"org", InfluxDBOrg,
-		"bucket", InfluxDBBucket,
+		"url", influxContainer.URL,
+		"token", influxContainer.Token[:8]+"...",
+		"org", influxContainer.Organization,
+		"bucket", influxContainer.Bucket,
 	)
 
-	// Set up InfluxDB client with the all-access token
-	influxClient := influxdb2.NewClient(influxdbURL, token)
-	metricsService := metrics.NewMetricsService(influxClient, InfluxDBOrg, InfluxDBBucket)
-
-	// Test the connection
-	health, err := influxClient.Health(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("failed to check InfluxDB health: %w", err)
-	}
-	t.Log("InfluxDB health check", "status", health.Status)
+	// Create metrics service with the InfluxDB client
+	metricsService := metrics.NewMetricsService(influxContainer.Client, influxContainer.Organization, influxContainer.Bucket)
 
 	// Set up SQLite database
-	dbpath := "file://" + tempDir + "/fleetd.db"
-	d, err := sql.Open("libsql", dbpath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create database: %w", err)
-	}
+	db := testutil.NewTestDB(t)
 
-	if err := migrations.MigrateUp(d); err != nil {
+	version, dirty, err := migrations.MigrateUp(db.DB)
+	if err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
-	t.Log("Database URL", "url", dbpath)
+	require.Greater(t, version, -1)
+	require.False(t, dirty)
 
 	// Start the auth service server first
-	// TODO: decouple clients from auth service server
-	authService := auth.NewAuthService(d)
+	authService := auth.NewAuthService(db.DB)
 	authPath, authHandler := authrpc.NewAuthServiceHandler(authService)
 	authMux := http.NewServeMux()
 	authMux.Handle(authPath, authHandler)
 	authServer := httptest.NewServer(authMux)
 
 	authClient := authclient.NewClient(authServer.URL)
-	deviceService := device.NewDeviceService(d, authClient)
-	updateService := update.NewUpdateService(d)
+	deviceService := device.NewDeviceService(db.DB, authClient)
+	updateService := update.NewUpdateService(db.DB)
 	storageService := storage.NewStorageService(fmt.Sprintf("%s/storage", tempDir))
 
 	// Create ConnectRPC handlers for each service
@@ -289,7 +301,7 @@ func setupStack(t *testing.T) (*Stack, error) {
 	updatePath, updateHandler := updaterpc.NewUpdateServiceHandler(updateService)
 	storagePath, storageHandler := storagerpc.NewStorageServiceHandler(storageService)
 
-	// Start remainingHTTP test servers with ConnectRPC handlers
+	// Start remaining HTTP test servers with ConnectRPC handlers
 	deviceMux := http.NewServeMux()
 	deviceMux.Handle(devicePath, deviceHandler)
 	deviceServer := httptest.NewServer(deviceMux)
@@ -313,14 +325,7 @@ func setupStack(t *testing.T) (*Stack, error) {
 		metricsServer.Close()
 		updateServer.Close()
 		storageServer.Close()
-		influxClient.Close()
-		ctx := context.Background()
-		if err := dockerClient.ContainerStop(ctx, containerResp.ID, container.StopOptions{}); err != nil {
-			t.Error("Failed to stop container", "error", err)
-		}
-		if err := dockerClient.ContainerRemove(ctx, containerResp.ID, container.RemoveOptions{}); err != nil {
-			t.Error("Failed to remove container", "error", err)
-		}
+		influxContainer.Close()
 	}
 
 	t.Log("AuthServiceURL", "url", authServer.URL)
@@ -349,7 +354,7 @@ func setupTestDevice() (*TestDevice, error) {
 	// For this example, we'll simulate a device
 	return &TestDevice{
 		Name:       "test-device-001",
-		Version:    "1.0.0",
+		Version:    "v1.0.0",
 		DeviceType: "TEST_DEVICE",
 		Cleanup: func() {
 			// Clean up resources if needed
@@ -358,207 +363,24 @@ func setupTestDevice() (*TestDevice, error) {
 }
 
 func (d *TestDevice) SendMetrics(url string) error {
-	client := metricsclient.NewClient(url, metricsclient.WithLogger(slog.Default()))
+	client := metricsclient.NewClient(url)
 
-	_, err := client.SendMetrics(context.Background(), d.ID, []*metricspb.Metric{
+	err := client.SendMetrics(context.Background(), []*metricsclient.Metric{
 		{
+			DeviceID:    d.ID,
 			Measurement: "temperature",
 			Fields: map[string]float64{
 				"value": float64(rand.Intn(100)),
 			},
 		},
-	})
+	}, "s")
 
 	return err
 }
 
 func (d *TestDevice) CheckForUpdates(url string) error {
 	client := updateclient.NewClient(url)
-	lastUpdateDate := timestamppb.New(time.Now().Add(-1 * time.Hour))
+	lastUpdateDate := time.Now().Add(-1 * time.Hour)
 	_, err := client.GetAvailableUpdates(context.Background(), d.DeviceType, lastUpdateDate)
 	return err
-}
-
-func startInfluxDBContainer(t *testing.T, dockerClient *client.Client) (container.CreateResponse, string, string, error) {
-	t.Log("Starting container setup")
-	ctx := context.Background()
-
-	// Pull image with timeout
-	t.Log("Pulling InfluxDB image")
-	pullCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-	_, err := dockerClient.ImagePull(pullCtx, "influxdb:2.7.10", image.PullOptions{})
-	if err != nil {
-		t.Log("Image pull failed:", err)
-		return container.CreateResponse{}, "", "", fmt.Errorf("failed to pull InfluxDB image: %w", err)
-	}
-	t.Log("Image pull completed")
-
-	// Create container with timeout
-	t.Log("Creating container")
-	createCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-	resp, err := dockerClient.ContainerCreate(createCtx, &container.Config{
-		Image: "influxdb:2.7.10",
-		ExposedPorts: nat.PortSet{
-			"8086/tcp": struct{}{},
-		},
-		Env: []string{
-			"DOCKER_INFLUXDB_INIT_MODE=setup",
-			"DOCKER_INFLUXDB_INIT_USERNAME=" + InfluxDBUsername,
-			"DOCKER_INFLUXDB_INIT_PASSWORD=" + InfluxDBPassword,
-			"DOCKER_INFLUXDB_INIT_ORG=" + InfluxDBOrg,
-			"DOCKER_INFLUXDB_INIT_BUCKET=" + InfluxDBBucket,
-			"DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=" + InfluxDBAdminToken,
-		},
-	}, &container.HostConfig{
-		PortBindings: nat.PortMap{
-			"8086/tcp": []nat.PortBinding{{HostIP: "127.0.0.1", HostPort: "0"}},
-		},
-	}, nil, nil, "")
-	if err != nil {
-		t.Log("Container creation failed:", err)
-		return container.CreateResponse{}, "", "", err
-	}
-	t.Log("Container created:", resp.ID)
-
-	// Start container with timeout
-	t.Log("Starting container")
-	startCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-	if err := dockerClient.ContainerStart(startCtx, resp.ID, container.StartOptions{}); err != nil {
-		t.Log("Container start failed:", err)
-		return container.CreateResponse{}, "", "", err
-	}
-	t.Log("Container started")
-
-	// Get container info with timeout
-	t.Log("Inspecting container")
-	inspectCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-	containerJSON, err := dockerClient.ContainerInspect(inspectCtx, resp.ID)
-	if err != nil {
-		t.Log("Container inspect failed:", err)
-		return container.CreateResponse{}, "", "", err
-	}
-	t.Log("Container inspection complete")
-
-	portBindings := containerJSON.NetworkSettings.Ports["8086/tcp"]
-	if len(portBindings) == 0 {
-		return container.CreateResponse{}, "", "", fmt.Errorf("no port bindings found for container")
-	}
-
-	influxdbURL := fmt.Sprintf("http://127.0.0.1:%s", portBindings[0].HostPort)
-
-	// Wait for InfluxDB to be ready
-	t.Log("Waiting for InfluxDB to be ready...")
-	httpClient := &http.Client{Timeout: 2 * time.Second}
-	ready := false
-	for i := 0; i < 30; i++ {
-		req, err := http.NewRequest("GET", influxdbURL+"/health", nil)
-		if err != nil {
-			t.Log("Health check request creation failed", "error", err)
-			time.Sleep(1 * time.Second)
-			continue
-		}
-
-		resp, err := httpClient.Do(req)
-		if err != nil {
-			t.Log("Health check failed", "attempt", i+1, "error", err)
-			time.Sleep(1 * time.Second)
-			continue
-		}
-		resp.Body.Close()
-
-		if resp.StatusCode == http.StatusOK {
-			ready = true
-			t.Log("InfluxDB is ready")
-			break
-		}
-		time.Sleep(1 * time.Second)
-	}
-
-	if !ready {
-		return container.CreateResponse{}, "", "", fmt.Errorf("timeout waiting for InfluxDB to be ready")
-	}
-
-	// Wait a bit more after health check passes
-	time.Sleep(2 * time.Second)
-
-	// Create an all-access token using the influx CLI inside the container
-	execConfig := container.ExecOptions{
-		Cmd: []string{
-			"influx", "auth", "create",
-			"--all-access",
-			"-o", InfluxDBOrg,
-			"--json",
-		},
-		AttachStdout: true,
-		AttachStderr: true,
-	}
-
-	t.Log("Creating exec", execConfig.Cmd)
-
-	// Add timeout for exec create
-	execCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	execIDResp, err := dockerClient.ContainerExecCreate(execCtx, resp.ID, execConfig)
-	if err != nil {
-		return container.CreateResponse{}, "", "", fmt.Errorf("failed to create exec: %w", err)
-	}
-
-	t.Log("Starting exec", execIDResp.ID)
-
-	// Run the exec and capture output with timeout
-	execStartCheck := container.ExecStartOptions{}
-	execAttachResp, err := dockerClient.ContainerExecAttach(execCtx, execIDResp.ID, execStartCheck)
-	if err != nil {
-		return container.CreateResponse{}, "", "", fmt.Errorf("failed to attach to exec: %w", err)
-	}
-	defer execAttachResp.Close()
-
-	// Add timeout for reading output
-	outputCh := make(chan []byte)
-	errCh := make(chan error)
-	go func() {
-		output, err := io.ReadAll(execAttachResp.Reader)
-		if err != nil {
-			errCh <- err
-			return
-		}
-		outputCh <- output
-	}()
-
-	// Wait for output with timeout
-	select {
-	case output := <-outputCh:
-		t.Log("Got output length:", len(output))
-		if len(output) > 0 {
-			t.Log("First few bytes:", output[:min(len(output), 20)])
-		}
-		// Skip the first 8 bytes (Docker stream header) and take the rest as JSON
-		cleanOutput := output[8:]
-
-		var tokenResp struct {
-			Token string `json:"token"`
-		}
-		if err := json.Unmarshal(cleanOutput, &tokenResp); err != nil {
-			t.Log("Failed to parse JSON:", err)
-			t.Log("Clean output:", string(cleanOutput))
-			return container.CreateResponse{}, "", "", fmt.Errorf("failed to parse token response: %w", err)
-		}
-		return resp, influxdbURL, tokenResp.Token, nil
-
-	case err := <-errCh:
-		return container.CreateResponse{}, "", "", fmt.Errorf("failed to read exec output: %w", err)
-
-	case <-time.After(10 * time.Second):
-		return container.CreateResponse{}, "", "", fmt.Errorf("timeout waiting for exec output")
-	}
-}
-
-func stopInfluxDBContainer(dockerClient *client.Client, res container.CreateResponse) error {
-	ctx := context.Background()
-	return dockerClient.ContainerStop(ctx, res.ID, container.StopOptions{Timeout: nil}) // 10 seconds timeout
 }

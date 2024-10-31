@@ -14,7 +14,11 @@ func ExampleClient_RegisterDevice() {
 	client := deviceclient.NewClient("http://localhost:50051", deviceclient.WithLogger(logger))
 
 	ctx := context.Background()
-	deviceID, apiKey, err := client.RegisterDevice(ctx, "Example Device", "SENSOR")
+	deviceID, apiKey, err := client.RegisterDevice(ctx, &deviceclient.NewDevice{
+		Name:    "Example Device",
+		Type:    "SENSOR",
+		Version: "v1.0.0",
+	})
 	if err != nil {
 		fmt.Printf("Error registering device: %v\n", err)
 		return
@@ -36,7 +40,7 @@ func ExampleClient_ListDevices() {
 			if !ok {
 				return
 			}
-			fmt.Printf("Device: ID=%s, Name=%s, Type=%s, Status=%s\n", device.Id, device.Name, device.Type, device.Status)
+			fmt.Printf("Device: ID=%s, Name=%s, Type=%s, Status=%s\n", device.ID, device.Name, device.Type, device.Status)
 		case err := <-errCh:
 			if err != nil {
 				fmt.Printf("Error listing devices: %v\n", err)

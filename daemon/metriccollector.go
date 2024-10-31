@@ -3,31 +3,24 @@ package daemon
 import (
 	"context"
 	"log/slog"
-	"net/http"
 	"time"
 
-	"connectrpc.com/connect"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/mem"
 	"github.com/shirou/gopsutil/v4/net"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
-	metricspb "fleetd.sh/gen/metrics/v1"
-	metricsrpc "fleetd.sh/gen/metrics/v1/metricsv1connect"
+	"fleetd.sh/pkg/metricsclient"
 )
 
 type MetricCollector struct {
 	config *Config
-	client metricsrpc.MetricsServiceClient
+	client *metricsclient.Client
 	stopCh chan struct{}
 }
 
 func NewMetricCollector(cfg *Config) (*MetricCollector, error) {
-	client := metricsrpc.NewMetricsServiceClient(
-		http.DefaultClient,
-		cfg.MetricsServerURL,
-	)
+	client := metricsclient.NewClient(cfg.MetricsServerURL)
 
 	return &MetricCollector{
 		config: cfg,
@@ -65,10 +58,9 @@ func (mc *MetricCollector) collectAndSendMetrics() {
 	diskStat, _ := disk.Usage("/")
 	netStat, _ := net.IOCounters(false)
 
-	now := timestamppb.Now()
-
-	metrics := []*metricspb.Metric{
+	metrics := []*metricsclient.Metric{
 		{
+			DeviceID:    mc.config.DeviceID,
 			Measurement: "system_metrics",
 			Tags: map[string]string{
 				"device_id": mc.config.DeviceID,
@@ -80,23 +72,13 @@ func (mc *MetricCollector) collectAndSendMetrics() {
 				"network_bytes_sent": float64(netStat[0].BytesSent),
 				"network_bytes_recv": float64(netStat[0].BytesRecv),
 			},
-			Timestamp: now,
+			Timestamp: time.Now(),
 		},
 	}
 
-	req := connect.NewRequest(&metricspb.SendMetricsRequest{
-		DeviceId:  mc.config.DeviceID,
-		Metrics:   metrics,
-		Precision: "s", // Assuming second precision
-	})
-
-	resp, err := mc.client.SendMetrics(context.Background(), req)
+	err := mc.client.SendMetrics(context.Background(), metrics, "s")
 	if err != nil {
 		slog.With("error", err, "device_id", mc.config.DeviceID).Error("Error sending metrics")
 		return
-	}
-
-	if !resp.Msg.Success {
-		slog.With("message", resp.Msg.Message, "device_id", mc.config.DeviceID).Warn("Metrics not accepted by server")
 	}
 }

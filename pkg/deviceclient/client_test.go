@@ -79,7 +79,11 @@ func TestDeviceClient_Unit(t *testing.T) {
 				}
 			},
 			testFunc: func(t *testing.T, client *deviceclient.Client) {
-				deviceID, apiKey, err := client.RegisterDevice(context.Background(), "Test Device", "SENSOR")
+				deviceID, apiKey, err := client.RegisterDevice(context.Background(), &deviceclient.NewDevice{
+					Name:    "Test Device",
+					Type:    "SENSOR",
+					Version: "v1.0.0",
+				})
 				require.NoError(t, err)
 				assert.Equal(t, "device-123", deviceID)
 				assert.Equal(t, "api-key-123", apiKey)
@@ -132,7 +136,7 @@ func TestDeviceClient_Unit(t *testing.T) {
 			testFunc: func(t *testing.T, client *deviceclient.Client) {
 				deviceCh, errCh := client.ListDevices(context.Background())
 
-				var devices []*devicepb.Device
+				var devices []*deviceclient.Device
 				for device := range deviceCh {
 					devices = append(devices, device)
 				}
@@ -140,8 +144,8 @@ func TestDeviceClient_Unit(t *testing.T) {
 				err := <-errCh
 				require.NoError(t, err)
 				assert.Len(t, devices, 2)
-				assert.Equal(t, "device-1", devices[0].Id)
-				assert.Equal(t, "device-2", devices[1].Id)
+				assert.Equal(t, "device-1", devices[0].ID)
+				assert.Equal(t, "device-2", devices[1].ID)
 			},
 		},
 	}

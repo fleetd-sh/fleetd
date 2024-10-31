@@ -16,31 +16,22 @@ type Client struct {
 	logger *slog.Logger
 }
 
-type ClientOption func(*Client)
-
-func WithLogger(logger *slog.Logger) ClientOption {
-	return func(c *Client) {
-		c.logger = logger
-	}
+type AuthResult struct {
+	Authenticated bool
+	DeviceID      string
 }
 
-func NewClient(baseURL string, opts ...ClientOption) *Client {
-	c := &Client{
+func NewClient(baseURL string) *Client {
+	return &Client{
 		client: authrpc.NewAuthServiceClient(
 			http.DefaultClient,
 			baseURL,
 		),
 		logger: slog.Default(),
 	}
-
-	for _, opt := range opts {
-		opt(c)
-	}
-
-	return c
 }
 
-func (c *Client) Authenticate(ctx context.Context, apiKey string) (bool, string, error) {
+func (c *Client) Authenticate(ctx context.Context, apiKey string) (*AuthResult, error) {
 	c.logger.With("apiKey", apiKey).Info("Authenticating")
 	req := connect.NewRequest(&authpb.AuthenticateRequest{
 		ApiKey: apiKey,
@@ -48,10 +39,13 @@ func (c *Client) Authenticate(ctx context.Context, apiKey string) (bool, string,
 
 	resp, err := c.client.Authenticate(ctx, req)
 	if err != nil {
-		return false, "", err
+		return nil, err
 	}
 
-	return resp.Msg.Authenticated, resp.Msg.DeviceId, nil
+	return &AuthResult{
+		Authenticated: resp.Msg.Authenticated,
+		DeviceID:      resp.Msg.DeviceId,
+	}, nil
 }
 
 func (c *Client) GenerateAPIKey(ctx context.Context, deviceID string) (string, error) {

@@ -2,6 +2,7 @@ package updateclient_test
 
 import (
 	"context"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
@@ -9,7 +10,6 @@ import (
 	"connectrpc.com/connect"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	updatepb "fleetd.sh/gen/update/v1"
 	updaterpc "fleetd.sh/gen/update/v1/updatev1connect"
@@ -18,79 +18,79 @@ import (
 
 type mockUpdateService struct {
 	updaterpc.UnimplementedUpdateServiceHandler
-	createUpdatePackageFunc func(context.Context, *updatepb.CreateUpdatePackageRequest) (*updatepb.CreateUpdatePackageResponse, error)
 	getAvailableUpdatesFunc func(context.Context, *updatepb.GetAvailableUpdatesRequest) (*updatepb.GetAvailableUpdatesResponse, error)
-}
-
-func (m *mockUpdateService) CreateUpdatePackage(ctx context.Context, req *connect.Request[updatepb.CreateUpdatePackageRequest]) (*connect.Response[updatepb.CreateUpdatePackageResponse], error) {
-	if m.createUpdatePackageFunc != nil {
-		resp, err := m.createUpdatePackageFunc(ctx, req.Msg)
-		return connect.NewResponse(resp), err
-	}
-	return connect.NewResponse(&updatepb.CreateUpdatePackageResponse{Success: true}), nil
+	getPackageFunc          func(context.Context, *updatepb.GetPackageRequest) (*updatepb.GetPackageResponse, error)
 }
 
 func (m *mockUpdateService) GetAvailableUpdates(ctx context.Context, req *connect.Request[updatepb.GetAvailableUpdatesRequest]) (*connect.Response[updatepb.GetAvailableUpdatesResponse], error) {
 	if m.getAvailableUpdatesFunc != nil {
 		resp, err := m.getAvailableUpdatesFunc(ctx, req.Msg)
-		return connect.NewResponse(resp), err
+		if err != nil {
+			return nil, err
+		}
+		return connect.NewResponse(resp), nil
 	}
 	return connect.NewResponse(&updatepb.GetAvailableUpdatesResponse{}), nil
 }
 
+func (m *mockUpdateService) GetPackage(ctx context.Context, req *connect.Request[updatepb.GetPackageRequest]) (*connect.Response[updatepb.GetPackageResponse], error) {
+	if m.getPackageFunc != nil {
+		resp, err := m.getPackageFunc(ctx, req.Msg)
+		if err != nil {
+			return nil, err
+		}
+		return connect.NewResponse(resp), nil
+	}
+	return connect.NewResponse(&updatepb.GetPackageResponse{}), nil
+}
+
 func TestUpdateClient_Unit(t *testing.T) {
 	testCases := []struct {
-		name          string
-		setupMock     func(*mockUpdateService)
-		testFunc      func(*testing.T, *updateclient.Client)
-		expectedError string
+		name      string
+		setupMock func(*mockUpdateService)
+		testFunc  func(*testing.T, *updateclient.Client)
 	}{
 		{
-			name: "CreateUpdatePackage success",
+			name: "GetAvailableUpdates_success",
 			setupMock: func(m *mockUpdateService) {
-				m.createUpdatePackageFunc = func(_ context.Context, req *updatepb.CreateUpdatePackageRequest) (*updatepb.CreateUpdatePackageResponse, error) {
-					return &updatepb.CreateUpdatePackageResponse{
-						Success: true,
-						Message: "Update package created successfully",
+				m.getAvailableUpdatesFunc = func(_ context.Context, req *updatepb.GetAvailableUpdatesRequest) (*updatepb.GetAvailableUpdatesResponse, error) {
+					pkg := &updatepb.Package{
+						Id:          "pkg-123",
+						Version:     "v1.0.1",
+						DeviceTypes: []string{"SENSOR"},
+					}
+					return &updatepb.GetAvailableUpdatesResponse{
+						Packages: []*updatepb.Package{pkg},
 					}, nil
 				}
 			},
 			testFunc: func(t *testing.T, client *updateclient.Client) {
-				req := &updatepb.CreateUpdatePackageRequest{
-					Version:     "1.0.1",
-					DeviceTypes: []string{"SENSOR"},
-					ChangeLog:   "Test update",
-				}
-				success, err := client.CreateUpdatePackage(context.Background(), req)
+				updates, err := client.GetAvailableUpdates(context.Background(), "SENSOR", time.Now().Add(-24*time.Hour))
 				require.NoError(t, err)
-				assert.True(t, success)
+				require.Len(t, updates, 1)
+				assert.Equal(t, "pkg-123", updates[0].ID)
 			},
 		},
 		{
-			name: "GetAvailableUpdates success",
+			name: "GetPackage_success",
 			setupMock: func(m *mockUpdateService) {
-				m.getAvailableUpdatesFunc = func(_ context.Context, req *updatepb.GetAvailableUpdatesRequest) (*updatepb.GetAvailableUpdatesResponse, error) {
-					return &updatepb.GetAvailableUpdatesResponse{
-						Updates: []*updatepb.UpdatePackage{
-							{
-								Version:     "1.0.1",
-								ReleaseDate: timestamppb.Now(),
-								DeviceTypes: []string{"SENSOR"},
-								ChangeLog:   "Test update",
-							},
-						},
+				m.getPackageFunc = func(_ context.Context, req *updatepb.GetPackageRequest) (*updatepb.GetPackageResponse, error) {
+					pkg := &updatepb.Package{
+						Id:          "pkg-123",
+						Version:     "v1.0.1",
+						DeviceTypes: []string{"SENSOR"},
+					}
+					return &updatepb.GetPackageResponse{
+						Package: pkg,
 					}, nil
 				}
 			},
 			testFunc: func(t *testing.T, client *updateclient.Client) {
-				updates, err := client.GetAvailableUpdates(
-					context.Background(),
-					"SENSOR",
-					timestamppb.New(time.Now().Add(-24*time.Hour)),
-				)
+				pkg, err := client.GetPackage(context.Background(), "pkg-123")
 				require.NoError(t, err)
-				require.Len(t, updates, 1)
-				assert.Equal(t, "1.0.1", updates[0].Version)
+				require.NotNil(t, pkg)
+				t.Logf("pkg: %+v", pkg)
+				assert.Equal(t, "pkg-123", pkg.ID)
 			},
 		},
 	}
@@ -102,8 +102,10 @@ func TestUpdateClient_Unit(t *testing.T) {
 				tc.setupMock(mockService)
 			}
 
-			_, handler := updaterpc.NewUpdateServiceHandler(mockService)
-			server := httptest.NewServer(handler)
+			path, handler := updaterpc.NewUpdateServiceHandler(mockService)
+			mux := http.NewServeMux()
+			mux.Handle(path, handler)
+			server := httptest.NewServer(mux)
 			defer server.Close()
 
 			client := updateclient.NewClient(server.URL)

@@ -39,11 +39,6 @@ func (s *MetricsService) SendMetrics(
 ) (*connect.Response[metricspb.SendMetricsResponse], error) {
 	defer telemetry.TrackSQLOperation(ctx, "SendMetrics")(nil)
 
-	deviceID := req.Msg.DeviceId
-	if deviceID == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid device ID"))
-	}
-
 	points := make([]*write.Point, 0, len(req.Msg.Metrics))
 	for _, m := range req.Msg.Metrics {
 		fields := make(map[string]interface{})

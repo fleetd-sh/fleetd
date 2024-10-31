@@ -12,6 +12,22 @@ import (
 	devicerpc "fleetd.sh/gen/device/v1/devicev1connect"
 )
 
+type Device struct {
+	ID       string
+	APIKey   string
+	Name     string
+	Type     string
+	Status   string
+	LastSeen time.Time
+	Version  string
+}
+
+type NewDevice struct {
+	Name    string
+	Type    string
+	Version string
+}
+
 // Client represents a client for the Device Management API.
 type Client struct {
 	client devicerpc.DeviceServiceClient
@@ -50,11 +66,13 @@ func NewClient(baseURL string, opts ...ClientOption) *Client {
 // RegisterDevice registers a new device with the given name and type.
 //
 // It returns the device ID and API key on success, or an error if the registration fails.
-func (c *Client) RegisterDevice(ctx context.Context, name, deviceType string) (string, string, error) {
-	c.logger.With("name", name, "deviceType", deviceType).Info("Registering device")
+func (c *Client) RegisterDevice(ctx context.Context, device *NewDevice) (deviceID string, apiKey string, err error) {
+	c.logger.With("device", device).Info("Registering device")
+
 	req := connect.NewRequest(&devicepb.RegisterDeviceRequest{
-		Name: name,
-		Type: deviceType,
+		Name:    device.Name,
+		Type:    device.Type,
+		Version: device.Version,
 	})
 
 	resp, err := c.client.RegisterDevice(ctx, req)
@@ -79,7 +97,18 @@ func (c *Client) UnregisterDevice(ctx context.Context, deviceID string) (bool, e
 	return resp.Msg.Success, nil
 }
 
-func (c *Client) GetDevice(ctx context.Context, deviceID string) (*devicepb.Device, error) {
+func protoToDevice(d *devicepb.Device) *Device {
+	return &Device{
+		ID:       d.Id,
+		Name:     d.Name,
+		Type:     d.Type,
+		Status:   d.Status,
+		LastSeen: d.LastSeen.AsTime(),
+		Version:  d.Version,
+	}
+}
+
+func (c *Client) GetDevice(ctx context.Context, deviceID string) (*Device, error) {
 	c.logger.With("deviceID", deviceID).Info("Getting device")
 	req := connect.NewRequest(&devicepb.GetDeviceRequest{
 		DeviceId: deviceID,
@@ -90,10 +119,10 @@ func (c *Client) GetDevice(ctx context.Context, deviceID string) (*devicepb.Devi
 		return nil, err
 	}
 
-	return resp.Msg.Device, nil
+	return protoToDevice(resp.Msg.Device), nil
 }
 
-func (c *Client) ListDevices(ctx context.Context) (<-chan *devicepb.Device, <-chan error) {
+func (c *Client) ListDevices(ctx context.Context) (<-chan *Device, <-chan error) {
 	c.logger.Info("Listing devices")
 	req := connect.NewRequest(&devicepb.ListDevicesRequest{})
 
@@ -104,7 +133,7 @@ func (c *Client) ListDevices(ctx context.Context) (<-chan *devicepb.Device, <-ch
 		return nil, errCh
 	}
 
-	deviceCh := make(chan *devicepb.Device)
+	deviceCh := make(chan *Device)
 	errCh := make(chan error, 1)
 
 	go func() {
@@ -112,7 +141,7 @@ func (c *Client) ListDevices(ctx context.Context) (<-chan *devicepb.Device, <-ch
 		defer close(errCh)
 
 		for stream.Receive() {
-			deviceCh <- stream.Msg().Device
+			deviceCh <- protoToDevice(stream.Msg().Device)
 		}
 
 		if err := stream.Err(); err != nil {
