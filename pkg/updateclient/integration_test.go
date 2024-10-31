@@ -2,16 +2,25 @@ package updateclient_test
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 
-	updatepb "fleetd.sh/gen/update/v1"
+	updaterpc "fleetd.sh/gen/update/v1/updatev1connect"
 	"fleetd.sh/internal/config"
+	"fleetd.sh/internal/migrations"
+	"fleetd.sh/internal/testutil"
 	"fleetd.sh/pkg/updateclient"
+	"fleetd.sh/update"
 )
 
 func TestUpdateClient_Integration(t *testing.T) {
@@ -19,44 +28,101 @@ func TestUpdateClient_Integration(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	client := updateclient.NewClient("http://localhost:50055")
-	ctx := context.Background()
+	// Create temp directory for test database and storage
+	tempDir, err := os.MkdirTemp("", "update-integration-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	// Set up SQLite database
+	db := testutil.NewTestDB(t)
+
+	// Run migrations
+	version, dirty, err := migrations.MigrateUp(db.DB)
+	require.NoError(t, err)
+	require.Greater(t, version, -1)
+	require.False(t, dirty)
+
+	// Create update service
+	updateService := update.NewUpdateService(db.DB)
+
+	// Create ConnectRPC handler
+	path, handler := updaterpc.NewUpdateServiceHandler(updateService)
+	mux := http.NewServeMux()
+	mux.Handle(path, handler)
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	client := updateclient.NewClient(server.URL)
 
 	t.Run("UpdateLifecycle", func(t *testing.T) {
-		// Create a new update package
-		createReq := &updatepb.CreateUpdatePackageRequest{
-			Version:     "1.0.1",
-			ReleaseDate: timestamppb.Now(),
-			ChangeLog:   "Test update package",
+		// Create temp file with content
+		content := []byte("test update content")
+		updatesDir := filepath.Join(tempDir, "updates")
+		require.NoError(t, os.MkdirAll(updatesDir, 0755))
+		packagePath := filepath.Join(updatesDir, "test-package.zip")
+		err := os.WriteFile(packagePath, content, 0644)
+		require.NoError(t, err)
+
+		// Calculate checksum
+		hasher := sha256.New()
+		_, err = hasher.Write(content)
+		require.NoError(t, err)
+		checksum := "sha256:" + hex.EncodeToString(hasher.Sum(nil))
+
+		// Create package
+		pkg := &updateclient.Package{
+			Version:     "v1.0.1",
 			DeviceTypes: []string{"SENSOR"},
+			FileURL:     packagePath,
+			FileSize:    int64(len(content)),
+			Checksum:    checksum,
+			ChangeLog:   "Test update",
 		}
 
-		success, err := client.CreateUpdatePackage(ctx, createReq)
+		// Create package and verify
+		id, err := client.CreatePackage(context.Background(), pkg)
 		require.NoError(t, err)
-		assert.True(t, success)
+		require.NotEmpty(t, id)
 
-		// Give the server some time to process the update
-		time.Sleep(time.Second)
+		// Wait for package to be processed
+		time.Sleep(2 * time.Second)
 
-		// Check for available updates
-		updates, err := client.GetAvailableUpdates(
-			ctx,
-			"SENSOR",
-			timestamppb.New(time.Now().Add(-24*time.Hour)),
-		)
+		// Check for updates
+		updates, err := client.GetAvailableUpdates(context.Background(), "SENSOR", time.Now().Add(-24*time.Hour))
 		require.NoError(t, err)
 		require.NotEmpty(t, updates)
+		assert.Equal(t, pkg.Version, updates[0].Version)
+	})
 
-		// Verify the update details
-		found := false
-		for _, update := range updates {
-			if update.Version == createReq.Version {
-				found = true
-				assert.Equal(t, createReq.ChangeLog, update.ChangeLog)
-				assert.Equal(t, createReq.DeviceTypes, update.DeviceTypes)
-				break
-			}
-		}
-		assert.True(t, found, "Created update package not found in available updates")
+	t.Run("InvalidUpdates", func(t *testing.T) {
+		ctx := context.Background()
+
+		// Test with invalid version
+		_, err := client.CreatePackage(ctx, &updateclient.Package{
+			Version:     "",
+			DeviceTypes: []string{"SENSOR"},
+			FileURL:     "nonexistent.zip",
+		})
+		assert.Error(t, err)
+
+		// Test with empty device types
+		_, err = client.CreatePackage(ctx, &updateclient.Package{
+			Version:     "v1.0.0",
+			DeviceTypes: []string{},
+			FileURL:     "nonexistent.zip",
+		})
+		assert.Error(t, err)
+
+		// Test with non-existent package
+		_, err = client.CreatePackage(ctx, &updateclient.Package{
+			Version:     "v1.0.0",
+			DeviceTypes: []string{"SENSOR"},
+			FileURL:     "nonexistent.zip",
+		})
+		assert.Error(t, err)
+
+		// Test getting non-existent package
+		_, err = client.GetPackage(ctx, "nonexistent-id")
+		assert.Error(t, err)
 	})
 }

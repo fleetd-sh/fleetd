@@ -1,37 +1,63 @@
 package storageclient_test
 
 import (
+	"bytes"
 	"context"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"fleetd.sh/internal/config"
+	storagerpc "fleetd.sh/gen/storage/v1/storagev1connect"
 	"fleetd.sh/pkg/storageclient"
+	"fleetd.sh/storage"
 )
 
 func TestStorageClient_Integration(t *testing.T) {
-	if testing.Short() || config.GetIntFromEnv("INTEGRATION", 0) != 1 {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	client := storageclient.NewClient("http://localhost:50054")
-	ctx := context.Background()
-
 	t.Run("StorageOperations", func(t *testing.T) {
-		// Test putting an object
+		// Set up test server
+		storagePath := t.TempDir()
+		storageService := storage.NewStorageService(storagePath)
+		path, handler := storagerpc.NewStorageServiceHandler(storageService)
+
+		mux := http.NewServeMux()
+		mux.Handle(path, handler)
+
+		server := httptest.NewServer(mux)
+		defer server.Close()
+
+		client := storageclient.NewClient(server.URL)
+
+		// Test data
+		testData := []byte("test data")
 		bucket := "test-bucket"
 		key := "test-key"
-		data := []byte("test data")
 
-		success, err := client.PutObject(ctx, bucket, key, data)
+		// Test PutObject
+		err := client.PutObject(context.Background(), &storageclient.Object{
+			Bucket: bucket,
+			Key:    key,
+			Data:   bytes.NewReader(testData),
+			Size:   int64(len(testData)),
+		})
 		require.NoError(t, err)
-		assert.True(t, success)
 
-		// Test getting the object back
-		retrievedData, err := client.GetObject(ctx, bucket, key)
+		// Test GetObject
+		obj, err := client.GetObject(context.Background(), bucket, key)
 		require.NoError(t, err)
-		assert.Equal(t, data, retrievedData)
+		require.NotNil(t, obj)
+
+		// Read the data from the object
+		data, err := io.ReadAll(obj.Data)
+		require.NoError(t, err)
+
+		// Compare the data
+		assert.Equal(t, testData, data)
+		assert.Equal(t, bucket, obj.Bucket)
+		assert.Equal(t, key, obj.Key)
+		assert.Equal(t, int64(len(testData)), obj.Size)
 	})
 }

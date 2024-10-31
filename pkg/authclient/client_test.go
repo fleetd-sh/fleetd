@@ -71,10 +71,10 @@ func TestAuthClient_Unit(t *testing.T) {
 				}
 			},
 			testFunc: func(t *testing.T, client *authclient.Client) {
-				authenticated, deviceID, err := client.Authenticate(context.Background(), "valid-api-key")
+				result, err := client.Authenticate(context.Background(), "valid-api-key")
 				require.NoError(t, err)
-				assert.True(t, authenticated)
-				assert.Equal(t, "device-123", deviceID)
+				assert.True(t, result.Authenticated)
+				assert.Equal(t, "device-123", result.DeviceID)
 			},
 		},
 		{

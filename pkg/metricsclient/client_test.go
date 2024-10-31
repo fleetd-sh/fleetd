@@ -4,11 +4,10 @@ import (
 	"context"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"connectrpc.com/connect"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	metricspb "fleetd.sh/gen/metrics/v1"
 	metricsrpc "fleetd.sh/gen/metrics/v1/metricsv1connect"
@@ -60,18 +59,18 @@ func TestMetricsClient_Unit(t *testing.T) {
 				}
 			},
 			testFunc: func(t *testing.T, client *metricsclient.Client) {
-				success, err := client.SendMetrics(context.Background(), "device-1", []*metricspb.Metric{
+				err := client.SendMetrics(context.Background(), []*metricsclient.Metric{
 					{
+						DeviceID:    "device-1",
 						Measurement: "temperature",
 						Fields:      map[string]float64{"value": 25.5},
-						Timestamp:   timestamppb.Now(),
+						Timestamp:   time.Now(),
 					},
-				})
+				}, "s")
 				require.NoError(t, err)
-				assert.True(t, success)
 			},
 		},
-		// Add more test cases here
+		// TODO: More test cases
 	}
 
 	for _, tc := range testCases {

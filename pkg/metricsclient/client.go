@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -12,63 +13,76 @@ import (
 	metricsrpc "fleetd.sh/gen/metrics/v1/metricsv1connect"
 )
 
+type Metric struct {
+	DeviceID    string
+	Measurement string
+	Timestamp   time.Time
+	Tags        map[string]string
+	Fields      map[string]float64
+}
+
+type MetricQuery struct {
+	DeviceID    string
+	Measurement string
+	StartTime   time.Time
+	EndTime     time.Time
+	Aggregation string
+	GroupBy     []string
+}
+
 type Client struct {
 	client metricsrpc.MetricsServiceClient
 	logger *slog.Logger
 }
 
-type ClientOption func(*Client)
-
-func WithLogger(logger *slog.Logger) ClientOption {
-	return func(c *Client) {
-		c.logger = logger
-	}
-}
-
-func NewClient(baseURL string, opts ...ClientOption) *Client {
-	c := &Client{
+func NewClient(baseURL string) *Client {
+	return &Client{
 		client: metricsrpc.NewMetricsServiceClient(
 			http.DefaultClient,
 			baseURL,
 		),
 		logger: slog.Default(),
 	}
-
-	for _, opt := range opts {
-		opt(c)
-	}
-
-	return c
 }
 
-func (c *Client) SendMetrics(ctx context.Context, deviceID string, metrics []*metricspb.Metric) (bool, error) {
-	c.logger.With("deviceID", deviceID, "metricCount", len(metrics)).Info("Sending metrics")
+func (c *Client) SendMetrics(ctx context.Context, metrics []*Metric, precision string) error {
+	c.logger.With(
+		"metricCount", len(metrics),
+	).Info("Sending metrics")
+
+	pbMetrics := make([]*metricspb.Metric, len(metrics))
+	for i, m := range metrics {
+		pbMetrics[i] = &metricspb.Metric{
+			DeviceId:    m.DeviceID,
+			Measurement: m.Measurement,
+			Timestamp:   timestamppb.New(m.Timestamp),
+			Tags:        m.Tags,
+			Fields:      m.Fields,
+		}
+	}
+
 	req := connect.NewRequest(&metricspb.SendMetricsRequest{
-		DeviceId: deviceID,
-		Metrics:  metrics,
+		Metrics:   pbMetrics,
+		Precision: precision,
 	})
 
-	resp, err := c.client.SendMetrics(ctx, req)
-	if err != nil {
-		return false, err
-	}
-
-	return resp.Msg.Success, nil
+	_, err := c.client.SendMetrics(ctx, req)
+	return err
 }
 
-func (c *Client) GetMetrics(ctx context.Context, deviceID, measurement string, startTime, endTime *timestamppb.Timestamp) (<-chan *metricspb.Metric, <-chan error) {
+func (c *Client) GetMetrics(ctx context.Context, query *MetricQuery) (<-chan *Metric, <-chan error) {
 	c.logger.With(
-		"deviceID", deviceID,
-		"measurement", measurement,
-		"startTime", startTime,
-		"endTime", endTime,
+		"deviceID", query.DeviceID,
+		"measurement", query.Measurement,
+		"startTime", query.StartTime,
+		"endTime", query.EndTime,
 	).Info("Getting metrics")
 
 	req := connect.NewRequest(&metricspb.GetMetricsRequest{
-		DeviceId:    deviceID,
-		Measurement: measurement,
-		StartTime:   startTime,
-		EndTime:     endTime,
+		DeviceId:    query.DeviceID,
+		Measurement: query.Measurement,
+		StartTime:   timestamppb.New(query.StartTime),
+		EndTime:     timestamppb.New(query.EndTime),
 	})
 
 	stream, err := c.client.GetMetrics(ctx, req)
@@ -78,7 +92,7 @@ func (c *Client) GetMetrics(ctx context.Context, deviceID, measurement string, s
 		return nil, errCh
 	}
 
-	metricCh := make(chan *metricspb.Metric)
+	metricCh := make(chan *Metric)
 	errCh := make(chan error, 1)
 
 	go func() {
@@ -86,7 +100,12 @@ func (c *Client) GetMetrics(ctx context.Context, deviceID, measurement string, s
 		defer close(errCh)
 
 		for stream.Receive() {
-			metricCh <- stream.Msg().Metric
+			metricCh <- &Metric{
+				Measurement: stream.Msg().Metric.Measurement,
+				Timestamp:   stream.Msg().Metric.Timestamp.AsTime(),
+				Tags:        stream.Msg().Metric.Tags,
+				Fields:      stream.Msg().Metric.Fields,
+			}
 		}
 
 		if err := stream.Err(); err != nil {

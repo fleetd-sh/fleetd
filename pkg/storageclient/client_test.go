@@ -1,12 +1,13 @@
 package storageclient_test
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"net/http/httptest"
 	"testing"
 
 	"connectrpc.com/connect"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	storagepb "fleetd.sh/gen/storage/v1"
@@ -48,9 +49,13 @@ func TestStorageClient_Unit(t *testing.T) {
 				}
 			},
 			testFunc: func(t *testing.T, client *storageclient.Client) {
-				success, err := client.PutObject(context.Background(), "test-bucket", "test-key", []byte("test-data"))
+				err := client.PutObject(context.Background(), &storageclient.Object{
+					Bucket: "test-bucket",
+					Key:    "test-key",
+					Data:   io.NopCloser(bytes.NewReader([]byte("test-data"))),
+					Size:   int64(len([]byte("test-data"))),
+				})
 				require.NoError(t, err)
-				assert.True(t, success)
 			},
 		},
 	}
