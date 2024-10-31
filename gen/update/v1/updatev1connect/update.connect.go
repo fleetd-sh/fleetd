@@ -33,9 +33,18 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// UpdateServiceCreateUpdatePackageProcedure is the fully-qualified name of the UpdateService's
-	// CreateUpdatePackage RPC.
-	UpdateServiceCreateUpdatePackageProcedure = "/update.v1.UpdateService/CreateUpdatePackage"
+	// UpdateServiceCreatePackageProcedure is the fully-qualified name of the UpdateService's
+	// CreatePackage RPC.
+	UpdateServiceCreatePackageProcedure = "/update.v1.UpdateService/CreatePackage"
+	// UpdateServiceGetPackageProcedure is the fully-qualified name of the UpdateService's GetPackage
+	// RPC.
+	UpdateServiceGetPackageProcedure = "/update.v1.UpdateService/GetPackage"
+	// UpdateServiceDeletePackageProcedure is the fully-qualified name of the UpdateService's
+	// DeletePackage RPC.
+	UpdateServiceDeletePackageProcedure = "/update.v1.UpdateService/DeletePackage"
+	// UpdateServiceUpdatePackageMetadataProcedure is the fully-qualified name of the UpdateService's
+	// UpdatePackageMetadata RPC.
+	UpdateServiceUpdatePackageMetadataProcedure = "/update.v1.UpdateService/UpdatePackageMetadata"
 	// UpdateServiceGetAvailableUpdatesProcedure is the fully-qualified name of the UpdateService's
 	// GetAvailableUpdates RPC.
 	UpdateServiceGetAvailableUpdatesProcedure = "/update.v1.UpdateService/GetAvailableUpdates"
@@ -43,14 +52,20 @@ const (
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	updateServiceServiceDescriptor                   = v1.File_update_v1_update_proto.Services().ByName("UpdateService")
-	updateServiceCreateUpdatePackageMethodDescriptor = updateServiceServiceDescriptor.Methods().ByName("CreateUpdatePackage")
-	updateServiceGetAvailableUpdatesMethodDescriptor = updateServiceServiceDescriptor.Methods().ByName("GetAvailableUpdates")
+	updateServiceServiceDescriptor                     = v1.File_update_v1_update_proto.Services().ByName("UpdateService")
+	updateServiceCreatePackageMethodDescriptor         = updateServiceServiceDescriptor.Methods().ByName("CreatePackage")
+	updateServiceGetPackageMethodDescriptor            = updateServiceServiceDescriptor.Methods().ByName("GetPackage")
+	updateServiceDeletePackageMethodDescriptor         = updateServiceServiceDescriptor.Methods().ByName("DeletePackage")
+	updateServiceUpdatePackageMetadataMethodDescriptor = updateServiceServiceDescriptor.Methods().ByName("UpdatePackageMetadata")
+	updateServiceGetAvailableUpdatesMethodDescriptor   = updateServiceServiceDescriptor.Methods().ByName("GetAvailableUpdates")
 )
 
 // UpdateServiceClient is a client for the update.v1.UpdateService service.
 type UpdateServiceClient interface {
-	CreateUpdatePackage(context.Context, *connect.Request[v1.CreateUpdatePackageRequest]) (*connect.Response[v1.CreateUpdatePackageResponse], error)
+	CreatePackage(context.Context, *connect.Request[v1.CreatePackageRequest]) (*connect.Response[v1.CreatePackageResponse], error)
+	GetPackage(context.Context, *connect.Request[v1.GetPackageRequest]) (*connect.Response[v1.GetPackageResponse], error)
+	DeletePackage(context.Context, *connect.Request[v1.DeletePackageRequest]) (*connect.Response[v1.DeletePackageResponse], error)
+	UpdatePackageMetadata(context.Context, *connect.Request[v1.UpdatePackageMetadataRequest]) (*connect.Response[v1.UpdatePackageMetadataResponse], error)
 	GetAvailableUpdates(context.Context, *connect.Request[v1.GetAvailableUpdatesRequest]) (*connect.Response[v1.GetAvailableUpdatesResponse], error)
 }
 
@@ -64,10 +79,28 @@ type UpdateServiceClient interface {
 func NewUpdateServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) UpdateServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &updateServiceClient{
-		createUpdatePackage: connect.NewClient[v1.CreateUpdatePackageRequest, v1.CreateUpdatePackageResponse](
+		createPackage: connect.NewClient[v1.CreatePackageRequest, v1.CreatePackageResponse](
 			httpClient,
-			baseURL+UpdateServiceCreateUpdatePackageProcedure,
-			connect.WithSchema(updateServiceCreateUpdatePackageMethodDescriptor),
+			baseURL+UpdateServiceCreatePackageProcedure,
+			connect.WithSchema(updateServiceCreatePackageMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		getPackage: connect.NewClient[v1.GetPackageRequest, v1.GetPackageResponse](
+			httpClient,
+			baseURL+UpdateServiceGetPackageProcedure,
+			connect.WithSchema(updateServiceGetPackageMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		deletePackage: connect.NewClient[v1.DeletePackageRequest, v1.DeletePackageResponse](
+			httpClient,
+			baseURL+UpdateServiceDeletePackageProcedure,
+			connect.WithSchema(updateServiceDeletePackageMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		updatePackageMetadata: connect.NewClient[v1.UpdatePackageMetadataRequest, v1.UpdatePackageMetadataResponse](
+			httpClient,
+			baseURL+UpdateServiceUpdatePackageMetadataProcedure,
+			connect.WithSchema(updateServiceUpdatePackageMetadataMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 		getAvailableUpdates: connect.NewClient[v1.GetAvailableUpdatesRequest, v1.GetAvailableUpdatesResponse](
@@ -81,13 +114,31 @@ func NewUpdateServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // updateServiceClient implements UpdateServiceClient.
 type updateServiceClient struct {
-	createUpdatePackage *connect.Client[v1.CreateUpdatePackageRequest, v1.CreateUpdatePackageResponse]
-	getAvailableUpdates *connect.Client[v1.GetAvailableUpdatesRequest, v1.GetAvailableUpdatesResponse]
+	createPackage         *connect.Client[v1.CreatePackageRequest, v1.CreatePackageResponse]
+	getPackage            *connect.Client[v1.GetPackageRequest, v1.GetPackageResponse]
+	deletePackage         *connect.Client[v1.DeletePackageRequest, v1.DeletePackageResponse]
+	updatePackageMetadata *connect.Client[v1.UpdatePackageMetadataRequest, v1.UpdatePackageMetadataResponse]
+	getAvailableUpdates   *connect.Client[v1.GetAvailableUpdatesRequest, v1.GetAvailableUpdatesResponse]
 }
 
-// CreateUpdatePackage calls update.v1.UpdateService.CreateUpdatePackage.
-func (c *updateServiceClient) CreateUpdatePackage(ctx context.Context, req *connect.Request[v1.CreateUpdatePackageRequest]) (*connect.Response[v1.CreateUpdatePackageResponse], error) {
-	return c.createUpdatePackage.CallUnary(ctx, req)
+// CreatePackage calls update.v1.UpdateService.CreatePackage.
+func (c *updateServiceClient) CreatePackage(ctx context.Context, req *connect.Request[v1.CreatePackageRequest]) (*connect.Response[v1.CreatePackageResponse], error) {
+	return c.createPackage.CallUnary(ctx, req)
+}
+
+// GetPackage calls update.v1.UpdateService.GetPackage.
+func (c *updateServiceClient) GetPackage(ctx context.Context, req *connect.Request[v1.GetPackageRequest]) (*connect.Response[v1.GetPackageResponse], error) {
+	return c.getPackage.CallUnary(ctx, req)
+}
+
+// DeletePackage calls update.v1.UpdateService.DeletePackage.
+func (c *updateServiceClient) DeletePackage(ctx context.Context, req *connect.Request[v1.DeletePackageRequest]) (*connect.Response[v1.DeletePackageResponse], error) {
+	return c.deletePackage.CallUnary(ctx, req)
+}
+
+// UpdatePackageMetadata calls update.v1.UpdateService.UpdatePackageMetadata.
+func (c *updateServiceClient) UpdatePackageMetadata(ctx context.Context, req *connect.Request[v1.UpdatePackageMetadataRequest]) (*connect.Response[v1.UpdatePackageMetadataResponse], error) {
+	return c.updatePackageMetadata.CallUnary(ctx, req)
 }
 
 // GetAvailableUpdates calls update.v1.UpdateService.GetAvailableUpdates.
@@ -97,7 +148,10 @@ func (c *updateServiceClient) GetAvailableUpdates(ctx context.Context, req *conn
 
 // UpdateServiceHandler is an implementation of the update.v1.UpdateService service.
 type UpdateServiceHandler interface {
-	CreateUpdatePackage(context.Context, *connect.Request[v1.CreateUpdatePackageRequest]) (*connect.Response[v1.CreateUpdatePackageResponse], error)
+	CreatePackage(context.Context, *connect.Request[v1.CreatePackageRequest]) (*connect.Response[v1.CreatePackageResponse], error)
+	GetPackage(context.Context, *connect.Request[v1.GetPackageRequest]) (*connect.Response[v1.GetPackageResponse], error)
+	DeletePackage(context.Context, *connect.Request[v1.DeletePackageRequest]) (*connect.Response[v1.DeletePackageResponse], error)
+	UpdatePackageMetadata(context.Context, *connect.Request[v1.UpdatePackageMetadataRequest]) (*connect.Response[v1.UpdatePackageMetadataResponse], error)
 	GetAvailableUpdates(context.Context, *connect.Request[v1.GetAvailableUpdatesRequest]) (*connect.Response[v1.GetAvailableUpdatesResponse], error)
 }
 
@@ -107,10 +161,28 @@ type UpdateServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewUpdateServiceHandler(svc UpdateServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	updateServiceCreateUpdatePackageHandler := connect.NewUnaryHandler(
-		UpdateServiceCreateUpdatePackageProcedure,
-		svc.CreateUpdatePackage,
-		connect.WithSchema(updateServiceCreateUpdatePackageMethodDescriptor),
+	updateServiceCreatePackageHandler := connect.NewUnaryHandler(
+		UpdateServiceCreatePackageProcedure,
+		svc.CreatePackage,
+		connect.WithSchema(updateServiceCreatePackageMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	updateServiceGetPackageHandler := connect.NewUnaryHandler(
+		UpdateServiceGetPackageProcedure,
+		svc.GetPackage,
+		connect.WithSchema(updateServiceGetPackageMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	updateServiceDeletePackageHandler := connect.NewUnaryHandler(
+		UpdateServiceDeletePackageProcedure,
+		svc.DeletePackage,
+		connect.WithSchema(updateServiceDeletePackageMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	updateServiceUpdatePackageMetadataHandler := connect.NewUnaryHandler(
+		UpdateServiceUpdatePackageMetadataProcedure,
+		svc.UpdatePackageMetadata,
+		connect.WithSchema(updateServiceUpdatePackageMetadataMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	updateServiceGetAvailableUpdatesHandler := connect.NewUnaryHandler(
@@ -121,8 +193,14 @@ func NewUpdateServiceHandler(svc UpdateServiceHandler, opts ...connect.HandlerOp
 	)
 	return "/update.v1.UpdateService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case UpdateServiceCreateUpdatePackageProcedure:
-			updateServiceCreateUpdatePackageHandler.ServeHTTP(w, r)
+		case UpdateServiceCreatePackageProcedure:
+			updateServiceCreatePackageHandler.ServeHTTP(w, r)
+		case UpdateServiceGetPackageProcedure:
+			updateServiceGetPackageHandler.ServeHTTP(w, r)
+		case UpdateServiceDeletePackageProcedure:
+			updateServiceDeletePackageHandler.ServeHTTP(w, r)
+		case UpdateServiceUpdatePackageMetadataProcedure:
+			updateServiceUpdatePackageMetadataHandler.ServeHTTP(w, r)
 		case UpdateServiceGetAvailableUpdatesProcedure:
 			updateServiceGetAvailableUpdatesHandler.ServeHTTP(w, r)
 		default:
@@ -134,8 +212,20 @@ func NewUpdateServiceHandler(svc UpdateServiceHandler, opts ...connect.HandlerOp
 // UnimplementedUpdateServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedUpdateServiceHandler struct{}
 
-func (UnimplementedUpdateServiceHandler) CreateUpdatePackage(context.Context, *connect.Request[v1.CreateUpdatePackageRequest]) (*connect.Response[v1.CreateUpdatePackageResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("update.v1.UpdateService.CreateUpdatePackage is not implemented"))
+func (UnimplementedUpdateServiceHandler) CreatePackage(context.Context, *connect.Request[v1.CreatePackageRequest]) (*connect.Response[v1.CreatePackageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("update.v1.UpdateService.CreatePackage is not implemented"))
+}
+
+func (UnimplementedUpdateServiceHandler) GetPackage(context.Context, *connect.Request[v1.GetPackageRequest]) (*connect.Response[v1.GetPackageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("update.v1.UpdateService.GetPackage is not implemented"))
+}
+
+func (UnimplementedUpdateServiceHandler) DeletePackage(context.Context, *connect.Request[v1.DeletePackageRequest]) (*connect.Response[v1.DeletePackageResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("update.v1.UpdateService.DeletePackage is not implemented"))
+}
+
+func (UnimplementedUpdateServiceHandler) UpdatePackageMetadata(context.Context, *connect.Request[v1.UpdatePackageMetadataRequest]) (*connect.Response[v1.UpdatePackageMetadataResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("update.v1.UpdateService.UpdatePackageMetadata is not implemented"))
 }
 
 func (UnimplementedUpdateServiceHandler) GetAvailableUpdates(context.Context, *connect.Request[v1.GetAvailableUpdatesRequest]) (*connect.Response[v1.GetAvailableUpdatesResponse], error) {
