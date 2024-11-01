@@ -47,7 +47,7 @@ func TestAuthClient_Integration(t *testing.T) {
 	// Create clients
 	authClient := authclient.NewClient(authServer.URL)
 
-	deviceService := device.NewDeviceService(db.DB, authClient)
+	deviceService := device.NewDeviceService(db.DB)
 	devicePath, deviceHandler := devicerpc.NewDeviceServiceHandler(deviceService)
 	deviceMux := http.NewServeMux()
 	deviceMux.Handle(devicePath, deviceHandler)

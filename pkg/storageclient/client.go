@@ -36,11 +36,6 @@ func NewClient(baseURL string) *Client {
 }
 
 func (c *Client) PutObject(ctx context.Context, obj *Object) error {
-	c.logger.With(
-		"bucket", obj.Bucket,
-		"key", obj.Key,
-	).Info("Putting object")
-
 	data, err := io.ReadAll(obj.Data)
 	if err != nil {
 		return err
@@ -57,11 +52,6 @@ func (c *Client) PutObject(ctx context.Context, obj *Object) error {
 }
 
 func (c *Client) GetObject(ctx context.Context, bucket, key string) (*Object, error) {
-	c.logger.With(
-		"bucket", bucket,
-		"key", key,
-	).Info("Getting object")
-
 	req := connect.NewRequest(&storagepb.GetObjectRequest{
 		Bucket: bucket,
 		Key:    key,

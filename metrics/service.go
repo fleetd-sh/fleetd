@@ -46,9 +46,16 @@ func (s *MetricsService) SendMetrics(
 			fields[k] = v
 		}
 
+		tags := make(map[string]string)
+		tags["device_id"] = m.DeviceId
+
+		for k, v := range m.Tags {
+			tags[k] = v
+		}
+
 		p := influxdb2.NewPoint(
 			m.Measurement,
-			m.Tags,
+			tags,
 			fields,
 			time.Now(),
 		)
@@ -70,7 +77,6 @@ func (s *MetricsService) GetMetrics(
 	req *connect.Request[metricspb.GetMetricsRequest],
 	stream *connect.ServerStream[metricspb.GetMetricsResponse],
 ) error {
-
 	startTime, endTime := req.Msg.StartTime, req.Msg.EndTime
 	deviceID := req.Msg.DeviceId
 	measurement := req.Msg.Measurement

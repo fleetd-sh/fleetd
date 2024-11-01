@@ -46,10 +46,6 @@ func NewClient(baseURL string) *Client {
 }
 
 func (c *Client) SendMetrics(ctx context.Context, metrics []*Metric, precision string) error {
-	c.logger.With(
-		"metricCount", len(metrics),
-	).Info("Sending metrics")
-
 	pbMetrics := make([]*metricspb.Metric, len(metrics))
 	for i, m := range metrics {
 		pbMetrics[i] = &metricspb.Metric{
@@ -71,13 +67,6 @@ func (c *Client) SendMetrics(ctx context.Context, metrics []*Metric, precision s
 }
 
 func (c *Client) GetMetrics(ctx context.Context, query *MetricQuery) (<-chan *Metric, <-chan error) {
-	c.logger.With(
-		"deviceID", query.DeviceID,
-		"measurement", query.Measurement,
-		"startTime", query.StartTime,
-		"endTime", query.EndTime,
-	).Info("Getting metrics")
-
 	req := connect.NewRequest(&metricspb.GetMetricsRequest{
 		DeviceId:    query.DeviceID,
 		Measurement: query.Measurement,
@@ -100,7 +89,9 @@ func (c *Client) GetMetrics(ctx context.Context, query *MetricQuery) (<-chan *Me
 		defer close(errCh)
 
 		for stream.Receive() {
+			deviceID := stream.Msg().Metric.Tags["device_id"]
 			metricCh <- &Metric{
+				DeviceID:    deviceID,
 				Measurement: stream.Msg().Metric.Measurement,
 				Timestamp:   stream.Msg().Metric.Timestamp.AsTime(),
 				Tags:        stream.Msg().Metric.Tags,
