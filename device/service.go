@@ -2,7 +2,9 @@ package device
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -12,18 +14,15 @@ import (
 
 	devicepb "fleetd.sh/gen/device/v1"
 	"fleetd.sh/internal/telemetry"
-	"fleetd.sh/pkg/authclient"
 )
 
 type DeviceService struct {
-	db         *sql.DB
-	authClient *authclient.Client
+	db *sql.DB
 }
 
-func NewDeviceService(db *sql.DB, authClient *authclient.Client) *DeviceService {
+func NewDeviceService(db *sql.DB) *DeviceService {
 	return &DeviceService{
-		db:         db,
-		authClient: authClient,
+		db: db,
 	}
 }
 
@@ -33,8 +32,9 @@ func (s *DeviceService) RegisterDevice(
 ) (*connect.Response[devicepb.RegisterDeviceResponse], error) {
 	defer telemetry.TrackSQLOperation(ctx, "RegisterDevice")(nil)
 
-	// Generate device ID first
 	deviceID := ksuid.New().String()
+	apiKey := ksuid.New().String()
+	keyHash := hashAPIKey(apiKey)
 
 	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
@@ -54,28 +54,30 @@ func (s *DeviceService) RegisterDevice(
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to ensure device type: %w", err))
 	}
 
-	// Insert device with explicit status and proper time format
+	// Insert device
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO device (id, name, type, status, last_seen, version)
-		VALUES (?, ?, ?, 'ACTIVE', ?, ?)`,
+			VALUES (?, ?, ?, 'ACTIVE', ?, ?)`,
 		deviceID, req.Msg.Name, req.Msg.Type,
-		time.Now().Format(time.RFC3339),
+		time.Now().UTC().Format(time.RFC3339),
 		req.Msg.Version,
 	)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to register device: %w", err))
 	}
 
-	// Commit the transaction before generating API key
-	if err := tx.Commit(); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to commit transaction: %w", err))
+	// Insert API key in same transaction
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO api_key (key_hash, device_id)
+		VALUES (?, ?)`,
+		keyHash, deviceID,
+	)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to store API key: %w", err))
 	}
 
-	// Generate API key after device is created and committed
-	apiKey, err := s.authClient.GenerateAPIKey(ctx, deviceID)
-	if err != nil {
-		// Consider cleanup if API key generation fails?
-		return nil, fmt.Errorf("failed to generate API key: %w", err)
+	if err := tx.Commit(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to commit transaction: %w", err))
 	}
 
 	return connect.NewResponse(&devicepb.RegisterDeviceResponse{
@@ -90,28 +92,50 @@ func (s *DeviceService) UnregisterDevice(
 ) (*connect.Response[devicepb.UnregisterDeviceResponse], error) {
 	defer telemetry.TrackSQLOperation(ctx, "UnregisterDevice")(nil)
 
-	result, err := s.db.ExecContext(ctx, "DELETE FROM device WHERE id = ?", req.Msg.DeviceId)
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to begin transaction: %w", err))
+	}
+	defer tx.Rollback()
+
+	// Delete API key first (foreign key will cascade)
+	_, err = tx.ExecContext(ctx, `
+		DELETE FROM api_key 
+		WHERE device_id = ?`,
+		req.Msg.DeviceId,
+	)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete API key: %w", err))
+	}
+
+	// Then delete device
+	result, err := tx.ExecContext(ctx, `
+		DELETE FROM device 
+		WHERE id = ?`,
+		req.Msg.DeviceId,
+	)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to delete device: %w", err))
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get rows affected: %w", err))
-	}
-
-	if rowsAffected == 0 {
+	if rows, _ := result.RowsAffected(); rows == 0 {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("device not found"))
 	}
 
-	success, err := s.authClient.RevokeAPIKey(ctx, req.Msg.DeviceId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to revoke API key: %w", err))
+	if err := tx.Commit(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to commit transaction: %w", err))
 	}
 
 	return connect.NewResponse(&devicepb.UnregisterDeviceResponse{
-		Success: success,
+		Success: true,
 	}), nil
+}
+
+func hashAPIKey(key string) string {
+	hash := sha256.Sum256([]byte(key))
+	return hex.EncodeToString(hash[:])
 }
 
 func (s *DeviceService) GetDevice(

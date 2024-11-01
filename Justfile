@@ -21,11 +21,7 @@ build PROGRAM:
 build-all:
     just build fleetd &
     just build columbus &
-    just build auth-server &
-    just build device-server &
-    just build metrics-server &
-    just build update-server &
-    just build storage-server
+    just build server
 
 test-all:
     CGO_ENABLED=1 go test -v ./...
@@ -43,12 +39,9 @@ run: build-all
     sleep 1  # Add a small delay
     trap 'kill $(jobs -p)' INT TERM
     ./bin/fleetd &
-    LISTEN_ADDR=localhost:8081 ./bin/auth-server &
-    LISTEN_ADDR=localhost:8082 ./bin/columbus &
-    LISTEN_ADDR=localhost:8083 ./bin/device-server &
-    LISTEN_ADDR=localhost:8084 ./bin/metrics-server &
-    LISTEN_ADDR=localhost:8085 ./bin/update-server &
-    LISTEN_ADDR=localhost:8086 ./bin/storage-server &
+    LISTEN_ADDR=localhost:50051 ./bin/server &
+    LISTEN_ADDR=localhost:50052 ./bin/columbus &
+
     wait
 
 watch PROGRAM:
@@ -57,10 +50,6 @@ watch PROGRAM:
 watch-all:
     trap 'kill $(jobs -p)' INT TERM
     just watch fleetd &
-    LISTEN_ADDR=localhost:8081 just watch auth-server &
-    LISTEN_ADDR=localhost:8082 just watch columbus &
-    LISTEN_ADDR=localhost:8083 just watch device-server &
-    LISTEN_ADDR=localhost:8084 just watch metrics-server &
-    LISTEN_ADDR=localhost:8085 just watch update-server &
-    LISTEN_ADDR=localhost:8086 just watch storage-server &
+    LISTEN_ADDR=localhost:50051 just watch server &
+    LISTEN_ADDR=localhost:50052 just watch columbus &
     wait

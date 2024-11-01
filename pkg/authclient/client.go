@@ -32,7 +32,6 @@ func NewClient(baseURL string) *Client {
 }
 
 func (c *Client) Authenticate(ctx context.Context, apiKey string) (*AuthResult, error) {
-	c.logger.With("apiKey", apiKey).Info("Authenticating")
 	req := connect.NewRequest(&authpb.AuthenticateRequest{
 		ApiKey: apiKey,
 	})
@@ -49,7 +48,6 @@ func (c *Client) Authenticate(ctx context.Context, apiKey string) (*AuthResult, 
 }
 
 func (c *Client) GenerateAPIKey(ctx context.Context, deviceID string) (string, error) {
-	c.logger.With("deviceID", deviceID).Info("Generating API key")
 	req := connect.NewRequest(&authpb.GenerateAPIKeyRequest{
 		DeviceId: deviceID,
 	})
@@ -63,7 +61,6 @@ func (c *Client) GenerateAPIKey(ctx context.Context, deviceID string) (string, e
 }
 
 func (c *Client) RevokeAPIKey(ctx context.Context, deviceID string) (bool, error) {
-	c.logger.With("deviceID", deviceID).Info("Revoking API key")
 	req := connect.NewRequest(&authpb.RevokeAPIKeyRequest{
 		DeviceId: deviceID,
 	})

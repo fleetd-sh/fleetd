@@ -19,7 +19,6 @@ import (
 	"fleetd.sh/internal/config"
 	"fleetd.sh/internal/migrations"
 	"fleetd.sh/internal/testutil"
-	"fleetd.sh/pkg/authclient"
 	"fleetd.sh/pkg/deviceclient"
 )
 
@@ -52,11 +51,8 @@ func TestDeviceClient_Integration(t *testing.T) {
 	authServer := httptest.NewServer(authMux)
 	defer authServer.Close()
 
-	// Create auth client with proper server URL
-	authClient := authclient.NewClient(authServer.URL)
-
-	// Create device service with proper auth client
-	deviceService := device.NewDeviceService(db.DB, authClient)
+	// Create device service
+	deviceService := device.NewDeviceService(db.DB)
 	devicePath, deviceHandler := devicerpc.NewDeviceServiceHandler(deviceService)
 
 	// Set up device server

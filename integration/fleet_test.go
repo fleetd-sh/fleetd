@@ -26,7 +26,6 @@ import (
 	"fleetd.sh/internal/migrations"
 	"fleetd.sh/internal/testutil"
 	"fleetd.sh/metrics"
-	"fleetd.sh/pkg/authclient"
 	"fleetd.sh/pkg/deviceclient"
 	"fleetd.sh/pkg/metricsclient"
 	"fleetd.sh/pkg/updateclient"
@@ -141,8 +140,7 @@ func TestFleetdIntegration(t *testing.T) {
 				"value": 25.5,
 			},
 			Tags: map[string]string{
-				"device_id": testDevice.ID,
-				"type":      "temperature",
+				"type": "temperature",
 			},
 			Timestamp: time.Now(),
 		}
@@ -290,8 +288,7 @@ func setupStack(t *testing.T) (*Stack, error) {
 	authMux.Handle(authPath, authHandler)
 	authServer := httptest.NewServer(authMux)
 
-	authClient := authclient.NewClient(authServer.URL)
-	deviceService := device.NewDeviceService(db.DB, authClient)
+	deviceService := device.NewDeviceService(db.DB)
 	updateService := update.NewUpdateService(db.DB)
 	storageService := storage.NewStorageService(fmt.Sprintf("%s/storage", tempDir))
 

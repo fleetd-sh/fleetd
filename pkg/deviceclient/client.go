@@ -67,8 +67,6 @@ func NewClient(baseURL string, opts ...ClientOption) *Client {
 //
 // It returns the device ID and API key on success, or an error if the registration fails.
 func (c *Client) RegisterDevice(ctx context.Context, device *NewDevice) (deviceID string, apiKey string, err error) {
-	c.logger.With("device", device).Info("Registering device")
-
 	req := connect.NewRequest(&devicepb.RegisterDeviceRequest{
 		Name:    device.Name,
 		Type:    device.Type,
@@ -84,7 +82,6 @@ func (c *Client) RegisterDevice(ctx context.Context, device *NewDevice) (deviceI
 }
 
 func (c *Client) UnregisterDevice(ctx context.Context, deviceID string) (bool, error) {
-	c.logger.With("deviceID", deviceID).Info("Unregistering device")
 	req := connect.NewRequest(&devicepb.UnregisterDeviceRequest{
 		DeviceId: deviceID,
 	})
@@ -109,7 +106,6 @@ func protoToDevice(d *devicepb.Device) *Device {
 }
 
 func (c *Client) GetDevice(ctx context.Context, deviceID string) (*Device, error) {
-	c.logger.With("deviceID", deviceID).Info("Getting device")
 	req := connect.NewRequest(&devicepb.GetDeviceRequest{
 		DeviceId: deviceID,
 	})
@@ -153,7 +149,6 @@ func (c *Client) ListDevices(ctx context.Context) (<-chan *Device, <-chan error)
 }
 
 func (c *Client) UpdateDeviceStatus(ctx context.Context, deviceID, status string) (bool, error) {
-	c.logger.With("deviceID", deviceID, "status", status).Info("Updating device status")
 	req := connect.NewRequest(&devicepb.UpdateDeviceStatusRequest{
 		DeviceId: deviceID,
 		Status:   status,

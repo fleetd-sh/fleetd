@@ -70,10 +70,6 @@ type PackageMetadata struct {
 }
 
 func (c *Client) CreatePackage(ctx context.Context, pkg *Package) (string, error) {
-	c.logger.With(
-		"package", pkg,
-	).Info("Creating update package")
-
 	req := &updatepb.CreatePackageRequest{
 		Version:     pkg.Version,
 		DeviceTypes: pkg.DeviceTypes,
@@ -98,11 +94,6 @@ func (c *Client) CreatePackage(ctx context.Context, pkg *Package) (string, error
 }
 
 func (c *Client) GetAvailableUpdates(ctx context.Context, deviceType string, lastUpdateDate time.Time) ([]*Package, error) {
-	c.logger.With(
-		"deviceType", deviceType,
-		"lastUpdateDate", lastUpdateDate,
-	).Info("getting available updates")
-
 	req := connect.NewRequest(&updatepb.GetAvailableUpdatesRequest{
 		DeviceType:     deviceType,
 		LastUpdateDate: timestamppb.New(lastUpdateDate),
