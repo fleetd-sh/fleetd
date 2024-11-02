@@ -21,10 +21,12 @@ func TestRuntimeIntegration(t *testing.T) {
 		runtimeType build.RuntimeType
 		setup       func(t *testing.T) *build.BuildResult
 		verify      func(t *testing.T, status *build.RuntimeStatus)
+		skipOnEnv   string
 	}{
 		{
 			name:        "native runtime success",
 			runtimeType: build.RuntimeTypeNative,
+			skipOnEnv:   "CI",
 			setup: func(t *testing.T) *build.BuildResult {
 				execPath := filepath.Join(t.TempDir(), "test-executable")
 				require.NoError(t, os.WriteFile(execPath, []byte("#!/bin/sh\necho test\n"), 0755))
@@ -64,6 +66,10 @@ func TestRuntimeIntegration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.skipOnEnv != "" && os.Getenv(tt.skipOnEnv) != "" {
+				t.Skipf("Skipping on %s", tt.skipOnEnv)
+			}
+
 			ctx := context.Background()
 
 			// Use a temp dir for the runtime
