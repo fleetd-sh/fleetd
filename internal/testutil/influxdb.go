@@ -92,7 +92,7 @@ func startInfluxDBContainer(t *testing.T, dockerClient *client.Client) (containe
 	t.Log("Pulling InfluxDB image")
 	pullCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	_, err := dockerClient.ImagePull(pullCtx, "influxdb:2.7.10", image.PullOptions{})
+	_, err := dockerClient.ImagePull(pullCtx, "influxdb:2.7", image.PullOptions{})
 	if err != nil {
 		t.Log("Image pull failed:", err)
 		return container.CreateResponse{}, "", "", fmt.Errorf("failed to pull InfluxDB image: %w", err)
@@ -104,7 +104,7 @@ func startInfluxDBContainer(t *testing.T, dockerClient *client.Client) (containe
 	createCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	resp, err := dockerClient.ContainerCreate(createCtx, &container.Config{
-		Image: "influxdb:2.7.10",
+		Image: "influxdb:2.7",
 		ExposedPorts: nat.PortSet{
 			"8086/tcp": struct{}{},
 		},
