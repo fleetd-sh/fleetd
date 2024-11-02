@@ -47,4 +47,5 @@ jobs:
       env:
         INTEGRATION: 1
         DOCKER_API_VERSION: 1.45
+        CI: true
       run: just test-all
