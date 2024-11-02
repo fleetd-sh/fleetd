@@ -244,7 +244,7 @@ func (am *ArtifactManager) createArchive(sourceDir, destPath string) error {
 }
 
 // downloadArtifact downloads a build artifact to a local path
-func downloadArtifact(ctx context.Context, artifact ArtifactInfo) (string, error) {
+func downloadArtifact(artifact ArtifactInfo) (string, error) {
 	resp, err := http.Get(artifact.URL)
 	if err != nil {
 		return "", fmt.Errorf("failed to download artifact: %w", err)

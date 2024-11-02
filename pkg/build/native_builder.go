@@ -69,7 +69,7 @@ func (b *NativeBuilder) Build(ctx context.Context, spec *BuildSpec) (*BuildResul
 }
 
 // packageBinary creates a deployable artifact from the build output
-func packageBinary(buildDir string, spec *BuildSpec) (*ArtifactInfo, error) {
+func packageBinary(buildDir string) (*ArtifactInfo, error) {
 	// Find the main binary
 	var binaryPath string
 	err := filepath.Walk(buildDir, func(path string, info os.FileInfo, err error) error {
