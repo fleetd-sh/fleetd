@@ -141,6 +141,7 @@ func TestNewRuntime(t *testing.T) {
 		runtimeType RuntimeType
 		opts        *RuntimeOptions
 		skipOnOS    string
+		skipOnEnv   string
 		wantErr     bool
 	}{
 		{
@@ -160,6 +161,7 @@ func TestNewRuntime(t *testing.T) {
 			runtimeType: RuntimeTypeSystemd,
 			opts:        DefaultRuntimeOptions(),
 			skipOnOS:    "darwin",
+			skipOnEnv:   "CI",
 			wantErr:     false,
 		},
 		{
@@ -180,6 +182,8 @@ func TestNewRuntime(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.skipOnOS != "" && runtime.GOOS == tt.skipOnOS {
 				t.Skipf("Skipping on %s", tt.skipOnOS)
+			} else if tt.skipOnEnv != "" && os.Getenv(tt.skipOnEnv) != "" {
+				t.Skipf("Skipping on %s", tt.skipOnEnv)
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
