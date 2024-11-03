@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
@@ -16,6 +15,7 @@ import (
 	"fleetd.sh/internal/config"
 	"fleetd.sh/internal/migrations"
 	"fleetd.sh/internal/testutil"
+	"fleetd.sh/internal/testutil/containers"
 	"fleetd.sh/metrics"
 	"fleetd.sh/pkg/deviceclient"
 	"fleetd.sh/pkg/metricsclient"
@@ -29,10 +29,21 @@ func TestAllInOneServer(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
+	ctx := context.Background()
+
 	// Create temp directory
 	tempDir, err := os.MkdirTemp("", "fleet-server-test")
 	require.NoError(t, err)
 	defer os.RemoveAll(tempDir)
+
+	// Start InfluxDB container
+	influxContainer, err := containers.NewInfluxDBContainer(ctx)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		if err := influxContainer.Close(); err != nil {
+			t.Logf("failed to close InfluxDB container: %v", err)
+		}
+	})
 
 	// Set up test database
 	db := testutil.NewTestDB(t)
@@ -43,20 +54,13 @@ func TestAllInOneServer(t *testing.T) {
 	require.Greater(t, version, -1)
 	t.Logf("Migrated to version %d, dirty: %t", version, dirty)
 
-	// Set up InfluxDB container for metrics
-	influxContainer, err := testutil.StartInfluxDB(t)
-	require.NoError(t, err)
-	defer influxContainer.Close()
-
-	influxClient := influxdb2.NewClient(influxContainer.URL, influxContainer.Token)
-
 	// Initialize all services
 	authService := auth.NewAuthService(db.DB)
 	deviceService := device.NewDeviceService(db.DB)
 	metricsService := metrics.NewMetricsService(
-		influxClient,
-		InfluxDBOrg,
-		InfluxDBBucket,
+		influxContainer.Client,
+		influxContainer.Org,
+		influxContainer.Bucket,
 	)
 	updateService := update.NewUpdateService(db.DB)
 	storageService := storage.NewStorageService(tempDir)
@@ -76,7 +80,7 @@ func TestAllInOneServer(t *testing.T) {
 	metricsClient := metricsclient.NewClient(server.URL)
 	updateClient := updateclient.NewClient(server.URL)
 
-	ctx := context.Background()
+	ctx = context.Background()
 
 	// Test device registration
 	t.Run("DeviceRegistration", func(t *testing.T) {

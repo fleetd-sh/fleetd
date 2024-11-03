@@ -13,6 +13,8 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"fleetd.sh/internal/testutil/containers"
 )
 
 func init() {
@@ -204,6 +206,19 @@ func TestNewRuntime(t *testing.T) {
 }
 
 func TestRuntimeStatus(t *testing.T) {
+	ctx := context.Background()
+
+	// Start nginx container for OCI tests
+	nginxContainer, err := containers.NewNginxContainer(ctx)
+	if err != nil {
+		t.Skipf("Skipping OCI tests: failed to start nginx container: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := nginxContainer.Terminate(ctx); err != nil {
+			t.Logf("failed to terminate nginx container: %v", err)
+		}
+	})
+
 	// Get absolute path to test executable
 	wd, err := os.Getwd()
 	require.NoError(t, err)
@@ -262,11 +277,6 @@ func TestRuntimeStatus(t *testing.T) {
 			wantState: "",
 			wantErr:   true,
 		},
-	}
-
-	// Pull the nginx image before running tests
-	if err := pullTestImage("nginx:alpine"); err != nil {
-		t.Skipf("Skipping OCI tests: failed to pull test image: %v", err)
 	}
 
 	for _, tt := range tests {

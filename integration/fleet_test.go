@@ -25,6 +25,7 @@ import (
 	updaterpc "fleetd.sh/gen/update/v1/updatev1connect"
 	"fleetd.sh/internal/migrations"
 	"fleetd.sh/internal/testutil"
+	"fleetd.sh/internal/testutil/containers"
 	"fleetd.sh/metrics"
 	"fleetd.sh/pkg/deviceclient"
 	"fleetd.sh/pkg/metricsclient"
@@ -248,28 +249,41 @@ func TestFleetdIntegration(t *testing.T) {
 func setupStack(t *testing.T) (*Stack, error) {
 	t.Log("Starting stack setup")
 
+	ctx := context.Background()
+
 	// Create a temporary directory for the test
 	tempDir, err := os.MkdirTemp("", "fleetd-integration-test")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir: %w", err)
 	}
 
-	// Start InfluxDB using shared helper
-	influxContainer, err := testutil.StartInfluxDB(t)
+	// Start InfluxDB using testcontainers
+	influxContainer, err := containers.NewInfluxDBContainer(ctx)
 	if err != nil {
 		os.RemoveAll(tempDir)
 		return nil, fmt.Errorf("failed to start InfluxDB: %w", err)
 	}
 
+	t.Cleanup(func() {
+		if err := influxContainer.Close(); err != nil {
+			t.Logf("failed to close InfluxDB container: %v", err)
+		}
+		os.RemoveAll(tempDir)
+	})
+
 	t.Log("Setting up InfluxDB client",
 		"url", influxContainer.URL,
 		"token", influxContainer.Token[:8]+"...",
-		"org", influxContainer.Organization,
+		"org", influxContainer.Org,
 		"bucket", influxContainer.Bucket,
 	)
 
 	// Create metrics service with the InfluxDB client
-	metricsService := metrics.NewMetricsService(influxContainer.Client, influxContainer.Organization, influxContainer.Bucket)
+	metricsService := metrics.NewMetricsService(
+		influxContainer.Client,
+		influxContainer.Org,
+		influxContainer.Bucket,
+	)
 
 	// Set up SQLite database
 	db := testutil.NewTestDB(t)
