@@ -12,7 +12,7 @@ import (
 
 	metricsrpc "fleetd.sh/gen/metrics/v1/metricsv1connect"
 	"fleetd.sh/internal/config"
-	"fleetd.sh/internal/testutil"
+	"fleetd.sh/internal/testutil/containers"
 	"fleetd.sh/metrics"
 	"fleetd.sh/pkg/metricsclient"
 )
@@ -22,13 +22,23 @@ func TestMetricsClient_Integration(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// Start InfluxDB
-	influxContainer, err := testutil.StartInfluxDB(t)
+	ctx := context.Background()
+
+	// Start InfluxDB container
+	influxContainer, err := containers.NewInfluxDBContainer(ctx)
 	require.NoError(t, err)
-	defer influxContainer.Close()
+	t.Cleanup(func() {
+		if err := influxContainer.Close(); err != nil {
+			t.Logf("failed to close InfluxDB container: %v", err)
+		}
+	})
 
 	// Set up metrics service and server
-	metricsService := metrics.NewMetricsService(influxContainer.Client, influxContainer.Organization, influxContainer.Bucket)
+	metricsService := metrics.NewMetricsService(
+		influxContainer.Client,
+		influxContainer.Org,
+		influxContainer.Bucket,
+	)
 	metricsPath, metricsHandler := metricsrpc.NewMetricsServiceHandler(metricsService)
 
 	mux := http.NewServeMux()
