@@ -32,19 +32,22 @@ jobs:
         with:
           just-version: "1.36"
 
-      # Add cross-compilation tools for ARM64
-      - name: Set up cross-compilation
-        if: matrix.goarch == 'arm64'
+      - name: Set up cross-compilation toolchain
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            sudo apt-get install -y gcc-mingw-w64
+          elif [ "${{ matrix.goarch }}" = "arm64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
+            sudo apt-get install -y gcc-aarch64-linux-gnu
+          fi
 
       - name: Build binaries
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 1
-          CC: ${{ matrix.goarch == 'arm64' && matrix.goos == 'linux' && 'aarch64-linux-gnu-gcc' || 'gcc' }}
+          # Use appropriate compiler based on target
+          CC: ${{ matrix.goos == 'windows' && 'x86_64-w64-mingw32-gcc' || (matrix.goarch == 'arm64' && matrix.goos == 'linux' && 'aarch64-linux-gnu-gcc' || 'gcc') }}
         run: |
           just build server
           just build fleetd
