@@ -7,16 +7,12 @@ on:
       - "v*.*.*"
 
 jobs:
-  releases-matrix:
-    name: Release Binaries
+  linux:
+    name: Build for Linux
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [linux, windows, darwin]
         goarch: [amd64, arm64]
-        exclude:
-          - goarch: arm64
-            goos: windows
 
     steps:
       - uses: actions/checkout@v4
@@ -32,38 +28,126 @@ jobs:
         with:
           just-version: "1.36"
 
-      - name: Set up cross-compilation toolchain
+      - name: Set up ARM64 toolchain
+        if: matrix.goarch == 'arm64'
         run: |
           sudo apt-get update
-          if [ "${{ matrix.goos }}" = "windows" ]; then
-            sudo apt-get install -y gcc-mingw-w64
-          elif [ "${{ matrix.goarch }}" = "arm64" ] && [ "${{ matrix.goos }}" = "linux" ]; then
-            sudo apt-get install -y gcc-aarch64-linux-gnu
-          fi
+          sudo apt-get install -y gcc-aarch64-linux-gnu
 
       - name: Build binaries
         env:
-          GOOS: ${{ matrix.goos }}
+          GOOS: linux
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 1
-          # Use appropriate compiler based on target
-          CC: ${{ matrix.goos == 'windows' && 'x86_64-w64-mingw32-gcc' || (matrix.goarch == 'arm64' && matrix.goos == 'linux' && 'aarch64-linux-gnu-gcc' || 'gcc') }}
+          CC: ${{ matrix.goarch == 'arm64' && 'aarch64-linux-gnu-gcc' || 'gcc' }}
         run: |
           just build server
           just build fleetd
           just build columbus
 
           mkdir -p dist
-          mv bin/server dist/server-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
-          mv bin/fleetd dist/fleetd-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
-          mv bin/columbus dist/columbus-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
+          mv bin/server dist/server-linux-${{ matrix.goarch }}
+          mv bin/fleetd dist/fleetd-linux-${{ matrix.goarch }}
+          mv bin/columbus dist/columbus-linux-${{ matrix.goarch }}
 
       - name: Upload release artifacts
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/server-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
-            dist/fleetd-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
-            dist/columbus-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
+            dist/server-linux-${{ matrix.goarch }}
+            dist/fleetd-linux-${{ matrix.goarch }}
+            dist/columbus-linux-${{ matrix.goarch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  darwin:
+    name: Build for Darwin
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        goarch: [amd64, arm64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: Install just
+        uses: extractions/setup-just@v1
+        with:
+          just-version: "1.36"
+
+      - name: Build binaries
+        env:
+          GOOS: darwin
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 1
+        run: |
+          just build server
+          just build fleetd
+          just build columbus
+
+          mkdir -p dist
+          mv bin/server dist/server-darwin-${{ matrix.goarch }}
+          mv bin/fleetd dist/fleetd-darwin-${{ matrix.goarch }}
+          mv bin/columbus dist/columbus-darwin-${{ matrix.goarch }}
+
+      - name: Upload release artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/server-darwin-${{ matrix.goarch }}
+            dist/fleetd-darwin-${{ matrix.goarch }}
+            dist/columbus-darwin-${{ matrix.goarch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        goarch: [amd64] # Windows arm64 not supported yet
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: Install just
+        uses: extractions/setup-just@v1
+        with:
+          just-version: "1.36"
+
+      - name: Build binaries
+        env:
+          GOOS: windows
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 1
+        run: |
+          just build server
+          just build fleetd
+          just build columbus
+
+          mkdir -p dist
+          mv bin/server.exe dist/server-windows-${{ matrix.goarch }}.exe
+          mv bin/fleetd.exe dist/fleetd-windows-${{ matrix.goarch }}.exe
+          mv bin/columbus.exe dist/columbus-windows-${{ matrix.goarch }}.exe
+
+      - name: Upload release artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/server-windows-${{ matrix.goarch }}.exe
+            dist/fleetd-windows-${{ matrix.goarch }}.exe
+            dist/columbus-windows-${{ matrix.goarch }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
