@@ -15,8 +15,16 @@ linker_flags := if os() == "linux" {
     ""
 }
 
-build PROGRAM:
-    CGO_ENABLED=1 go build -v -ldflags "-X fleetd.sh/internal/version.Version={{version}} -X fleetd.sh/internal/version.CommitSHA={{commit_sha}} -X 'fleetd.sh/internal/version.BuildTime={{build_time}}' {{linker_flags}}" -o bin/{{PROGRAM}}{{executable_extension}} cmd/{{PROGRAM}}/main.go
+build target:
+    #!/usr/bin/env sh
+    CGO_ENABLED={{env_var_or_default('CGO_ENABLED', '1')}} \
+    CC={{env_var_or_default('CC', 'gcc')}} \
+    go build -v \
+    -ldflags "-X fleetd.sh/internal/version.Version={{version}} \
+              -X fleetd.sh/internal/version.CommitSHA={{commit_sha}} \
+              -X 'fleetd.sh/internal/version.BuildTime={{build_time}}' \
+              {{linker_flags}}" \
+    -o bin/{{target}} cmd/{{target}}/main.go
 
 build-all:
     just build fleetd &
@@ -26,11 +34,11 @@ build-all:
 test-all:
     CGO_ENABLED=1 go test -v ./...
 
-test-package PACKAGE:
-    CGO_ENABLED=1 go test -v ./{{PACKAGE}}
+test-package target:
+    CGO_ENABLED=1 go test -v ./{{target}}
 
-test TEST:
-    CGO_ENABLED=1 go test -v ./... -run {{TEST}}
+test target:
+    CGO_ENABLED=1 go test -v ./... -run {{target}}
 
 format:
     go fmt ./...
@@ -44,8 +52,8 @@ run: build-all
 
     wait
 
-watch PROGRAM:
-    VERSION={{version}} COMMIT_SHA={{commit_sha}} BUILD_TIME="{{build_time}}" gow -e=go,proto,sql -c run cmd/{{PROGRAM}}/main.go
+watch target:
+    VERSION={{version}} COMMIT_SHA={{commit_sha}} BUILD_TIME="{{build_time}}" gow -e=go,proto,sql -c run cmd/{{target}}/main.go
 
 watch-all:
     trap 'kill $(jobs -p)' INT TERM
