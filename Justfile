@@ -6,25 +6,28 @@ alias b := build
 version := `git describe --tags --always --dirty 2>/dev/null || echo "v0.0.0-dev"`
 commit_sha := `git rev-parse --short HEAD 2>/dev/null || echo "unknown"`
 build_time := `date -u '+%Y-%m-%d\\ %H:%M:%S'`
-executable_extension := if os() == "windows" { ".exe" } else { "" }
+target_os := env_var_or_default("GOOS", os())
+executable_extension := if target_os == "windows" { ".exe" } else { "" }
 
-# Determine the correct linker flags based on the OS
-linker_flags := if os() == "linux" {
+# Determine the correct linker flags based on the target OS
+linker_flags := if target_os == "linux" {
     "-extldflags '-Wl,--allow-multiple-definition'"
+} else if target_os == "windows" {
+    "-extldflags '-L/usr/x86_64-w64-mingw32/lib'"
 } else {
     ""
 }
 
 build target:
     #!/usr/bin/env sh
-    CGO_ENABLED={{env_var_or_default('CGO_ENABLED', '1')}} \
-    CC={{env_var_or_default('CC', 'gcc')}} \
+    CGO_ENABLED={{env('CGO_ENABLED', '1')}} \
+    CC={{env('CC', 'gcc')}} \
     go build -v \
     -ldflags "-X fleetd.sh/internal/version.Version={{version}} \
               -X fleetd.sh/internal/version.CommitSHA={{commit_sha}} \
               -X 'fleetd.sh/internal/version.BuildTime={{build_time}}' \
               {{linker_flags}}" \
-    -o bin/{{target}} cmd/{{target}}/main.go
+    -o bin/{{target}}{{executable_extension}} cmd/{{target}}/main.go
 
 build-all:
     just build fleetd &
