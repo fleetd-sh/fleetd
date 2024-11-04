@@ -35,12 +35,11 @@ jobs:
         GOOS: ${{ matrix.goos }}
         GOARCH: ${{ matrix.goarch }}
       run: |
-        # Build all binaries
         just build server & \
         just build fleetd & \
-        just build columbus
+        just build columbus & \
+        wait
 
-        # Rename binaries to include OS and arch
         mv bin/server bin/server-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
         mv bin/fleetd bin/fleetd-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
         mv bin/columbus bin/columbus-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
