@@ -51,12 +51,12 @@ jobs:
           mv bin/columbus dist/columbus-linux-${{ matrix.goarch }}
 
       - name: Upload release artifacts
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/server-linux-${{ matrix.goarch }}
-            dist/fleetd-linux-${{ matrix.goarch }}
-            dist/columbus-linux-${{ matrix.goarch }}
+            dist/server-*
+            dist/fleetd-*
+            dist/columbus-*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -97,12 +97,12 @@ jobs:
           mv bin/columbus dist/columbus-darwin-${{ matrix.goarch }}
 
       - name: Upload release artifacts
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/server-darwin-${{ matrix.goarch }}
-            dist/fleetd-darwin-${{ matrix.goarch }}
-            dist/columbus-darwin-${{ matrix.goarch }}
+            dist/server-*
+            dist/fleetd-*
+            dist/columbus-*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -143,11 +143,11 @@ jobs:
           mv bin/columbus.exe dist/columbus-windows-${{ matrix.goarch }}.exe
 
       - name: Upload release artifacts
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/server-windows-${{ matrix.goarch }}.exe
-            dist/fleetd-windows-${{ matrix.goarch }}.exe
-            dist/columbus-windows-${{ matrix.goarch }}.exe
+            dist/server-*
+            dist/fleetd-*
+            dist/columbus-*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
