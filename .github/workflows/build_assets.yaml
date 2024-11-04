@@ -1,8 +1,10 @@
-name: Release
-
+name: Build binaries
+permissions:
+  contents: write
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   releases-matrix:
