@@ -19,9 +19,7 @@ type MetricCollector struct {
 	stopCh chan struct{}
 }
 
-func NewMetricCollector(cfg *Config) (*MetricCollector, error) {
-	client := metricsclient.NewClient(cfg.MetricsServerURL)
-
+func NewMetricCollector(cfg *Config, client *metricsclient.Client) (*MetricCollector, error) {
 	return &MetricCollector{
 		config: cfg,
 		client: client,
@@ -29,7 +27,7 @@ func NewMetricCollector(cfg *Config) (*MetricCollector, error) {
 	}, nil
 }
 
-func (mc *MetricCollector) Start() {
+func (mc *MetricCollector) Start(ctx context.Context) {
 	interval, _ := time.ParseDuration(mc.config.MetricCollectionInterval)
 	if interval == 0 {
 		interval = time.Minute // Default to 1 minute if parsing fails
@@ -43,6 +41,8 @@ func (mc *MetricCollector) Start() {
 		case <-ticker.C:
 			mc.collectAndSendMetrics()
 		case <-mc.stopCh:
+			return
+		case <-ctx.Done():
 			return
 		}
 	}

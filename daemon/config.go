@@ -10,13 +10,10 @@ import (
 
 type Config struct {
 	DeviceID                 string `json:"device_id"`
-	FleetAPIURL              string `json:"fleet_api_url"`
-	ClientID                 string `json:"client_id"`
-	ClientSecret             string `json:"client_secret"`
-	CertificatePath          string `json:"certificate_path"`
-	PrivateKeyPath           string `json:"private_key_path"`
-	UpdateServerURL          string `json:"update_server_url"`
-	MetricsServerURL         string `json:"metrics_server_url"`
+	DeviceName               string `json:"device_name"`
+	DeviceType               string `json:"device_type"`
+	APIKey                   string `json:"api_key"`
+	APIEndpoint              string `json:"api_endpoint"`
 	ContainerImage           string `json:"container_image"`
 	ConfigDir                string `json:"config_dir"`
 	MetricCollectionInterval string `json:"metric_collection_interval"`
@@ -32,8 +29,8 @@ const (
 	defaultDiscoveryPort = 50050
 )
 
-func Load() (*Config, error) {
-	configDir := os.Getenv("FLEET_CONFIG_DIR")
+func LoadConfig() (*Config, error) {
+	configDir := os.Getenv("FLEETD_CONFIG_DIR")
 	if configDir == "" {
 		configDir = defaultConfigDir
 	}
@@ -61,7 +58,7 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-func (c *Config) Save() error {
+func (c *Config) SaveConfig() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -89,36 +86,14 @@ func (c *Config) IsConfigured() bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	return c.DeviceID != "" &&
-		c.FleetAPIURL != "" &&
-		c.ClientID != "" &&
-		c.ClientSecret != "" &&
+	return c.APIEndpoint != "" &&
 		c.DiscoveryPort != 0
 }
 
-// Getter methods
-func (c *Config) GetDeviceID() string {
+func (c *Config) GetAPIEndpoint() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.DeviceID
-}
-
-func (c *Config) GetFleetAPIURL() string {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.FleetAPIURL
-}
-
-func (c *Config) GetClientID() string {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.ClientID
-}
-
-func (c *Config) GetClientSecret() string {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.ClientSecret
+	return c.APIEndpoint
 }
 
 func (c *Config) GetDiscoveryPort() int {
@@ -130,65 +105,14 @@ func (c *Config) GetDiscoveryPort() int {
 	return c.DiscoveryPort
 }
 
-// Setter methods
-func (c *Config) SetDeviceID(id string) {
+func (c *Config) SetAPIEndpoint(url string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.DeviceID = id
-}
-
-func (c *Config) SetFleetAPIURL(url string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.FleetAPIURL = url
-}
-
-func (c *Config) SetClientCredentials(clientID, clientSecret string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.ClientID = clientID
-	c.ClientSecret = clientSecret
+	c.APIEndpoint = url
 }
 
 func (c *Config) SetDiscoveryPort(port int) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.DiscoveryPort = port
-}
-
-// Methods for certificate and key management
-func (c *Config) SavePrivateKey(keyPEM []byte) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if c.PrivateKeyPath == "" {
-		c.PrivateKeyPath = filepath.Join(c.ConfigDir, "device.key")
-	}
-
-	return os.WriteFile(c.PrivateKeyPath, keyPEM, 0600)
-}
-
-func (c *Config) SaveCertificate(certPEM []byte) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if c.CertificatePath == "" {
-		c.CertificatePath = filepath.Join(c.ConfigDir, "device.crt")
-	}
-
-	return os.WriteFile(c.CertificatePath, certPEM, 0644)
-}
-
-func (c *Config) LoadPrivateKey() ([]byte, error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	return os.ReadFile(c.PrivateKeyPath)
-}
-
-func (c *Config) LoadCertificate() ([]byte, error) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	return os.ReadFile(c.CertificatePath)
 }

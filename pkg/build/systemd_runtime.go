@@ -409,7 +409,7 @@ func (r *SystemdRuntime) generateUnitContent(spec *BuildSpec, executablePath str
 
 	// Generate unit file content
 	unitContent := fmt.Sprintf(`[Unit]
-Description=Fleetd Daemon Service - %s
+Description=fleetd daemon service: %s
 Documentation=https://fleetd.sh/docs
 After=network.target
 
