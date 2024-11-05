@@ -33,6 +33,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// DiscoveryServiceGetDeviceInfoProcedure is the fully-qualified name of the DiscoveryService's
+	// GetDeviceInfo RPC.
+	DiscoveryServiceGetDeviceInfoProcedure = "/discovery.v1.DiscoveryService/GetDeviceInfo"
 	// DiscoveryServiceConfigureDeviceProcedure is the fully-qualified name of the DiscoveryService's
 	// ConfigureDevice RPC.
 	DiscoveryServiceConfigureDeviceProcedure = "/discovery.v1.DiscoveryService/ConfigureDevice"
@@ -41,11 +44,15 @@ const (
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
 	discoveryServiceServiceDescriptor               = v1.File_discovery_v1_discovery_proto.Services().ByName("DiscoveryService")
+	discoveryServiceGetDeviceInfoMethodDescriptor   = discoveryServiceServiceDescriptor.Methods().ByName("GetDeviceInfo")
 	discoveryServiceConfigureDeviceMethodDescriptor = discoveryServiceServiceDescriptor.Methods().ByName("ConfigureDevice")
 )
 
 // DiscoveryServiceClient is a client for the discovery.v1.DiscoveryService service.
 type DiscoveryServiceClient interface {
+	// GetDeviceInfo returns basic device information before registration
+	GetDeviceInfo(context.Context, *connect.Request[v1.GetDeviceInfoRequest]) (*connect.Response[v1.GetDeviceInfoResponse], error)
+	// ConfigureDevice registers the device with a fleet server
 	ConfigureDevice(context.Context, *connect.Request[v1.ConfigureDeviceRequest]) (*connect.Response[v1.ConfigureDeviceResponse], error)
 }
 
@@ -59,6 +66,12 @@ type DiscoveryServiceClient interface {
 func NewDiscoveryServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) DiscoveryServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &discoveryServiceClient{
+		getDeviceInfo: connect.NewClient[v1.GetDeviceInfoRequest, v1.GetDeviceInfoResponse](
+			httpClient,
+			baseURL+DiscoveryServiceGetDeviceInfoProcedure,
+			connect.WithSchema(discoveryServiceGetDeviceInfoMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		configureDevice: connect.NewClient[v1.ConfigureDeviceRequest, v1.ConfigureDeviceResponse](
 			httpClient,
 			baseURL+DiscoveryServiceConfigureDeviceProcedure,
@@ -70,7 +83,13 @@ func NewDiscoveryServiceClient(httpClient connect.HTTPClient, baseURL string, op
 
 // discoveryServiceClient implements DiscoveryServiceClient.
 type discoveryServiceClient struct {
+	getDeviceInfo   *connect.Client[v1.GetDeviceInfoRequest, v1.GetDeviceInfoResponse]
 	configureDevice *connect.Client[v1.ConfigureDeviceRequest, v1.ConfigureDeviceResponse]
+}
+
+// GetDeviceInfo calls discovery.v1.DiscoveryService.GetDeviceInfo.
+func (c *discoveryServiceClient) GetDeviceInfo(ctx context.Context, req *connect.Request[v1.GetDeviceInfoRequest]) (*connect.Response[v1.GetDeviceInfoResponse], error) {
+	return c.getDeviceInfo.CallUnary(ctx, req)
 }
 
 // ConfigureDevice calls discovery.v1.DiscoveryService.ConfigureDevice.
@@ -80,6 +99,9 @@ func (c *discoveryServiceClient) ConfigureDevice(ctx context.Context, req *conne
 
 // DiscoveryServiceHandler is an implementation of the discovery.v1.DiscoveryService service.
 type DiscoveryServiceHandler interface {
+	// GetDeviceInfo returns basic device information before registration
+	GetDeviceInfo(context.Context, *connect.Request[v1.GetDeviceInfoRequest]) (*connect.Response[v1.GetDeviceInfoResponse], error)
+	// ConfigureDevice registers the device with a fleet server
 	ConfigureDevice(context.Context, *connect.Request[v1.ConfigureDeviceRequest]) (*connect.Response[v1.ConfigureDeviceResponse], error)
 }
 
@@ -89,6 +111,12 @@ type DiscoveryServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewDiscoveryServiceHandler(svc DiscoveryServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	discoveryServiceGetDeviceInfoHandler := connect.NewUnaryHandler(
+		DiscoveryServiceGetDeviceInfoProcedure,
+		svc.GetDeviceInfo,
+		connect.WithSchema(discoveryServiceGetDeviceInfoMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	discoveryServiceConfigureDeviceHandler := connect.NewUnaryHandler(
 		DiscoveryServiceConfigureDeviceProcedure,
 		svc.ConfigureDevice,
@@ -97,6 +125,8 @@ func NewDiscoveryServiceHandler(svc DiscoveryServiceHandler, opts ...connect.Han
 	)
 	return "/discovery.v1.DiscoveryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case DiscoveryServiceGetDeviceInfoProcedure:
+			discoveryServiceGetDeviceInfoHandler.ServeHTTP(w, r)
 		case DiscoveryServiceConfigureDeviceProcedure:
 			discoveryServiceConfigureDeviceHandler.ServeHTTP(w, r)
 		default:
@@ -107,6 +137,10 @@ func NewDiscoveryServiceHandler(svc DiscoveryServiceHandler, opts ...connect.Han
 
 // UnimplementedDiscoveryServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedDiscoveryServiceHandler struct{}
+
+func (UnimplementedDiscoveryServiceHandler) GetDeviceInfo(context.Context, *connect.Request[v1.GetDeviceInfoRequest]) (*connect.Response[v1.GetDeviceInfoResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("discovery.v1.DiscoveryService.GetDeviceInfo is not implemented"))
+}
 
 func (UnimplementedDiscoveryServiceHandler) ConfigureDevice(context.Context, *connect.Request[v1.ConfigureDeviceRequest]) (*connect.Response[v1.ConfigureDeviceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("discovery.v1.DiscoveryService.ConfigureDevice is not implemented"))

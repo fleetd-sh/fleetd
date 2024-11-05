@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"time"
@@ -46,23 +45,21 @@ func configureDevice(entry *zeroconf.ServiceEntry) {
 		url,
 	)
 
-	// TODO: Use actual config
+	// TODO: apply actual config
 	req := connect.NewRequest(&discoverypb.ConfigureDeviceRequest{
-		DeviceId:         "device-001",
-		FleetApiUrl:      "https://api.fleet.example.com",
-		UpdateServerUrl:  "https://updates.fleet.example.com",
-		MetricsServerUrl: "https://metrics.fleet.example.com",
+		DeviceName:  "device-001",
+		ApiEndpoint: "http://192.168.1.146:50051",
 	})
 
 	resp, err := client.ConfigureDevice(context.Background(), req)
 	if err != nil {
-		log.Printf("Failed to configure device: %v", err)
+		slog.With("error", err).Error("Failed to configure device")
 		return
 	}
 
 	if resp.Msg.Success {
-		log.Println("Device configured successfully:", resp.Msg.Message)
+		slog.Info("Device configured successfully", "message", resp.Msg.Message)
 	} else {
-		log.Println("Failed to configure device:", resp.Msg.Message)
+		slog.With("message", resp.Msg.Message).Error("Failed to configure device")
 	}
 }

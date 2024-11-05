@@ -1,11 +1,15 @@
 [Unit]
-Description=Fleet daemon
+Description=fleetd daemon
 After=network.target
+StartLimitIntervalSec=0
 
 [Service]
+Type=simple
 ExecStart=/usr/local/bin/fleetd
 Restart=always
-User=root
+RestartSec=1
+User=fleetd
+Environment=FLEETD_CONFIG_DIR=/etc/fleetd
 
 [Install]
 WantedBy=multi-user.target

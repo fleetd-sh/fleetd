@@ -1,105 +1,133 @@
 package daemon
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
-	"fleetd.sh/internal/version"
+	"fleetd.sh/pkg/updateclient"
+	"golang.org/x/mod/semver"
 )
 
 type UpdateManager struct {
-	config *Config
-	stopCh chan struct{}
+	client      *updateclient.Client
+	currentVer  string
+	deviceType  string
+	execPath    string // Path to current executable
+	lastChecked time.Time
 }
 
-type UpdateInfo struct {
-	Version     string `json:"version"`
-	DownloadURL string `json:"download_url"`
-}
+func NewUpdateManager(fleetURL, currentVersion string) (*UpdateManager, error) {
+	execPath, err := os.Executable()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get executable path: %w", err)
+	}
 
-func NewUpdateManager(cfg *Config) (*UpdateManager, error) {
 	return &UpdateManager{
-		config: cfg,
-		stopCh: make(chan struct{}),
+		client:     updateclient.NewClient(fleetURL),
+		currentVer: currentVersion,
+		deviceType: "FLEETD",
+		execPath:   execPath,
 	}, nil
 }
 
-func (um *UpdateManager) Start() {
-	interval, _ := time.ParseDuration(um.config.UpdateCheckInterval)
-	if interval == 0 {
-		interval = time.Hour // Default to 1 hour if parsing fails
+func (um *UpdateManager) CheckForUpdates(ctx context.Context) (*updateclient.Package, error) {
+	updates, err := um.client.GetAvailableUpdates(
+		ctx,
+		um.deviceType,
+		um.lastChecked,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check for updates: %w", err)
 	}
 
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
+	um.lastChecked = time.Now()
 
-	for {
-		select {
-		case <-ticker.C:
-			if err := um.checkAndApplyUpdate(); err != nil {
-				slog.With("error", err).Error("Error checking for updates")
+	// Find latest applicable update
+	var latest *updateclient.Package
+	for _, update := range updates {
+		if semver.Compare(update.Version, um.currentVer) > 0 {
+			if latest == nil || semver.Compare(update.Version, latest.Version) > 0 {
+				latest = update
 			}
-		case <-um.stopCh:
-			return
 		}
 	}
+
+	return latest, nil
 }
 
-func (um *UpdateManager) Stop() {
-	close(um.stopCh)
-}
-
-func (um *UpdateManager) checkAndApplyUpdate() error {
-	resp, err := http.Get(fmt.Sprintf("%s/check-update?device_id=%s", um.config.UpdateServerURL, um.config.DeviceID))
-	if err != nil {
+func (um *UpdateManager) ApplyUpdate(ctx context.Context, pkg *updateclient.Package) error {
+	// Download and replace binary like before
+	if err := um.downloadAndReplaceBinary(ctx, pkg); err != nil {
 		return err
+	}
+
+	// Signal systemd to restart the service
+	if err := um.restartService(); err != nil {
+		return fmt.Errorf("failed to restart service: %w", err)
+	}
+
+	return nil
+}
+
+func (um *UpdateManager) downloadAndReplaceBinary(ctx context.Context, pkg *updateclient.Package) error {
+	// Download update to temporary file
+	resp, err := http.Get(pkg.FileURL)
+	if err != nil {
+		return fmt.Errorf("failed to download update: %w", err)
 	}
 	defer resp.Body.Close()
 
-	var updateInfo UpdateInfo
-	if err := json.NewDecoder(resp.Body).Decode(&updateInfo); err != nil {
-		return err
+	tempDir := filepath.Dir(um.execPath)
+	tempFile, err := os.CreateTemp(tempDir, "fleetd.*.update")
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	if _, err := io.Copy(tempFile, resp.Body); err != nil {
+		return fmt.Errorf("failed to write update: %w", err)
+	}
+	tempFile.Close()
+
+	// Make temporary file executable
+	if err := os.Chmod(tempFile.Name(), 0755); err != nil {
+		return fmt.Errorf("failed to make update executable: %w", err)
 	}
 
-	currentVersion := version.GetVersion()
-
-	if updateInfo.Version == currentVersion {
-		return nil // No update needed
+	// Rename current binary to .old for backup
+	oldPath := um.execPath + ".old"
+	if err := os.Rename(um.execPath, oldPath); err != nil {
+		return fmt.Errorf("failed to backup current binary: %w", err)
 	}
 
-	// Download update
-	if err := um.downloadUpdate(updateInfo.DownloadURL); err != nil {
-		return err
+	// Move new binary into place
+	if err := os.Rename(tempFile.Name(), um.execPath); err != nil {
+		// Try to restore old binary on failure
+		os.Rename(oldPath, um.execPath)
+		return fmt.Errorf("failed to install update: %w", err)
 	}
 
-	// Apply update
-	return um.applyUpdate()
+	// Success - remove old binary
+	os.Remove(oldPath)
+
+	return nil
 }
 
-func (um *UpdateManager) downloadUpdate(url string) error {
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
+func (um *UpdateManager) restartService() error {
+	if os.Getenv("INVOCATION_ID") == "" {
+		return fmt.Errorf("not running under systemd")
 	}
-	defer resp.Body.Close()
 
-	out, err := os.Create("/tmp/fleet-daemon-update")
-	if err != nil {
-		return err
+	cmd := exec.Command("systemctl", "restart", "fleetd.service")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to restart service: %w", err)
 	}
-	defer out.Close()
 
-	_, err = io.Copy(out, resp.Body)
-	return err
-}
-
-func (um *UpdateManager) applyUpdate() error {
-	cmd := exec.Command("/bin/sh", "-c", "systemctl stop fleet-daemon && mv /tmp/fleet-daemon-update /usr/local/bin/fleet-daemon && systemctl start fleet-daemon")
-	return cmd.Run()
+	return nil
 }
