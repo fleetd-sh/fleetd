@@ -4,9 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
@@ -18,14 +15,8 @@ import (
 
 	"fleetd.sh/auth"
 	"fleetd.sh/device"
-	authrpc "fleetd.sh/gen/auth/v1/authv1connect"
-	devicerpc "fleetd.sh/gen/device/v1/devicev1connect"
-	metricsrpc "fleetd.sh/gen/metrics/v1/metricsv1connect"
-	storagerpc "fleetd.sh/gen/storage/v1/storagev1connect"
-	updaterpc "fleetd.sh/gen/update/v1/updatev1connect"
 	"fleetd.sh/internal/migrations"
 	"fleetd.sh/internal/testutil"
-	"fleetd.sh/internal/testutil/containers"
 	"fleetd.sh/metrics"
 	"fleetd.sh/pkg/deviceclient"
 	"fleetd.sh/pkg/metricsclient"
@@ -73,12 +64,12 @@ func TestFleetdIntegration(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	// Initialize the test stack with dynamic ports
-	stack, err := setupStack(t)
+	stack, err := testutil.SetupStack(t)
 	if err != nil {
 		t.Fatalf("Failed to set up stack: %v", err)
 	}
 	if stack != nil {
-		defer stack.cleanup()
+		defer stack.Cleanup()
 	}
 
 	// Set up a test device with fleetd
@@ -244,120 +235,6 @@ func TestFleetdIntegration(t *testing.T) {
 		_, err = client.GetPackage(ctx, pkgID)
 		require.Error(t, err)
 	})
-}
-
-func setupStack(t *testing.T) (*Stack, error) {
-	t.Log("Starting stack setup")
-
-	ctx := context.Background()
-
-	// Create a temporary directory for the test
-	tempDir, err := os.MkdirTemp("", "fleetd-integration-test")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create temp dir: %w", err)
-	}
-
-	// Start InfluxDB using testcontainers
-	influxContainer, err := containers.NewInfluxDBContainer(ctx)
-	if err != nil {
-		os.RemoveAll(tempDir)
-		return nil, fmt.Errorf("failed to start InfluxDB: %w", err)
-	}
-
-	t.Cleanup(func() {
-		if err := influxContainer.Close(); err != nil {
-			t.Logf("failed to close InfluxDB container: %v", err)
-		}
-		os.RemoveAll(tempDir)
-	})
-
-	t.Log("Setting up InfluxDB client",
-		"url", influxContainer.URL,
-		"token", influxContainer.Token[:8]+"...",
-		"org", influxContainer.Org,
-		"bucket", influxContainer.Bucket,
-	)
-
-	// Create metrics service with the InfluxDB client
-	metricsService := metrics.NewMetricsService(
-		influxContainer.Client,
-		influxContainer.Org,
-		influxContainer.Bucket,
-	)
-
-	// Set up SQLite database
-	db := testutil.NewTestDB(t)
-
-	version, dirty, err := migrations.MigrateUp(db.DB)
-	if err != nil {
-		return nil, fmt.Errorf("failed to migrate database: %w", err)
-	}
-	require.Greater(t, version, -1)
-	require.False(t, dirty)
-
-	// Start the auth service server first
-	authService := auth.NewAuthService(db.DB)
-	authPath, authHandler := authrpc.NewAuthServiceHandler(authService)
-	authMux := http.NewServeMux()
-	authMux.Handle(authPath, authHandler)
-	authServer := httptest.NewServer(authMux)
-
-	deviceService := device.NewDeviceService(db.DB)
-	updateService := update.NewUpdateService(db.DB)
-	storageService := storage.NewStorageService(fmt.Sprintf("%s/storage", tempDir))
-
-	// Create ConnectRPC handlers for each service
-	devicePath, deviceHandler := devicerpc.NewDeviceServiceHandler(deviceService)
-	metricsPath, metricsHandler := metricsrpc.NewMetricsServiceHandler(metricsService)
-	updatePath, updateHandler := updaterpc.NewUpdateServiceHandler(updateService)
-	storagePath, storageHandler := storagerpc.NewStorageServiceHandler(storageService)
-
-	// Start remaining HTTP test servers with ConnectRPC handlers
-	deviceMux := http.NewServeMux()
-	deviceMux.Handle(devicePath, deviceHandler)
-	deviceServer := httptest.NewServer(deviceMux)
-
-	metricsMux := http.NewServeMux()
-	metricsMux.Handle(metricsPath, metricsHandler)
-	metricsServer := httptest.NewServer(metricsMux)
-
-	updateMux := http.NewServeMux()
-	updateMux.Handle(updatePath, updateHandler)
-	updateServer := httptest.NewServer(updateMux)
-
-	storageMux := http.NewServeMux()
-	storageMux.Handle(storagePath, storageHandler)
-	storageServer := httptest.NewServer(storageMux)
-
-	cleanup := func() {
-		os.RemoveAll(tempDir)
-		authServer.Close()
-		deviceServer.Close()
-		metricsServer.Close()
-		updateServer.Close()
-		storageServer.Close()
-		influxContainer.Close()
-	}
-
-	t.Log("AuthServiceURL", "url", authServer.URL)
-	t.Log("DeviceServiceURL", "url", deviceServer.URL)
-	t.Log("MetricsServiceURL", "url", metricsServer.URL)
-	t.Log("UpdateServiceURL", "url", updateServer.URL)
-	t.Log("StorageServiceURL", "url", storageServer.URL)
-
-	return &Stack{
-		AuthService:       authService,
-		DeviceService:     deviceService,
-		MetricsService:    metricsService,
-		UpdateService:     updateService,
-		StorageService:    storageService,
-		AuthServiceURL:    authServer.URL,
-		DeviceServiceURL:  deviceServer.URL,
-		MetricsServiceURL: metricsServer.URL,
-		UpdateServiceURL:  updateServer.URL,
-		StorageServiceURL: storageServer.URL,
-		cleanup:           cleanup,
-	}, nil
 }
 
 func setupTestDevice() (*TestDevice, error) {

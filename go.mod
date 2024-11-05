@@ -22,6 +22,7 @@ require (
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	golang.org/x/mod v0.21.0
 	golang.org/x/net v0.30.0
+	golang.org/x/sync v0.8.0
 	google.golang.org/protobuf v1.35.1
 )
 
