@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package nixpacks.v1;
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "fleetd.sh/gen/nixpacks/v1;nixpacksv1";
+
+service NixpacksService {
+  // Package management
+  rpc CreatePackage(CreatePackageRequest) returns (CreatePackageResponse);
+  rpc UpdatePackage(UpdatePackageRequest) returns (UpdatePackageResponse);
+  rpc GetPackage(GetPackageRequest) returns (GetPackageResponse);
+  rpc ListPackages(ListPackagesRequest) returns (ListPackagesResponse);
+  rpc DeletePackage(DeletePackageRequest) returns (DeletePackageResponse);
+  
+  // Deployment operations
+  rpc DeployPackage(DeployPackageRequest) returns (DeployPackageResponse);
+  rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse);
+  rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse);
+  rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse);
+}
+
+message NixpacksConfig {
+  string source = 1;  // Git URL or local path
+  string revision = 2;
+  BuildConfig build = 3;
+  RuntimeConfig runtime = 4;
+}
+
+message BuildConfig {
+  map<string, string> build_args = 1;
+  repeated string build_env = 2;
+  string plan_path = 3;
+  repeated string nixpkgs = 4;
+}
+
+message RuntimeConfig {
+  repeated string env = 1;
+  ResourceLimits resources = 2;
+  string start_command = 3;
+  map<string, string> labels = 4;
+}

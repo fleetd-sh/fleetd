@@ -1,0 +1,174 @@
+syntax = "proto3";
+package oci.v1;
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "fleetd.sh/gen/oci/v1;ociv1";
+
+service OCIService {
+  // Image deployment operations
+  rpc DeployImage(DeployImageRequest) returns (DeployImageResponse);
+  rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse);
+  rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse);
+  rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse);
+  rpc RollbackDeployment(RollbackDeploymentRequest) returns (RollbackDeploymentResponse);
+
+  // Registry management
+  rpc AddRegistry(AddRegistryRequest) returns (AddRegistryResponse);
+  rpc RemoveRegistry(RemoveRegistryRequest) returns (RemoveRegistryResponse);
+  rpc ListRegistries(ListRegistriesRequest) returns (ListRegistriesResponse);
+}
+
+message DeployImageRequest {
+  // Image reference (e.g. "nginx:1.21" or "ghcr.io/org/app:v1.2.3")
+  string image = 1;
+  
+  // Target devices
+  repeated oneof target {
+    repeated string device_ids = 2;
+    common.v1.DeviceFilter device_filter = 3;
+  }
+  
+  // Deployment strategy
+  common.v1.Strategy strategy = 4;
+  
+  // Container configuration
+  ContainerConfig config = 5;
+}
+
+message ContainerConfig {
+  // Container runtime configuration
+  repeated string entrypoint = 1;
+  repeated string cmd = 2;
+  repeated string env = 3;
+  
+  // Resource limits
+  ResourceLimits resources = 4;
+  
+  // Network configuration
+  NetworkConfig network = 5;
+  
+  // Volume mounts
+  repeated VolumeMount volumes = 6;
+  
+  // Restart policy
+  RestartPolicy restart_policy = 7;
+  
+  // Labels
+  map<string, string> labels = 8;
+}
+
+message ResourceLimits {
+  uint32 cpu_limit = 1;     // millicores (e.g. 1000 = 1 CPU)
+  uint64 memory_limit = 2;  // bytes
+  uint64 disk_limit = 3;    // bytes
+}
+
+message NetworkConfig {
+  string network_mode = 1;  // host, bridge, none
+  repeated PortMapping ports = 2;
+  repeated string dns = 3;
+  map<string, string> extra_hosts = 4;
+}
+
+message PortMapping {
+  uint32 container_port = 1;
+  uint32 host_port = 2;
+  string protocol = 3;  // tcp, udp
+}
+
+message VolumeMount {
+  string host_path = 1;
+  string container_path = 2;
+  bool read_only = 3;
+}
+
+message RestartPolicy {
+  enum Policy {
+    UNKNOWN = 0;
+    NO = 1;
+    ALWAYS = 2;
+    ON_FAILURE = 3;
+    UNLESS_STOPPED = 4;
+  }
+  Policy policy = 1;
+  uint32 max_retry_count = 2;
+}
+
+message AddRegistryRequest {
+  string url = 1;
+  string name = 2;  // friendly name for the registry
+  
+  // Authentication
+  oneof auth {
+    BasicAuth basic = 3;
+    BearerAuth bearer = 4;
+    AwsAuth aws = 5;
+    GcpAuth gcp = 6;
+  }
+}
+
+message BasicAuth {
+  string username = 1;
+  string password = 2;
+}
+
+message BearerAuth {
+  string token = 1;
+}
+
+message AwsAuth {
+  string region = 1;
+  optional string role_arn = 2;
+}
+
+message GcpAuth {
+  string service_account_json = 1;
+}
+
+// Response messages
+message DeployImageResponse {
+  string deployment_id = 1;
+}
+
+message GetDeploymentRequest {
+  string deployment_id = 1;
+}
+
+message GetDeploymentResponse {
+  string deployment_id = 1;
+  string image = 2;
+  common.v1.DeploymentStatus status = 3;
+  ContainerConfig config = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message ListDeploymentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+}
+
+message ListDeploymentsResponse {
+  repeated GetDeploymentResponse deployments = 1;
+  string next_page_token = 2;
+}
+
+message CancelDeploymentRequest {
+  string deployment_id = 1;
+}
+
+message CancelDeploymentResponse {
+  common.v1.DeploymentStatus status = 1;
+}
+
+message RollbackDeploymentRequest {
+  string deployment_id = 1;
+}
+
+message RollbackDeploymentResponse {
+  string rollback_deployment_id = 1;
+  common.v1.DeploymentStatus status = 2;
+}

@@ -1,0 +1,44 @@
+syntax = "proto3";
+package events.v1;
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "fleetd.sh/gen/events/v1;eventsv1";
+
+service EventsService {
+  // Event source management
+  rpc RegisterEventSource(RegisterEventSourceRequest) returns (RegisterEventSourceResponse);
+  rpc ListEventSources(ListEventSourcesRequest) returns (ListEventSourcesResponse);
+  rpc DeleteEventSource(DeleteEventSourceRequest) returns (DeleteEventSourceResponse);
+  
+  // Deployment rules
+  rpc CreateDeploymentRule(CreateDeploymentRuleRequest) returns (CreateDeploymentRuleResponse);
+  rpc UpdateDeploymentRule(UpdateDeploymentRuleRequest) returns (UpdateDeploymentRuleResponse);
+  rpc ListDeploymentRules(ListDeploymentRulesRequest) returns (ListDeploymentRulesResponse);
+  rpc DeleteDeploymentRule(DeleteDeploymentRuleRequest) returns (DeleteDeploymentRuleResponse);
+  
+  // Event history
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+}
+
+message GitHubSource {
+  string owner = 1;
+  string repository = 2;
+  repeated string event_types = 3;
+  string webhook_secret = 4;
+  optional string installation_id = 5;
+}
+
+message DockerHubSource {
+  string repository = 1;
+  string webhook_token = 2;
+}
+
+message GenericWebhookSource {
+  string name = 1;
+  string secret = 2;
+  map<string, string> headers = 3;
+  string payload_template = 4;
+}

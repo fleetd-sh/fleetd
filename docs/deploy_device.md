@@ -24,20 +24,11 @@ This guide will walk you through setting up devices using fleetd.
    ```
 
 4. Set up fleetd as a system service:
+   ```bash
+   cp deployments/fleetd.service /etc/systemd/system/fleetd.service
    ```
-   cat << EOF > /etc/systemd/system/fleetd.service
-   [Unit]
-   Description=Fleet Daemon
-   After=network.target
 
-   [Service]
-   ExecStart=/usr/local/bin/fleetd
-   Restart=always
-
-   [Install]
-   WantedBy=multi-user.target
-   EOF
-
+   ```bash
    systemctl enable fleetd
    systemctl start fleetd
    ```

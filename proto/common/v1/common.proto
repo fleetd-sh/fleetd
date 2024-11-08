@@ -1,0 +1,72 @@
+syntax = "proto3";
+package common.v1;
+
+import "google/protobuf/timestamp.proto";
+option go_package = "fleetd.sh/gen/common/v1;commonv1";
+
+message DeviceFilter {
+  map<string, string> labels = 1;
+  repeated string device_types = 2;
+  string version_constraint = 3;
+  repeated string capabilities = 4;
+  string location = 5;
+  repeated string tags = 6;
+}
+
+message Strategy {
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    TYPE_ALL_AT_ONCE = 1;
+    TYPE_ROLLING = 2;
+    TYPE_CANARY = 3;
+    TYPE_BLUE_GREEN = 4;
+  }
+  Type type = 1;
+  
+  optional int32 batch_size = 2;
+  optional int32 batch_interval_seconds = 3;
+  optional float canary_percentage = 4;
+  optional int32 health_check_timeout = 5;
+  optional int32 rollback_timeout = 6;
+}
+
+message DeploymentStatus {
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    STATE_PENDING = 1;
+    STATE_IN_PROGRESS = 2;
+    STATE_COMPLETED = 3;
+    STATE_FAILED = 4;
+    STATE_CANCELLED = 5;
+    STATE_ROLLING_BACK = 6;
+    STATE_ROLLED_BACK = 7;
+  }
+  State state = 1;
+  
+  int32 total_devices = 2;
+  int32 updated_devices = 3;
+  int32 failed_devices = 4;
+  
+  repeated DeviceStatus device_statuses = 5;
+  string error_message = 6;
+  google.protobuf.Timestamp start_time = 7;
+  google.protobuf.Timestamp end_time = 8;
+}
+
+message DeviceStatus {
+  string device_id = 1;
+  State state = 2;
+  string error = 3;
+  google.protobuf.Timestamp update_time = 4;
+  
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    STATE_PENDING = 1;
+    STATE_DOWNLOADING = 2;
+    STATE_INSTALLING = 3;
+    STATE_STARTING = 4;
+    STATE_RUNNING = 5;
+    STATE_FAILED = 6;
+    STATE_ROLLED_BACK = 7;
+  }
+} 

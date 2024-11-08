@@ -1,0 +1,141 @@
+syntax = "proto3";
+package binary.v1;
+
+import "google/protobuf/timestamp.proto";
+import "common/v1/common.proto";
+
+option go_package = "fleetd.sh/gen/binary/v1;binaryv1";
+
+service BinaryService {
+  // Binary management
+  rpc CreateBinary(CreateBinaryRequest) returns (CreateBinaryResponse);
+  rpc UpdateBinary(UpdateBinaryRequest) returns (UpdateBinaryResponse);
+  rpc GetBinary(GetBinaryRequest) returns (GetBinaryResponse);
+  rpc ListBinaries(ListBinariesRequest) returns (ListBinariesResponse);
+  rpc DeleteBinary(DeleteBinaryRequest) returns (DeleteBinaryResponse);
+  
+  // Deployment operations
+  rpc DeployBinary(DeployBinaryRequest) returns (DeployBinaryResponse);
+  rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse);
+  rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse);
+  rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse);
+  rpc RollbackDeployment(RollbackDeploymentRequest) returns (RollbackDeploymentResponse);
+
+  // Binary validation and device compatibility
+  rpc ValidateBinary(ValidateBinaryRequest) returns (ValidateBinaryResponse);
+  rpc CheckDeviceCompatibility(CheckDeviceCompatibilityRequest) returns (CheckDeviceCompatibilityResponse);
+}
+
+message Binary {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  
+  // Binary metadata
+  BinaryMetadata metadata = 6;
+  
+  // Binary artifacts for different architectures/platforms
+  repeated BinaryArtifact artifacts = 7;
+  
+  // Runtime configuration
+  BinaryConfig config = 8;
+  
+  // Health check configuration
+  HealthCheckConfig health_check = 9;
+  
+  // Validation rules
+  ValidationConfig validation = 10;
+}
+
+message BinaryMetadata {
+  string description = 1;
+  string changelog = 2;
+  map<string, string> labels = 3;
+  repeated string tags = 4;
+  string source_url = 5;
+  string documentation_url = 6;
+  repeated string supported_device_types = 7;
+  string min_fleetd_version = 8;
+  repeated string required_capabilities = 9;
+  map<string, string> environment_constraints = 10;
+}
+
+message BinaryArtifact {
+  string architecture = 1;
+  string os = 2;
+  string variant = 3;
+  
+  oneof source {
+    URLSource url = 4;
+    S3Source s3 = 5;
+    GCSSource gcs = 6;
+  }
+  
+  string checksum = 7;
+  int64 size = 8;
+  map<string, string> metadata = 9;
+  repeated string signatures = 10;
+}
+
+message URLSource {
+  string url = 1;
+  map<string, string> headers = 2;
+}
+
+message S3Source {
+  string bucket = 1;
+  string key = 2;
+  string region = 3;
+  optional string endpoint = 4;
+  optional string role_arn = 5;
+}
+
+message GCSSource {
+  string bucket = 1;
+  string object = 2;
+  optional string service_account = 3;
+}
+
+message BinaryConfig {
+  // Installation configuration
+  string install_path = 1;
+  repeated string install_commands = 2;
+  map<string, string> install_env = 3;
+  repeated string required_packages = 4;
+  
+  // Runtime configuration
+  string executable_path = 5;
+  repeated string args = 6;
+  repeated string env = 7;
+  string working_dir = 8;
+  ResourceLimits resources = 9;
+  
+  // Service management
+  oneof service_manager {
+    SystemdConfig systemd = 10;
+    SupervisorConfig supervisor = 11;
+    OpenRCConfig openrc = 12;
+  }
+  
+  // Cleanup configuration
+  repeated string uninstall_commands = 13;
+  repeated string cleanup_paths = 14;
+}
+
+message SystemdConfig {
+  string unit_name = 1;
+  string description = 2;
+  repeated string after = 3;
+  repeated string requires = 4;
+  repeated string wants = 5;
+  string type = 6;
+  string user = 7;
+  string group = 8;
+  string restart = 9;
+  int32 restart_sec = 10;
+  repeated string capabilities = 11;
+  repeated string device_allow = 12;
+  map<string, string> environment = 13;
+} 
