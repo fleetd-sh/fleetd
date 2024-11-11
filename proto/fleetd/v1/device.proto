@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+import "google/protobuf/timestamp.proto";
+
+service DeviceService {
+  // Register a new device with the fleet
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  
+  // Send periodic heartbeat and receive pending actions
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  
+  // Update device status and metrics
+  rpc ReportStatus(ReportStatusRequest) returns (ReportStatusResponse);
+
+  // Get a device by ID
+  rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
+
+  // List devices
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+
+  // Delete a device
+  rpc DeleteDevice(DeleteDeviceRequest) returns (DeleteDeviceResponse); 
+}
+
+message Device {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  string version = 4;
+  map<string, string> metadata = 5;
+  google.protobuf.Timestamp last_seen = 6;
+}
+
+message RegisterRequest {
+  string name = 1;
+  string type = 2;
+  string version = 3;
+  map<string, string> capabilities = 4;
+}
+
+message RegisterResponse {
+  string device_id = 1;
+  string api_key = 2;
+}
+
+message HeartbeatRequest {
+  string device_id = 1;
+  map<string, string> metrics = 2;
+}
+
+message HeartbeatResponse {
+  bool has_update = 1;
+  string update_id = 2;
+}
+
+message ReportStatusRequest {
+  string device_id = 1;
+  string status = 2;
+  map<string, string> metrics = 3;
+}
+
+message ReportStatusResponse {
+  bool success = 1;
+}
+
+message GetDeviceRequest {
+  string device_id = 1;
+}
+
+message GetDeviceResponse {
+  Device device = 1;
+}
+
+message ListDevicesRequest {
+  string type = 1;
+  string version = 2;
+  string status = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message ListDevicesResponse {
+  repeated Device devices = 1;
+  string next_page_token = 2;
+}
+
+message DeleteDeviceRequest {
+  string device_id = 1;
+}
+
+message DeleteDeviceResponse {
+  bool success = 1;
+}
+

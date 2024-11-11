@@ -1,0 +1,5 @@
+device_id: "test-device"
+local_storage_path: "/var/lib/fleetd"
+api_port: 8080
+telemetry_interval: 60
+log_level: "debug"

@@ -14,3 +14,6 @@ tmp/
 
 # closed-source
 platform/
+
+# Add this line if not already present
+test/e2e/testdata/fleetd

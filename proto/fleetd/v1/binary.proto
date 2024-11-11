@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+import "google/protobuf/timestamp.proto";
+
+service BinaryService {
+  // Upload a new binary to the fleet
+  rpc UploadBinary(stream UploadBinaryRequest) returns (UploadBinaryResponse);
+  
+  // Get information about a binary
+  rpc GetBinary(GetBinaryRequest) returns (GetBinaryResponse);
+  
+  // Download a binary
+  rpc DownloadBinary(DownloadBinaryRequest) returns (stream DownloadBinaryResponse);
+  
+  // List available binaries
+  rpc ListBinaries(ListBinariesRequest) returns (ListBinariesResponse);
+}
+
+message Binary {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  string platform = 4;
+  string architecture = 5;
+  int64 size = 6;
+  string sha256 = 7;
+  map<string, string> metadata = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message UploadBinaryRequest {
+  oneof data {
+    BinaryMetadata metadata = 1;
+    bytes chunk = 2;
+  }
+}
+
+message BinaryMetadata {
+  string name = 1;
+  string version = 2;
+  string platform = 3;
+  string architecture = 4;
+  map<string, string> metadata = 5;
+}
+
+message UploadBinaryResponse {
+  string id = 1;
+  string sha256 = 2;
+}
+
+message GetBinaryRequest {
+  string id = 1;
+}
+
+message GetBinaryResponse {
+  Binary binary = 1;
+}
+
+message DownloadBinaryRequest {
+  string id = 1;
+}
+
+message DownloadBinaryResponse {
+  bytes chunk = 1;
+}
+
+message ListBinariesRequest {
+  string name = 1;
+  string version = 2;
+  string platform = 3;
+  string architecture = 4;
+  int32 page_size = 5;
+  string page_token = 6;
+}
+
+message ListBinariesResponse {
+  repeated Binary binaries = 1;
+  string next_page_token = 2;
+} 

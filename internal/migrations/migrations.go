@@ -32,7 +32,7 @@ func MigrateUp(d *sql.DB) (version int, dirty bool, err error) {
 	m, err := migrate.NewWithInstance(
 		"iofs",
 		source,
-		"sqlite3",
+		"sqlite",
 		driver,
 	)
 	if err != nil {
@@ -66,7 +66,7 @@ func MigrateDown(d *sql.DB) (version int, dirty bool, err error) {
 	m, err := migrate.NewWithInstance(
 		"iofs",
 		source,
-		"sqlite3",
+		"sqlite",
 		driver,
 	)
 	if err != nil {
