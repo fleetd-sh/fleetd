@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	_ "modernc.org/sqlite"
 )
 
 // New creates a new database connection with optimized settings
-func New(url string) (*sql.DB, error) {
-	db, err := sql.Open("libsql", url)
+func New(path string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}

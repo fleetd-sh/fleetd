@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+import "google/protobuf/timestamp.proto";
+
+service UpdateService {
+  // Create a new update campaign
+  rpc CreateUpdateCampaign(CreateUpdateCampaignRequest) returns (CreateUpdateCampaignResponse);
+  
+  // Get update campaign status
+  rpc GetUpdateCampaign(GetUpdateCampaignRequest) returns (GetUpdateCampaignResponse);
+  
+  // List update campaigns
+  rpc ListUpdateCampaigns(ListUpdateCampaignsRequest) returns (ListUpdateCampaignsResponse);
+  
+  // Get device update status
+  rpc GetDeviceUpdateStatus(GetDeviceUpdateStatusRequest) returns (GetDeviceUpdateStatusResponse);
+  
+  // Report update status from device
+  rpc ReportUpdateStatus(ReportUpdateStatusRequest) returns (ReportUpdateStatusResponse);
+}
+
+message UpdateCampaign {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string binary_id = 4;
+  string target_version = 5;
+  repeated string target_platforms = 6;
+  repeated string target_architectures = 7;
+  map<string, string> target_metadata = 8;
+  UpdateStrategy strategy = 9;
+  UpdateCampaignStatus status = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+  int32 total_devices = 13;
+  int32 updated_devices = 14;
+  int32 failed_devices = 15;
+}
+
+enum UpdateStrategy {
+  UPDATE_STRATEGY_UNSPECIFIED = 0;
+  UPDATE_STRATEGY_IMMEDIATE = 1;
+  UPDATE_STRATEGY_ROLLING = 2;
+  UPDATE_STRATEGY_MANUAL = 3;
+}
+
+enum UpdateCampaignStatus {
+  UPDATE_CAMPAIGN_STATUS_UNSPECIFIED = 0;
+  UPDATE_CAMPAIGN_STATUS_CREATED = 1;
+  UPDATE_CAMPAIGN_STATUS_IN_PROGRESS = 2;
+  UPDATE_CAMPAIGN_STATUS_COMPLETED = 3;
+  UPDATE_CAMPAIGN_STATUS_FAILED = 4;
+  UPDATE_CAMPAIGN_STATUS_CANCELLED = 5;
+}
+
+enum DeviceUpdateStatus {
+  DEVICE_UPDATE_STATUS_UNSPECIFIED = 0;
+  DEVICE_UPDATE_STATUS_PENDING = 1;
+  DEVICE_UPDATE_STATUS_DOWNLOADING = 2;
+  DEVICE_UPDATE_STATUS_DOWNLOADED = 3;
+  DEVICE_UPDATE_STATUS_INSTALLING = 4;
+  DEVICE_UPDATE_STATUS_INSTALLED = 5;
+  DEVICE_UPDATE_STATUS_FAILED = 6;
+  DEVICE_UPDATE_STATUS_ROLLED_BACK = 7;
+}
+
+message CreateUpdateCampaignRequest {
+  string name = 1;
+  string description = 2;
+  string binary_id = 3;
+  string target_version = 4;
+  repeated string target_platforms = 5;
+  repeated string target_architectures = 6;
+  map<string, string> target_metadata = 7;
+  UpdateStrategy strategy = 8;
+}
+
+message CreateUpdateCampaignResponse {
+  string campaign_id = 1;
+}
+
+message GetUpdateCampaignRequest {
+  string campaign_id = 1;
+}
+
+message GetUpdateCampaignResponse {
+  UpdateCampaign campaign = 1;
+}
+
+message ListUpdateCampaignsRequest {
+  UpdateCampaignStatus status = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListUpdateCampaignsResponse {
+  repeated UpdateCampaign campaigns = 1;
+  string next_page_token = 2;
+}
+
+message GetDeviceUpdateStatusRequest {
+  string device_id = 1;
+  string campaign_id = 2;
+}
+
+message GetDeviceUpdateStatusResponse {
+  string device_id = 1;
+  string campaign_id = 2;
+  DeviceUpdateStatus status = 3;
+  string error_message = 4;
+  google.protobuf.Timestamp last_updated = 5;
+}
+
+message ReportUpdateStatusRequest {
+  string device_id = 1;
+  string campaign_id = 2;
+  DeviceUpdateStatus status = 3;
+  string error_message = 4;
+}
+
+message ReportUpdateStatusResponse {
+  bool success = 1;
+} 

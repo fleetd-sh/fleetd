@@ -1,5 +1,0 @@
-#!/bin/sh
-while true; do
-    echo "Running test executable"
-    sleep 1
-done

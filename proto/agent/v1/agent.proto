@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package agent.v1;
+
+option go_package = "fleetd.sh/gen/agent/v1;agentpb";
+
+// Daemon service definition
+service DaemonService {
+  // Binary management
+  rpc DeployBinary(DeployBinaryRequest) returns (DeployBinaryResponse) {}
+  rpc StartBinary(StartBinaryRequest) returns (StartBinaryResponse) {}
+  rpc StopBinary(StopBinaryRequest) returns (StopBinaryResponse) {}
+  rpc ListBinaries(ListBinariesRequest) returns (ListBinariesResponse) {}
+}
+
+message Binary {
+  string name = 1;
+  string version = 2;
+  string status = 3;
+}
+
+message DeployBinaryRequest {e
+  string name = 1;
+  bytes data = 2;
+}
+
+message DeployBinaryResponse {}
+
+message StartBinaryRequest {
+  string name = 1;
+  repeated string args = 2;
+}
+
+message StartBinaryResponse {}
+
+message StopBinaryRequest {
+  string name = 1;
+}
+
+message StopBinaryResponse {}
+
+message ListBinariesRequest {}
+
+message ListBinariesResponse {
+  repeated Binary binaries = 1;
+}

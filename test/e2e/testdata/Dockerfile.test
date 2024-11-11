@@ -1,0 +1,15 @@
+FROM alpine:latest
+
+# Create required directories
+RUN mkdir -p /var/lib/fleetd/state
+
+# Copy the agent binary into the container
+COPY fleetd /usr/local/bin/fleetd
+
+# Make it executable
+RUN chmod +x /usr/local/bin/fleetd
+
+# Set the entrypoint with required flags
+ENTRYPOINT ["/usr/local/bin/fleetd", "-storage-dir=/var/lib/fleetd", "-rpc-port=8080"]
+
+EXPOSE 8080

@@ -19,29 +19,25 @@ linker_flags := if target_os == "linux" {
 }
 
 build target:
-    #!/usr/bin/env sh
-    CGO_ENABLED={{env('CGO_ENABLED', '1')}} \
-    CC={{env('CC', 'gcc')}} \
-    go build -v \
-    -ldflags "-X fleetd.sh/internal/version.Version={{version}} \
+        #!/usr/bin/env sh
+        go build -v \
+        -ldflags "-X fleetd.sh/internal/version.Version={{version}} \
               -X fleetd.sh/internal/version.CommitSHA={{commit_sha}} \
               -X 'fleetd.sh/internal/version.BuildTime={{build_time}}' \
               {{linker_flags}}" \
-    -o bin/{{target}}{{executable_extension}} cmd/{{target}}/main.go
+        -o bin/{{target}}{{executable_extension}} cmd/{{target}}/main.go
 
 build-all:
-    just build fleetd &
-    just build columbus &
-    just build server
+    build fleetd
 
 test-all:
-    CGO_ENABLED=1 go test -v ./...
+    go test -v ./...
 
 test-package target:
-    CGO_ENABLED=1 go test -v ./{{target}}
+    go test -v ./{{target}}
 
 test target:
-    CGO_ENABLED=1 go test -v ./... -run {{target}}
+    go test -v ./... -run {{target}}
 
 format:
     go fmt ./...
@@ -49,10 +45,7 @@ format:
 run: build-all
     sleep 1  # Add a small delay
     trap 'kill $(jobs -p)' INT TERM
-    ./bin/fleetd &
-    LISTEN_ADDR=localhost:50051 ./bin/server &
-    LISTEN_ADDR=localhost:50052 ./bin/columbus &
-
+    echo "Nothing to run"
     wait
 
 watch target:
@@ -60,7 +53,5 @@ watch target:
 
 watch-all:
     trap 'kill $(jobs -p)' INT TERM
-    just watch fleetd &
-    LISTEN_ADDR=localhost:50051 just watch server &
-    LISTEN_ADDR=localhost:50052 just watch columbus &
+    echo "Nothing to watch"
     wait

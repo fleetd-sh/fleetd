@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package agent.v1;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "fleetd.sh/gen/agent/v1;agentpb";
+
+// Discovery service for initial device setup
+service DiscoveryService {
+  // Get basic device information before registration
+  rpc GetDeviceInfo(google.protobuf.Empty) returns (GetDeviceInfoResponse);
+  
+  // Configure device with fleet server details
+  rpc ConfigureDevice(ConfigureDeviceRequest) returns (ConfigureDeviceResponse);
+}
+
+message SystemStats {
+  double cpu_usage = 1;
+  uint64 memory_total = 2;
+  uint64 memory_used = 3;
+  uint64 disk_total = 4;
+  uint64 disk_used = 5;
+}
+
+message DeviceInfo {
+  string id = 1;
+  bool configured = 2; // Whether device is registered with fleet server
+  string device_type = 3; // Device hardware type
+  string version = 4; // Current software version
+  SystemStats system = 5; // System stats
+}
+
+message GetDeviceInfoResponse {
+  DeviceInfo device_info = 1;
+}
+
+message ConfigureDeviceRequest {
+  string device_name = 1;  // Human-readable device name
+  string api_endpoint = 2; // Fleet server endpoint URL
+}
+
+message ConfigureDeviceResponse {
+  bool success = 1;
+  string message = 2;
+  string device_id = 3;    // Server-assigned device ID
+  string api_key = 4;      // API key for future authentication
+} 
