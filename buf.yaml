@@ -1,5 +1,9 @@
 # For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
 version: v2
+
+deps:
+  - buf.build/googleapis/googleapis
+
 lint:
   rpc_allow_google_protobuf_empty_requests: true
   rpc_allow_google_protobuf_empty_responses: true
@@ -13,4 +17,4 @@ breaking:
 
 modules:
   - path: proto
-    name: buf.build/mco/fleet
+    name: buf.build/fleetd-sh/fleetd

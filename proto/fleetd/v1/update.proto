@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+// Software update management service
+service UpdateService {
+  // Check for available updates
+  rpc CheckUpdates(CheckUpdatesRequest) returns (CheckUpdatesResponse);
+  
+  // Download update package
+  rpc GetUpdatePackage(GetUpdatePackageRequest) returns (stream GetUpdatePackageResponse);
+  
+  // Report update status
+  rpc ReportUpdateStatus(ReportUpdateStatusRequest) returns (ReportUpdateStatusResponse);
+}
+
+message Update {
+  string id = 1;
+  string version = 2;
+  google.protobuf.Timestamp release_date = 3;
+  repeated string target_device_types = 4;
+  int64 size = 5;
+  string checksum = 6;
+  map<string, string> metadata = 7;
+}
+
+message CheckUpdatesRequest {
+  string device_id = 1;
+  string current_version = 2;
+  string device_type = 3;
+}
+
+message CheckUpdatesResponse {
+  bool update_available = 1;
+  Update update = 2;
+}
+
+message GetUpdatePackageRequest {
+  string update_id = 1;
+  string device_id = 2;
+}
+
+message GetUpdatePackageResponse {
+  oneof data {
+    bytes chunk = 1;
+    UpdateMetadata metadata = 2;
+  }
+}
+
+message UpdateMetadata {
+  string version = 1;
+  string checksum = 2;
+  int64 total_size = 3;
+  map<string, string> metadata = 4;
+}
+
+message ReportUpdateStatusRequest {
+  string device_id = 1;
+  string update_id = 2;
+  UpdateStatus status = 3;
+  string message = 4;
+}
+
+message ReportUpdateStatusResponse {
+  bool success = 1;
+}
+
+enum UpdateStatus {
+  UPDATE_STATUS_UNSPECIFIED = 0;
+  UPDATE_STATUS_DOWNLOADING = 1;
+  UPDATE_STATUS_VERIFYING = 2;
+  UPDATE_STATUS_INSTALLING = 3;
+  UPDATE_STATUS_COMPLETED = 4;
+  UPDATE_STATUS_FAILED = 5;
+  UPDATE_STATUS_ROLLED_BACK = 6;
+} 
