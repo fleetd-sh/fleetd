@@ -29,6 +29,9 @@ build target:
               {{linker_flags}}" \
         -o bin/{{target}}{{executable_extension}} cmd/{{target}}/main.go
 
+build-all:
+    build fleetd
+
 test-all:
     CGO_ENABLED=1 go test -v ./...
 
