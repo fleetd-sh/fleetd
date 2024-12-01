@@ -1,0 +1,19 @@
+FROM golang:1.21-alpine
+
+WORKDIR /app
+
+# Install required tools
+RUN apk add --no-cache curl
+
+# Copy agent binary
+COPY fleetd /usr/local/bin/fleetd
+
+# Create data directory
+RUN mkdir -p /var/lib/fleetd/state
+
+# Set up agent config
+COPY config.yaml /etc/fleetd/config.yaml
+
+EXPOSE 8080
+
+CMD ["/usr/local/bin/agent", "-config", "/etc/fleetd/config.yaml"] 

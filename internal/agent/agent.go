@@ -2,6 +2,8 @@ package agent
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -16,97 +18,40 @@ import (
 	"fleetd.sh/internal/state"
 	"fleetd.sh/internal/update"
 	"fleetd.sh/pkg/telemetry"
-	"fleetd.sh/pkg/telemetry/handlers"
-	"fleetd.sh/pkg/telemetry/sources"
+	"github.com/google/uuid"
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/mem"
 )
 
 // Agent represents the main fleetd device agent
 type Agent struct {
-	cfg       *Config
-	ctx       context.Context
-	cancel    context.CancelFunc
-	wg        sync.WaitGroup
-	started   bool
-	mu        sync.Mutex
-	discovery *discovery.Discovery
-	runtime   *rt.Runtime
-	telemetry *telemetry.Collector
-	updater   *update.Updater
-	state     *state.Manager
-	statePath string
+	cfg        *Config
+	ctx        context.Context
+	cancel     context.CancelFunc
+	wg         sync.WaitGroup
+	started    bool
+	mu         sync.RWMutex
+	discovery  *discovery.Discovery
+	runtime    *rt.Runtime
+	telemetry  *telemetry.Collector
+	updater    *update.Updater
+	state      *state.Manager
+	statePath  string
+	deviceInfo *DeviceInfo
+	config     *Configuration
+	ready      chan struct{}
 }
 
 // New creates a new Agent instance
 func New(cfg *Config) *Agent {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	rt, err := rt.New(filepath.Join(cfg.LocalStoragePath, "runtime"))
-	if err != nil {
-		log.Printf("Failed to initialize runtime: %v", err)
-		// Continue without runtime support
-		rt = nil
-	}
-
-	// Initialize telemetry
-	collector := telemetry.New(time.Duration(cfg.TelemetryInterval) * time.Second)
-
-	// Add system stats source
-	collector.AddSource(sources.NewSystemStats())
-
-	// Add local file handler
-	if cfg.LocalStoragePath != "" {
-		localHandler, err := handlers.NewLocalFile(
-			filepath.Join(cfg.LocalStoragePath, "telemetry.json"),
-		)
-		if err != nil {
-			log.Printf("Failed to initialize local telemetry handler: %v", err)
-		} else {
-			collector.AddHandler(localHandler)
-		}
-	}
-
-	// Initialize updater
-	updater, err := update.New(filepath.Join(cfg.LocalStoragePath, "updates"))
-	if err != nil {
-		log.Printf("Failed to initialize updater: %v", err)
-		// Continue without update support
-		updater = nil
-	}
-
-	// Initialize state manager
-	stateManager, err := state.New(filepath.Join(cfg.LocalStoragePath, "state", "state.json"))
-	if err != nil {
-		log.Fatalf("Failed to initialize state manager: %v", err)
-	}
-
-	// Initialize device info if needed
-	if err := stateManager.Update(func(s *state.State) error {
-		if s.DeviceInfo.ID == "" {
-			s.DeviceInfo = state.DeviceInfo{
-				ID:            cfg.DeviceID,
-				Hardware:      runtime.GOARCH,
-				Architecture:  runtime.GOARCH,
-				OSInfo:        runtime.GOOS,
-				FirstSeenTime: time.Now(),
-				Tags:          make(map[string]string),
-			}
-		}
-		s.LastStartTime = time.Now()
-		return nil
-	}); err != nil {
-		log.Printf("Failed to initialize device info: %v", err)
-	}
-
 	return &Agent{
-		cfg:       cfg,
-		ctx:       ctx,
-		cancel:    cancel,
-		discovery: discovery.New(cfg.DeviceID, cfg.MDNSPort),
-		runtime:   rt,
-		telemetry: collector,
-		updater:   updater,
-		state:     stateManager,
-		statePath: filepath.Join(cfg.LocalStoragePath, "state", "state.json"),
+		cfg:    cfg,
+		ctx:    ctx,
+		cancel: cancel,
+		ready:  make(chan struct{}),
 	}
 }
 
@@ -124,35 +69,46 @@ func (a *Agent) Start() error {
 		return fmt.Errorf("failed to create state directory: %w", err)
 	}
 
+	// Initialize all components
+	var err error
+
 	// Initialize state manager
-	stateManager, err := state.New(a.statePath)
+	a.state, err = state.New(filepath.Join(a.cfg.LocalStoragePath, "state", "state.json"))
 	if err != nil {
 		return fmt.Errorf("failed to initialize state manager: %w", err)
 	}
-	a.state = stateManager
 
 	// Initialize runtime
-	runtime, err := rt.New(filepath.Join(a.cfg.LocalStoragePath, "runtime"))
+	a.runtime, err = rt.New(filepath.Join(a.cfg.LocalStoragePath, "runtime"))
 	if err != nil {
 		return fmt.Errorf("failed to initialize runtime: %w", err)
 	}
-	a.runtime = runtime
 
 	// Initialize device info
 	err = a.state.Update(func(s *state.State) error {
-		s.DeviceInfo = state.DeviceInfo{
-			ID:            a.cfg.DeviceID,
-			FirstSeenTime: time.Now(),
-			Tags:          make(map[string]string),
+		if s.DeviceInfo.ID == "" {
+			s.DeviceInfo = state.DeviceInfo{
+				ID:            a.cfg.DeviceID,
+				Hardware:      runtime.GOARCH,
+				Architecture:  runtime.GOARCH,
+				OSInfo:        runtime.GOOS,
+				FirstSeenTime: time.Now(),
+				Tags:          make(map[string]string),
+			}
 		}
+		s.LastStartTime = time.Now()
 		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to initialize device info: %w", err)
 	}
 
-	// Start discovery if enabled
-	if a.cfg.EnableMDNS {
+	// Initialize other components
+	a.discovery = discovery.New(a.cfg.DeviceID, a.cfg.MDNSPort)
+	a.telemetry = telemetry.New(time.Duration(a.cfg.TelemetryInterval) * time.Second)
+
+	// Only start discovery if not disabled
+	if !a.cfg.DisableMDNS {
 		if err := a.discovery.Start(); err != nil {
 			return fmt.Errorf("failed to start discovery: %w", err)
 		}
@@ -168,6 +124,8 @@ func (a *Agent) Start() error {
 	// Start telemetry collection
 	a.telemetry.Start()
 
+	// Signal that agent is ready
+	close(a.ready)
 	a.started = true
 	return nil
 }
@@ -378,4 +336,118 @@ func (a *Agent) State() *state.Manager {
 // Runtime returns the agent's runtime manager
 func (a *Agent) Runtime() *rt.Runtime {
 	return a.runtime
+}
+
+// Add these types to support device info and stats
+type DeviceInfo struct {
+	DeviceID   string
+	Configured bool
+	DeviceType string
+	Version    string
+	APIKey     string
+}
+
+type SystemStats struct {
+	CPUUsage    float64
+	MemoryTotal uint64
+	MemoryUsed  uint64
+	DiskTotal   uint64
+	DiskUsed    uint64
+}
+
+type Configuration struct {
+	DeviceName  string
+	APIEndpoint string
+}
+
+// GetDeviceInfo returns a copy of the current device info
+func (a *Agent) GetDeviceInfo() DeviceInfo {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return *a.deviceInfo
+}
+
+// GetSystemStats returns the current system statistics
+func (a *Agent) GetSystemStats() SystemStats {
+	stats := SystemStats{}
+
+	if cpu, err := cpu.Percent(0, false); err == nil && len(cpu) > 0 {
+		stats.CPUUsage = cpu[0]
+	}
+
+	if mem, err := mem.VirtualMemory(); err == nil {
+		stats.MemoryTotal = mem.Total
+		stats.MemoryUsed = mem.Used
+	}
+
+	if disk, err := disk.Usage("/"); err == nil {
+		stats.DiskTotal = disk.Total
+		stats.DiskUsed = disk.Used
+	}
+
+	return stats
+}
+
+// Configure updates the agent's configuration and persists it
+func (a *Agent) Configure(cfg Configuration) error {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.configure(cfg)
+}
+
+// configure is the internal implementation of configuration updates
+func (a *Agent) configure(cfg Configuration) error {
+	// Validate configuration
+	if cfg.APIEndpoint == "" {
+		return fmt.Errorf("api endpoint is required")
+	}
+
+	// Update internal state
+	a.config = &cfg
+
+	if a.deviceInfo == nil {
+		a.deviceInfo = &DeviceInfo{}
+	}
+
+	a.deviceInfo.Configured = true
+	if a.deviceInfo.DeviceID == "" {
+		a.deviceInfo.DeviceID = generateDeviceID()
+	}
+	a.deviceInfo.APIKey = generateAPIKey()
+
+	// Persist state
+	if a.state != nil {
+		if err := a.state.Update(func(s *state.State) error {
+			s.DeviceInfo.ID = a.deviceInfo.DeviceID
+			// Update other state fields as needed
+			return nil
+		}); err != nil {
+			return fmt.Errorf("failed to persist configuration: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// Helper functions
+func generateDeviceID() string {
+	// Generate a UUID v4
+	id := uuid.New()
+	return id.String()
+}
+
+func generateAPIKey() string {
+	// Generate a random 32-byte key and base64 encode it
+	key := make([]byte, 32)
+	rand.Read(key)
+	return base64.URLEncoding.EncodeToString(key)
+}
+
+func (a *Agent) WaitForReady(ctx context.Context) error {
+	select {
+	case <-a.ready:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }

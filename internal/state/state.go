@@ -101,35 +101,16 @@ func (m *Manager) Get() State {
 	return stateCopy
 }
 
-// Update atomically updates the state using a transaction function
+// Update atomically updates the state
 func (m *Manager) Update(fn func(*State) error) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-
-	// Ensure directory exists
-	dir := filepath.Dir(m.path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to create state directory: %w", err)
-	}
-
-	// Create backup of current state if it exists
-	if _, err := os.Stat(m.path); err == nil {
-		backupPath := m.path + ".bak"
-		if err := os.Rename(m.path, backupPath); err != nil {
-			return fmt.Errorf("failed to create backup: %w", err)
-		}
-	}
 
 	if err := fn(m.state); err != nil {
 		return err
 	}
 
-	// Save the state
-	if err := m.save(m.state); err != nil {
-		return fmt.Errorf("failed to save state: %w", err)
-	}
-
-	return nil
+	return m.save()
 }
 
 func (m *Manager) load() error {
@@ -147,28 +128,37 @@ func (m *Manager) load() error {
 	return nil
 }
 
-func (m *Manager) save(state *State) error {
-	// Ensure directory exists before every write
+// Save persists the current state to disk
+func (m *Manager) Save() error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.save()
+}
+
+// save is the internal implementation that assumes the lock is held
+func (m *Manager) save() error {
+	// No need to lock here as the caller must hold the lock
+
+	// Ensure directory exists
 	dir := filepath.Dir(m.path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create state directory: %w", err)
 	}
 
-	data, err := json.MarshalIndent(state, "", "  ")
+	data, err := json.MarshalIndent(m.state, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal state: %w", err)
 	}
 
-	// Write to temporary file in the same directory
+	// Write to temporary file first
 	tmpPath := m.path + ".tmp"
 	if err := os.WriteFile(tmpPath, data, 0644); err != nil {
-		return fmt.Errorf("failed to write temporary state: %w", err)
+		return fmt.Errorf("failed to write state: %w", err)
 	}
 
 	// Atomic rename
 	if err := os.Rename(tmpPath, m.path); err != nil {
-		// Clean up the temp file if rename fails
-		os.Remove(tmpPath)
+		os.Remove(tmpPath) // Clean up temp file
 		return fmt.Errorf("failed to save state: %w", err)
 	}
 

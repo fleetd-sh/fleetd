@@ -1,5 +1,11 @@
 package agent
 
+import (
+	"flag"
+
+	"github.com/google/uuid"
+)
+
 // Config holds the agent configuration
 type Config struct {
 	// DeviceID is the unique identifier for this device
@@ -22,6 +28,9 @@ type Config struct {
 
 	// UpdateCheckInterval is how often to check for updates (in hours)
 	UpdateCheckInterval int
+
+	// DisableMDNS disables mDNS discovery
+	DisableMDNS bool
 }
 
 const (
@@ -31,9 +40,23 @@ const (
 // DefaultConfig returns a Config with default values
 func DefaultConfig() *Config {
 	return &Config{
+		DeviceID:            uuid.New().String(),
+		LocalStoragePath:    "/var/lib/fleetd",
+		ServerURL:           ":8080",
 		EnableMDNS:          true,
-		TelemetryInterval:   60, // seconds
-		UpdateCheckInterval: 24, // Check daily
-		MDNSPort:            DefaultMDNSPort,
+		MDNSPort:            5353,
+		TelemetryInterval:   60,
+		UpdateCheckInterval: 24,
+		DisableMDNS:         false,
 	}
+}
+
+// ParseFlags parses command line flags into config
+func ParseFlags() *Config {
+	cfg := DefaultConfig()
+
+	flag.BoolVar(&cfg.DisableMDNS, "disable-mdns", false, "Disable mDNS discovery")
+
+	flag.Parse()
+	return cfg
 }

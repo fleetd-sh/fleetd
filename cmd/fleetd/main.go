@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -10,9 +11,12 @@ import (
 )
 
 func main() {
-	cfg := agent.DefaultConfig()
+	// Parse flags first
+	disableMDNS := flag.Bool("disable-mdns", false, "Disable mDNS discovery")
+	flag.Parse()
 
-	// TODO: Load configuration from file/env
+	cfg := agent.DefaultConfig()
+	cfg.EnableMDNS = !*disableMDNS
 
 	a := agent.New(cfg)
 	if err := a.Start(); err != nil {
