@@ -33,12 +33,18 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// UpdateServiceCheckUpdatesProcedure is the fully-qualified name of the UpdateService's
-	// CheckUpdates RPC.
-	UpdateServiceCheckUpdatesProcedure = "/fleetd.v1.UpdateService/CheckUpdates"
-	// UpdateServiceGetUpdatePackageProcedure is the fully-qualified name of the UpdateService's
-	// GetUpdatePackage RPC.
-	UpdateServiceGetUpdatePackageProcedure = "/fleetd.v1.UpdateService/GetUpdatePackage"
+	// UpdateServiceCreateUpdateCampaignProcedure is the fully-qualified name of the UpdateService's
+	// CreateUpdateCampaign RPC.
+	UpdateServiceCreateUpdateCampaignProcedure = "/fleetd.v1.UpdateService/CreateUpdateCampaign"
+	// UpdateServiceGetUpdateCampaignProcedure is the fully-qualified name of the UpdateService's
+	// GetUpdateCampaign RPC.
+	UpdateServiceGetUpdateCampaignProcedure = "/fleetd.v1.UpdateService/GetUpdateCampaign"
+	// UpdateServiceListUpdateCampaignsProcedure is the fully-qualified name of the UpdateService's
+	// ListUpdateCampaigns RPC.
+	UpdateServiceListUpdateCampaignsProcedure = "/fleetd.v1.UpdateService/ListUpdateCampaigns"
+	// UpdateServiceGetDeviceUpdateStatusProcedure is the fully-qualified name of the UpdateService's
+	// GetDeviceUpdateStatus RPC.
+	UpdateServiceGetDeviceUpdateStatusProcedure = "/fleetd.v1.UpdateService/GetDeviceUpdateStatus"
 	// UpdateServiceReportUpdateStatusProcedure is the fully-qualified name of the UpdateService's
 	// ReportUpdateStatus RPC.
 	UpdateServiceReportUpdateStatusProcedure = "/fleetd.v1.UpdateService/ReportUpdateStatus"
@@ -46,19 +52,25 @@ const (
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	updateServiceServiceDescriptor                  = v1.File_fleetd_v1_update_proto.Services().ByName("UpdateService")
-	updateServiceCheckUpdatesMethodDescriptor       = updateServiceServiceDescriptor.Methods().ByName("CheckUpdates")
-	updateServiceGetUpdatePackageMethodDescriptor   = updateServiceServiceDescriptor.Methods().ByName("GetUpdatePackage")
-	updateServiceReportUpdateStatusMethodDescriptor = updateServiceServiceDescriptor.Methods().ByName("ReportUpdateStatus")
+	updateServiceServiceDescriptor                     = v1.File_fleetd_v1_update_proto.Services().ByName("UpdateService")
+	updateServiceCreateUpdateCampaignMethodDescriptor  = updateServiceServiceDescriptor.Methods().ByName("CreateUpdateCampaign")
+	updateServiceGetUpdateCampaignMethodDescriptor     = updateServiceServiceDescriptor.Methods().ByName("GetUpdateCampaign")
+	updateServiceListUpdateCampaignsMethodDescriptor   = updateServiceServiceDescriptor.Methods().ByName("ListUpdateCampaigns")
+	updateServiceGetDeviceUpdateStatusMethodDescriptor = updateServiceServiceDescriptor.Methods().ByName("GetDeviceUpdateStatus")
+	updateServiceReportUpdateStatusMethodDescriptor    = updateServiceServiceDescriptor.Methods().ByName("ReportUpdateStatus")
 )
 
 // UpdateServiceClient is a client for the fleetd.v1.UpdateService service.
 type UpdateServiceClient interface {
-	// Check for available updates
-	CheckUpdates(context.Context, *connect.Request[v1.CheckUpdatesRequest]) (*connect.Response[v1.CheckUpdatesResponse], error)
-	// Download update package
-	GetUpdatePackage(context.Context, *connect.Request[v1.GetUpdatePackageRequest]) (*connect.ServerStreamForClient[v1.GetUpdatePackageResponse], error)
-	// Report update status
+	// Create a new update campaign
+	CreateUpdateCampaign(context.Context, *connect.Request[v1.CreateUpdateCampaignRequest]) (*connect.Response[v1.CreateUpdateCampaignResponse], error)
+	// Get update campaign status
+	GetUpdateCampaign(context.Context, *connect.Request[v1.GetUpdateCampaignRequest]) (*connect.Response[v1.GetUpdateCampaignResponse], error)
+	// List update campaigns
+	ListUpdateCampaigns(context.Context, *connect.Request[v1.ListUpdateCampaignsRequest]) (*connect.Response[v1.ListUpdateCampaignsResponse], error)
+	// Get device update status
+	GetDeviceUpdateStatus(context.Context, *connect.Request[v1.GetDeviceUpdateStatusRequest]) (*connect.Response[v1.GetDeviceUpdateStatusResponse], error)
+	// Report update status from device
 	ReportUpdateStatus(context.Context, *connect.Request[v1.ReportUpdateStatusRequest]) (*connect.Response[v1.ReportUpdateStatusResponse], error)
 }
 
@@ -72,16 +84,28 @@ type UpdateServiceClient interface {
 func NewUpdateServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) UpdateServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &updateServiceClient{
-		checkUpdates: connect.NewClient[v1.CheckUpdatesRequest, v1.CheckUpdatesResponse](
+		createUpdateCampaign: connect.NewClient[v1.CreateUpdateCampaignRequest, v1.CreateUpdateCampaignResponse](
 			httpClient,
-			baseURL+UpdateServiceCheckUpdatesProcedure,
-			connect.WithSchema(updateServiceCheckUpdatesMethodDescriptor),
+			baseURL+UpdateServiceCreateUpdateCampaignProcedure,
+			connect.WithSchema(updateServiceCreateUpdateCampaignMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
-		getUpdatePackage: connect.NewClient[v1.GetUpdatePackageRequest, v1.GetUpdatePackageResponse](
+		getUpdateCampaign: connect.NewClient[v1.GetUpdateCampaignRequest, v1.GetUpdateCampaignResponse](
 			httpClient,
-			baseURL+UpdateServiceGetUpdatePackageProcedure,
-			connect.WithSchema(updateServiceGetUpdatePackageMethodDescriptor),
+			baseURL+UpdateServiceGetUpdateCampaignProcedure,
+			connect.WithSchema(updateServiceGetUpdateCampaignMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		listUpdateCampaigns: connect.NewClient[v1.ListUpdateCampaignsRequest, v1.ListUpdateCampaignsResponse](
+			httpClient,
+			baseURL+UpdateServiceListUpdateCampaignsProcedure,
+			connect.WithSchema(updateServiceListUpdateCampaignsMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		getDeviceUpdateStatus: connect.NewClient[v1.GetDeviceUpdateStatusRequest, v1.GetDeviceUpdateStatusResponse](
+			httpClient,
+			baseURL+UpdateServiceGetDeviceUpdateStatusProcedure,
+			connect.WithSchema(updateServiceGetDeviceUpdateStatusMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
 		reportUpdateStatus: connect.NewClient[v1.ReportUpdateStatusRequest, v1.ReportUpdateStatusResponse](
@@ -95,19 +119,31 @@ func NewUpdateServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // updateServiceClient implements UpdateServiceClient.
 type updateServiceClient struct {
-	checkUpdates       *connect.Client[v1.CheckUpdatesRequest, v1.CheckUpdatesResponse]
-	getUpdatePackage   *connect.Client[v1.GetUpdatePackageRequest, v1.GetUpdatePackageResponse]
-	reportUpdateStatus *connect.Client[v1.ReportUpdateStatusRequest, v1.ReportUpdateStatusResponse]
+	createUpdateCampaign  *connect.Client[v1.CreateUpdateCampaignRequest, v1.CreateUpdateCampaignResponse]
+	getUpdateCampaign     *connect.Client[v1.GetUpdateCampaignRequest, v1.GetUpdateCampaignResponse]
+	listUpdateCampaigns   *connect.Client[v1.ListUpdateCampaignsRequest, v1.ListUpdateCampaignsResponse]
+	getDeviceUpdateStatus *connect.Client[v1.GetDeviceUpdateStatusRequest, v1.GetDeviceUpdateStatusResponse]
+	reportUpdateStatus    *connect.Client[v1.ReportUpdateStatusRequest, v1.ReportUpdateStatusResponse]
 }
 
-// CheckUpdates calls fleetd.v1.UpdateService.CheckUpdates.
-func (c *updateServiceClient) CheckUpdates(ctx context.Context, req *connect.Request[v1.CheckUpdatesRequest]) (*connect.Response[v1.CheckUpdatesResponse], error) {
-	return c.checkUpdates.CallUnary(ctx, req)
+// CreateUpdateCampaign calls fleetd.v1.UpdateService.CreateUpdateCampaign.
+func (c *updateServiceClient) CreateUpdateCampaign(ctx context.Context, req *connect.Request[v1.CreateUpdateCampaignRequest]) (*connect.Response[v1.CreateUpdateCampaignResponse], error) {
+	return c.createUpdateCampaign.CallUnary(ctx, req)
 }
 
-// GetUpdatePackage calls fleetd.v1.UpdateService.GetUpdatePackage.
-func (c *updateServiceClient) GetUpdatePackage(ctx context.Context, req *connect.Request[v1.GetUpdatePackageRequest]) (*connect.ServerStreamForClient[v1.GetUpdatePackageResponse], error) {
-	return c.getUpdatePackage.CallServerStream(ctx, req)
+// GetUpdateCampaign calls fleetd.v1.UpdateService.GetUpdateCampaign.
+func (c *updateServiceClient) GetUpdateCampaign(ctx context.Context, req *connect.Request[v1.GetUpdateCampaignRequest]) (*connect.Response[v1.GetUpdateCampaignResponse], error) {
+	return c.getUpdateCampaign.CallUnary(ctx, req)
+}
+
+// ListUpdateCampaigns calls fleetd.v1.UpdateService.ListUpdateCampaigns.
+func (c *updateServiceClient) ListUpdateCampaigns(ctx context.Context, req *connect.Request[v1.ListUpdateCampaignsRequest]) (*connect.Response[v1.ListUpdateCampaignsResponse], error) {
+	return c.listUpdateCampaigns.CallUnary(ctx, req)
+}
+
+// GetDeviceUpdateStatus calls fleetd.v1.UpdateService.GetDeviceUpdateStatus.
+func (c *updateServiceClient) GetDeviceUpdateStatus(ctx context.Context, req *connect.Request[v1.GetDeviceUpdateStatusRequest]) (*connect.Response[v1.GetDeviceUpdateStatusResponse], error) {
+	return c.getDeviceUpdateStatus.CallUnary(ctx, req)
 }
 
 // ReportUpdateStatus calls fleetd.v1.UpdateService.ReportUpdateStatus.
@@ -117,11 +153,15 @@ func (c *updateServiceClient) ReportUpdateStatus(ctx context.Context, req *conne
 
 // UpdateServiceHandler is an implementation of the fleetd.v1.UpdateService service.
 type UpdateServiceHandler interface {
-	// Check for available updates
-	CheckUpdates(context.Context, *connect.Request[v1.CheckUpdatesRequest]) (*connect.Response[v1.CheckUpdatesResponse], error)
-	// Download update package
-	GetUpdatePackage(context.Context, *connect.Request[v1.GetUpdatePackageRequest], *connect.ServerStream[v1.GetUpdatePackageResponse]) error
-	// Report update status
+	// Create a new update campaign
+	CreateUpdateCampaign(context.Context, *connect.Request[v1.CreateUpdateCampaignRequest]) (*connect.Response[v1.CreateUpdateCampaignResponse], error)
+	// Get update campaign status
+	GetUpdateCampaign(context.Context, *connect.Request[v1.GetUpdateCampaignRequest]) (*connect.Response[v1.GetUpdateCampaignResponse], error)
+	// List update campaigns
+	ListUpdateCampaigns(context.Context, *connect.Request[v1.ListUpdateCampaignsRequest]) (*connect.Response[v1.ListUpdateCampaignsResponse], error)
+	// Get device update status
+	GetDeviceUpdateStatus(context.Context, *connect.Request[v1.GetDeviceUpdateStatusRequest]) (*connect.Response[v1.GetDeviceUpdateStatusResponse], error)
+	// Report update status from device
 	ReportUpdateStatus(context.Context, *connect.Request[v1.ReportUpdateStatusRequest]) (*connect.Response[v1.ReportUpdateStatusResponse], error)
 }
 
@@ -131,16 +171,28 @@ type UpdateServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewUpdateServiceHandler(svc UpdateServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	updateServiceCheckUpdatesHandler := connect.NewUnaryHandler(
-		UpdateServiceCheckUpdatesProcedure,
-		svc.CheckUpdates,
-		connect.WithSchema(updateServiceCheckUpdatesMethodDescriptor),
+	updateServiceCreateUpdateCampaignHandler := connect.NewUnaryHandler(
+		UpdateServiceCreateUpdateCampaignProcedure,
+		svc.CreateUpdateCampaign,
+		connect.WithSchema(updateServiceCreateUpdateCampaignMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
-	updateServiceGetUpdatePackageHandler := connect.NewServerStreamHandler(
-		UpdateServiceGetUpdatePackageProcedure,
-		svc.GetUpdatePackage,
-		connect.WithSchema(updateServiceGetUpdatePackageMethodDescriptor),
+	updateServiceGetUpdateCampaignHandler := connect.NewUnaryHandler(
+		UpdateServiceGetUpdateCampaignProcedure,
+		svc.GetUpdateCampaign,
+		connect.WithSchema(updateServiceGetUpdateCampaignMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	updateServiceListUpdateCampaignsHandler := connect.NewUnaryHandler(
+		UpdateServiceListUpdateCampaignsProcedure,
+		svc.ListUpdateCampaigns,
+		connect.WithSchema(updateServiceListUpdateCampaignsMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	updateServiceGetDeviceUpdateStatusHandler := connect.NewUnaryHandler(
+		UpdateServiceGetDeviceUpdateStatusProcedure,
+		svc.GetDeviceUpdateStatus,
+		connect.WithSchema(updateServiceGetDeviceUpdateStatusMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
 	updateServiceReportUpdateStatusHandler := connect.NewUnaryHandler(
@@ -151,10 +203,14 @@ func NewUpdateServiceHandler(svc UpdateServiceHandler, opts ...connect.HandlerOp
 	)
 	return "/fleetd.v1.UpdateService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case UpdateServiceCheckUpdatesProcedure:
-			updateServiceCheckUpdatesHandler.ServeHTTP(w, r)
-		case UpdateServiceGetUpdatePackageProcedure:
-			updateServiceGetUpdatePackageHandler.ServeHTTP(w, r)
+		case UpdateServiceCreateUpdateCampaignProcedure:
+			updateServiceCreateUpdateCampaignHandler.ServeHTTP(w, r)
+		case UpdateServiceGetUpdateCampaignProcedure:
+			updateServiceGetUpdateCampaignHandler.ServeHTTP(w, r)
+		case UpdateServiceListUpdateCampaignsProcedure:
+			updateServiceListUpdateCampaignsHandler.ServeHTTP(w, r)
+		case UpdateServiceGetDeviceUpdateStatusProcedure:
+			updateServiceGetDeviceUpdateStatusHandler.ServeHTTP(w, r)
 		case UpdateServiceReportUpdateStatusProcedure:
 			updateServiceReportUpdateStatusHandler.ServeHTTP(w, r)
 		default:
@@ -166,12 +222,20 @@ func NewUpdateServiceHandler(svc UpdateServiceHandler, opts ...connect.HandlerOp
 // UnimplementedUpdateServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedUpdateServiceHandler struct{}
 
-func (UnimplementedUpdateServiceHandler) CheckUpdates(context.Context, *connect.Request[v1.CheckUpdatesRequest]) (*connect.Response[v1.CheckUpdatesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.UpdateService.CheckUpdates is not implemented"))
+func (UnimplementedUpdateServiceHandler) CreateUpdateCampaign(context.Context, *connect.Request[v1.CreateUpdateCampaignRequest]) (*connect.Response[v1.CreateUpdateCampaignResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.UpdateService.CreateUpdateCampaign is not implemented"))
 }
 
-func (UnimplementedUpdateServiceHandler) GetUpdatePackage(context.Context, *connect.Request[v1.GetUpdatePackageRequest], *connect.ServerStream[v1.GetUpdatePackageResponse]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.UpdateService.GetUpdatePackage is not implemented"))
+func (UnimplementedUpdateServiceHandler) GetUpdateCampaign(context.Context, *connect.Request[v1.GetUpdateCampaignRequest]) (*connect.Response[v1.GetUpdateCampaignResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.UpdateService.GetUpdateCampaign is not implemented"))
+}
+
+func (UnimplementedUpdateServiceHandler) ListUpdateCampaigns(context.Context, *connect.Request[v1.ListUpdateCampaignsRequest]) (*connect.Response[v1.ListUpdateCampaignsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.UpdateService.ListUpdateCampaigns is not implemented"))
+}
+
+func (UnimplementedUpdateServiceHandler) GetDeviceUpdateStatus(context.Context, *connect.Request[v1.GetDeviceUpdateStatusRequest]) (*connect.Response[v1.GetDeviceUpdateStatusResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.UpdateService.GetDeviceUpdateStatus is not implemented"))
 }
 
 func (UnimplementedUpdateServiceHandler) ReportUpdateStatus(context.Context, *connect.Request[v1.ReportUpdateStatusRequest]) (*connect.Response[v1.ReportUpdateStatusResponse], error) {

@@ -40,6 +40,14 @@ const (
 	// DeviceServiceReportStatusProcedure is the fully-qualified name of the DeviceService's
 	// ReportStatus RPC.
 	DeviceServiceReportStatusProcedure = "/fleetd.v1.DeviceService/ReportStatus"
+	// DeviceServiceGetDeviceProcedure is the fully-qualified name of the DeviceService's GetDevice RPC.
+	DeviceServiceGetDeviceProcedure = "/fleetd.v1.DeviceService/GetDevice"
+	// DeviceServiceListDevicesProcedure is the fully-qualified name of the DeviceService's ListDevices
+	// RPC.
+	DeviceServiceListDevicesProcedure = "/fleetd.v1.DeviceService/ListDevices"
+	// DeviceServiceDeleteDeviceProcedure is the fully-qualified name of the DeviceService's
+	// DeleteDevice RPC.
+	DeviceServiceDeleteDeviceProcedure = "/fleetd.v1.DeviceService/DeleteDevice"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
@@ -48,6 +56,9 @@ var (
 	deviceServiceRegisterMethodDescriptor     = deviceServiceServiceDescriptor.Methods().ByName("Register")
 	deviceServiceHeartbeatMethodDescriptor    = deviceServiceServiceDescriptor.Methods().ByName("Heartbeat")
 	deviceServiceReportStatusMethodDescriptor = deviceServiceServiceDescriptor.Methods().ByName("ReportStatus")
+	deviceServiceGetDeviceMethodDescriptor    = deviceServiceServiceDescriptor.Methods().ByName("GetDevice")
+	deviceServiceListDevicesMethodDescriptor  = deviceServiceServiceDescriptor.Methods().ByName("ListDevices")
+	deviceServiceDeleteDeviceMethodDescriptor = deviceServiceServiceDescriptor.Methods().ByName("DeleteDevice")
 )
 
 // DeviceServiceClient is a client for the fleetd.v1.DeviceService service.
@@ -58,6 +69,12 @@ type DeviceServiceClient interface {
 	Heartbeat(context.Context, *connect.Request[v1.HeartbeatRequest]) (*connect.Response[v1.HeartbeatResponse], error)
 	// Update device status and metrics
 	ReportStatus(context.Context, *connect.Request[v1.ReportStatusRequest]) (*connect.Response[v1.ReportStatusResponse], error)
+	// Get a device by ID
+	GetDevice(context.Context, *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error)
+	// List devices
+	ListDevices(context.Context, *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error)
+	// Delete a device
+	DeleteDevice(context.Context, *connect.Request[v1.DeleteDeviceRequest]) (*connect.Response[v1.DeleteDeviceResponse], error)
 }
 
 // NewDeviceServiceClient constructs a client for the fleetd.v1.DeviceService service. By default,
@@ -88,6 +105,24 @@ func NewDeviceServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(deviceServiceReportStatusMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		getDevice: connect.NewClient[v1.GetDeviceRequest, v1.GetDeviceResponse](
+			httpClient,
+			baseURL+DeviceServiceGetDeviceProcedure,
+			connect.WithSchema(deviceServiceGetDeviceMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		listDevices: connect.NewClient[v1.ListDevicesRequest, v1.ListDevicesResponse](
+			httpClient,
+			baseURL+DeviceServiceListDevicesProcedure,
+			connect.WithSchema(deviceServiceListDevicesMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		deleteDevice: connect.NewClient[v1.DeleteDeviceRequest, v1.DeleteDeviceResponse](
+			httpClient,
+			baseURL+DeviceServiceDeleteDeviceProcedure,
+			connect.WithSchema(deviceServiceDeleteDeviceMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -96,6 +131,9 @@ type deviceServiceClient struct {
 	register     *connect.Client[v1.RegisterRequest, v1.RegisterResponse]
 	heartbeat    *connect.Client[v1.HeartbeatRequest, v1.HeartbeatResponse]
 	reportStatus *connect.Client[v1.ReportStatusRequest, v1.ReportStatusResponse]
+	getDevice    *connect.Client[v1.GetDeviceRequest, v1.GetDeviceResponse]
+	listDevices  *connect.Client[v1.ListDevicesRequest, v1.ListDevicesResponse]
+	deleteDevice *connect.Client[v1.DeleteDeviceRequest, v1.DeleteDeviceResponse]
 }
 
 // Register calls fleetd.v1.DeviceService.Register.
@@ -113,6 +151,21 @@ func (c *deviceServiceClient) ReportStatus(ctx context.Context, req *connect.Req
 	return c.reportStatus.CallUnary(ctx, req)
 }
 
+// GetDevice calls fleetd.v1.DeviceService.GetDevice.
+func (c *deviceServiceClient) GetDevice(ctx context.Context, req *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error) {
+	return c.getDevice.CallUnary(ctx, req)
+}
+
+// ListDevices calls fleetd.v1.DeviceService.ListDevices.
+func (c *deviceServiceClient) ListDevices(ctx context.Context, req *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error) {
+	return c.listDevices.CallUnary(ctx, req)
+}
+
+// DeleteDevice calls fleetd.v1.DeviceService.DeleteDevice.
+func (c *deviceServiceClient) DeleteDevice(ctx context.Context, req *connect.Request[v1.DeleteDeviceRequest]) (*connect.Response[v1.DeleteDeviceResponse], error) {
+	return c.deleteDevice.CallUnary(ctx, req)
+}
+
 // DeviceServiceHandler is an implementation of the fleetd.v1.DeviceService service.
 type DeviceServiceHandler interface {
 	// Register a new device with the fleet
@@ -121,6 +174,12 @@ type DeviceServiceHandler interface {
 	Heartbeat(context.Context, *connect.Request[v1.HeartbeatRequest]) (*connect.Response[v1.HeartbeatResponse], error)
 	// Update device status and metrics
 	ReportStatus(context.Context, *connect.Request[v1.ReportStatusRequest]) (*connect.Response[v1.ReportStatusResponse], error)
+	// Get a device by ID
+	GetDevice(context.Context, *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error)
+	// List devices
+	ListDevices(context.Context, *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error)
+	// Delete a device
+	DeleteDevice(context.Context, *connect.Request[v1.DeleteDeviceRequest]) (*connect.Response[v1.DeleteDeviceResponse], error)
 }
 
 // NewDeviceServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -147,6 +206,24 @@ func NewDeviceServiceHandler(svc DeviceServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(deviceServiceReportStatusMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	deviceServiceGetDeviceHandler := connect.NewUnaryHandler(
+		DeviceServiceGetDeviceProcedure,
+		svc.GetDevice,
+		connect.WithSchema(deviceServiceGetDeviceMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	deviceServiceListDevicesHandler := connect.NewUnaryHandler(
+		DeviceServiceListDevicesProcedure,
+		svc.ListDevices,
+		connect.WithSchema(deviceServiceListDevicesMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	deviceServiceDeleteDeviceHandler := connect.NewUnaryHandler(
+		DeviceServiceDeleteDeviceProcedure,
+		svc.DeleteDevice,
+		connect.WithSchema(deviceServiceDeleteDeviceMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/fleetd.v1.DeviceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DeviceServiceRegisterProcedure:
@@ -155,6 +232,12 @@ func NewDeviceServiceHandler(svc DeviceServiceHandler, opts ...connect.HandlerOp
 			deviceServiceHeartbeatHandler.ServeHTTP(w, r)
 		case DeviceServiceReportStatusProcedure:
 			deviceServiceReportStatusHandler.ServeHTTP(w, r)
+		case DeviceServiceGetDeviceProcedure:
+			deviceServiceGetDeviceHandler.ServeHTTP(w, r)
+		case DeviceServiceListDevicesProcedure:
+			deviceServiceListDevicesHandler.ServeHTTP(w, r)
+		case DeviceServiceDeleteDeviceProcedure:
+			deviceServiceDeleteDeviceHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -174,4 +257,16 @@ func (UnimplementedDeviceServiceHandler) Heartbeat(context.Context, *connect.Req
 
 func (UnimplementedDeviceServiceHandler) ReportStatus(context.Context, *connect.Request[v1.ReportStatusRequest]) (*connect.Response[v1.ReportStatusResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.DeviceService.ReportStatus is not implemented"))
+}
+
+func (UnimplementedDeviceServiceHandler) GetDevice(context.Context, *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.DeviceService.GetDevice is not implemented"))
+}
+
+func (UnimplementedDeviceServiceHandler) ListDevices(context.Context, *connect.Request[v1.ListDevicesRequest]) (*connect.Response[v1.ListDevicesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.DeviceService.ListDevices is not implemented"))
+}
+
+func (UnimplementedDeviceServiceHandler) DeleteDevice(context.Context, *connect.Request[v1.DeleteDeviceRequest]) (*connect.Response[v1.DeleteDeviceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.DeviceService.DeleteDevice is not implemented"))
 }

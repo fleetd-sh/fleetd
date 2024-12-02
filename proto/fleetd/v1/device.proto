@@ -15,6 +15,15 @@ service DeviceService {
   
   // Update device status and metrics
   rpc ReportStatus(ReportStatusRequest) returns (ReportStatusResponse);
+
+  // Get a device by ID
+  rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
+
+  // List devices
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+
+  // Delete a device
+  rpc DeleteDevice(DeleteDeviceRequest) returns (DeleteDeviceResponse); 
 }
 
 message Device {
@@ -57,3 +66,33 @@ message ReportStatusRequest {
 message ReportStatusResponse {
   bool success = 1;
 }
+
+message GetDeviceRequest {
+  string device_id = 1;
+}
+
+message GetDeviceResponse {
+  Device device = 1;
+}
+
+message ListDevicesRequest {
+  string type = 1;
+  string version = 2;
+  string status = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message ListDevicesResponse {
+  repeated Device devices = 1;
+  string next_page_token = 2;
+}
+
+message DeleteDeviceRequest {
+  string device_id = 1;
+}
+
+message DeleteDeviceResponse {
+  bool success = 1;
+}
+
