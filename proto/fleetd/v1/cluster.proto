@@ -1,0 +1,244 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+// ClusterService manages k3s clusters on linux-based devices
+service ClusterService {
+  // Create a new k3s cluster
+  rpc CreateCluster(CreateClusterRequest) returns (CreateClusterResponse);
+
+  // Join a device to an existing cluster
+  rpc JoinCluster(JoinClusterRequest) returns (JoinClusterResponse);
+
+  // Get cluster information
+  rpc GetCluster(GetClusterRequest) returns (GetClusterResponse);
+
+  // List all clusters
+  rpc ListClusters(ListClustersRequest) returns (ListClustersResponse);
+
+  // Apply a workload to a cluster
+  rpc ApplyWorkload(ApplyWorkloadRequest) returns (ApplyWorkloadResponse);
+
+  // Get cluster node status
+  rpc GetNodeStatus(GetNodeStatusRequest) returns (GetNodeStatusResponse);
+
+  // Remove a node from cluster
+  rpc RemoveNode(RemoveNodeRequest) returns (RemoveNodeResponse);
+}
+
+// DeviceCapability describes hardware and software capabilities
+message DeviceCapability {
+  string name = 1; // e.g., "cpu", "memory", "storage", "gpu", "k3s"
+  string value = 2; // e.g., "4", "8GB", "64GB", "nvidia-tegra", "v1.28.3"
+  string unit = 3; // e.g., "cores", "bytes", "version"
+}
+
+// DeviceType enumeration for different device types
+enum DeviceType {
+  DEVICE_TYPE_UNSPECIFIED = 0;
+  DEVICE_TYPE_ESP32 = 1;
+  DEVICE_TYPE_RPI4 = 2;
+  DEVICE_TYPE_RPI5 = 3;
+  DEVICE_TYPE_JETSON_NANO = 4;
+  DEVICE_TYPE_X86_64 = 5;
+}
+
+// K3sRole defines the role in a k3s cluster
+enum K3sRole {
+  K3S_ROLE_UNSPECIFIED = 0;
+  K3S_ROLE_SERVER = 1; // Control plane node
+  K3S_ROLE_AGENT = 2; // Worker node
+  K3S_ROLE_SERVER_INIT = 3; // First server (with --cluster-init)
+}
+
+// ExtendedDevice includes RPi-specific fields
+message ExtendedDevice {
+  string id = 1;
+  string name = 2;
+  DeviceType type = 3;
+  string version = 4;
+  map<string, string> metadata = 5;
+  google.protobuf.Timestamp last_seen = 6;
+
+  // Extended capabilities
+  repeated DeviceCapability capabilities = 7;
+
+  // Raspberry Pi specific
+  string architecture = 8; // arm64, armv7l
+  string os_name = 9; // DietPi, Raspbian, Ubuntu
+  string os_version = 10; // OS version
+
+  // K3s specific
+  K3sRole k3s_role = 11;
+  string k3s_version = 12;
+  string cluster_id = 13;
+
+  // Hardware info
+  int64 total_memory = 14; // bytes
+  int32 cpu_cores = 15;
+  int64 disk_size = 16; // bytes
+  bool has_gpu = 17;
+
+  // Network info
+  repeated string ip_addresses = 18;
+  string primary_mac = 19;
+
+  // Status
+  bool configured = 20;
+  bool online = 21;
+  string status = 22; // running, stopped, error
+}
+
+// Cluster represents a k3s cluster
+message Cluster {
+  string id = 1;
+  string name = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+
+  // Cluster configuration
+  string version = 5; // k3s version
+  string network_cidr = 6; // Pod network CIDR
+  string service_cidr = 7; // Service network CIDR
+
+  // Nodes
+  repeated ClusterNode nodes = 8;
+
+  // Access
+  string api_endpoint = 9;
+  bytes kubeconfig = 10; // Encrypted kubeconfig
+
+  // Status
+  ClusterStatus status = 11;
+  map<string, string> labels = 12;
+}
+
+// ClusterNode represents a node in the cluster
+message ClusterNode {
+  string device_id = 1;
+  string hostname = 2;
+  K3sRole role = 3;
+  string ip_address = 4;
+  google.protobuf.Timestamp joined_at = 5;
+  NodeStatus status = 6;
+  map<string, string> labels = 7;
+  repeated string taints = 8;
+}
+
+// NodeStatus represents the status of a cluster node
+message NodeStatus {
+  bool ready = 1;
+  bool schedulable = 2;
+  int64 memory_usage = 3; // bytes
+  int64 memory_capacity = 4; // bytes
+  int32 cpu_usage = 5; // millicores
+  int32 cpu_capacity = 6; // millicores
+  int32 pod_count = 7;
+  int32 pod_capacity = 8;
+  map<string, string> conditions = 9;
+}
+
+// ClusterStatus enumeration
+enum ClusterStatus {
+  CLUSTER_STATUS_UNSPECIFIED = 0;
+  CLUSTER_STATUS_CREATING = 1;
+  CLUSTER_STATUS_READY = 2;
+  CLUSTER_STATUS_UPDATING = 3;
+  CLUSTER_STATUS_DEGRADED = 4;
+  CLUSTER_STATUS_ERROR = 5;
+}
+
+// CreateClusterRequest creates a new cluster
+message CreateClusterRequest {
+  string name = 1;
+  string server_device_id = 2; // Initial server node
+  string k3s_version = 3;
+  map<string, string> config = 4; // Additional k3s config
+  map<string, string> labels = 5;
+}
+
+message CreateClusterResponse {
+  Cluster cluster = 1;
+  string join_token = 2;
+}
+
+// JoinClusterRequest adds a device to a cluster
+message JoinClusterRequest {
+  string cluster_id = 1;
+  string device_id = 2;
+  K3sRole role = 3;
+  map<string, string> labels = 4;
+}
+
+message JoinClusterResponse {
+  bool success = 1;
+  ClusterNode node = 2;
+}
+
+// GetClusterRequest retrieves cluster details
+message GetClusterRequest {
+  string cluster_id = 1;
+}
+
+message GetClusterResponse {
+  Cluster cluster = 1;
+}
+
+// ListClustersRequest lists all clusters
+message ListClustersRequest {
+  ClusterStatus status = 1;
+  map<string, string> labels = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListClustersResponse {
+  repeated Cluster clusters = 1;
+  string next_page_token = 2;
+}
+
+// ApplyWorkloadRequest deploys a workload to a cluster
+message ApplyWorkloadRequest {
+  string cluster_id = 1;
+  string name = 2;
+  oneof spec {
+    string yaml_manifest = 3; // Raw YAML manifest
+    string helm_chart = 4; // Helm chart reference
+    bytes kustomize_bundle = 5; // Kustomize bundle
+  }
+  map<string, string> values = 6; // Template values
+}
+
+message ApplyWorkloadResponse {
+  bool success = 1;
+  string message = 2;
+  repeated string resources = 3; // Created resource names
+}
+
+// GetNodeStatusRequest gets detailed node status
+message GetNodeStatusRequest {
+  string cluster_id = 1;
+  string device_id = 2;
+}
+
+message GetNodeStatusResponse {
+  ClusterNode node = 1;
+  NodeStatus status = 2;
+  repeated string pods = 3; // Running pod names
+}
+
+// RemoveNodeRequest removes a node from cluster
+message RemoveNodeRequest {
+  string cluster_id = 1;
+  string device_id = 2;
+  bool drain = 3; // Drain node before removal
+}
+
+message RemoveNodeResponse {
+  bool success = 1;
+  string message = 2;
+}
