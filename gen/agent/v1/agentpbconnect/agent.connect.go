@@ -47,15 +47,6 @@ const (
 	DaemonServiceListBinariesProcedure = "/agent.v1.DaemonService/ListBinaries"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	daemonServiceServiceDescriptor            = v1.File_agent_v1_agent_proto.Services().ByName("DaemonService")
-	daemonServiceDeployBinaryMethodDescriptor = daemonServiceServiceDescriptor.Methods().ByName("DeployBinary")
-	daemonServiceStartBinaryMethodDescriptor  = daemonServiceServiceDescriptor.Methods().ByName("StartBinary")
-	daemonServiceStopBinaryMethodDescriptor   = daemonServiceServiceDescriptor.Methods().ByName("StopBinary")
-	daemonServiceListBinariesMethodDescriptor = daemonServiceServiceDescriptor.Methods().ByName("ListBinaries")
-)
-
 // DaemonServiceClient is a client for the agent.v1.DaemonService service.
 type DaemonServiceClient interface {
 	// Binary management
@@ -74,29 +65,30 @@ type DaemonServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewDaemonServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) DaemonServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	daemonServiceMethods := v1.File_agent_v1_agent_proto.Services().ByName("DaemonService").Methods()
 	return &daemonServiceClient{
 		deployBinary: connect.NewClient[v1.DeployBinaryRequest, v1.DeployBinaryResponse](
 			httpClient,
 			baseURL+DaemonServiceDeployBinaryProcedure,
-			connect.WithSchema(daemonServiceDeployBinaryMethodDescriptor),
+			connect.WithSchema(daemonServiceMethods.ByName("DeployBinary")),
 			connect.WithClientOptions(opts...),
 		),
 		startBinary: connect.NewClient[v1.StartBinaryRequest, v1.StartBinaryResponse](
 			httpClient,
 			baseURL+DaemonServiceStartBinaryProcedure,
-			connect.WithSchema(daemonServiceStartBinaryMethodDescriptor),
+			connect.WithSchema(daemonServiceMethods.ByName("StartBinary")),
 			connect.WithClientOptions(opts...),
 		),
 		stopBinary: connect.NewClient[v1.StopBinaryRequest, v1.StopBinaryResponse](
 			httpClient,
 			baseURL+DaemonServiceStopBinaryProcedure,
-			connect.WithSchema(daemonServiceStopBinaryMethodDescriptor),
+			connect.WithSchema(daemonServiceMethods.ByName("StopBinary")),
 			connect.WithClientOptions(opts...),
 		),
 		listBinaries: connect.NewClient[v1.ListBinariesRequest, v1.ListBinariesResponse](
 			httpClient,
 			baseURL+DaemonServiceListBinariesProcedure,
-			connect.WithSchema(daemonServiceListBinariesMethodDescriptor),
+			connect.WithSchema(daemonServiceMethods.ByName("ListBinaries")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -145,28 +137,29 @@ type DaemonServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewDaemonServiceHandler(svc DaemonServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	daemonServiceMethods := v1.File_agent_v1_agent_proto.Services().ByName("DaemonService").Methods()
 	daemonServiceDeployBinaryHandler := connect.NewUnaryHandler(
 		DaemonServiceDeployBinaryProcedure,
 		svc.DeployBinary,
-		connect.WithSchema(daemonServiceDeployBinaryMethodDescriptor),
+		connect.WithSchema(daemonServiceMethods.ByName("DeployBinary")),
 		connect.WithHandlerOptions(opts...),
 	)
 	daemonServiceStartBinaryHandler := connect.NewUnaryHandler(
 		DaemonServiceStartBinaryProcedure,
 		svc.StartBinary,
-		connect.WithSchema(daemonServiceStartBinaryMethodDescriptor),
+		connect.WithSchema(daemonServiceMethods.ByName("StartBinary")),
 		connect.WithHandlerOptions(opts...),
 	)
 	daemonServiceStopBinaryHandler := connect.NewUnaryHandler(
 		DaemonServiceStopBinaryProcedure,
 		svc.StopBinary,
-		connect.WithSchema(daemonServiceStopBinaryMethodDescriptor),
+		connect.WithSchema(daemonServiceMethods.ByName("StopBinary")),
 		connect.WithHandlerOptions(opts...),
 	)
 	daemonServiceListBinariesHandler := connect.NewUnaryHandler(
 		DaemonServiceListBinariesProcedure,
 		svc.ListBinaries,
-		connect.WithSchema(daemonServiceListBinariesMethodDescriptor),
+		connect.WithSchema(daemonServiceMethods.ByName("ListBinaries")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/agent.v1.DaemonService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

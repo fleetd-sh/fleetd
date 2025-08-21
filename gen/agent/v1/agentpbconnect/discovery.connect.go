@@ -42,13 +42,6 @@ const (
 	DiscoveryServiceConfigureDeviceProcedure = "/agent.v1.DiscoveryService/ConfigureDevice"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	discoveryServiceServiceDescriptor               = v1.File_agent_v1_discovery_proto.Services().ByName("DiscoveryService")
-	discoveryServiceGetDeviceInfoMethodDescriptor   = discoveryServiceServiceDescriptor.Methods().ByName("GetDeviceInfo")
-	discoveryServiceConfigureDeviceMethodDescriptor = discoveryServiceServiceDescriptor.Methods().ByName("ConfigureDevice")
-)
-
 // DiscoveryServiceClient is a client for the agent.v1.DiscoveryService service.
 type DiscoveryServiceClient interface {
 	// Get basic device information before registration
@@ -66,17 +59,18 @@ type DiscoveryServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewDiscoveryServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) DiscoveryServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	discoveryServiceMethods := v1.File_agent_v1_discovery_proto.Services().ByName("DiscoveryService").Methods()
 	return &discoveryServiceClient{
 		getDeviceInfo: connect.NewClient[emptypb.Empty, v1.GetDeviceInfoResponse](
 			httpClient,
 			baseURL+DiscoveryServiceGetDeviceInfoProcedure,
-			connect.WithSchema(discoveryServiceGetDeviceInfoMethodDescriptor),
+			connect.WithSchema(discoveryServiceMethods.ByName("GetDeviceInfo")),
 			connect.WithClientOptions(opts...),
 		),
 		configureDevice: connect.NewClient[v1.ConfigureDeviceRequest, v1.ConfigureDeviceResponse](
 			httpClient,
 			baseURL+DiscoveryServiceConfigureDeviceProcedure,
-			connect.WithSchema(discoveryServiceConfigureDeviceMethodDescriptor),
+			connect.WithSchema(discoveryServiceMethods.ByName("ConfigureDevice")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -112,16 +106,17 @@ type DiscoveryServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewDiscoveryServiceHandler(svc DiscoveryServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	discoveryServiceMethods := v1.File_agent_v1_discovery_proto.Services().ByName("DiscoveryService").Methods()
 	discoveryServiceGetDeviceInfoHandler := connect.NewUnaryHandler(
 		DiscoveryServiceGetDeviceInfoProcedure,
 		svc.GetDeviceInfo,
-		connect.WithSchema(discoveryServiceGetDeviceInfoMethodDescriptor),
+		connect.WithSchema(discoveryServiceMethods.ByName("GetDeviceInfo")),
 		connect.WithHandlerOptions(opts...),
 	)
 	discoveryServiceConfigureDeviceHandler := connect.NewUnaryHandler(
 		DiscoveryServiceConfigureDeviceProcedure,
 		svc.ConfigureDevice,
-		connect.WithSchema(discoveryServiceConfigureDeviceMethodDescriptor),
+		connect.WithSchema(discoveryServiceMethods.ByName("ConfigureDevice")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/agent.v1.DiscoveryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

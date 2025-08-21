@@ -50,16 +50,6 @@ const (
 	UpdateServiceReportUpdateStatusProcedure = "/fleetd.v1.UpdateService/ReportUpdateStatus"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	updateServiceServiceDescriptor                     = v1.File_fleetd_v1_update_proto.Services().ByName("UpdateService")
-	updateServiceCreateUpdateCampaignMethodDescriptor  = updateServiceServiceDescriptor.Methods().ByName("CreateUpdateCampaign")
-	updateServiceGetUpdateCampaignMethodDescriptor     = updateServiceServiceDescriptor.Methods().ByName("GetUpdateCampaign")
-	updateServiceListUpdateCampaignsMethodDescriptor   = updateServiceServiceDescriptor.Methods().ByName("ListUpdateCampaigns")
-	updateServiceGetDeviceUpdateStatusMethodDescriptor = updateServiceServiceDescriptor.Methods().ByName("GetDeviceUpdateStatus")
-	updateServiceReportUpdateStatusMethodDescriptor    = updateServiceServiceDescriptor.Methods().ByName("ReportUpdateStatus")
-)
-
 // UpdateServiceClient is a client for the fleetd.v1.UpdateService service.
 type UpdateServiceClient interface {
 	// Create a new update campaign
@@ -83,35 +73,36 @@ type UpdateServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewUpdateServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) UpdateServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	updateServiceMethods := v1.File_fleetd_v1_update_proto.Services().ByName("UpdateService").Methods()
 	return &updateServiceClient{
 		createUpdateCampaign: connect.NewClient[v1.CreateUpdateCampaignRequest, v1.CreateUpdateCampaignResponse](
 			httpClient,
 			baseURL+UpdateServiceCreateUpdateCampaignProcedure,
-			connect.WithSchema(updateServiceCreateUpdateCampaignMethodDescriptor),
+			connect.WithSchema(updateServiceMethods.ByName("CreateUpdateCampaign")),
 			connect.WithClientOptions(opts...),
 		),
 		getUpdateCampaign: connect.NewClient[v1.GetUpdateCampaignRequest, v1.GetUpdateCampaignResponse](
 			httpClient,
 			baseURL+UpdateServiceGetUpdateCampaignProcedure,
-			connect.WithSchema(updateServiceGetUpdateCampaignMethodDescriptor),
+			connect.WithSchema(updateServiceMethods.ByName("GetUpdateCampaign")),
 			connect.WithClientOptions(opts...),
 		),
 		listUpdateCampaigns: connect.NewClient[v1.ListUpdateCampaignsRequest, v1.ListUpdateCampaignsResponse](
 			httpClient,
 			baseURL+UpdateServiceListUpdateCampaignsProcedure,
-			connect.WithSchema(updateServiceListUpdateCampaignsMethodDescriptor),
+			connect.WithSchema(updateServiceMethods.ByName("ListUpdateCampaigns")),
 			connect.WithClientOptions(opts...),
 		),
 		getDeviceUpdateStatus: connect.NewClient[v1.GetDeviceUpdateStatusRequest, v1.GetDeviceUpdateStatusResponse](
 			httpClient,
 			baseURL+UpdateServiceGetDeviceUpdateStatusProcedure,
-			connect.WithSchema(updateServiceGetDeviceUpdateStatusMethodDescriptor),
+			connect.WithSchema(updateServiceMethods.ByName("GetDeviceUpdateStatus")),
 			connect.WithClientOptions(opts...),
 		),
 		reportUpdateStatus: connect.NewClient[v1.ReportUpdateStatusRequest, v1.ReportUpdateStatusResponse](
 			httpClient,
 			baseURL+UpdateServiceReportUpdateStatusProcedure,
-			connect.WithSchema(updateServiceReportUpdateStatusMethodDescriptor),
+			connect.WithSchema(updateServiceMethods.ByName("ReportUpdateStatus")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -171,34 +162,35 @@ type UpdateServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewUpdateServiceHandler(svc UpdateServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	updateServiceMethods := v1.File_fleetd_v1_update_proto.Services().ByName("UpdateService").Methods()
 	updateServiceCreateUpdateCampaignHandler := connect.NewUnaryHandler(
 		UpdateServiceCreateUpdateCampaignProcedure,
 		svc.CreateUpdateCampaign,
-		connect.WithSchema(updateServiceCreateUpdateCampaignMethodDescriptor),
+		connect.WithSchema(updateServiceMethods.ByName("CreateUpdateCampaign")),
 		connect.WithHandlerOptions(opts...),
 	)
 	updateServiceGetUpdateCampaignHandler := connect.NewUnaryHandler(
 		UpdateServiceGetUpdateCampaignProcedure,
 		svc.GetUpdateCampaign,
-		connect.WithSchema(updateServiceGetUpdateCampaignMethodDescriptor),
+		connect.WithSchema(updateServiceMethods.ByName("GetUpdateCampaign")),
 		connect.WithHandlerOptions(opts...),
 	)
 	updateServiceListUpdateCampaignsHandler := connect.NewUnaryHandler(
 		UpdateServiceListUpdateCampaignsProcedure,
 		svc.ListUpdateCampaigns,
-		connect.WithSchema(updateServiceListUpdateCampaignsMethodDescriptor),
+		connect.WithSchema(updateServiceMethods.ByName("ListUpdateCampaigns")),
 		connect.WithHandlerOptions(opts...),
 	)
 	updateServiceGetDeviceUpdateStatusHandler := connect.NewUnaryHandler(
 		UpdateServiceGetDeviceUpdateStatusProcedure,
 		svc.GetDeviceUpdateStatus,
-		connect.WithSchema(updateServiceGetDeviceUpdateStatusMethodDescriptor),
+		connect.WithSchema(updateServiceMethods.ByName("GetDeviceUpdateStatus")),
 		connect.WithHandlerOptions(opts...),
 	)
 	updateServiceReportUpdateStatusHandler := connect.NewUnaryHandler(
 		UpdateServiceReportUpdateStatusProcedure,
 		svc.ReportUpdateStatus,
-		connect.WithSchema(updateServiceReportUpdateStatusMethodDescriptor),
+		connect.WithSchema(updateServiceMethods.ByName("ReportUpdateStatus")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/fleetd.v1.UpdateService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

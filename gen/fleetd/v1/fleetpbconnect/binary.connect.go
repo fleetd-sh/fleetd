@@ -46,15 +46,6 @@ const (
 	BinaryServiceListBinariesProcedure = "/fleetd.v1.BinaryService/ListBinaries"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	binaryServiceServiceDescriptor              = v1.File_fleetd_v1_binary_proto.Services().ByName("BinaryService")
-	binaryServiceUploadBinaryMethodDescriptor   = binaryServiceServiceDescriptor.Methods().ByName("UploadBinary")
-	binaryServiceGetBinaryMethodDescriptor      = binaryServiceServiceDescriptor.Methods().ByName("GetBinary")
-	binaryServiceDownloadBinaryMethodDescriptor = binaryServiceServiceDescriptor.Methods().ByName("DownloadBinary")
-	binaryServiceListBinariesMethodDescriptor   = binaryServiceServiceDescriptor.Methods().ByName("ListBinaries")
-)
-
 // BinaryServiceClient is a client for the fleetd.v1.BinaryService service.
 type BinaryServiceClient interface {
 	// Upload a new binary to the fleet
@@ -76,29 +67,30 @@ type BinaryServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewBinaryServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) BinaryServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	binaryServiceMethods := v1.File_fleetd_v1_binary_proto.Services().ByName("BinaryService").Methods()
 	return &binaryServiceClient{
 		uploadBinary: connect.NewClient[v1.UploadBinaryRequest, v1.UploadBinaryResponse](
 			httpClient,
 			baseURL+BinaryServiceUploadBinaryProcedure,
-			connect.WithSchema(binaryServiceUploadBinaryMethodDescriptor),
+			connect.WithSchema(binaryServiceMethods.ByName("UploadBinary")),
 			connect.WithClientOptions(opts...),
 		),
 		getBinary: connect.NewClient[v1.GetBinaryRequest, v1.GetBinaryResponse](
 			httpClient,
 			baseURL+BinaryServiceGetBinaryProcedure,
-			connect.WithSchema(binaryServiceGetBinaryMethodDescriptor),
+			connect.WithSchema(binaryServiceMethods.ByName("GetBinary")),
 			connect.WithClientOptions(opts...),
 		),
 		downloadBinary: connect.NewClient[v1.DownloadBinaryRequest, v1.DownloadBinaryResponse](
 			httpClient,
 			baseURL+BinaryServiceDownloadBinaryProcedure,
-			connect.WithSchema(binaryServiceDownloadBinaryMethodDescriptor),
+			connect.WithSchema(binaryServiceMethods.ByName("DownloadBinary")),
 			connect.WithClientOptions(opts...),
 		),
 		listBinaries: connect.NewClient[v1.ListBinariesRequest, v1.ListBinariesResponse](
 			httpClient,
 			baseURL+BinaryServiceListBinariesProcedure,
-			connect.WithSchema(binaryServiceListBinariesMethodDescriptor),
+			connect.WithSchema(binaryServiceMethods.ByName("ListBinaries")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -150,28 +142,29 @@ type BinaryServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewBinaryServiceHandler(svc BinaryServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	binaryServiceMethods := v1.File_fleetd_v1_binary_proto.Services().ByName("BinaryService").Methods()
 	binaryServiceUploadBinaryHandler := connect.NewClientStreamHandler(
 		BinaryServiceUploadBinaryProcedure,
 		svc.UploadBinary,
-		connect.WithSchema(binaryServiceUploadBinaryMethodDescriptor),
+		connect.WithSchema(binaryServiceMethods.ByName("UploadBinary")),
 		connect.WithHandlerOptions(opts...),
 	)
 	binaryServiceGetBinaryHandler := connect.NewUnaryHandler(
 		BinaryServiceGetBinaryProcedure,
 		svc.GetBinary,
-		connect.WithSchema(binaryServiceGetBinaryMethodDescriptor),
+		connect.WithSchema(binaryServiceMethods.ByName("GetBinary")),
 		connect.WithHandlerOptions(opts...),
 	)
 	binaryServiceDownloadBinaryHandler := connect.NewServerStreamHandler(
 		BinaryServiceDownloadBinaryProcedure,
 		svc.DownloadBinary,
-		connect.WithSchema(binaryServiceDownloadBinaryMethodDescriptor),
+		connect.WithSchema(binaryServiceMethods.ByName("DownloadBinary")),
 		connect.WithHandlerOptions(opts...),
 	)
 	binaryServiceListBinariesHandler := connect.NewUnaryHandler(
 		BinaryServiceListBinariesProcedure,
 		svc.ListBinaries,
-		connect.WithSchema(binaryServiceListBinariesMethodDescriptor),
+		connect.WithSchema(binaryServiceMethods.ByName("ListBinaries")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/fleetd.v1.BinaryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

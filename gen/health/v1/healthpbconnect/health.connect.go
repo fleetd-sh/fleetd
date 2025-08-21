@@ -39,13 +39,6 @@ const (
 	HealthWatchProcedure = "/grpc.health.v1.Health/Watch"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	healthServiceDescriptor     = v1.File_health_v1_health_proto.Services().ByName("Health")
-	healthCheckMethodDescriptor = healthServiceDescriptor.Methods().ByName("Check")
-	healthWatchMethodDescriptor = healthServiceDescriptor.Methods().ByName("Watch")
-)
-
 // HealthClient is a client for the grpc.health.v1.Health service.
 type HealthClient interface {
 	Check(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
@@ -61,17 +54,18 @@ type HealthClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewHealthClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) HealthClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	healthMethods := v1.File_health_v1_health_proto.Services().ByName("Health").Methods()
 	return &healthClient{
 		check: connect.NewClient[v1.HealthCheckRequest, v1.HealthCheckResponse](
 			httpClient,
 			baseURL+HealthCheckProcedure,
-			connect.WithSchema(healthCheckMethodDescriptor),
+			connect.WithSchema(healthMethods.ByName("Check")),
 			connect.WithClientOptions(opts...),
 		),
 		watch: connect.NewClient[v1.HealthCheckRequest, v1.HealthCheckResponse](
 			httpClient,
 			baseURL+HealthWatchProcedure,
-			connect.WithSchema(healthWatchMethodDescriptor),
+			connect.WithSchema(healthMethods.ByName("Watch")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -105,16 +99,17 @@ type HealthHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewHealthHandler(svc HealthHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	healthMethods := v1.File_health_v1_health_proto.Services().ByName("Health").Methods()
 	healthCheckHandler := connect.NewUnaryHandler(
 		HealthCheckProcedure,
 		svc.Check,
-		connect.WithSchema(healthCheckMethodDescriptor),
+		connect.WithSchema(healthMethods.ByName("Check")),
 		connect.WithHandlerOptions(opts...),
 	)
 	healthWatchHandler := connect.NewServerStreamHandler(
 		HealthWatchProcedure,
 		svc.Watch,
-		connect.WithSchema(healthWatchMethodDescriptor),
+		connect.WithSchema(healthMethods.ByName("Watch")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/grpc.health.v1.Health/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

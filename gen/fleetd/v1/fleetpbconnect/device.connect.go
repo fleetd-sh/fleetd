@@ -50,17 +50,6 @@ const (
 	DeviceServiceDeleteDeviceProcedure = "/fleetd.v1.DeviceService/DeleteDevice"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	deviceServiceServiceDescriptor            = v1.File_fleetd_v1_device_proto.Services().ByName("DeviceService")
-	deviceServiceRegisterMethodDescriptor     = deviceServiceServiceDescriptor.Methods().ByName("Register")
-	deviceServiceHeartbeatMethodDescriptor    = deviceServiceServiceDescriptor.Methods().ByName("Heartbeat")
-	deviceServiceReportStatusMethodDescriptor = deviceServiceServiceDescriptor.Methods().ByName("ReportStatus")
-	deviceServiceGetDeviceMethodDescriptor    = deviceServiceServiceDescriptor.Methods().ByName("GetDevice")
-	deviceServiceListDevicesMethodDescriptor  = deviceServiceServiceDescriptor.Methods().ByName("ListDevices")
-	deviceServiceDeleteDeviceMethodDescriptor = deviceServiceServiceDescriptor.Methods().ByName("DeleteDevice")
-)
-
 // DeviceServiceClient is a client for the fleetd.v1.DeviceService service.
 type DeviceServiceClient interface {
 	// Register a new device with the fleet
@@ -86,41 +75,42 @@ type DeviceServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewDeviceServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) DeviceServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	deviceServiceMethods := v1.File_fleetd_v1_device_proto.Services().ByName("DeviceService").Methods()
 	return &deviceServiceClient{
 		register: connect.NewClient[v1.RegisterRequest, v1.RegisterResponse](
 			httpClient,
 			baseURL+DeviceServiceRegisterProcedure,
-			connect.WithSchema(deviceServiceRegisterMethodDescriptor),
+			connect.WithSchema(deviceServiceMethods.ByName("Register")),
 			connect.WithClientOptions(opts...),
 		),
 		heartbeat: connect.NewClient[v1.HeartbeatRequest, v1.HeartbeatResponse](
 			httpClient,
 			baseURL+DeviceServiceHeartbeatProcedure,
-			connect.WithSchema(deviceServiceHeartbeatMethodDescriptor),
+			connect.WithSchema(deviceServiceMethods.ByName("Heartbeat")),
 			connect.WithClientOptions(opts...),
 		),
 		reportStatus: connect.NewClient[v1.ReportStatusRequest, v1.ReportStatusResponse](
 			httpClient,
 			baseURL+DeviceServiceReportStatusProcedure,
-			connect.WithSchema(deviceServiceReportStatusMethodDescriptor),
+			connect.WithSchema(deviceServiceMethods.ByName("ReportStatus")),
 			connect.WithClientOptions(opts...),
 		),
 		getDevice: connect.NewClient[v1.GetDeviceRequest, v1.GetDeviceResponse](
 			httpClient,
 			baseURL+DeviceServiceGetDeviceProcedure,
-			connect.WithSchema(deviceServiceGetDeviceMethodDescriptor),
+			connect.WithSchema(deviceServiceMethods.ByName("GetDevice")),
 			connect.WithClientOptions(opts...),
 		),
 		listDevices: connect.NewClient[v1.ListDevicesRequest, v1.ListDevicesResponse](
 			httpClient,
 			baseURL+DeviceServiceListDevicesProcedure,
-			connect.WithSchema(deviceServiceListDevicesMethodDescriptor),
+			connect.WithSchema(deviceServiceMethods.ByName("ListDevices")),
 			connect.WithClientOptions(opts...),
 		),
 		deleteDevice: connect.NewClient[v1.DeleteDeviceRequest, v1.DeleteDeviceResponse](
 			httpClient,
 			baseURL+DeviceServiceDeleteDeviceProcedure,
-			connect.WithSchema(deviceServiceDeleteDeviceMethodDescriptor),
+			connect.WithSchema(deviceServiceMethods.ByName("DeleteDevice")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -188,40 +178,41 @@ type DeviceServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewDeviceServiceHandler(svc DeviceServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	deviceServiceMethods := v1.File_fleetd_v1_device_proto.Services().ByName("DeviceService").Methods()
 	deviceServiceRegisterHandler := connect.NewUnaryHandler(
 		DeviceServiceRegisterProcedure,
 		svc.Register,
-		connect.WithSchema(deviceServiceRegisterMethodDescriptor),
+		connect.WithSchema(deviceServiceMethods.ByName("Register")),
 		connect.WithHandlerOptions(opts...),
 	)
 	deviceServiceHeartbeatHandler := connect.NewUnaryHandler(
 		DeviceServiceHeartbeatProcedure,
 		svc.Heartbeat,
-		connect.WithSchema(deviceServiceHeartbeatMethodDescriptor),
+		connect.WithSchema(deviceServiceMethods.ByName("Heartbeat")),
 		connect.WithHandlerOptions(opts...),
 	)
 	deviceServiceReportStatusHandler := connect.NewUnaryHandler(
 		DeviceServiceReportStatusProcedure,
 		svc.ReportStatus,
-		connect.WithSchema(deviceServiceReportStatusMethodDescriptor),
+		connect.WithSchema(deviceServiceMethods.ByName("ReportStatus")),
 		connect.WithHandlerOptions(opts...),
 	)
 	deviceServiceGetDeviceHandler := connect.NewUnaryHandler(
 		DeviceServiceGetDeviceProcedure,
 		svc.GetDevice,
-		connect.WithSchema(deviceServiceGetDeviceMethodDescriptor),
+		connect.WithSchema(deviceServiceMethods.ByName("GetDevice")),
 		connect.WithHandlerOptions(opts...),
 	)
 	deviceServiceListDevicesHandler := connect.NewUnaryHandler(
 		DeviceServiceListDevicesProcedure,
 		svc.ListDevices,
-		connect.WithSchema(deviceServiceListDevicesMethodDescriptor),
+		connect.WithSchema(deviceServiceMethods.ByName("ListDevices")),
 		connect.WithHandlerOptions(opts...),
 	)
 	deviceServiceDeleteDeviceHandler := connect.NewUnaryHandler(
 		DeviceServiceDeleteDeviceProcedure,
 		svc.DeleteDevice,
-		connect.WithSchema(deviceServiceDeleteDeviceMethodDescriptor),
+		connect.WithSchema(deviceServiceMethods.ByName("DeleteDevice")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/fleetd.v1.DeviceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
