@@ -47,15 +47,6 @@ const (
 	AnalyticsServiceGetPerformanceMetricsProcedure = "/fleetd.v1.AnalyticsService/GetPerformanceMetrics"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	analyticsServiceServiceDescriptor                     = v1.File_fleetd_v1_analytics_proto.Services().ByName("AnalyticsService")
-	analyticsServiceGetDeviceMetricsMethodDescriptor      = analyticsServiceServiceDescriptor.Methods().ByName("GetDeviceMetrics")
-	analyticsServiceGetUpdateAnalyticsMethodDescriptor    = analyticsServiceServiceDescriptor.Methods().ByName("GetUpdateAnalytics")
-	analyticsServiceGetDeviceHealthMethodDescriptor       = analyticsServiceServiceDescriptor.Methods().ByName("GetDeviceHealth")
-	analyticsServiceGetPerformanceMetricsMethodDescriptor = analyticsServiceServiceDescriptor.Methods().ByName("GetPerformanceMetrics")
-)
-
 // AnalyticsServiceClient is a client for the fleetd.v1.AnalyticsService service.
 type AnalyticsServiceClient interface {
 	// Get device metrics aggregation
@@ -77,29 +68,30 @@ type AnalyticsServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewAnalyticsServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) AnalyticsServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	analyticsServiceMethods := v1.File_fleetd_v1_analytics_proto.Services().ByName("AnalyticsService").Methods()
 	return &analyticsServiceClient{
 		getDeviceMetrics: connect.NewClient[v1.GetDeviceMetricsRequest, v1.GetDeviceMetricsResponse](
 			httpClient,
 			baseURL+AnalyticsServiceGetDeviceMetricsProcedure,
-			connect.WithSchema(analyticsServiceGetDeviceMetricsMethodDescriptor),
+			connect.WithSchema(analyticsServiceMethods.ByName("GetDeviceMetrics")),
 			connect.WithClientOptions(opts...),
 		),
 		getUpdateAnalytics: connect.NewClient[v1.GetUpdateAnalyticsRequest, v1.GetUpdateAnalyticsResponse](
 			httpClient,
 			baseURL+AnalyticsServiceGetUpdateAnalyticsProcedure,
-			connect.WithSchema(analyticsServiceGetUpdateAnalyticsMethodDescriptor),
+			connect.WithSchema(analyticsServiceMethods.ByName("GetUpdateAnalytics")),
 			connect.WithClientOptions(opts...),
 		),
 		getDeviceHealth: connect.NewClient[v1.GetDeviceHealthRequest, v1.GetDeviceHealthResponse](
 			httpClient,
 			baseURL+AnalyticsServiceGetDeviceHealthProcedure,
-			connect.WithSchema(analyticsServiceGetDeviceHealthMethodDescriptor),
+			connect.WithSchema(analyticsServiceMethods.ByName("GetDeviceHealth")),
 			connect.WithClientOptions(opts...),
 		),
 		getPerformanceMetrics: connect.NewClient[v1.GetPerformanceMetricsRequest, v1.GetPerformanceMetricsResponse](
 			httpClient,
 			baseURL+AnalyticsServiceGetPerformanceMetricsProcedure,
-			connect.WithSchema(analyticsServiceGetPerformanceMetricsMethodDescriptor),
+			connect.WithSchema(analyticsServiceMethods.ByName("GetPerformanceMetrics")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -151,28 +143,29 @@ type AnalyticsServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewAnalyticsServiceHandler(svc AnalyticsServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	analyticsServiceMethods := v1.File_fleetd_v1_analytics_proto.Services().ByName("AnalyticsService").Methods()
 	analyticsServiceGetDeviceMetricsHandler := connect.NewUnaryHandler(
 		AnalyticsServiceGetDeviceMetricsProcedure,
 		svc.GetDeviceMetrics,
-		connect.WithSchema(analyticsServiceGetDeviceMetricsMethodDescriptor),
+		connect.WithSchema(analyticsServiceMethods.ByName("GetDeviceMetrics")),
 		connect.WithHandlerOptions(opts...),
 	)
 	analyticsServiceGetUpdateAnalyticsHandler := connect.NewUnaryHandler(
 		AnalyticsServiceGetUpdateAnalyticsProcedure,
 		svc.GetUpdateAnalytics,
-		connect.WithSchema(analyticsServiceGetUpdateAnalyticsMethodDescriptor),
+		connect.WithSchema(analyticsServiceMethods.ByName("GetUpdateAnalytics")),
 		connect.WithHandlerOptions(opts...),
 	)
 	analyticsServiceGetDeviceHealthHandler := connect.NewUnaryHandler(
 		AnalyticsServiceGetDeviceHealthProcedure,
 		svc.GetDeviceHealth,
-		connect.WithSchema(analyticsServiceGetDeviceHealthMethodDescriptor),
+		connect.WithSchema(analyticsServiceMethods.ByName("GetDeviceHealth")),
 		connect.WithHandlerOptions(opts...),
 	)
 	analyticsServiceGetPerformanceMetricsHandler := connect.NewUnaryHandler(
 		AnalyticsServiceGetPerformanceMetricsProcedure,
 		svc.GetPerformanceMetrics,
-		connect.WithSchema(analyticsServiceGetPerformanceMetricsMethodDescriptor),
+		connect.WithSchema(analyticsServiceMethods.ByName("GetPerformanceMetrics")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/fleetd.v1.AnalyticsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
