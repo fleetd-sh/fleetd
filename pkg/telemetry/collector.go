@@ -9,10 +9,10 @@ import (
 
 // Metric represents a single telemetry measurement
 type Metric struct {
-	Name      string      `json:"name"`
-	Value     interface{} `json:"value"`
-	Timestamp time.Time   `json:"timestamp"`
-	Labels    Labels      `json:"labels,omitempty"`
+	Name      string    `json:"name"`
+	Value     any       `json:"value"`
+	Timestamp time.Time `json:"timestamp"`
+	Labels    Labels    `json:"labels,omitempty"`
 }
 
 // Labels are key-value pairs attached to metrics

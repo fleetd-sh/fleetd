@@ -94,7 +94,7 @@ func (m *SQLiteWebhookManager) UpdateSubscription(ctx context.Context, config We
 	}
 
 	result, err := m.db.ExecContext(ctx,
-		`UPDATE webhook 
+		`UPDATE webhook
 		 SET name = ?, url = ?, secret = ?, events = ?, headers = ?,
 			 retry_config = ?, max_parallel = ?, timeout = ?, enabled = ?,
 			 updated_at = CURRENT_TIMESTAMP
@@ -208,9 +208,9 @@ func (m *SQLiteWebhookManager) ListSubscriptions(ctx context.Context) ([]Webhook
 func (m *SQLiteWebhookManager) Publish(ctx context.Context, event Event) error {
 	// Get all active subscriptions for this event type
 	rows, err := m.db.QueryContext(ctx,
-		`SELECT id, url, secret, headers, retry_config, max_parallel, timeout, enabled 
-		 FROM webhook 
-		 WHERE enabled = 1 
+		`SELECT id, url, secret, headers, retry_config, max_parallel, timeout, enabled
+		 FROM webhook
+		 WHERE enabled = 1
 		 AND events LIKE ?`,
 		"%"+string(event.Type)+"%")
 	if err != nil {
@@ -279,7 +279,7 @@ func (m *SQLiteWebhookManager) GetDelivery(ctx context.Context, deliveryID strin
 
 	err := m.db.QueryRowContext(ctx,
 		`SELECT id, webhook_id, event_id, url, status, request, response,
-			error, duration, strftime('%Y-%m-%dT%H:%M:%SZ', timestamp), retry_count, 
+			error, duration, strftime('%Y-%m-%dT%H:%M:%SZ', timestamp), retry_count,
 			strftime('%Y-%m-%dT%H:%M:%SZ', next_retry_at)
 		 FROM webhook_delivery WHERE id = ?`,
 		deliveryID).Scan(
@@ -316,10 +316,10 @@ func (m *SQLiteWebhookManager) GetDelivery(ctx context.Context, deliveryID strin
 // ListDeliveries implements WebhookManager
 func (m *SQLiteWebhookManager) ListDeliveries(ctx context.Context, filter DeliveryFilter) ([]WebhookDelivery, error) {
 	query := `SELECT id, webhook_id, event_id, url, status, request, response,
-				error, duration, timestamp, retry_count, 
+				error, duration, timestamp, retry_count,
 				next_retry_at
 			  FROM webhook_delivery WHERE 1=1`
-	args := []interface{}{}
+	args := []any{}
 
 	if filter.WebhookID != "" {
 		query += " AND webhook_id = ?"

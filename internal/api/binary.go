@@ -125,7 +125,7 @@ func (s *BinaryService) GetBinary(ctx context.Context, req *connect.Request[pb.G
 	)
 
 	err := s.db.QueryRowContext(ctx,
-		`SELECT id, name, version, platform, architecture, size, sha256, metadata, 
+		`SELECT id, name, version, platform, architecture, size, sha256, metadata,
 		 strftime('%Y-%m-%dT%H:%M:%SZ', created_at) as created_at
 		 FROM binary WHERE id = ?`,
 		req.Msg.Id).Scan(
@@ -191,10 +191,10 @@ func (s *BinaryService) DownloadBinary(ctx context.Context, req *connect.Request
 }
 
 func (s *BinaryService) ListBinaries(ctx context.Context, req *connect.Request[pb.ListBinariesRequest]) (*connect.Response[pb.ListBinariesResponse], error) {
-	query := `SELECT id, name, version, platform, architecture, size, sha256, metadata, 
+	query := `SELECT id, name, version, platform, architecture, size, sha256, metadata,
 			  strftime('%Y-%m-%dT%H:%M:%SZ', created_at) as created_at
 			  FROM binary WHERE 1=1`
-	args := []interface{}{}
+	args := []any{}
 
 	if req.Msg.Name != "" {
 		query += " AND name = ?"

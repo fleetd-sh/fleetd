@@ -217,7 +217,7 @@ func TestDockerFactory_Create(t *testing.T) {
 	factory := &DockerFactory{}
 
 	t.Run("ValidRuntime", func(t *testing.T) {
-		manager, err := factory.Create("docker", map[string]interface{}{
+		manager, err := factory.Create("docker", map[string]any{
 			"host":    "unix:///var/run/docker.sock",
 			"version": "1.41",
 		})

@@ -90,7 +90,7 @@ func (c *Client) Analytics() *AnalyticsClient {
 
 // apiKeyInterceptor adds the API key to request metadata
 func apiKeyInterceptor(apiKey string) grpc.UnaryClientInterceptor {
-	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, method string, req, reply any, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		ctx = addAPIKey(ctx, apiKey)
 		return invoker(ctx, method, req, reply, cc, opts...)
 	}

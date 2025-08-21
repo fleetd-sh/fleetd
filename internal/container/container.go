@@ -205,7 +205,7 @@ type ContainerEvent struct {
 // ContainerFactory creates container managers
 type ContainerFactory interface {
 	// Create creates a container manager for the given runtime
-	Create(runtime string, options map[string]interface{}) (ContainerManager, error)
+	Create(runtime string, options map[string]any) (ContainerManager, error)
 }
 
 // RegisterContainerFactory registers a container factory

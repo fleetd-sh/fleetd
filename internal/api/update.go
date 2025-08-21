@@ -61,7 +61,7 @@ func (s *UpdateService) CreateUpdateCampaign(ctx context.Context, req *connect.R
 
 	// Count target devices
 	query := `SELECT id FROM device WHERE 1=1`
-	args := []interface{}{}
+	args := []any{}
 
 	// Combine platforms and architectures into a single type filter
 	var typeFilters []string
@@ -219,7 +219,7 @@ func (s *UpdateService) ListUpdateCampaigns(ctx context.Context, req *connect.Re
 		strategy, status, total_devices, updated_devices, failed_devices,
 		created_at, updated_at
 		FROM update_campaign WHERE 1=1`
-	args := []interface{}{}
+	args := []any{}
 
 	if req.Msg.Status != pb.UpdateCampaignStatus_UPDATE_CAMPAIGN_STATUS_UNSPECIFIED {
 		query += " AND status = ?"

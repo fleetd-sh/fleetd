@@ -8,7 +8,7 @@ import (
 // MetricValue represents a single metric value
 type MetricValue struct {
 	DeviceID  string
-	Value     interface{}
+	Value     any
 	Timestamp time.Time
 	Labels    map[string]string
 }
@@ -77,8 +77,8 @@ const (
 
 // MetricsStorageConfig represents configuration for a metrics storage backend
 type MetricsStorageConfig struct {
-	Type    string                 // Type of storage backend
-	Options map[string]interface{} // Backend-specific options
+	Type    string         // Type of storage backend
+	Options map[string]any // Backend-specific options
 }
 
 // MetricsStorageFactory creates a new metrics storage backend

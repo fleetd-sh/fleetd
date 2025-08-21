@@ -19,7 +19,7 @@ message Binary {
   string status = 3;
 }
 
-message DeployBinaryRequest {e
+message DeployBinaryRequest {
   string name = 1;
   bytes data = 2;
 }

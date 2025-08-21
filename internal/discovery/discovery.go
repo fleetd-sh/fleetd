@@ -127,8 +127,8 @@ func (d *Discovery) Browse(ctx context.Context, timeout time.Duration) ([]string
 				for _, field := range entry.InfoFields {
 					if strings.HasPrefix(field, "deviceid=") {
 						deviceID := strings.TrimPrefix(field, "deviceid=")
-						// Skip self-discovery
-						if deviceID != d.deviceID {
+						// Skip self-discovery only if we have a deviceID
+						if d.deviceID == "" || deviceID != d.deviceID {
 							devices[deviceID] = true
 						}
 					}
