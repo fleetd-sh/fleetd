@@ -136,7 +136,7 @@ type rateLimitedServerStream struct {
 }
 
 // Receive rate limits incoming messages
-func (s *rateLimitedServerStream) Receive(m interface{}) error {
+func (s *rateLimitedServerStream) Receive(m any) error {
 	if !s.limiter.Allow() {
 		return connect.NewError(connect.CodeResourceExhausted, errors.New("rate limit exceeded"))
 	}

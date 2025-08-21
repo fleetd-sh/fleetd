@@ -115,7 +115,7 @@ func (s *SQLiteMetricsStorage) StoreBatch(ctx context.Context, metrics map[strin
 // Query implements MetricsStorage
 func (s *SQLiteMetricsStorage) Query(ctx context.Context, query MetricQuery) ([]MetricSeries, error) {
 	placeholders := make([]string, len(query.Names))
-	args := make([]interface{}, 0, len(query.Names)+3)
+	args := make([]any, 0, len(query.Names)+3)
 
 	// Add metric names to args first
 	for i := range query.Names {
@@ -135,14 +135,14 @@ func (s *SQLiteMetricsStorage) Query(ctx context.Context, query MetricQuery) ([]
 
 	// Base query
 	query_str := fmt.Sprintf(`
-		SELECT name, 
+		SELECT name,
 			   strftime('%%Y-%%m-%%dT%%H:%%M:%%SZ', timestamp) as timestamp,
-			   value, 
-			   labels, 
+			   value,
+			   labels,
 			   device_id
 		FROM metric
-		WHERE name IN (%s) 
-		AND device_id = ? 
+		WHERE name IN (%s)
+		AND device_id = ?
 		AND timestamp BETWEEN ? AND ?`,
 		strings.Join(placeholders, ","))
 

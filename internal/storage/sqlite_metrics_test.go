@@ -21,7 +21,7 @@ func setupSQLiteMetrics(t *testing.T) (MetricsStorage, func()) {
 	factory := &SQLiteMetricsFactory{}
 	storage, err := factory.Create(MetricsStorageConfig{
 		Type:    "sqlite",
-		Options: map[string]interface{}{"path": dbPath},
+		Options: map[string]any{"path": dbPath},
 	})
 	require.NoError(t, err)
 
@@ -263,7 +263,7 @@ func TestSQLiteMetrics_GetMetricInfo(t *testing.T) {
 	// Test JSON array querying
 	var count int
 	err = storage.(*SQLiteMetricsStorage).db.QueryRowContext(ctx,
-		`SELECT COUNT(*) FROM metric_info, json_each(labels) 
+		`SELECT COUNT(*) FROM metric_info, json_each(labels)
 		 WHERE name = 'cpu' AND json_each.value = 'host'`).Scan(&count)
 	require.NoError(t, err)
 	assert.Equal(t, 1, count)

@@ -32,7 +32,7 @@ func init() {
 }
 
 // Create implements ContainerFactory
-func (f *DockerFactory) Create(runtime string, options map[string]interface{}) (ContainerManager, error) {
+func (f *DockerFactory) Create(runtime string, options map[string]any) (ContainerManager, error) {
 	if runtime != "docker" {
 		return nil, fmt.Errorf("unsupported runtime: %s", runtime)
 	}

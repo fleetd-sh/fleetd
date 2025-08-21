@@ -56,7 +56,7 @@ func (s *AnalyticsService) GetDeviceMetrics(ctx context.Context, req *connect.Re
 	}
 
 	// Build query for known metric columns
-	query := `SELECT 
+	query := `SELECT
 		'cpu_usage' as metric_name, cpu_usage as value, timestamp FROM device_metric WHERE cpu_usage IS NOT NULL
 		UNION ALL
 		SELECT 'memory_usage' as metric_name, memory_usage as value, timestamp FROM device_metric WHERE memory_usage IS NOT NULL
@@ -68,7 +68,7 @@ func (s *AnalyticsService) GetDeviceMetrics(ctx context.Context, req *connect.Re
 		SELECT 'network_tx_bytes' as metric_name, CAST(network_tx_bytes as REAL) as value, timestamp FROM device_metric WHERE network_tx_bytes IS NOT NULL`
 
 	query += ` AND device_id = ? AND timestamp BETWEEN ? AND ?`
-	args := []interface{}{req.Msg.DeviceId, req.Msg.TimeRange.StartTime.AsTime(), req.Msg.TimeRange.EndTime.AsTime()}
+	args := []any{req.Msg.DeviceId, req.Msg.TimeRange.StartTime.AsTime(), req.Msg.TimeRange.EndTime.AsTime()}
 
 	if len(req.Msg.MetricNames) > 0 {
 		placeholders := make([]string, len(req.Msg.MetricNames))
@@ -142,7 +142,7 @@ func (s *AnalyticsService) GetUpdateAnalytics(ctx context.Context, req *connect.
 				COALESCE(m.failure_rate, 0) as failure_rate
 			FROM update_campaign c
 			LEFT JOIN (
-				SELECT campaign_id, 
+				SELECT campaign_id,
 					   AVG(avg_duration) as avg_duration,
 					   AVG(failure_rate) as failure_rate
 				FROM update_metric
@@ -150,7 +150,7 @@ func (s *AnalyticsService) GetUpdateAnalytics(ctx context.Context, req *connect.
 				GROUP BY campaign_id
 			) m ON c.id = m.campaign_id
 			WHERE strftime('%Y-%m-%dT%H:%M:%SZ', c.created_at) BETWEEN ? AND ?`
-	args := []interface{}{
+	args := []any{
 		req.Msg.TimeRange.StartTime.AsTime().UTC().Format(time.RFC3339),
 		req.Msg.TimeRange.EndTime.AsTime().UTC().Format(time.RFC3339),
 		req.Msg.TimeRange.StartTime.AsTime().UTC().Format(time.RFC3339),
@@ -242,7 +242,7 @@ func (s *AnalyticsService) GetDeviceHealth(ctx context.Context, req *connect.Req
 	)
 
 	err := s.db.QueryRowContext(ctx,
-		`SELECT status, message, strftime('%Y-%m-%dT%H:%M:%SZ', last_heartbeat) as last_heartbeat 
+		`SELECT status, message, strftime('%Y-%m-%dT%H:%M:%SZ', last_heartbeat) as last_heartbeat
 		 FROM device_health
 		 WHERE device_id = ? ORDER BY timestamp DESC LIMIT 1`,
 		req.Msg.DeviceId).Scan(&status, &message, &lastHeartbeat)
@@ -320,7 +320,7 @@ func (s *AnalyticsService) GetPerformanceMetrics(ctx context.Context, req *conne
 	query := `SELECT metric_name, value, unit, strftime('%Y-%m-%dT%H:%M:%SZ', timestamp) as timestamp
 			  FROM performance_metric
 			  WHERE timestamp BETWEEN ? AND ?`
-	args := []interface{}{
+	args := []any{
 		req.Msg.TimeRange.StartTime.AsTime().UTC().Format(time.RFC3339),
 		req.Msg.TimeRange.EndTime.AsTime().UTC().Format(time.RFC3339),
 	}
