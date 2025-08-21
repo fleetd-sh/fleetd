@@ -11,6 +11,10 @@ lint:
 
   use:
     - STANDARD
+  
+  ignore:
+    # Exclude health.proto as it follows standard gRPC health check protocol
+    - proto/health/v1/health.proto
 
 breaking:
   use:
