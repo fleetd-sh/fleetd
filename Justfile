@@ -18,29 +18,63 @@ linker_flags := if target_os == "linux" {
     ""
 }
 
-build target:
-        #!/usr/bin/env sh
-        go build -v \
+# Build a target binary with optional architecture
+# Usage: just build fleetd [arch]
+# Examples:
+#   just build fleetd        # builds for current arch
+#   just build fleetd arm64  # builds for arm64
+#   just build fleetd amd64  # builds for amd64
+build target arch="":
+    #!/usr/bin/env sh
+    set -e
+
+    # Set architecture-specific variables
+    if [ "{{arch}}" = "" ]; then
+        # Default to current architecture
+        OUTPUT_NAME="{{target}}"
+        EXTRA_ENV=""
+    else
+        # Cross-compile for specified architecture
+        OUTPUT_NAME="{{target}}-{{arch}}"
+        export GOOS=linux
+        export GOARCH={{arch}}
+        EXTRA_ENV="GOOS=linux GOARCH={{arch}}"
+    fi
+
+    # Use default linker flags if not cross-compiling
+    if [ "{{arch}}" = "" ]; then
+        LINKER_FLAGS="{{linker_flags}}"
+    else
+        LINKER_FLAGS=""
+    fi
+
+    # Build the binary
+    go build -v \
         -ldflags "-X fleetd.sh/internal/version.Version={{version}} \
               -X fleetd.sh/internal/version.CommitSHA={{commit_sha}} \
               -X 'fleetd.sh/internal/version.BuildTime={{build_time}}' \
-              {{linker_flags}}" \
-        -o bin/{{target}}{{executable_extension}} cmd/{{target}}/main.go
+              ${LINKER_FLAGS}" \
+        -o bin/${OUTPUT_NAME}{{executable_extension}} cmd/{{target}}/main.go
 
+    echo "Built: bin/${OUTPUT_NAME}{{executable_extension}}"
+
+# Build all targets for current architecture
 build-all:
-    build fleetd
+    just build fleetd
+    just build fleetp
 
 test-all:
     go test -v ./...
-
-test-package target:
-    go test -v ./{{target}}
 
 test target:
     go test -v ./... -run {{target}}
 
 format:
     go fmt ./...
+
+lint:
+    go vet ./...
+    buf lint
 
 run: build-all
     sleep 1  # Add a small delay
