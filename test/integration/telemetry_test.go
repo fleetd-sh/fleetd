@@ -27,6 +27,7 @@ func TestTelemetryCollection(t *testing.T) {
 	cfg.DeviceID = "telemetry-test-device"
 	cfg.StorageDir = filepath.Join(tmpDir, "data")
 	cfg.TelemetryInterval = 1 // 1 second interval
+	cfg.RPCPort = 0           // Use dynamic port allocation
 
 	// Start agent
 	a := agent.New(cfg)
