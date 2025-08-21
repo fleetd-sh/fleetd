@@ -38,6 +38,7 @@ type SimpleFlags struct {
 	// Utility
 	list    bool
 	verbose bool
+	dryRun  bool
 }
 
 // stringSlice is a flag type for repeated string flags
@@ -57,7 +58,7 @@ func main() {
 
 	// Define flags
 	flag.StringVar(&flags.device, "device", "", "Device path (e.g., /dev/disk2)")
-	flag.StringVar(&flags.deviceType, "type", "", "Device type (rpi, esp32)")
+	flag.StringVar(&flags.deviceType, "device-type", "", "Device type (rpi, dietpi, esp32)")
 	flag.StringVar(&flags.name, "name", "", "Device name")
 
 	flag.StringVar(&flags.wifiSSID, "wifi-ssid", "", "WiFi network name")
@@ -72,6 +73,7 @@ func main() {
 
 	flag.BoolVar(&flags.list, "list", false, "List available devices")
 	flag.BoolVar(&flags.verbose, "v", false, "Verbose output")
+	flag.BoolVar(&flags.dryRun, "dry-run", false, "Preview actions without making changes")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `fleetp - Fleet Device Provisioner
@@ -249,22 +251,52 @@ func runSimpleProvision(flags *SimpleFlags) error {
 		fmt.Printf("Plugins: %s\n", strings.Join(flags.plugins, ", "))
 	}
 
-	// In a real implementation, this would:
-	// 1. Write the OS image to the device
-	// 2. Mount the boot partition
-	// 3. Write core fleetd files
-	// 4. Let plugins add their files
-	// 5. Unmount and finish
+	// Determine OS type and architecture
+	osType := string(config.DeviceType)
+	if flags.deviceType == "dietpi" {
+		osType = "dietpi"
+	} else if config.DeviceType == provision.DeviceTypeRaspberryPi {
+		osType = "rpi"
+	}
+	
+	// Default to arm64 for Raspberry Pi
+	arch := "arm64"
+	
+	// Create progress reporter
+	progress := &consoleProgress{verbose: flags.verbose}
 
 	fmt.Println("\nProvisioning in progress...")
 
-	// Run the actual provisioning
+	// Run the actual provisioning with OS image
 	ctx := context.Background()
-	if err := provisioner.Provision(ctx); err != nil {
+	if err := provisioner.ProvisionWithImage(ctx, osType, arch, flags.dryRun, progress); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// consoleProgress implements ProgressReporter for console output
+type consoleProgress struct {
+	verbose bool
+	lastMsg string
+}
+
+func (p *consoleProgress) UpdateStatus(status string) {
+	fmt.Printf("\n%s\n", status)
+	p.lastMsg = status
+}
+
+func (p *consoleProgress) UpdateProgress(message string, current, total int64) {
+	if p.verbose || message != p.lastMsg {
+		if total > 0 {
+			percent := float64(current) / float64(total) * 100
+			fmt.Printf("\r%-50s %.1f%%", message, percent)
+		} else {
+			fmt.Printf("\r%-50s", message)
+		}
+		p.lastMsg = message
+	}
 }
 
 func listDevices() {
