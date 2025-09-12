@@ -73,11 +73,39 @@ func TestAgentInContainer(t *testing.T) {
 func buildAgent(t *testing.T) {
 	t.Helper()
 
-	// Get the path to the testdata directory
-	testDataDir := filepath.Join("testdata")
+	// Get the absolute path to the testdata directory
+	// The test file is in test/e2e/, so testdata should be in test/e2e/testdata
+	testFile, err := filepath.Abs(os.Args[0])
+	if err != nil {
+		// Fallback to working directory
+		wd, err := os.Getwd()
+		if err != nil {
+			t.Fatalf("Failed to get working directory: %v", err)
+		}
+		testFile = wd
+	}
+	
+	// The testdata directory should be relative to the test file location
+	testDataDir := filepath.Join(filepath.Dir(testFile), "test", "e2e", "testdata")
+	if _, err := os.Stat(testDataDir); os.IsNotExist(err) {
+		// Try relative to current directory
+		testDataDir = filepath.Join("test", "e2e", "testdata")
+		if _, err := os.Stat(testDataDir); os.IsNotExist(err) {
+			// Try just testdata in current directory (when running from test/e2e)
+			testDataDir = "testdata"
+			if _, err := os.Stat(testDataDir); os.IsNotExist(err) {
+				// Create the directory if it doesn't exist
+				if err := os.MkdirAll(testDataDir, 0755); err != nil {
+					t.Fatalf("Failed to create testdata directory: %v", err)
+				}
+			}
+		}
+	}
+	
+	t.Logf("Using testdata directory: %s", testDataDir)
 
 	// Build the agent binary for Linux
-	cmd := exec.Command("go", "build", "-o", filepath.Join(testDataDir, "fleetd"), "../../cmd/fleetd")
+	cmd := exec.Command("go", "build", "-o", filepath.Join(testDataDir, "fleetd"), "fleetd.sh/cmd/fleetd")
 	cmd.Env = append(os.Environ(),
 		"GOOS=linux",
 		"GOARCH=amd64",
@@ -93,9 +121,27 @@ func createContainer(ctx context.Context, t *testing.T) (testcontainers.Containe
 	// Build agent first
 	buildAgent(t)
 
+	// Get the correct testdata directory path using same logic as buildAgent
+	testFile, err := filepath.Abs(os.Args[0])
+	if err != nil {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get working directory: %v", err)
+		}
+		testFile = wd
+	}
+	
+	testDataDir := filepath.Join(filepath.Dir(testFile), "test", "e2e", "testdata")
+	if _, err := os.Stat(testDataDir); os.IsNotExist(err) {
+		testDataDir = filepath.Join("test", "e2e", "testdata")
+		if _, err := os.Stat(testDataDir); os.IsNotExist(err) {
+			testDataDir = "testdata"
+		}
+	}
+
 	req := testcontainers.ContainerRequest{
 		FromDockerfile: testcontainers.FromDockerfile{
-			Context:    "testdata",
+			Context:    testDataDir,
 			Dockerfile: "Dockerfile.test",
 		},
 		ExposedPorts: []string{"8080/tcp"},
