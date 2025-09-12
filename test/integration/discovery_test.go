@@ -26,7 +26,7 @@ func createTestAgent(t *testing.T, deviceID string, rpcPort, mDNSPort int) *agen
 }
 
 func TestDeviceDiscovery(t *testing.T) {
-	if testing.Short() {
+	if testing.Short() || os.Getenv("INTEGRATION") == "" {
 		t.Skip("Skipping integration test")
 	}
 

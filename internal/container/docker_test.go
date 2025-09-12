@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -13,8 +14,8 @@ import (
 )
 
 func TestDockerManager_Integration(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test")
+	if os.Getenv("INTEGRATION") != "1" {
+		t.Skip("set INTEGRATION=1 to run integration tests (requires Docker)")
 	}
 
 	ctx := context.Background()
