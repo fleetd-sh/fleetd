@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// createRPiOSFirstRun creates a firstrun.sh script for Raspberry Pi OS
-func createRPiOSFirstRun(config Config) string {
+// createRasPiOSFirstRun creates a firstrun.sh script for Raspberry Pi OS
+func createRasPiOSFirstRun(config Config) string {
 	// Create a firstrun.sh script that follows Raspberry Pi OS conventions
 	script := `#!/bin/bash
 # FleetD First Boot Setup for Raspberry Pi OS
@@ -140,7 +140,7 @@ if [ -d "$BOOT_PARTITION/plugins" ]; then
             fi
         fi
     done
-    
+
     # Clean up plugin scripts after execution
     rm -rf "$BOOT_PARTITION/plugins"
 fi
@@ -158,8 +158,8 @@ sed -i 's| systemd.run=/boot/firmware/firstrun.sh systemd.run_success_action=reb
 	return script
 }
 
-// modifyRPiOSCmdline modifies cmdline.txt to run firstrun.sh on boot
-func modifyRPiOSCmdline(bootPath string) error {
+// modifyRasPiOSCmdline modifies cmdline.txt to run firstrun.sh on boot
+func modifyRasPiOSCmdline(bootPath string) error {
 	cmdlinePath := filepath.Join(bootPath, "cmdline.txt")
 
 	// Read existing cmdline.txt

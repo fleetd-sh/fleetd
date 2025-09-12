@@ -194,7 +194,7 @@ WantedBy=multi-user.target
 
 	// 7. Create firstrun.sh script for Raspberry Pi OS
 	// This is the official way to run scripts on first boot
-	firstrunScript := createRPiOSFirstRun(config)
+	firstrunScript := createRasPiOSFirstRun(config)
 	firstrunFile := filepath.Join(bootPath, "firstrun.sh")
 	if err := os.WriteFile(firstrunFile, []byte(firstrunScript), 0755); err != nil {
 		return fmt.Errorf("failed to create firstrun.sh: %w", err)
@@ -202,7 +202,7 @@ WantedBy=multi-user.target
 	fmt.Printf("Created firstrun.sh for automatic installation\n")
 
 	// 8. Modify cmdline.txt to run firstrun.sh on boot
-	if err := modifyRPiOSCmdline(bootPath); err != nil {
+	if err := modifyRasPiOSCmdline(bootPath); err != nil {
 		return fmt.Errorf("failed to modify cmdline.txt: %w", err)
 	}
 	fmt.Printf("Modified cmdline.txt to run firstrun.sh on first boot\n")
