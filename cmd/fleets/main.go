@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fleetd.sh/cmd/fleetd/cmd"
+	"fleetd.sh/cmd/fleets/cmd"
 )
 
 func main() {

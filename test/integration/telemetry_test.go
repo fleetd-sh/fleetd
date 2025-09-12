@@ -13,7 +13,7 @@ import (
 )
 
 func TestTelemetryCollection(t *testing.T) {
-	if testing.Short() {
+	if testing.Short() || os.Getenv("INTEGRATION") == "" {
 		t.Skip("Skipping integration test")
 	}
 

@@ -1,0 +1,13 @@
+[Unit]
+Description=FleetD First Boot Installation
+ConditionPathExists=/boot/firmware/fleetd
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/boot/firmware/fleetd-install.sh
+
+[Install]
+WantedBy=multi-user.target

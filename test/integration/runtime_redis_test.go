@@ -18,7 +18,7 @@ import (
 
 func TestRedisDeployment(t *testing.T) {
 	if testing.Short() || os.Getenv("INTEGRATION") == "" {
-		t.Skip("Skipping Redis integration test")
+		t.Skip("Skipping integration test")
 	}
 
 	// Check for required build tools
@@ -154,8 +154,8 @@ func downloadAndBuildRedis(t *testing.T, url string) string {
 	}
 	f.Close() // Close before extraction
 
-	// Extract archive
-	cmd := exec.Command("tar", "xzf", archivePath, "-C", tmpDir)
+	// Extract archive with permissions reset
+	cmd := exec.Command("tar", "xzf", archivePath, "-C", tmpDir, "--no-same-permissions")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("Failed to extract Redis archive: %v\nOutput: %s", err, out)
 	}
@@ -177,8 +177,13 @@ func downloadAndBuildRedis(t *testing.T, url string) string {
 		t.Fatal("Could not find Redis directory")
 	}
 
-	// Build Redis
-	cmd = exec.Command("sudo", "make", "install")
+	// Fix permissions to avoid cleanup issues
+	if err := exec.Command("chmod", "-R", "755", redisDir).Run(); err != nil {
+		t.Logf("Warning: Failed to fix permissions: %v", err)
+	}
+
+	// Build Redis (without sudo, just local build)
+	cmd = exec.Command("make")
 	cmd.Dir = redisDir
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("Failed to build Redis: %v\nOutput: %s", err, out)

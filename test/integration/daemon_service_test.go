@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 )
 
 func TestDaemonService(t *testing.T) {
-	if testing.Short() {
+	if testing.Short() || os.Getenv("INTEGRATION") == "" {
 		t.Skip("Skipping integration test")
 	}
 
