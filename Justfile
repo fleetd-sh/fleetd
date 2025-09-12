@@ -70,11 +70,11 @@ test:
 
 # Run all tests including integration tests
 test-all:
-    FLEETD_INTEGRATION_TESTS=1 go test -v ./...
+    INTEGRATION=1 FLEETD_INTEGRATION_TESTS=1 go test -v ./...
 
 # Run integration tests only
 test-integration:
-    FLEETD_INTEGRATION_TESTS=1 go test -v ./test/integration/... ./test/e2e/...
+    INTEGRATION=1 FLEETD_INTEGRATION_TESTS=1 go test -v ./test/integration/... ./test/e2e/...
 
 # Run specific test by name
 test-run target:
@@ -97,83 +97,6 @@ run: build-all
     trap 'kill $(jobs -p)' INT TERM
     echo "Nothing to run"
     wait
-
-# QEMU testing commands
-setup-qemu:
-    ./scripts/setup-qemu-rpi.sh
-
-test-provision:
-    ./scripts/test-provisioning.sh
-
-create-test-image:
-    ./scripts/create-test-image.sh
-
-run-qemu image="fleetd-test.img":
-    ./scripts/run-qemu-rpi.sh --image {{image}}
-
-run-qemu-pizero2 image="fleetd-test.img":
-    ./scripts/run-qemu-pizero2.sh --image {{image}}
-
-# One-command QEMU setup: downloads, builds, and provisions everything
-qemu-setup:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "🚀 Setting up QEMU Raspberry Pi emulation with fleetd..."
-    echo
-    # Download base image and firmware
-    ./scripts/setup-qemu-rpi.sh
-    echo
-    # Build and provision
-    ./scripts/test-qemu-provisioning.sh
-    echo
-    echo "✅ Setup complete! Run 'just qemu-run' to start the emulator"
-
-# Setup QEMU with Raspberry Pi OS instead of DietPi
-qemu-setup-raspios:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    echo "🚀 Setting up QEMU with Raspberry Pi OS..."
-    echo
-    # Download Raspberry Pi OS
-    ./scripts/setup-qemu-raspios.sh
-    echo
-    # Build fleetd
-    just build fleetd arm64
-    echo
-    # Provision the image
-    ./bin/fleetp provision \
-        --device qemu-rpi/raspios-working.img \
-        --wifi-ssid "TestNetwork" \
-        --wifi-pass "testpass123" \
-        --os raspios
-    echo
-    echo "✅ Setup complete! Run 'just qemu-run-raspios' to start"
-
-# Run QEMU with Raspberry Pi OS
-qemu-run-raspios:
-    ./scripts/run-qemu-rpi-proper.sh --image raspios-test.img
-
-# One-command to run the provisioned QEMU image
-qemu-run:
-    ./scripts/run-qemu-rpi.sh --image test-provisioned.img
-
-# Run QEMU in headless mode (serial console only)
-qemu-run-headless:
-    ./scripts/run-qemu-rpi.sh --image test-provisioned.img --headless
-
-# Check if QEMU SSH is ready
-qemu-ssh-wait:
-    @echo "Waiting for SSH to be ready..."
-    @while ! nc -z localhost 2222 2>/dev/null; do \
-        echo -n "."; \
-        sleep 1; \
-    done
-    @echo " Ready!"
-    @echo "Connect with: ssh -p 2222 root@localhost"
-
-# Test with base DietPi image (no provisioning)
-qemu-test-base:
-    ./scripts/run-qemu-rpi.sh --image dietpi-expanded.img --headless
 
 watch target:
     VERSION={{version}} COMMIT_SHA={{commit_sha}} BUILD_TIME="{{build_time}}" gow -e=go,proto,sql -c run cmd/{{target}}/main.go
