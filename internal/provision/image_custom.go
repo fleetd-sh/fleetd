@@ -1,6 +1,8 @@
 package provision
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -191,4 +193,20 @@ server:
 
 	configPath := filepath.Join(bootPath, "fleetd.yaml")
 	return os.WriteFile(configPath, []byte(fleetdYAML), 0644)
+}
+
+// calculateSHA256 calculates the SHA256 checksum of a file
+func calculateSHA256(filepath string) (string, error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	hasher := sha256.New()
+	if _, err := io.Copy(hasher, file); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
