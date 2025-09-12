@@ -3,6 +3,8 @@ package provision
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 )
 
 // CoreProvisioner focuses only on fleetd agent provisioning
@@ -92,6 +94,108 @@ func (p *CoreProvisioner) Provision(ctx context.Context) error {
 	// Post-provision hooks
 	if err := p.plugins.PostProvision(ctx, p.config); err != nil {
 		return fmt.Errorf("post-provision failed: %w", err)
+	}
+
+	return nil
+}
+
+// ProvisionWithImage downloads an OS image and writes it to the device
+func (p *CoreProvisioner) ProvisionWithImage(ctx context.Context, osType, arch string, dryRun bool, progress ProgressReporter) error {
+	// Pre-provision hooks
+	if err := p.plugins.PreProvision(ctx, p.config); err != nil {
+		return fmt.Errorf("pre-provision failed: %w", err)
+	}
+
+	// Let plugins modify config
+	if err := p.plugins.ModifyConfig(p.config); err != nil {
+		return fmt.Errorf("config modification failed: %w", err)
+	}
+
+	// Initialize image manager
+	imageManager := NewImageManager("")
+	InitializeProviders(imageManager)
+
+	// Download OS image
+	if progress != nil {
+		progress.UpdateStatus("Downloading OS image...")
+	}
+	
+	imagePath, err := imageManager.DownloadImage(ctx, osType, arch, func(downloaded, total int64) {
+		if progress != nil {
+			percent := float64(downloaded) / float64(total) * 100
+			progress.UpdateProgress(fmt.Sprintf("Downloading: %.1f%%", percent), downloaded, total)
+		}
+	})
+	if err != nil {
+		return fmt.Errorf("failed to download image: %w", err)
+	}
+
+	// Get the image provider
+	provider, err := imageManager.GetProvider(osType)
+	if err != nil {
+		return err
+	}
+
+	// Create SD card writer
+	writer := NewSDCardWriter(p.config.DevicePath, dryRun)
+
+	// Write image to SD card
+	if progress != nil {
+		progress.UpdateStatus("Writing image to SD card...")
+	}
+	
+	if err := writer.WriteImage(ctx, imagePath, func(written, total int64) {
+		if progress != nil {
+			percent := float64(written) / float64(total) * 100
+			progress.UpdateProgress(fmt.Sprintf("Writing: %.1f%%", percent), written, total)
+		}
+	}); err != nil {
+		return fmt.Errorf("failed to write image: %w", err)
+	}
+
+	// Mount partitions
+	if progress != nil {
+		progress.UpdateStatus("Mounting partitions...")
+	}
+	
+	bootPath, rootPath, cleanup, err := writer.MountPartitions(
+		provider.GetBootPartitionLabel(),
+		provider.GetRootPartitionLabel(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to mount partitions: %w", err)
+	}
+	defer cleanup()
+
+	// Perform OS-specific setup
+	if progress != nil {
+		progress.UpdateStatus("Configuring system...")
+	}
+	
+	if err := provider.PostWriteSetup(bootPath, rootPath, p.config); err != nil {
+		return fmt.Errorf("failed to perform post-write setup: %w", err)
+	}
+
+	// Write additional plugin files
+	pluginFiles, err := p.plugins.GetAdditionalFiles()
+	if err != nil {
+		return fmt.Errorf("failed to get plugin files: %w", err)
+	}
+
+	for path, content := range pluginFiles {
+		fullPath := filepath.Join(bootPath, path)
+		if err := os.WriteFile(fullPath, content, 0644); err != nil {
+			return fmt.Errorf("failed to write plugin file %s: %w", path, err)
+		}
+	}
+
+	// Post-provision hooks
+	if err := p.plugins.PostProvision(ctx, p.config); err != nil {
+		return fmt.Errorf("post-provision failed: %w", err)
+	}
+
+	if progress != nil {
+		progress.UpdateStatus("Provisioning complete!")
 	}
 
 	return nil

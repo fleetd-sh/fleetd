@@ -5,6 +5,12 @@ import (
 	"fmt"
 )
 
+// ProgressReporter provides methods for reporting provisioning progress
+type ProgressReporter interface {
+	UpdateStatus(status string)
+	UpdateProgress(message string, current, total int64)
+}
+
 // DeviceType represents the type of device being provisioned
 type DeviceType string
 
