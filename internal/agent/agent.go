@@ -127,7 +127,7 @@ func (a *Agent) Start() error {
 	}
 
 	// Initialize other components
-	a.discovery = discovery.New(a.cfg.DeviceID, a.cfg.MDNSPort, a.cfg.ServiceType)
+	// Discovery will be initialized later after we know the actual RPC port
 	a.telemetry = telemetry.New(time.Duration(a.cfg.TelemetryInterval) * time.Second)
 
 	// Add telemetry sources and handlers
@@ -140,13 +140,6 @@ func (a *Agent) Start() error {
 		return fmt.Errorf("failed to initialize telemetry handler: %w", err)
 	}
 	a.telemetry.AddHandler(localHandler)
-
-	// Only start discovery if not disabled
-	if !a.cfg.DisableMDNS {
-		if err := a.discovery.Start(); err != nil {
-			return fmt.Errorf("failed to start discovery: %w", err)
-		}
-	}
 
 	// Initialize daemon service
 	service := NewDaemonService(a)
@@ -166,6 +159,17 @@ func (a *Agent) Start() error {
 		return fmt.Errorf("failed to create listener: %w", err)
 	}
 	a.listener = listener
+
+	// Get the actual port if it was dynamically allocated
+	actualPort := listener.Addr().(*net.TCPAddr).Port
+
+	// Update discovery with actual port and start it if not disabled
+	if !a.cfg.DisableMDNS {
+		a.discovery = discovery.New(a.cfg.DeviceID, actualPort, a.cfg.ServiceType)
+		if err := a.discovery.Start(); err != nil {
+			return fmt.Errorf("failed to start discovery: %w", err)
+		}
+	}
 
 	// Create server
 	a.server = &http.Server{
@@ -217,8 +221,8 @@ func (a *Agent) Stop() error {
 		}
 	}
 
-	// Stop discovery
-	if a.cfg.EnableMDNS {
+	// Stop discovery if it was initialized
+	if a.discovery != nil {
 		if err := a.discovery.Stop(); err != nil {
 			log.Printf("Error stopping discovery: %v", err)
 		}

@@ -223,12 +223,18 @@ func (r *Runtime) Stop(name string) error {
 
 	proc, exists := r.processes[name]
 	if !exists {
-		return fmt.Errorf("process not found: %s", name)
+		// Process might have already exited and been cleaned up
+		return nil
 	}
 
 	if proc.cancel != nil {
 		proc.cancel()
 	}
+
+	// Remove from map (the monitoring goroutine might also do this,
+	// but delete is safe to call multiple times)
+	delete(r.processes, name)
+
 	return nil
 }
 

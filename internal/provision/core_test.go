@@ -2,6 +2,8 @@ package provision
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -201,5 +203,138 @@ func TestCoreProvisioner_LoadPlugins(t *testing.T) {
 	err := provisioner.LoadPlugins("/tmp/non-existent")
 	if err != nil {
 		t.Errorf("LoadPlugins should not error on non-existent dir: %v", err)
+	}
+}
+
+func TestVerifyProvisioning(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir := t.TempDir()
+
+	// Create test config
+	config := &Config{
+		DeviceID:   "test-device-123",
+		DeviceName: "test-device",
+		DeviceType: DeviceTypeRaspberryPi,
+		Network: NetworkConfig{
+			WiFiSSID: "TestNetwork",
+			WiFiPass: "TestPassword",
+		},
+	}
+
+	provisioner := &CoreProvisioner{
+		config: config,
+	}
+
+	// Test 1: No files written - should fail
+	err := provisioner.verifyProvisioning(tempDir, "", nil)
+	if err == nil {
+		t.Error("Expected verification to fail when no files are present")
+	}
+
+	// Test 2: Write minimal Raspberry Pi OS files
+	cmdlineFile := filepath.Join(tempDir, "cmdline.txt")
+	if err := os.WriteFile(cmdlineFile, []byte("test cmdline config content that is long enough"), 0644); err != nil {
+		t.Fatalf("Failed to write cmdline.txt: %v", err)
+	}
+
+	// Still missing fleetd binary - should fail
+	err = provisioner.verifyProvisioning(tempDir, "", nil)
+	if err == nil {
+		t.Error("Expected verification to fail when fleetd binary is missing")
+	}
+
+	// Test 3: Add fleetd binary (simulate with a large file)
+	fleetdFile := filepath.Join(tempDir, "fleetd")
+	// Create a file larger than 1MB
+	largeContent := make([]byte, 1024*1024+1)
+	if err := os.WriteFile(fleetdFile, largeContent, 0755); err != nil {
+		t.Fatalf("Failed to write fleetd: %v", err)
+	}
+
+	// Now verification should pass
+	err = provisioner.verifyProvisioning(tempDir, "", nil)
+	if err != nil {
+		t.Errorf("Expected verification to pass, got error: %v", err)
+	}
+
+	// Test 4: Test with corrupted fleetd (too small)
+	smallContent := []byte("too small")
+	if err := os.WriteFile(fleetdFile, smallContent, 0755); err != nil {
+		t.Fatalf("Failed to write small fleetd: %v", err)
+	}
+
+	err = provisioner.verifyProvisioning(tempDir, "", nil)
+	if err == nil {
+		t.Error("Expected verification to fail with corrupted fleetd binary")
+	}
+}
+
+func TestVerifyGenericProvisioning(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir := t.TempDir()
+
+	// Test config without WiFi
+	config := &Config{
+		DeviceID:   "test-device-123",
+		DeviceName: "test-device",
+		DeviceType: DeviceTypeRaspberryPi,
+	}
+
+	provisioner := &CoreProvisioner{
+		config: config,
+	}
+
+	// Test 1: Missing files - should fail
+	err := provisioner.verifyGenericProvisioning(tempDir)
+	if err == nil {
+		t.Error("Expected verification to fail when files are missing")
+	}
+
+	// Test 2: Add required files
+	sshFile := filepath.Join(tempDir, "ssh")
+	if err := os.WriteFile(sshFile, []byte(""), 0644); err != nil {
+		t.Fatalf("Failed to write ssh file: %v", err)
+	}
+
+	userConfFile := filepath.Join(tempDir, "userconf.txt")
+	if err := os.WriteFile(userConfFile, []byte("pi:encryptedpasswordhash"), 0644); err != nil {
+		t.Fatalf("Failed to write userconf.txt: %v", err)
+	}
+
+	// Now verification should pass
+	err = provisioner.verifyGenericProvisioning(tempDir)
+	if err != nil {
+		t.Errorf("Expected verification to pass, got error: %v", err)
+	}
+
+	// Test 3: With WiFi config
+	config.Network.WiFiSSID = "TestNetwork"
+	config.Network.WiFiPass = "TestPassword"
+
+	// Should fail because WiFi config is missing
+	err = provisioner.verifyGenericProvisioning(tempDir)
+	if err == nil {
+		t.Error("Expected verification to fail when WiFi config is missing")
+	}
+
+	// Add WiFi config
+	wpaFile := filepath.Join(tempDir, "wpa_supplicant.conf")
+	wpaContent := `ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=US
+
+network={
+    ssid="TestNetwork"
+    psk="TestPassword"
+    key_mgmt=WPA-PSK
+}`
+	if err := os.WriteFile(wpaFile, []byte(wpaContent), 0644); err != nil {
+		t.Fatalf("Failed to write wpa_supplicant.conf: %v", err)
+	}
+
+	// Now verification should pass
+	err = provisioner.verifyGenericProvisioning(tempDir)
+	if err != nil {
+		t.Errorf("Expected verification to pass with WiFi config, got error: %v", err)
 	}
 }

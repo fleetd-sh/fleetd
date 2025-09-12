@@ -9,7 +9,7 @@ COPY fleetd /usr/local/bin/fleetd
 # Make it executable
 RUN chmod +x /usr/local/bin/fleetd
 
-# Set the entrypoint with required flags
-ENTRYPOINT ["/usr/local/bin/fleetd", "-storage-dir=/var/lib/fleetd", "-rpc-port=8080"]
+# Set the entrypoint to run the agent subcommand
+ENTRYPOINT ["/usr/local/bin/fleetd", "agent"]
 
 EXPOSE 8080

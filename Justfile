@@ -62,12 +62,28 @@ build target arch="":
 build-all:
     just build fleetd
     just build fleetp
+    just build fleets
 
-test-all:
+# Run unit tests only (excludes integration tests)
+test:
     go test -v ./...
 
-test target:
+# Run all tests including integration tests
+test-all:
+    INTEGRATION=1 FLEETD_INTEGRATION_TESTS=1 go test -v ./...
+
+# Run integration tests only
+test-integration:
+    INTEGRATION=1 FLEETD_INTEGRATION_TESTS=1 go test -v ./test/integration/... ./test/e2e/...
+
+# Run specific test by name
+test-run target:
     go test -v ./... -run {{target}}
+
+# Run tests with coverage
+test-coverage:
+    go test -v -coverprofile=coverage.out ./...
+    go tool cover -html=coverage.out -o coverage.html
 
 format:
     go fmt ./...

@@ -23,6 +23,7 @@ func TestStatePersistence(t *testing.T) {
 	cfg := agent.DefaultConfig()
 	cfg.DeviceID = "state-test-device"
 	cfg.StorageDir = filepath.Join(tmpDir, "data")
+	cfg.RPCPort = 0 // Use dynamic port allocation
 
 	a1 := agent.New(cfg)
 	if err := a1.Start(); err != nil {
