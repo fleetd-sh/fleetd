@@ -110,7 +110,7 @@ func buildAgent(t *testing.T) {
 	if envArch := os.Getenv("GOARCH"); envArch != "" {
 		goarch = envArch
 	}
-	
+
 	binaryPath := filepath.Join(testDataDir, "fleetd")
 	cmd := exec.Command("go", "build", "-o", binaryPath, "fleetd.sh/cmd/fleetd")
 	cmd.Env = append(os.Environ(),
@@ -124,12 +124,12 @@ func buildAgent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to build agent binary: %v\nOutput: %s", err, output)
 	}
-	
+
 	// Verify the binary was created
 	if _, err := os.Stat(binaryPath); err != nil {
 		t.Fatalf("Binary not found after build at %s: %v", binaryPath, err)
 	}
-	
+
 	t.Logf("Binary built successfully at %s", binaryPath)
 }
 
@@ -154,19 +154,19 @@ func createContainer(ctx context.Context, t *testing.T) (testcontainers.Containe
 			testDataDir = "testdata"
 		}
 	}
-	
+
 	// Verify the binary exists in the context directory
 	binaryPath := filepath.Join(testDataDir, "fleetd")
 	if _, err := os.Stat(binaryPath); err != nil {
 		return nil, fmt.Errorf("binary not found at %s: %v", binaryPath, err)
 	}
-	
+
 	// Also verify Dockerfile exists
 	dockerfilePath := filepath.Join(testDataDir, "Dockerfile.test")
 	if _, err := os.Stat(dockerfilePath); err != nil {
 		return nil, fmt.Errorf("Dockerfile not found at %s: %v", dockerfilePath, err)
 	}
-	
+
 	t.Logf("Container build context: %s", testDataDir)
 	t.Logf("Binary exists at: %s", binaryPath)
 	t.Logf("Dockerfile exists at: %s", dockerfilePath)
