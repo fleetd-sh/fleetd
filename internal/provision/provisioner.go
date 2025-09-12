@@ -76,6 +76,11 @@ type Provisioner interface {
 
 // DetectDeviceType attempts to detect the device type from the path
 func DetectDeviceType(path string) (DeviceType, error) {
+	// Check if it's a disk image file (for QEMU testing)
+	if isDiskImage(path) {
+		return DeviceTypeRaspberryPi, nil
+	}
+
 	// Check if it's a block device (SD card for RPi)
 	if isBlockDevice(path) {
 		return DeviceTypeRaspberryPi, nil
@@ -120,6 +125,23 @@ func isSerialPort(path string) bool {
 	}
 	if len(path) >= 7 && path[:7] == "/dev/cu" {
 		return true
+	}
+
+	return false
+}
+
+func isDiskImage(path string) bool {
+	// Check if it's a disk image file (for QEMU testing)
+	if len(path) < 4 {
+		return false
+	}
+
+	// Check for common disk image extensions
+	extensions := []string{".img", ".qcow2", ".raw", ".vdi", ".vmdk"}
+	for _, ext := range extensions {
+		if len(path) >= len(ext) && path[len(path)-len(ext):] == ext {
+			return true
+		}
 	}
 
 	return false

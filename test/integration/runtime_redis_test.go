@@ -17,8 +17,8 @@ import (
 )
 
 func TestRedisDeployment(t *testing.T) {
-	if testing.Short() || os.Getenv("INTEGRATION") == "" {
-		t.Skip("Skipping Redis integration test")
+	if os.Getenv("FLEETD_INTEGRATION_TESTS") == "" {
+		t.Skip("set FLEETD_INTEGRATION_TESTS=1 to run integration tests")
 	}
 
 	// Check for required build tools

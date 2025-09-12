@@ -127,7 +127,8 @@ func (a *Agent) Start() error {
 	}
 
 	// Initialize other components
-	a.discovery = discovery.New(a.cfg.DeviceID, a.cfg.MDNSPort, a.cfg.ServiceType)
+	// mDNS will advertise that our RPC service is available on RPCPort
+	a.discovery = discovery.New(a.cfg.DeviceID, a.cfg.RPCPort, a.cfg.ServiceType)
 	a.telemetry = telemetry.New(time.Duration(a.cfg.TelemetryInterval) * time.Second)
 
 	// Add telemetry sources and handlers

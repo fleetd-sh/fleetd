@@ -258,7 +258,7 @@ func (m *ImageManager) GetDecompressedImage(ctx context.Context, compressedPath 
 			break
 		}
 	}
-	
+
 	decompressedFileName := fmt.Sprintf("%s_%s", cacheKey, baseName)
 	decompressedPath := filepath.Join(m.decompressedCacheDir, decompressedFileName)
 
@@ -277,7 +277,7 @@ func (m *ImageManager) GetDecompressedImage(ctx context.Context, compressedPath 
 
 	// Create an SDCardWriter instance to use its decompression methods
 	writer := &SDCardWriter{}
-	
+
 	// Decompress the image
 	resultPath, cleanup, err := writer.DecompressImage(ctx, compressedPath, nil)
 	if err != nil {
@@ -360,9 +360,6 @@ func (m *ImageManager) GetDecompressedCacheSize() (int64, error) {
 
 // InitializeProviders initializes default OS providers
 func InitializeProviders(manager *ImageManager) {
-	// Register DietPi provider
-	manager.RegisterProvider("dietpi", NewDietPiProvider())
-
 	// Register Raspberry Pi OS provider
 	manager.RegisterProvider("rpi", NewRaspberryPiOSProvider())
 	manager.RegisterProvider("raspios", NewRaspberryPiOSProvider())

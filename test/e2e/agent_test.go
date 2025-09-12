@@ -21,8 +21,8 @@ import (
 )
 
 func TestAgentInContainer(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping e2e test")
+	if os.Getenv("FLEETD_INTEGRATION_TESTS") == "" {
+		t.Skip("set FLEETD_INTEGRATION_TESTS=1 to run integration tests")
 	}
 
 	ctx := context.Background()

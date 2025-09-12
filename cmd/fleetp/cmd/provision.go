@@ -41,13 +41,9 @@ and sets up the fleetd agent for fleet management.`,
 	Example: `  # Basic provisioning with Raspberry Pi OS Lite (default)
   fleetp provision --device /dev/disk2 --wifi-ssid MyWiFi --wifi-pass secret
 
-  # With DietPi instead
-  fleetp provision --device /dev/disk2 --wifi-ssid MyWiFi --wifi-pass secret --os dietpi
-
-  # With custom image URL (e.g., for Raspberry Pi 5)
+  # With custom image URL (e.g., Ubuntu Server for Raspberry Pi)
   fleetp provision --device /dev/disk2 --wifi-ssid MyWiFi --wifi-pass secret \
-    --image-url https://dietpi.com/downloads/images/DietPi_RPi5-ARMv8-Bookworm.img.xz \
-    --image-sha256-url https://dietpi.com/downloads/images/DietPi_RPi5-ARMv8-Bookworm.img.xz.sha256
+    --image-url https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.3-preinstalled-server-arm64+raspi.img.xz
 
   # With local image file
   fleetp provision --device /dev/disk2 --wifi-ssid MyWiFi --wifi-pass secret \
@@ -74,7 +70,7 @@ func init() {
 	provisionCmd.Flags().StringVar(&sshKeyFile, "ssh-key", "", "SSH public key file for remote access")
 
 	// OS image selection
-	provisionCmd.Flags().StringVar(&osType, "os", "", "Operating system to install (rpios, dietpi) - defaults to rpios")
+	provisionCmd.Flags().StringVar(&osType, "os", "", "Operating system to install (rpios) - defaults to rpios")
 	provisionCmd.Flags().StringVar(&imageURL, "image-url", "", "Custom OS image URL or local file path (overrides --os)")
 	provisionCmd.Flags().StringVar(&imageSHA256URL, "image-sha256-url", "", "URL to SHA256 checksum for custom image")
 
