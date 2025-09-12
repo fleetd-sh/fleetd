@@ -167,7 +167,7 @@ func showProgress(ctx context.Context, done <-chan bool) {
 }
 
 func discoverAllServices() error {
-	fmt.Println("Discovering all mDNS services...\n")
+	fmt.Println("Discovering all mDNS services...")
 
 	services := []string{
 		"_fleetd._tcp",
