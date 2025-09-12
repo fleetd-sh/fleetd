@@ -70,7 +70,7 @@ func init() {
 	provisionCmd.Flags().StringVar(&sshKeyFile, "ssh-key", "", "SSH public key file for remote access")
 
 	// OS image selection
-	provisionCmd.Flags().StringVar(&osType, "os", "", "Operating system to install (rpios) - defaults to rpios")
+	provisionCmd.Flags().StringVar(&osType, "os", "", "Operating system to install (raspios) - defaults to raspios")
 	provisionCmd.Flags().StringVar(&imageURL, "image-url", "", "Custom OS image URL or local file path (overrides --os)")
 	provisionCmd.Flags().StringVar(&imageSHA256URL, "image-sha256-url", "", "URL to SHA256 checksum for custom image")
 
@@ -244,7 +244,7 @@ func runProvision(cmd *cobra.Command, args []string) error {
 		if osType == "" {
 			// Default to Raspberry Pi OS Lite for Raspberry Pi devices
 			if config.DeviceType == provision.DeviceTypeRaspberryPi {
-				osType = "rpios"
+				osType = "raspios"
 			} else {
 				// For other device types, use a sensible default
 				osType = string(config.DeviceType)

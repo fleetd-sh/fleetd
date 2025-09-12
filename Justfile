@@ -129,29 +129,29 @@ qemu-setup:
     echo "✅ Setup complete! Run 'just qemu-run' to start the emulator"
 
 # Setup QEMU with Raspberry Pi OS instead of DietPi
-qemu-setup-rpios:
+qemu-setup-raspios:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "🚀 Setting up QEMU with Raspberry Pi OS..."
     echo
     # Download Raspberry Pi OS
-    ./scripts/setup-qemu-rpios.sh
+    ./scripts/setup-qemu-raspios.sh
     echo
     # Build fleetd
     just build fleetd arm64
     echo
     # Provision the image
     ./bin/fleetp provision \
-        --device qemu-rpi/rpios-working.img \
+        --device qemu-rpi/raspios-working.img \
         --wifi-ssid "TestNetwork" \
         --wifi-pass "testpass123" \
-        --os rpios
+        --os raspios
     echo
-    echo "✅ Setup complete! Run 'just qemu-run-rpios' to start"
+    echo "✅ Setup complete! Run 'just qemu-run-raspios' to start"
 
 # Run QEMU with Raspberry Pi OS
-qemu-run-rpios:
-    ./scripts/run-qemu-rpi-proper.sh --image rpios-test.img
+qemu-run-raspios:
+    ./scripts/run-qemu-rpi-proper.sh --image raspios-test.img
 
 # One-command to run the provisioned QEMU image
 qemu-run:

@@ -363,7 +363,7 @@ func InitializeProviders(manager *ImageManager) {
 	// Register Raspberry Pi OS provider
 	manager.RegisterProvider("rpi", NewRaspberryPiOSProvider())
 	manager.RegisterProvider("raspios", NewRaspberryPiOSProvider())
-	manager.RegisterProvider("rpios", NewRaspberryPiOSProvider())
+	manager.RegisterProvider("raspios", NewRaspberryPiOSProvider())
 
 	// Future providers can be added here:
 	// manager.RegisterProvider("debian", NewDebianProvider())
