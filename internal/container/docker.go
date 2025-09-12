@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
@@ -92,6 +93,23 @@ func (m *DockerManager) ListContainers(ctx context.Context, filterMap map[string
 	}
 
 	return result, nil
+}
+
+// PullImage pulls a Docker image from a registry
+func (m *DockerManager) PullImage(ctx context.Context, imageName string) error {
+	reader, err := m.client.ImagePull(ctx, imageName, image.PullOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to pull image %s: %v", imageName, err)
+	}
+	defer reader.Close()
+
+	// Read the output to ensure the pull completes
+	_, err = io.Copy(io.Discard, reader)
+	if err != nil {
+		return fmt.Errorf("failed to read pull output: %v", err)
+	}
+
+	return nil
 }
 
 // InspectContainer implements ContainerManager

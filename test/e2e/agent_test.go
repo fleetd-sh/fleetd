@@ -21,8 +21,8 @@ import (
 )
 
 func TestAgentInContainer(t *testing.T) {
-	if os.Getenv("INTEGRATION") != "1" {
-		t.Skip("set INTEGRATION=1 to run integration tests")
+	if os.Getenv("INTEGRATION") != "1" && os.Getenv("FLEETD_INTEGRATION_TESTS") != "1" {
+		t.Skip("set INTEGRATION=1 or FLEETD_INTEGRATION_TESTS=1 to run integration tests")
 	}
 
 	ctx := context.Background()
@@ -101,9 +101,9 @@ func createContainer(ctx context.Context, t *testing.T) (testcontainers.Containe
 		ExposedPorts: []string{"8080/tcp"},
 		WaitingFor:   wait.ForListeningPort("8080/tcp").WithStartupTimeout(5 * time.Second),
 		Cmd: []string{
-			"-storage-dir", "/var/lib/fleetd/state",
-			"-rpc-port", "8080",
-			"-disable-mdns",
+			"--storage-dir", "/var/lib/fleetd/state",
+			"--rpc-port", "8080",
+			"--disable-mdns",
 		},
 	}
 
