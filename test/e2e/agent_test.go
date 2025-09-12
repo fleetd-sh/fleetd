@@ -84,7 +84,7 @@ func buildAgent(t *testing.T) {
 		}
 		testFile = wd
 	}
-	
+
 	// The testdata directory should be relative to the test file location
 	testDataDir := filepath.Join(filepath.Dir(testFile), "test", "e2e", "testdata")
 	if _, err := os.Stat(testDataDir); os.IsNotExist(err) {
@@ -101,7 +101,7 @@ func buildAgent(t *testing.T) {
 			}
 		}
 	}
-	
+
 	t.Logf("Using testdata directory: %s", testDataDir)
 
 	// Build the agent binary for Linux
@@ -130,7 +130,7 @@ func createContainer(ctx context.Context, t *testing.T) (testcontainers.Containe
 		}
 		testFile = wd
 	}
-	
+
 	testDataDir := filepath.Join(filepath.Dir(testFile), "test", "e2e", "testdata")
 	if _, err := os.Stat(testDataDir); os.IsNotExist(err) {
 		testDataDir = filepath.Join("test", "e2e", "testdata")
