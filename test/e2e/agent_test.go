@@ -105,16 +105,32 @@ func buildAgent(t *testing.T) {
 	t.Logf("Using testdata directory: %s", testDataDir)
 
 	// Build the agent binary for Linux
-	cmd := exec.Command("go", "build", "-o", filepath.Join(testDataDir, "fleetd"), "fleetd.sh/cmd/fleetd")
+	// Determine the architecture - use amd64 by default, but allow override
+	goarch := "amd64"
+	if envArch := os.Getenv("GOARCH"); envArch != "" {
+		goarch = envArch
+	}
+	
+	binaryPath := filepath.Join(testDataDir, "fleetd")
+	cmd := exec.Command("go", "build", "-o", binaryPath, "fleetd.sh/cmd/fleetd")
 	cmd.Env = append(os.Environ(),
 		"GOOS=linux",
-		"GOARCH=amd64",
+		"GOARCH="+goarch,
+		"CGO_ENABLED=0", // Ensure static binary for Alpine
 	)
 
+	t.Logf("Building binary: GOOS=linux GOARCH=%s CGO_ENABLED=0 go build -o %s fleetd.sh/cmd/fleetd", goarch, binaryPath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("Failed to build agent binary: %v\nOutput: %s", err, output)
 	}
+	
+	// Verify the binary was created
+	if _, err := os.Stat(binaryPath); err != nil {
+		t.Fatalf("Binary not found after build at %s: %v", binaryPath, err)
+	}
+	
+	t.Logf("Binary built successfully at %s", binaryPath)
 }
 
 func createContainer(ctx context.Context, t *testing.T) (testcontainers.Container, error) {
@@ -138,6 +154,22 @@ func createContainer(ctx context.Context, t *testing.T) (testcontainers.Containe
 			testDataDir = "testdata"
 		}
 	}
+	
+	// Verify the binary exists in the context directory
+	binaryPath := filepath.Join(testDataDir, "fleetd")
+	if _, err := os.Stat(binaryPath); err != nil {
+		return nil, fmt.Errorf("binary not found at %s: %v", binaryPath, err)
+	}
+	
+	// Also verify Dockerfile exists
+	dockerfilePath := filepath.Join(testDataDir, "Dockerfile.test")
+	if _, err := os.Stat(dockerfilePath); err != nil {
+		return nil, fmt.Errorf("Dockerfile not found at %s: %v", dockerfilePath, err)
+	}
+	
+	t.Logf("Container build context: %s", testDataDir)
+	t.Logf("Binary exists at: %s", binaryPath)
+	t.Logf("Dockerfile exists at: %s", dockerfilePath)
 
 	req := testcontainers.ContainerRequest{
 		FromDockerfile: testcontainers.FromDockerfile{
