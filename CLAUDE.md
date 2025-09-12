@@ -43,12 +43,24 @@ fleetp -device /dev/disk2 -wifi-ssid MyNetwork -wifi-pass secret -ssh-key ~/.ssh
 # With specific fleet server
 fleetp -device /dev/disk2 -wifi-ssid MyNetwork -wifi-pass secret -fleet-server https://fleet.local:8080
 
+# With specific OS selection (defaults to Raspberry Pi OS Lite)
+fleetp -device /dev/disk2 -wifi-ssid MyNetwork -wifi-pass secret
+
+# With custom image URL (e.g., Ubuntu Server for Raspberry Pi)
+fleetp -device /dev/disk2 -wifi-ssid MyNetwork -wifi-pass secret \
+  -image-url https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.3-preinstalled-server-arm64+raspi.img.xz
+
+# With local image file (if you already downloaded it)
+fleetp -device /dev/disk2 -wifi-ssid MyNetwork -wifi-pass secret \
+  -image-url /path/to/raspios-lite-arm64.img.xz
+
 # With plugins (k3s, docker, etc.)
 fleetp -device /dev/disk2 -wifi-ssid MyNetwork -wifi-pass secret \
   -plugin k3s -plugin-opt k3s.role=server
 
-# Multiple plugins
+# Multiple plugins with custom Ubuntu Server image
 fleetp -device /dev/disk2 -wifi-ssid MyNetwork -wifi-pass secret \
+  -image-url https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.3-preinstalled-server-arm64+raspi.img.xz \
   -plugin k3s -plugin-opt k3s.role=agent -plugin-opt k3s.server=https://192.168.1.100:6443 \
   -plugin docker
 ```
@@ -197,7 +209,7 @@ The system is designed for three main use cases:
 - **Tier 2 (Capable)**: Raspberry Pi with full Linux, Docker, and k3s support
 
 ### Raspberry Pi Features
-- **Automated Provisioning**: SD card setup with DietPi, fleetd agent, and optional k3s
+- **Automated Provisioning**: SD card setup with Raspberry Pi OS Lite, fleetd agent, and optional k3s
 - **Zero-Touch Config**: Devices self-register via mDNS after boot
 - **K3s Integration**: Automated cluster creation and node joining
 - **Template System**: Configurable provisioning for different deployment scenarios

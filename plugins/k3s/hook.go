@@ -69,9 +69,10 @@ func (h *K3sHook) AddFiles() (map[string][]byte, error) {
 
 	files := make(map[string][]byte)
 
-	// Add k3s installation script
+	// Add k3s installation script to plugins directory
+	// This will be executed by firstrun.sh
 	installScript := h.generateInstallScript()
-	files["/boot/k3s/install.sh"] = []byte(installScript)
+	files["plugins/k3s.sh"] = []byte(installScript)
 
 	return files, nil
 }
@@ -117,7 +118,13 @@ func (h *K3sHook) generateInstallScript() string {
 	script := `#!/bin/bash
 set -e
 
-echo "Installing k3s as %s..."
+# Determine boot partition mount point
+BOOT_PARTITION="/boot"
+if [ -d "/boot/firmware" ]; then
+    BOOT_PARTITION="/boot/firmware"
+fi
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Installing k3s as %s..."
 
 # Install k3s
 export INSTALL_K3S_VERSION="v1.28.3+k3s1"
