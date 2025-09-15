@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package fleetd.agent.v1;
+
+option go_package = "fleetd.sh/gen/agent/v1;agentpb";
+
+import "google/protobuf/timestamp.proto";
+import "proto/common/v1/metrics.proto";
+
+// TelemetryService handles telemetry data ingestion
+service TelemetryService {
+  // Send metrics batch
+  rpc SendMetrics(SendMetricsRequest) returns (SendMetricsResponse);
+
+  // Stream logs to the server
+  rpc StreamLogs(stream StreamLogsRequest) returns (StreamLogsResponse);
+
+  // Send events
+  rpc SendEvents(SendEventsRequest) returns (SendEventsResponse);
+
+  // Send custom telemetry data
+  rpc SendTelemetry(SendTelemetryRequest) returns (SendTelemetryResponse);
+}
+
+// SendMetricsRequest contains a batch of metrics
+message SendMetricsRequest {
+  string device_id = 1;
+  repeated fleetd.common.v1.MetricPoint metrics = 2;
+  fleetd.common.v1.SystemMetrics system_metrics = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+// SendMetricsResponse acknowledges metrics receipt
+message SendMetricsResponse {
+  bool accepted = 1;
+  int32 processed_count = 2;
+}
+
+// StreamLogsRequest contains log entries to stream
+message StreamLogsRequest {
+  string device_id = 1;
+  repeated fleetd.common.v1.LogEntry logs = 2;
+}
+
+// StreamLogsResponse acknowledges log receipt
+message StreamLogsResponse {
+  bool accepted = 1;
+  int32 processed_count = 2;
+}
+
+// SendEventsRequest contains events to send
+message SendEventsRequest {
+  string device_id = 1;
+  repeated fleetd.common.v1.Event events = 2;
+}
+
+// SendEventsResponse acknowledges event receipt
+message SendEventsResponse {
+  bool accepted = 1;
+  int32 processed_count = 2;
+}
+
+// SendTelemetryRequest for custom telemetry data
+message SendTelemetryRequest {
+  string device_id = 1;
+  string telemetry_type = 2;  // Custom type identifier
+  bytes data = 3;             // JSON or protobuf encoded data
+  string content_type = 4;    // application/json, application/protobuf
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// SendTelemetryResponse acknowledges telemetry receipt
+message SendTelemetryResponse {
+  bool accepted = 1;
+  string telemetry_id = 2;  // ID for tracking
+}

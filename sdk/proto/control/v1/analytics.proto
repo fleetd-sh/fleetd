@@ -1,0 +1,315 @@
+syntax = "proto3";
+
+package fleetd.control.v1;
+
+option go_package = "fleetd.sh/gen/control/v1;controlpb";
+
+import "google/protobuf/timestamp.proto";
+import "proto/common/v1/metrics.proto";
+
+// AnalyticsService provides fleet analytics and reporting
+service AnalyticsService {
+  // Get fleet metrics overview
+  rpc GetMetricsOverview(GetMetricsOverviewRequest) returns (GetMetricsOverviewResponse);
+
+  // Query time-series metrics
+  rpc QueryMetrics(QueryMetricsRequest) returns (QueryMetricsResponse);
+
+  // Get device metrics
+  rpc GetDeviceMetrics(GetDeviceMetricsRequest) returns (GetDeviceMetricsResponse);
+
+  // Get aggregated metrics
+  rpc GetAggregatedMetrics(GetAggregatedMetricsRequest) returns (GetAggregatedMetricsResponse);
+
+  // Generate analytics report
+  rpc GenerateReport(GenerateReportRequest) returns (GenerateReportResponse);
+
+  // Get alerts
+  rpc GetAlerts(GetAlertsRequest) returns (GetAlertsResponse);
+
+  // Create alert rule
+  rpc CreateAlertRule(CreateAlertRuleRequest) returns (CreateAlertRuleResponse);
+
+  // Get device logs
+  rpc GetDeviceLogs(GetDeviceLogsRequest) returns (GetDeviceLogsResponse);
+
+  // Search logs
+  rpc SearchLogs(SearchLogsRequest) returns (SearchLogsResponse);
+}
+
+// GetMetricsOverviewRequest requests metrics overview
+message GetMetricsOverviewRequest {
+  string organization_id = 1;
+  TimeRange time_range = 2;
+  repeated string group_ids = 3;
+}
+
+// GetMetricsOverviewResponse contains metrics overview
+message GetMetricsOverviewResponse {
+  FleetMetrics fleet_metrics = 1;
+  repeated MetricTrend trends = 2;
+  repeated TopDevice top_cpu = 3;
+  repeated TopDevice top_memory = 4;
+  repeated TopDevice top_network = 5;
+}
+
+// QueryMetricsRequest queries time-series metrics
+message QueryMetricsRequest {
+  string query = 1;  // PromQL-style query
+  TimeRange time_range = 2;
+  int32 step_seconds = 3;
+}
+
+// QueryMetricsResponse contains query results
+message QueryMetricsResponse {
+  repeated TimeSeries results = 1;
+}
+
+// GetDeviceMetricsRequest gets device metrics
+message GetDeviceMetricsRequest {
+  string device_id = 1;
+  repeated string metric_names = 2;
+  TimeRange time_range = 3;
+  int32 resolution_seconds = 4;
+}
+
+// GetDeviceMetricsResponse contains device metrics
+message GetDeviceMetricsResponse {
+  repeated TimeSeries metrics = 1;
+  fleetd.common.v1.SystemMetrics current_metrics = 2;
+}
+
+// GetAggregatedMetricsRequest gets aggregated metrics
+message GetAggregatedMetricsRequest {
+  repeated string device_ids = 1;
+  repeated string group_ids = 2;
+  repeated string metric_names = 3;
+  TimeRange time_range = 4;
+  AggregationType aggregation = 5;
+  int32 bucket_size_seconds = 6;
+}
+
+// GetAggregatedMetricsResponse contains aggregated metrics
+message GetAggregatedMetricsResponse {
+  repeated AggregatedMetric metrics = 1;
+}
+
+// GenerateReportRequest generates an analytics report
+message GenerateReportRequest {
+  string name = 1;
+  ReportType type = 2;
+  TimeRange time_range = 3;
+  repeated string device_ids = 4;
+  repeated string group_ids = 5;
+  ReportFormat format = 6;
+}
+
+// GenerateReportResponse contains report details
+message GenerateReportResponse {
+  string report_id = 1;
+  string download_url = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+// GetAlertsRequest gets active alerts
+message GetAlertsRequest {
+  string organization_id = 1;
+  repeated AlertSeverity severities = 2;
+  repeated string device_ids = 3;
+  bool active_only = 4;
+  int32 page_size = 5;
+  string page_token = 6;
+}
+
+// GetAlertsResponse contains alerts
+message GetAlertsResponse {
+  repeated Alert alerts = 1;
+  string next_page_token = 2;
+}
+
+// CreateAlertRuleRequest creates an alert rule
+message CreateAlertRuleRequest {
+  string name = 1;
+  string description = 2;
+  string condition = 3;  // Query condition
+  AlertSeverity severity = 4;
+  int32 duration_seconds = 5;  // How long condition must be true
+  repeated string notification_channels = 6;
+  map<string, string> labels = 7;
+}
+
+// CreateAlertRuleResponse contains created rule
+message CreateAlertRuleResponse {
+  AlertRule rule = 1;
+}
+
+// GetDeviceLogsRequest gets device logs
+message GetDeviceLogsRequest {
+  string device_id = 1;
+  TimeRange time_range = 2;
+  repeated fleetd.common.v1.LogLevel levels = 3;
+  int32 limit = 4;
+}
+
+// GetDeviceLogsResponse contains device logs
+message GetDeviceLogsResponse {
+  repeated fleetd.common.v1.LogEntry logs = 1;
+}
+
+// SearchLogsRequest searches logs
+message SearchLogsRequest {
+  string query = 1;
+  TimeRange time_range = 2;
+  repeated string device_ids = 3;
+  repeated fleetd.common.v1.LogLevel levels = 4;
+  int32 page_size = 5;
+  string page_token = 6;
+}
+
+// SearchLogsResponse contains search results
+message SearchLogsResponse {
+  repeated LogSearchResult results = 1;
+  string next_page_token = 2;
+  int64 total_matches = 3;
+}
+
+// TimeRange specifies a time range
+message TimeRange {
+  google.protobuf.Timestamp start = 1;
+  google.protobuf.Timestamp end = 2;
+  string relative = 3;  // Alternative: "1h", "24h", "7d", etc.
+}
+
+// FleetMetrics contains fleet-wide metrics
+message FleetMetrics {
+  double avg_cpu_usage = 1;
+  double avg_memory_usage = 2;
+  double avg_disk_usage = 3;
+  int64 total_network_rx_bytes = 4;
+  int64 total_network_tx_bytes = 5;
+  int32 devices_online = 6;
+  int32 devices_offline = 7;
+  double fleet_health_score = 8;
+}
+
+// MetricTrend shows metric trend
+message MetricTrend {
+  string metric_name = 1;
+  double current_value = 2;
+  double previous_value = 3;
+  double change_percentage = 4;
+  TrendDirection direction = 5;
+}
+
+// TrendDirection indicates trend direction
+enum TrendDirection {
+  TREND_DIRECTION_UNSPECIFIED = 0;
+  TREND_DIRECTION_UP = 1;
+  TREND_DIRECTION_DOWN = 2;
+  TREND_DIRECTION_STABLE = 3;
+}
+
+// TopDevice represents a top device by metric
+message TopDevice {
+  string device_id = 1;
+  string device_name = 2;
+  double value = 3;
+}
+
+// TimeSeries represents time-series data
+message TimeSeries {
+  string metric_name = 1;
+  map<string, string> labels = 2;
+  repeated DataPoint points = 3;
+}
+
+// DataPoint represents a single data point
+message DataPoint {
+  google.protobuf.Timestamp timestamp = 1;
+  double value = 2;
+}
+
+// AggregatedMetric contains aggregated metric data
+message AggregatedMetric {
+  string metric_name = 1;
+  AggregationType type = 2;
+  double value = 3;
+  repeated DataPoint time_buckets = 4;
+}
+
+// AggregationType defines aggregation type
+enum AggregationType {
+  AGGREGATION_TYPE_UNSPECIFIED = 0;
+  AGGREGATION_TYPE_AVG = 1;
+  AGGREGATION_TYPE_SUM = 2;
+  AGGREGATION_TYPE_MIN = 3;
+  AGGREGATION_TYPE_MAX = 4;
+  AGGREGATION_TYPE_COUNT = 5;
+  AGGREGATION_TYPE_P50 = 6;
+  AGGREGATION_TYPE_P95 = 7;
+  AGGREGATION_TYPE_P99 = 8;
+}
+
+// ReportType defines report types
+enum ReportType {
+  REPORT_TYPE_UNSPECIFIED = 0;
+  REPORT_TYPE_DEVICE_INVENTORY = 1;
+  REPORT_TYPE_PERFORMANCE = 2;
+  REPORT_TYPE_AVAILABILITY = 3;
+  REPORT_TYPE_COMPLIANCE = 4;
+  REPORT_TYPE_COST_ANALYSIS = 5;
+}
+
+// ReportFormat defines report format
+enum ReportFormat {
+  REPORT_FORMAT_UNSPECIFIED = 0;
+  REPORT_FORMAT_PDF = 1;
+  REPORT_FORMAT_CSV = 2;
+  REPORT_FORMAT_JSON = 3;
+  REPORT_FORMAT_EXCEL = 4;
+}
+
+// Alert represents an alert
+message Alert {
+  string id = 1;
+  string rule_id = 2;
+  string device_id = 3;
+  AlertSeverity severity = 4;
+  string title = 5;
+  string description = 6;
+  map<string, string> labels = 7;
+  google.protobuf.Timestamp triggered_at = 8;
+  google.protobuf.Timestamp resolved_at = 9;
+  bool acknowledged = 10;
+}
+
+// AlertSeverity defines alert severity
+enum AlertSeverity {
+  ALERT_SEVERITY_UNSPECIFIED = 0;
+  ALERT_SEVERITY_INFO = 1;
+  ALERT_SEVERITY_WARNING = 2;
+  ALERT_SEVERITY_ERROR = 3;
+  ALERT_SEVERITY_CRITICAL = 4;
+}
+
+// AlertRule defines an alert rule
+message AlertRule {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string condition = 4;
+  AlertSeverity severity = 5;
+  int32 duration_seconds = 6;
+  repeated string notification_channels = 7;
+  map<string, string> labels = 8;
+  bool enabled = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+// LogSearchResult represents a log search result
+message LogSearchResult {
+  string device_id = 1;
+  string device_name = 2;
+  fleetd.common.v1.LogEntry log = 3;
+  repeated string highlights = 4;  // Highlighted matching text
+}

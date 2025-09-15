@@ -1,0 +1,366 @@
+syntax = "proto3";
+
+package public.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "fleetd.sh/gen/public/v1;publicv1";
+
+// FleetService provides the public API for fleet management
+// This is the primary API for web frontends, mobile apps, and third-party integrations
+service FleetService {
+  // Device management
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+  rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
+  rpc UpdateDevice(UpdateDeviceRequest) returns (UpdateDeviceResponse);
+  rpc DeleteDevice(DeleteDeviceRequest) returns (google.protobuf.Empty);
+  rpc GetDeviceStats(GetDeviceStatsRequest) returns (GetDeviceStatsResponse);
+
+  // Device discovery
+  rpc DiscoverDevices(DiscoverDevicesRequest) returns (DiscoverDevicesResponse);
+
+  // Telemetry
+  rpc GetTelemetry(GetTelemetryRequest) returns (GetTelemetryResponse);
+  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryEvent);
+
+  // Updates management
+  rpc ListUpdates(ListUpdatesRequest) returns (ListUpdatesResponse);
+  rpc CreateUpdate(CreateUpdateRequest) returns (CreateUpdateResponse);
+  rpc DeployUpdate(DeployUpdateRequest) returns (DeployUpdateResponse);
+  rpc GetUpdateStatus(GetUpdateStatusRequest) returns (GetUpdateStatusResponse);
+
+  // Configuration
+  rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse);
+  rpc UpdateConfiguration(UpdateConfigurationRequest) returns (UpdateConfigurationResponse);
+
+  // Events streaming (SSE replacement)
+  rpc StreamEvents(StreamEventsRequest) returns (stream Event);
+}
+
+// Device represents a managed device
+message Device {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  string version = 4;
+  DeviceStatus status = 5;
+  google.protobuf.Timestamp last_seen = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  google.protobuf.Struct metadata = 9;
+  DeviceCapabilities capabilities = 10;
+  repeated string tags = 11;
+  string group_id = 12;
+  SystemInfo system_info = 13;
+}
+
+// SystemInfo contains comprehensive system information about a device
+message SystemInfo {
+  string hostname = 1;
+  string os = 2;
+  string os_version = 3;
+  string arch = 4;
+  string cpu_model = 5;
+  int32 cpu_cores = 6;
+  uint64 memory_total = 7;  // in bytes
+  uint64 storage_total = 8; // in bytes
+  string kernel_version = 9;
+  string platform = 10;
+  map<string, string> extra = 11; // for additional system info
+
+  // Network information
+  repeated NetworkInterface network_interfaces = 12;
+
+  // System identification
+  string timezone = 13;
+  string agent_version = 14;
+  string serial_number = 15;
+  string product_name = 16;
+  string manufacturer = 17;
+
+  // Runtime metrics
+  LoadAverage load_average = 18;
+  int32 process_count = 19;
+
+  // BIOS/Firmware
+  BiosInfo bios_info = 20;
+}
+
+message NetworkInterface {
+  string name = 1;
+  string mac_address = 2;
+  repeated string ip_addresses = 3;  // IPv4 and IPv6
+  bool is_up = 4;
+  bool is_loopback = 5;
+  uint64 mtu = 6;
+}
+
+message LoadAverage {
+  double load1 = 1;   // 1 minute average
+  double load5 = 2;   // 5 minute average
+  double load15 = 3;  // 15 minute average
+}
+
+message BiosInfo {
+  string vendor = 1;
+  string version = 2;
+  string release_date = 3;
+}
+
+enum DeviceStatus {
+  DEVICE_STATUS_UNSPECIFIED = 0;
+  DEVICE_STATUS_ONLINE = 1;
+  DEVICE_STATUS_OFFLINE = 2;
+  DEVICE_STATUS_UPDATING = 3;
+  DEVICE_STATUS_ERROR = 4;
+  DEVICE_STATUS_MAINTENANCE = 5;
+}
+
+message DeviceCapabilities {
+  bool supports_remote_update = 1;
+  bool supports_remote_config = 2;
+  bool supports_telemetry = 3;
+  bool supports_shell_access = 4;
+  repeated string supported_update_channels = 5;
+}
+
+// Device management messages
+message ListDevicesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3; // e.g., "status:online", "type:raspberry-pi"
+  string order_by = 4; // e.g., "last_seen desc"
+  repeated string tags = 5;
+  string group_id = 6;
+}
+
+message ListDevicesResponse {
+  repeated Device devices = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message GetDeviceRequest {
+  string device_id = 1;
+}
+
+message GetDeviceResponse {
+  Device device = 1;
+}
+
+message UpdateDeviceRequest {
+  string device_id = 1;
+  string name = 2;
+  google.protobuf.Struct metadata = 3;
+  repeated string tags = 4;
+  string group_id = 5;
+}
+
+message UpdateDeviceResponse {
+  Device device = 1;
+}
+
+message DeleteDeviceRequest {
+  string device_id = 1;
+}
+
+message GetDeviceStatsRequest {
+  string group_id = 1;
+  repeated string tags = 2;
+}
+
+message GetDeviceStatsResponse {
+  int32 total_devices = 1;
+  int32 online_devices = 2;
+  int32 offline_devices = 3;
+  int32 updating_devices = 4;
+  int32 error_devices = 5;
+  map<string, int32> devices_by_type = 6;
+  map<string, int32> devices_by_version = 7;
+}
+
+// Discovery messages
+message DiscoverDevicesRequest {
+  int32 timeout_seconds = 1;
+  bool auto_register = 2;
+}
+
+message DiscoverDevicesResponse {
+  repeated DiscoveredDevice devices = 1;
+}
+
+message DiscoveredDevice {
+  string address = 1;
+  int32 port = 2;
+  string device_id = 3;
+  string device_name = 4;
+  string version = 5;
+  bool is_registered = 6;
+}
+
+// Telemetry messages
+message GetTelemetryRequest {
+  string device_id = 1;
+  google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp end_time = 3;
+  repeated string metrics = 4;
+  int32 limit = 5;
+}
+
+message GetTelemetryResponse {
+  repeated TelemetryPoint points = 1;
+}
+
+message TelemetryPoint {
+  string device_id = 1;
+  string metric_name = 2;
+  double value = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  google.protobuf.Struct labels = 5;
+}
+
+message StreamTelemetryRequest {
+  repeated string device_ids = 1;
+  repeated string metrics = 2;
+}
+
+message TelemetryEvent {
+  TelemetryPoint point = 1;
+}
+
+// Update management messages
+message Update {
+  string id = 1;
+  string version = 2;
+  string description = 3;
+  string binary_url = 4;
+  string checksum = 5;
+  int64 size_bytes = 6;
+  string release_notes = 7;
+  google.protobuf.Timestamp created_at = 8;
+  repeated string target_device_types = 9;
+  string channel = 10; // stable, beta, nightly
+}
+
+message ListUpdatesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string channel = 3;
+}
+
+message ListUpdatesResponse {
+  repeated Update updates = 1;
+  string next_page_token = 2;
+}
+
+message CreateUpdateRequest {
+  string version = 1;
+  string description = 2;
+  string binary_url = 3;
+  string checksum = 4;
+  int64 size_bytes = 5;
+  string release_notes = 6;
+  repeated string target_device_types = 7;
+  string channel = 8;
+}
+
+message CreateUpdateResponse {
+  Update update = 1;
+}
+
+message DeployUpdateRequest {
+  string update_id = 1;
+  repeated string device_ids = 2;
+  repeated string tags = 3;
+  string group_id = 4;
+  DeploymentStrategy strategy = 5;
+}
+
+enum DeploymentStrategy {
+  DEPLOYMENT_STRATEGY_UNSPECIFIED = 0;
+  DEPLOYMENT_STRATEGY_IMMEDIATE = 1;
+  DEPLOYMENT_STRATEGY_ROLLING = 2;
+  DEPLOYMENT_STRATEGY_CANARY = 3;
+}
+
+message DeployUpdateResponse {
+  string deployment_id = 1;
+  int32 targeted_devices = 2;
+}
+
+message GetUpdateStatusRequest {
+  string deployment_id = 1;
+}
+
+message GetUpdateStatusResponse {
+  string deployment_id = 1;
+  UpdateDeploymentStatus status = 2;
+  int32 total_devices = 3;
+  int32 updated_devices = 4;
+  int32 failed_devices = 5;
+  int32 pending_devices = 6;
+  google.protobuf.Timestamp started_at = 7;
+  google.protobuf.Timestamp completed_at = 8;
+}
+
+enum UpdateDeploymentStatus {
+  UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED = 0;
+  UPDATE_DEPLOYMENT_STATUS_IN_PROGRESS = 1;
+  UPDATE_DEPLOYMENT_STATUS_COMPLETED = 2;
+  UPDATE_DEPLOYMENT_STATUS_FAILED = 3;
+  UPDATE_DEPLOYMENT_STATUS_CANCELLED = 4;
+}
+
+// Configuration messages
+message GetConfigurationRequest {
+  string device_id = 1;
+  string group_id = 2;
+}
+
+message GetConfigurationResponse {
+  google.protobuf.Struct config = 1;
+  int32 version = 2;
+  google.protobuf.Timestamp updated_at = 3;
+}
+
+message UpdateConfigurationRequest {
+  string device_id = 1;
+  string group_id = 2;
+  google.protobuf.Struct config = 3;
+  bool merge = 4; // if true, merge with existing config
+}
+
+message UpdateConfigurationResponse {
+  google.protobuf.Struct config = 1;
+  int32 version = 2;
+}
+
+// Event streaming messages
+message StreamEventsRequest {
+  repeated string device_ids = 1;
+  repeated EventType event_types = 2;
+}
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_TYPE_DEVICE_CONNECTED = 1;
+  EVENT_TYPE_DEVICE_DISCONNECTED = 2;
+  EVENT_TYPE_DEVICE_UPDATED = 3;
+  EVENT_TYPE_TELEMETRY = 4;
+  EVENT_TYPE_UPDATE_STARTED = 5;
+  EVENT_TYPE_UPDATE_COMPLETED = 6;
+  EVENT_TYPE_UPDATE_FAILED = 7;
+  EVENT_TYPE_CONFIG_CHANGED = 8;
+  EVENT_TYPE_ALERT = 9;
+}
+
+message Event {
+  string id = 1;
+  EventType type = 2;
+  string device_id = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  google.protobuf.Struct data = 5;
+  string message = 6;
+}
