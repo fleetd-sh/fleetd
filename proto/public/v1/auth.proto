@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package public.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "fleetd.sh/gen/public/v1;publicv1";
+
+// AuthService handles authentication and authorization
+// Designed to work with various auth providers (built-in, OIDC, SAML, etc.)
+service AuthService {
+  // Authentication
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (google.protobuf.Empty);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc GetCurrentUser(google.protobuf.Empty) returns (GetCurrentUserResponse);
+
+  // API Keys (for programmatic access)
+  rpc CreateAPIKey(CreateAPIKeyRequest) returns (CreateAPIKeyResponse);
+  rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse);
+  rpc RevokeAPIKey(RevokeAPIKeyRequest) returns (google.protobuf.Empty);
+
+  // SSO Configuration (cloud offering)
+  rpc GetSSOProviders(google.protobuf.Empty) returns (GetSSOProvidersResponse);
+  rpc InitiateSSOLogin(InitiateSSOLoginRequest) returns (InitiateSSOLoginResponse);
+  rpc CompleteSSOLogin(CompleteSSOLoginRequest) returns (CompleteSSOLoginResponse);
+}
+
+// User represents an authenticated user
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  string avatar_url = 4;
+  UserRole role = 5;
+  string organization_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp last_login = 8;
+  repeated string permissions = 9;
+}
+
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_VIEWER = 1;
+  USER_ROLE_OPERATOR = 2;
+  USER_ROLE_ADMIN = 3;
+  USER_ROLE_OWNER = 4;
+}
+
+// Authentication messages
+message LoginRequest {
+  oneof credential {
+    PasswordCredential password = 1;
+    APIKeyCredential api_key = 2;
+  }
+}
+
+message PasswordCredential {
+  string email = 1;
+  string password = 2;
+}
+
+message APIKeyCredential {
+  string key = 1;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  User user = 4;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+}
+
+message GetCurrentUserResponse {
+  User user = 1;
+}
+
+// API Key management
+message CreateAPIKeyRequest {
+  string name = 1;
+  string description = 2;
+  repeated string scopes = 3;
+  google.protobuf.Timestamp expires_at = 4;
+}
+
+message CreateAPIKeyResponse {
+  string id = 1;
+  string key = 2; // Only returned once at creation
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp expires_at = 5;
+}
+
+message ListAPIKeysRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListAPIKeysResponse {
+  repeated APIKey keys = 1;
+  string next_page_token = 2;
+}
+
+message APIKey {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string scopes = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  google.protobuf.Timestamp last_used = 7;
+}
+
+message RevokeAPIKeyRequest {
+  string key_id = 1;
+}
+
+// SSO messages
+message GetSSOProvidersResponse {
+  repeated SSOProvider providers = 1;
+}
+
+message SSOProvider {
+  string id = 1;
+  string name = 2;
+  SSOProviderType type = 3;
+  string icon_url = 4;
+  bool enabled = 5;
+}
+
+enum SSOProviderType {
+  SSO_PROVIDER_TYPE_UNSPECIFIED = 0;
+  SSO_PROVIDER_TYPE_GOOGLE = 1;
+  SSO_PROVIDER_TYPE_GITHUB = 2;
+  SSO_PROVIDER_TYPE_OKTA = 3;
+  SSO_PROVIDER_TYPE_AZURE_AD = 4;
+  SSO_PROVIDER_TYPE_SAML = 5;
+  SSO_PROVIDER_TYPE_OIDC = 6;
+}
+
+message InitiateSSOLoginRequest {
+  string provider_id = 1;
+  string redirect_url = 2;
+}
+
+message InitiateSSOLoginResponse {
+  string auth_url = 1;
+  string state = 2;
+}
+
+message CompleteSSOLoginRequest {
+  string code = 1;
+  string state = 2;
+}
+
+message CompleteSSOLoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  User user = 4;
+}

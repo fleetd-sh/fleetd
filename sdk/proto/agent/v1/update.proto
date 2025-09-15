@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package fleetd.agent.v1;
+
+option go_package = "fleetd.sh/gen/agent/v1;agentpb";
+
+import "google/protobuf/timestamp.proto";
+
+// UpdateService handles OTA updates for devices
+service UpdateService {
+  // Check for available updates
+  rpc CheckUpdate(CheckUpdateRequest) returns (CheckUpdateResponse);
+
+  // Download an update
+  rpc DownloadUpdate(DownloadUpdateRequest) returns (stream DownloadUpdateResponse);
+
+  // Report update progress
+  rpc ReportProgress(ReportProgressRequest) returns (ReportProgressResponse);
+
+  // Confirm update completion
+  rpc ConfirmUpdate(ConfirmUpdateRequest) returns (ConfirmUpdateResponse);
+
+  // Rollback an update
+  rpc RollbackUpdate(RollbackUpdateRequest) returns (RollbackUpdateResponse);
+}
+
+// CheckUpdateRequest checks for available updates
+message CheckUpdateRequest {
+  string device_id = 1;
+  string current_version = 2;
+  string update_channel = 3;  // stable, beta, etc.
+  map<string, string> device_attributes = 4;
+}
+
+// CheckUpdateResponse contains update availability
+message CheckUpdateResponse {
+  bool update_available = 1;
+  UpdateInfo update_info = 2;
+}
+
+// DownloadUpdateRequest initiates update download
+message DownloadUpdateRequest {
+  string device_id = 1;
+  string update_id = 2;
+  int32 chunk_size = 3;  // Preferred chunk size in bytes
+}
+
+// DownloadUpdateResponse streams update chunks
+message DownloadUpdateResponse {
+  oneof data {
+    UpdateMetadata metadata = 1;
+    bytes chunk = 2;
+  }
+}
+
+// ReportProgressRequest reports update progress
+message ReportProgressRequest {
+  string device_id = 1;
+  string update_id = 2;
+  UpdateStatus status = 3;
+  int32 progress_percent = 4;
+  string message = 5;
+  google.protobuf.Timestamp timestamp = 6;
+}
+
+// ReportProgressResponse acknowledges progress report
+message ReportProgressResponse {
+  bool acknowledged = 1;
+}
+
+// ConfirmUpdateRequest confirms successful update
+message ConfirmUpdateRequest {
+  string device_id = 1;
+  string update_id = 2;
+  string new_version = 3;
+  google.protobuf.Timestamp completed_at = 4;
+}
+
+// ConfirmUpdateResponse acknowledges confirmation
+message ConfirmUpdateResponse {
+  bool acknowledged = 1;
+}
+
+// RollbackUpdateRequest requests update rollback
+message RollbackUpdateRequest {
+  string device_id = 1;
+  string update_id = 2;
+  string reason = 3;
+  string previous_version = 4;
+}
+
+// RollbackUpdateResponse confirms rollback
+message RollbackUpdateResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// UpdateInfo contains update details
+message UpdateInfo {
+  string update_id = 1;
+  string version = 2;
+  string description = 3;
+  int64 size_bytes = 4;
+  string checksum = 5;
+  string checksum_type = 6;  // sha256, md5, etc.
+  UpdateType type = 7;
+  bool mandatory = 8;
+  google.protobuf.Timestamp released_at = 9;
+  map<string, string> metadata = 10;
+}
+
+// UpdateMetadata sent before update chunks
+message UpdateMetadata {
+  string update_id = 1;
+  string version = 2;
+  int64 total_size = 3;
+  string checksum = 4;
+  string signature = 5;  // Digital signature for verification
+}
+
+// UpdateType defines the type of update
+enum UpdateType {
+  UPDATE_TYPE_UNSPECIFIED = 0;
+  UPDATE_TYPE_FIRMWARE = 1;
+  UPDATE_TYPE_SOFTWARE = 2;
+  UPDATE_TYPE_CONFIGURATION = 3;
+  UPDATE_TYPE_PATCH = 4;
+}
+
+// UpdateStatus represents update progress status
+enum UpdateStatus {
+  UPDATE_STATUS_UNSPECIFIED = 0;
+  UPDATE_STATUS_CHECKING = 1;
+  UPDATE_STATUS_DOWNLOADING = 2;
+  UPDATE_STATUS_VERIFYING = 3;
+  UPDATE_STATUS_INSTALLING = 4;
+  UPDATE_STATUS_REBOOTING = 5;
+  UPDATE_STATUS_COMPLETED = 6;
+  UPDATE_STATUS_FAILED = 7;
+  UPDATE_STATUS_ROLLED_BACK = 8;
+}
