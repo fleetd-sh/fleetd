@@ -1,0 +1,222 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+import "google/protobuf/timestamp.proto";
+
+// SyncService handles data synchronization between devices and server
+service SyncService {
+  // SyncMetrics uploads metrics from device to server
+  rpc SyncMetrics(SyncMetricsRequest) returns (SyncMetricsResponse);
+
+  // SyncLogs uploads logs from device to server
+  rpc SyncLogs(SyncLogsRequest) returns (SyncLogsResponse);
+
+  // GetSyncConfig gets updated sync configuration for device
+  rpc GetSyncConfig(GetSyncConfigRequest) returns (GetSyncConfigResponse);
+
+  // StreamSync establishes bidirectional sync stream
+  rpc StreamSync(stream SyncData) returns (stream SyncCommand);
+}
+
+// Device capability information for sync
+message SyncDeviceCapability {
+  int32 tier = 1; // 1=Full, 2=Constrained, 3=Minimal
+  int64 total_ram = 2;
+  int64 available_ram = 3;
+  int64 total_disk = 4;
+  int64 available_disk = 5;
+  int32 cpu_cores = 6;
+  string architecture = 7;
+  string os = 8;
+
+  // Storage capabilities
+  bool has_sqlite = 9;
+  int64 local_storage_size = 10;
+  int32 max_metrics_in_memory = 11;
+
+  // Network capabilities
+  bool has_network = 12;
+  int32 bandwidth_kbps = 13;
+  bool supports_http2 = 14;
+}
+
+// Metric data point
+message Metric {
+  string name = 1;
+  double value = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  map<string, string> labels = 4;
+}
+
+// Compressed metrics batch
+message MetricsBatch {
+  repeated Metric metrics = 1;
+  string compression = 2; // none, gzip, zstd
+  bytes compressed_data = 3; // If compression != none
+  int32 original_size = 4;
+}
+
+// Log entry
+message LogEntry {
+  string level = 1; // debug, info, warn, error, fatal
+  string message = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  string source = 4;
+  map<string, string> fields = 5;
+}
+
+// Logs batch
+message LogsBatch {
+  repeated LogEntry logs = 1;
+  string compression = 2;
+  bytes compressed_data = 3;
+}
+
+// Sync metadata
+message SyncMetadata {
+  string device_id = 1;
+  string org_id = 2;
+  int64 sequence_number = 3;
+  google.protobuf.Timestamp client_time = 4;
+  int32 retry_count = 5;
+  bytes checksum = 6; // SHA256 of uncompressed data
+  SyncDeviceCapability capability = 7;
+}
+
+// Sync configuration
+message SyncConfig {
+  int32 batch_size = 1;
+  int32 sync_interval_seconds = 2;
+  int32 retention_hours = 3;
+  bool compression_enabled = 4;
+  string compression_type = 5;
+  int32 max_retries = 6;
+
+  // Backoff configuration
+  int32 initial_backoff_seconds = 7;
+  int32 max_backoff_seconds = 8;
+  double backoff_multiplier = 9;
+
+  // Rate limiting
+  int32 max_metrics_per_second = 10;
+  int32 max_logs_per_second = 11;
+
+  // Storage configuration
+  int64 max_local_storage_bytes = 12;
+  int32 max_metrics_retained = 13;
+}
+
+// Request to sync metrics
+message SyncMetricsRequest {
+  SyncMetadata metadata = 1;
+  MetricsBatch batch = 2;
+}
+
+// Response from metrics sync
+message SyncMetricsResponse {
+  bool success = 1;
+  int64 last_sequence_ack = 2;
+  string error_message = 3;
+
+  // Server can send back updated config
+  SyncConfig config_update = 4;
+
+  // Server time for clock sync
+  google.protobuf.Timestamp server_time = 5;
+}
+
+// Request to sync logs
+message SyncLogsRequest {
+  SyncMetadata metadata = 1;
+  LogsBatch batch = 2;
+}
+
+// Response from logs sync
+message SyncLogsResponse {
+  bool success = 1;
+  int64 last_sequence_ack = 2;
+  string error_message = 3;
+  SyncConfig config_update = 4;
+}
+
+// Request for sync configuration
+message GetSyncConfigRequest {
+  string device_id = 1;
+  SyncDeviceCapability capability = 2;
+}
+
+// Response with sync configuration
+message GetSyncConfigResponse {
+  SyncConfig config = 1;
+
+  // Server endpoints for different data types
+  string metrics_endpoint = 2;
+  string logs_endpoint = 3;
+  string events_endpoint = 4;
+
+  // Feature flags
+  bool enable_compression = 5;
+  bool enable_batching = 6;
+  bool enable_edge_analytics = 7;
+}
+
+// Bidirectional sync data
+message SyncData {
+  oneof data {
+    MetricsBatch metrics = 1;
+    LogsBatch logs = 2;
+    SyncHeartbeat heartbeat = 3;
+    SyncAck ack = 4;
+  }
+
+  SyncMetadata metadata = 10;
+}
+
+// Sync command from server
+message SyncCommand {
+  oneof command {
+    SyncConfig config_update = 1;
+    SyncFlush flush = 2;
+    SyncPause pause = 3;
+    SyncResume resume = 4;
+    SyncAck ack = 5;
+  }
+
+  google.protobuf.Timestamp server_time = 10;
+}
+
+// Heartbeat message
+message SyncHeartbeat {
+  int64 unsynced_metrics = 1;
+  int64 unsynced_logs = 2;
+  int64 storage_used_bytes = 3;
+  double cpu_usage_percent = 4;
+  double memory_usage_percent = 5;
+}
+
+// Acknowledgment message
+message SyncAck {
+  int64 sequence_number = 1;
+  bool success = 2;
+  string error_message = 3;
+}
+
+// Flush command
+message SyncFlush {
+  bool force = 1;
+  string reason = 2;
+}
+
+// Pause sync command
+message SyncPause {
+  int32 duration_seconds = 1;
+  string reason = 2;
+}
+
+// Resume sync command
+message SyncResume {
+  string reason = 1;
+}
