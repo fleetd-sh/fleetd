@@ -29,6 +29,7 @@ func Execute() {
 func init() {
 	// Add subcommands
 	rootCmd.AddCommand(discoverCmd)
+	rootCmd.AddCommand(configureCmd)
 	rootCmd.AddCommand(devicesCmd)
 	rootCmd.AddCommand(serverCmd)
 	rootCmd.AddCommand(versionCmd)
