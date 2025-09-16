@@ -154,7 +154,7 @@ web-start:
 
 # Run web tests
 test-web:
-    cd web && bun test
+    cd web && bun run test
 
 # Type check TypeScript
 test-web-types:
