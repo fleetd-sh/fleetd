@@ -3,27 +3,14 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import {
-  DeleteDeviceRequest,
-  DeleteDeviceResponse,
-  GetDeviceRequest,
-  GetDeviceResponse,
-  HeartbeatRequest,
-  HeartbeatResponse,
-  ListDevicesRequest,
-  ListDevicesResponse,
-  RegisterRequest,
-  RegisterResponse,
-  ReportStatusRequest,
-  ReportStatusResponse,
-} from './device_pb.js'
-import { MethodKind } from '@bufbuild/protobuf'
+import { DeleteDeviceRequest, DeleteDeviceResponse, GetDeviceRequest, GetDeviceResponse, HeartbeatRequest, HeartbeatResponse, ListDevicesRequest, ListDevicesResponse, RegisterRequest, RegisterResponse, ReportStatusRequest, ReportStatusResponse } from "./device_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service fleetd.v1.DeviceService
  */
 export const DeviceService = {
-  typeName: 'fleetd.v1.DeviceService',
+  typeName: "fleetd.v1.DeviceService",
   methods: {
     /**
      * Register a new device with the fleet
@@ -31,7 +18,7 @@ export const DeviceService = {
      * @generated from rpc fleetd.v1.DeviceService.Register
      */
     register: {
-      name: 'Register',
+      name: "Register",
       I: RegisterRequest,
       O: RegisterResponse,
       kind: MethodKind.Unary,
@@ -42,7 +29,7 @@ export const DeviceService = {
      * @generated from rpc fleetd.v1.DeviceService.Heartbeat
      */
     heartbeat: {
-      name: 'Heartbeat',
+      name: "Heartbeat",
       I: HeartbeatRequest,
       O: HeartbeatResponse,
       kind: MethodKind.Unary,
@@ -53,7 +40,7 @@ export const DeviceService = {
      * @generated from rpc fleetd.v1.DeviceService.ReportStatus
      */
     reportStatus: {
-      name: 'ReportStatus',
+      name: "ReportStatus",
       I: ReportStatusRequest,
       O: ReportStatusResponse,
       kind: MethodKind.Unary,
@@ -64,7 +51,7 @@ export const DeviceService = {
      * @generated from rpc fleetd.v1.DeviceService.GetDevice
      */
     getDevice: {
-      name: 'GetDevice',
+      name: "GetDevice",
       I: GetDeviceRequest,
       O: GetDeviceResponse,
       kind: MethodKind.Unary,
@@ -75,7 +62,7 @@ export const DeviceService = {
      * @generated from rpc fleetd.v1.DeviceService.ListDevices
      */
     listDevices: {
-      name: 'ListDevices',
+      name: "ListDevices",
       I: ListDevicesRequest,
       O: ListDevicesResponse,
       kind: MethodKind.Unary,
@@ -86,10 +73,11 @@ export const DeviceService = {
      * @generated from rpc fleetd.v1.DeviceService.DeleteDevice
      */
     deleteDevice: {
-      name: 'DeleteDevice',
+      name: "DeleteDevice",
       I: DeleteDeviceRequest,
       O: DeleteDeviceResponse,
       kind: MethodKind.Unary,
     },
-  },
-} as const
+  }
+} as const;
+

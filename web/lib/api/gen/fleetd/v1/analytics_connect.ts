@@ -3,23 +3,14 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import {
-  GetDeviceHealthRequest,
-  GetDeviceHealthResponse,
-  GetDeviceMetricsRequest,
-  GetDeviceMetricsResponse,
-  GetPerformanceMetricsRequest,
-  GetPerformanceMetricsResponse,
-  GetUpdateAnalyticsRequest,
-  GetUpdateAnalyticsResponse,
-} from './analytics_pb.js'
-import { MethodKind } from '@bufbuild/protobuf'
+import { GetDeviceHealthRequest, GetDeviceHealthResponse, GetDeviceMetricsRequest, GetDeviceMetricsResponse, GetPerformanceMetricsRequest, GetPerformanceMetricsResponse, GetUpdateAnalyticsRequest, GetUpdateAnalyticsResponse } from "./analytics_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service fleetd.v1.AnalyticsService
  */
 export const AnalyticsService = {
-  typeName: 'fleetd.v1.AnalyticsService',
+  typeName: "fleetd.v1.AnalyticsService",
   methods: {
     /**
      * Get device metrics aggregation
@@ -27,7 +18,7 @@ export const AnalyticsService = {
      * @generated from rpc fleetd.v1.AnalyticsService.GetDeviceMetrics
      */
     getDeviceMetrics: {
-      name: 'GetDeviceMetrics',
+      name: "GetDeviceMetrics",
       I: GetDeviceMetricsRequest,
       O: GetDeviceMetricsResponse,
       kind: MethodKind.Unary,
@@ -38,7 +29,7 @@ export const AnalyticsService = {
      * @generated from rpc fleetd.v1.AnalyticsService.GetUpdateAnalytics
      */
     getUpdateAnalytics: {
-      name: 'GetUpdateAnalytics',
+      name: "GetUpdateAnalytics",
       I: GetUpdateAnalyticsRequest,
       O: GetUpdateAnalyticsResponse,
       kind: MethodKind.Unary,
@@ -49,7 +40,7 @@ export const AnalyticsService = {
      * @generated from rpc fleetd.v1.AnalyticsService.GetDeviceHealth
      */
     getDeviceHealth: {
-      name: 'GetDeviceHealth',
+      name: "GetDeviceHealth",
       I: GetDeviceHealthRequest,
       O: GetDeviceHealthResponse,
       kind: MethodKind.Unary,
@@ -60,10 +51,11 @@ export const AnalyticsService = {
      * @generated from rpc fleetd.v1.AnalyticsService.GetPerformanceMetrics
      */
     getPerformanceMetrics: {
-      name: 'GetPerformanceMetrics',
+      name: "GetPerformanceMetrics",
       I: GetPerformanceMetricsRequest,
       O: GetPerformanceMetricsResponse,
       kind: MethodKind.Unary,
     },
-  },
-} as const
+  }
+} as const;
+

@@ -3,20 +3,20 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { HealthCheckRequest, HealthCheckResponse } from './health_pb.js'
-import { MethodKind } from '@bufbuild/protobuf'
+import { HealthCheckRequest, HealthCheckResponse } from "./health_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service grpc.health.v1.Health
  */
 export const Health = {
-  typeName: 'grpc.health.v1.Health',
+  typeName: "grpc.health.v1.Health",
   methods: {
     /**
      * @generated from rpc grpc.health.v1.Health.Check
      */
     check: {
-      name: 'Check',
+      name: "Check",
       I: HealthCheckRequest,
       O: HealthCheckResponse,
       kind: MethodKind.Unary,
@@ -25,10 +25,11 @@ export const Health = {
      * @generated from rpc grpc.health.v1.Health.Watch
      */
     watch: {
-      name: 'Watch',
+      name: "Watch",
       I: HealthCheckRequest,
       O: HealthCheckResponse,
       kind: MethodKind.ServerStreaming,
     },
-  },
-} as const
+  }
+} as const;
+

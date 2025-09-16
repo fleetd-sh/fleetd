@@ -3,25 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import {
-  CompleteSSOLoginRequest,
-  CompleteSSOLoginResponse,
-  CreateAPIKeyRequest,
-  CreateAPIKeyResponse,
-  GetCurrentUserResponse,
-  GetSSOProvidersResponse,
-  InitiateSSOLoginRequest,
-  InitiateSSOLoginResponse,
-  ListAPIKeysRequest,
-  ListAPIKeysResponse,
-  LoginRequest,
-  LoginResponse,
-  LogoutRequest,
-  RefreshTokenRequest,
-  RefreshTokenResponse,
-  RevokeAPIKeyRequest,
-} from './auth_pb.js'
-import { Empty, MethodKind } from '@bufbuild/protobuf'
+import { CompleteSSOLoginRequest, CompleteSSOLoginResponse, CreateAPIKeyRequest, CreateAPIKeyResponse, GetCurrentUserResponse, GetSSOProvidersResponse, InitiateSSOLoginRequest, InitiateSSOLoginResponse, ListAPIKeysRequest, ListAPIKeysResponse, LoginRequest, LoginResponse, LogoutRequest, RefreshTokenRequest, RefreshTokenResponse, RevokeAPIKeyRequest } from "./auth_pb.js";
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * AuthService handles authentication and authorization
@@ -30,7 +13,7 @@ import { Empty, MethodKind } from '@bufbuild/protobuf'
  * @generated from service public.v1.AuthService
  */
 export const AuthService = {
-  typeName: 'public.v1.AuthService',
+  typeName: "public.v1.AuthService",
   methods: {
     /**
      * Authentication
@@ -38,7 +21,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.Login
      */
     login: {
-      name: 'Login',
+      name: "Login",
       I: LoginRequest,
       O: LoginResponse,
       kind: MethodKind.Unary,
@@ -47,7 +30,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.Logout
      */
     logout: {
-      name: 'Logout',
+      name: "Logout",
       I: LogoutRequest,
       O: Empty,
       kind: MethodKind.Unary,
@@ -56,7 +39,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.RefreshToken
      */
     refreshToken: {
-      name: 'RefreshToken',
+      name: "RefreshToken",
       I: RefreshTokenRequest,
       O: RefreshTokenResponse,
       kind: MethodKind.Unary,
@@ -65,7 +48,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.GetCurrentUser
      */
     getCurrentUser: {
-      name: 'GetCurrentUser',
+      name: "GetCurrentUser",
       I: Empty,
       O: GetCurrentUserResponse,
       kind: MethodKind.Unary,
@@ -76,7 +59,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.CreateAPIKey
      */
     createAPIKey: {
-      name: 'CreateAPIKey',
+      name: "CreateAPIKey",
       I: CreateAPIKeyRequest,
       O: CreateAPIKeyResponse,
       kind: MethodKind.Unary,
@@ -85,7 +68,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.ListAPIKeys
      */
     listAPIKeys: {
-      name: 'ListAPIKeys',
+      name: "ListAPIKeys",
       I: ListAPIKeysRequest,
       O: ListAPIKeysResponse,
       kind: MethodKind.Unary,
@@ -94,7 +77,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.RevokeAPIKey
      */
     revokeAPIKey: {
-      name: 'RevokeAPIKey',
+      name: "RevokeAPIKey",
       I: RevokeAPIKeyRequest,
       O: Empty,
       kind: MethodKind.Unary,
@@ -105,7 +88,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.GetSSOProviders
      */
     getSSOProviders: {
-      name: 'GetSSOProviders',
+      name: "GetSSOProviders",
       I: Empty,
       O: GetSSOProvidersResponse,
       kind: MethodKind.Unary,
@@ -114,7 +97,7 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.InitiateSSOLogin
      */
     initiateSSOLogin: {
-      name: 'InitiateSSOLogin',
+      name: "InitiateSSOLogin",
       I: InitiateSSOLoginRequest,
       O: InitiateSSOLoginResponse,
       kind: MethodKind.Unary,
@@ -123,10 +106,11 @@ export const AuthService = {
      * @generated from rpc public.v1.AuthService.CompleteSSOLogin
      */
     completeSSOLogin: {
-      name: 'CompleteSSOLogin',
+      name: "CompleteSSOLogin",
       I: CompleteSSOLoginRequest,
       O: CompleteSSOLoginResponse,
       kind: MethodKind.Unary,
     },
-  },
-} as const
+  }
+} as const;
+

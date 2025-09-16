@@ -3,30 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import {
-  CreateTeamRequest,
-  CreateTeamResponse,
-  DeleteTeamRequest,
-  GetBillingInfoResponse,
-  GetOrganizationRequest,
-  GetOrganizationResponse,
-  GetUsageRequest,
-  GetUsageResponse,
-  InviteMemberRequest,
-  InviteMemberResponse,
-  ListMembersRequest,
-  ListMembersResponse,
-  ListTeamsRequest,
-  ListTeamsResponse,
-  RemoveMemberRequest,
-  UpdateMemberRoleRequest,
-  UpdateMemberRoleResponse,
-  UpdateOrganizationRequest,
-  UpdateOrganizationResponse,
-  UpdateTeamRequest,
-  UpdateTeamResponse,
-} from './organization_pb.js'
-import { Empty, MethodKind } from '@bufbuild/protobuf'
+import { CreateTeamRequest, CreateTeamResponse, DeleteTeamRequest, GetBillingInfoResponse, GetOrganizationRequest, GetOrganizationResponse, GetUsageRequest, GetUsageResponse, InviteMemberRequest, InviteMemberResponse, ListMembersRequest, ListMembersResponse, ListTeamsRequest, ListTeamsResponse, RemoveMemberRequest, UpdateMemberRoleRequest, UpdateMemberRoleResponse, UpdateOrganizationRequest, UpdateOrganizationResponse, UpdateTeamRequest, UpdateTeamResponse } from "./organization_pb.js";
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * OrganizationService manages organizations and teams
@@ -35,7 +13,7 @@ import { Empty, MethodKind } from '@bufbuild/protobuf'
  * @generated from service public.v1.OrganizationService
  */
 export const OrganizationService = {
-  typeName: 'public.v1.OrganizationService',
+  typeName: "public.v1.OrganizationService",
   methods: {
     /**
      * Organization management
@@ -43,7 +21,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.GetOrganization
      */
     getOrganization: {
-      name: 'GetOrganization',
+      name: "GetOrganization",
       I: GetOrganizationRequest,
       O: GetOrganizationResponse,
       kind: MethodKind.Unary,
@@ -52,7 +30,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.UpdateOrganization
      */
     updateOrganization: {
-      name: 'UpdateOrganization',
+      name: "UpdateOrganization",
       I: UpdateOrganizationRequest,
       O: UpdateOrganizationResponse,
       kind: MethodKind.Unary,
@@ -63,7 +41,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.ListTeams
      */
     listTeams: {
-      name: 'ListTeams',
+      name: "ListTeams",
       I: ListTeamsRequest,
       O: ListTeamsResponse,
       kind: MethodKind.Unary,
@@ -72,7 +50,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.CreateTeam
      */
     createTeam: {
-      name: 'CreateTeam',
+      name: "CreateTeam",
       I: CreateTeamRequest,
       O: CreateTeamResponse,
       kind: MethodKind.Unary,
@@ -81,7 +59,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.UpdateTeam
      */
     updateTeam: {
-      name: 'UpdateTeam',
+      name: "UpdateTeam",
       I: UpdateTeamRequest,
       O: UpdateTeamResponse,
       kind: MethodKind.Unary,
@@ -90,7 +68,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.DeleteTeam
      */
     deleteTeam: {
-      name: 'DeleteTeam',
+      name: "DeleteTeam",
       I: DeleteTeamRequest,
       O: Empty,
       kind: MethodKind.Unary,
@@ -101,7 +79,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.ListMembers
      */
     listMembers: {
-      name: 'ListMembers',
+      name: "ListMembers",
       I: ListMembersRequest,
       O: ListMembersResponse,
       kind: MethodKind.Unary,
@@ -110,7 +88,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.InviteMember
      */
     inviteMember: {
-      name: 'InviteMember',
+      name: "InviteMember",
       I: InviteMemberRequest,
       O: InviteMemberResponse,
       kind: MethodKind.Unary,
@@ -119,7 +97,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.UpdateMemberRole
      */
     updateMemberRole: {
-      name: 'UpdateMemberRole',
+      name: "UpdateMemberRole",
       I: UpdateMemberRoleRequest,
       O: UpdateMemberRoleResponse,
       kind: MethodKind.Unary,
@@ -128,7 +106,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.RemoveMember
      */
     removeMember: {
-      name: 'RemoveMember',
+      name: "RemoveMember",
       I: RemoveMemberRequest,
       O: Empty,
       kind: MethodKind.Unary,
@@ -139,7 +117,7 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.GetBillingInfo
      */
     getBillingInfo: {
-      name: 'GetBillingInfo',
+      name: "GetBillingInfo",
       I: Empty,
       O: GetBillingInfoResponse,
       kind: MethodKind.Unary,
@@ -148,10 +126,11 @@ export const OrganizationService = {
      * @generated from rpc public.v1.OrganizationService.GetUsage
      */
     getUsage: {
-      name: 'GetUsage',
+      name: "GetUsage",
       I: GetUsageRequest,
       O: GetUsageResponse,
       kind: MethodKind.Unary,
     },
-  },
-} as const
+  }
+} as const;
+

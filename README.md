@@ -19,7 +19,7 @@ graph TD
     C --> G[Loki]
     C --> H[ClickHouse]
     I[Web Dashboard] -->|API| C
-    J[CLI/fleet] -->|API| C
+    J[CLI/fleetctl] -->|API| C
     K[Fleet Aggregator] -->|Sync| C
 ```
 
@@ -28,7 +28,7 @@ graph TD
 ### Core Services
 - **fleetd** - Device agent that runs on edge devices
 - **fleets** - Central fleet management server
-- **fleet** - CLI tool for fleet management
+- **fleetctl** - CLI tool for fleet management and platform control
 - **discover** - mDNS discovery service
 
 ### Web Dashboard
@@ -43,7 +43,7 @@ graph TD
 
 - Go 1.23+
 - Bun (for web development)
-- Docker & Docker Compose (optional, for data stack)
+- Docker (for running platform services)
 - Just (command runner)
 
 ### Installation
@@ -84,9 +84,9 @@ just lint-all
 
 ```bash
 # Build specific binary
-just build fleetd
-just build fleets
-just build fleet
+just build fleetctld
+just build fleetctls
+just build fleetctl
 
 # Build all binaries
 just build-go
@@ -148,56 +148,40 @@ just proto-lint
 just proto-breaking
 ```
 
-## 🗄️ Data Stack
+## 🗄️ Platform Services
 
-The project includes a comprehensive data stack for metrics, logs, and analytics:
+The FleetD platform includes a comprehensive stack for metrics, logs, and analytics:
 
-### Services
+### Services Managed by fleetctl
 - **PostgreSQL** - Primary database
 - **VictoriaMetrics** - Time-series metrics
 - **Loki** - Log aggregation
 - **ClickHouse** - Analytics database
 - **Valkey** - Cache and pub/sub
+- **Fleet Server** - Central management server
+- **Web Dashboard** - Management UI
 
-### Data Stack Commands
+### Platform Management
 
 ```bash
-# Start the full data stack
-just stack-up
+# Start the entire platform
+fleetctl start
 
-# Stop the data stack
-just stack-down
+# Start with specific profile
+fleetctl start --profile development
+fleetctl start --profile production
+
+# Stop all services
+fleetctl stop
+
+# Check status
+fleetctl status
 
 # View logs
-just stack-logs [service]
+fleetctl logs [service]
 
-# Check health
-just stack-health
-
-# Reset data stack (WARNING: deletes all data)
-just stack-reset
-```
-
-## 🌐 Gateway & Load Balancing
-
-```bash
-# Start gateway with Traefik
-just gateway-up
-
-# Stop gateway
-just gateway-down
-
-# View gateway logs
-just gateway-logs
-
-# Show routes
-just gateway-routes
-
-# Show services
-just gateway-services
-
-# Test health endpoints
-just gateway-test
+# Health check
+fleetctl health
 ```
 
 ## 🗃️ Database Management
@@ -224,15 +208,6 @@ just docker-build [tag]
 
 # Build web Docker image
 just docker-build-web [tag]
-
-# Run with docker-compose
-just docker-up
-
-# Stop docker-compose
-just docker-down
-
-# View logs
-just docker-logs [service]
 ```
 
 ## 📝 CLI Usage
@@ -257,23 +232,27 @@ fleets configure
 fleets version
 ```
 
-### Fleet CLI (fleet)
+### Fleet Control CLI (fleetctl)
 
 ```bash
+# Platform management
+fleetctl start              # Start all platform services (server, database, metrics, etc.)
+fleetctl stop               # Stop platform services
+fleetctl status             # Check platform status
+
 # Device management
-fleet device list
-fleet device get <id>
-fleet device update <id>
-fleet device delete <id>
+fleetctl device list
+fleetctl device get <id>
+fleetctl device update <id>
+fleetctl device delete <id>
 
 # Deployment management
-fleet deploy <binary> --target <device-pattern>
-fleet rollback <deployment-id>
+fleetctl deploy <binary> --target <device-pattern>
+fleetctl rollback <deployment-id>
 
 # Monitoring
-fleet status
-fleet metrics
-fleet logs
+fleetctl metrics
+fleetctl logs
 ```
 
 ### Device Agent (fleetd)
@@ -367,7 +346,7 @@ fleetd/
 ├── cmd/                    # Command-line applications
 │   ├── fleetd/            # Device agent
 │   ├── fleets/            # Fleet server
-│   ├── fleet/             # Management CLI
+│   ├── fleetctl/          # Management CLI
 │   └── discover/          # Discovery service
 ├── internal/              # Internal packages
 │   ├── agent/            # Agent implementation
