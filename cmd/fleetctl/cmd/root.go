@@ -27,13 +27,13 @@ var (
 
 // rootCmd represents the base command
 var rootCmd = &cobra.Command{
-	Use:   "fleet",
-	Short: "Fleet - Developer-friendly CLI for FleetD",
-	Long: `Fleet is a unified CLI for managing FleetD infrastructure,
-provisioning devices, and developing edge applications.
+	Use:   "fleetctl",
+	Short: "fleetctl - Management CLI for fleetd platform",
+	Long: `fleetctl is a unified CLI for managing fleetd infrastructure,
+provisioning devices, and controlling the fleet platform.
 
-Similar to Supabase CLI, Fleet provides a seamless developer experience
-for local development, testing, and deployment.`,
+Similar to kubectl, fleetctl provides comprehensive management capabilities
+for your fleet of edge devices and the platform services.`,
 	Version: "0.1.0",
 }
 
@@ -69,6 +69,11 @@ func init() {
 		newLoginCmd(),
 		newConfigCmd(),
 		newResetCmd(),
+		newDevicesCmd(),
+		newDiscoverCmd(),
+		newConfigureCmd(),
+		newMigrateCmd(),
+		newVersionCmd(),
 	)
 
 	// Disable color if requested

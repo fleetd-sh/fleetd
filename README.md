@@ -84,8 +84,8 @@ just lint-all
 
 ```bash
 # Build specific binary
-just build fleetctld
-just build fleetctls
+just build fleetd
+just build fleets
 just build fleetctl
 
 # Build all binaries
@@ -150,7 +150,7 @@ just proto-breaking
 
 ## 🗄️ Platform Services
 
-The FleetD platform includes a comprehensive stack for metrics, logs, and analytics:
+The fleetd platform includes a comprehensive stack for metrics, logs, and analytics:
 
 ### Services Managed by fleetctl
 - **PostgreSQL** - Primary database
@@ -215,44 +215,66 @@ just docker-build-web [tag]
 ### Fleet Server (fleets)
 
 ```bash
-# Start server
-fleets server --port 8080
+# Start the fleet server
+fleets --port 8080
 
-# Discover devices
-fleets discover
+# With custom configuration
+fleets --port 8080 --db /path/to/fleet.db --secret-key <key>
 
-# Manage devices
-fleets devices list
-fleets devices get <device-id>
+# Enable mDNS discovery
+fleets --enable-mdns
 
-# Configuration
-fleets configure
+# With rate limiting via Valkey/Redis
+fleets --valkey localhost:6379 --rate-limit-requests 100
 
-# Version info
-fleets version
+# Show version
+fleets --version
+
+# Show help
+fleets --help
 ```
 
 ### Fleet Control CLI (fleetctl)
 
 ```bash
 # Platform management
-fleetctl start              # Start all platform services (server, database, metrics, etc.)
+fleetctl start              # Start all platform services
 fleetctl stop               # Stop platform services
 fleetctl status             # Check platform status
+fleetctl logs [service]     # View service logs
 
 # Device management
-fleetctl device list
-fleetctl device get <id>
-fleetctl device update <id>
-fleetctl device delete <id>
+fleetctl devices list               # List all devices
+fleetctl devices get <id>           # Get device details
+fleetctl devices update <id>        # Update device configuration
+fleetctl devices delete <id>        # Remove device from fleet
+fleetctl devices logs <id>          # View device logs
+fleetctl devices metrics <id>       # View device metrics
+
+# Device discovery
+fleetctl discover           # Discover devices on network
+
+# Fleet configuration
+fleetctl configure get              # Get current configuration
+fleetctl configure set <key> <val>  # Set configuration value
+fleetctl configure apply -f file    # Apply configuration from file
+fleetctl configure validate -f file # Validate configuration file
+
+# Database migrations
+fleetctl migrate up         # Run pending migrations
+fleetctl migrate down       # Rollback migrations
+fleetctl migrate status     # Check migration status
+fleetctl migrate create <name>  # Create new migration
+fleetctl migrate reset      # Reset database
 
 # Deployment management
 fleetctl deploy <binary> --target <device-pattern>
 fleetctl rollback <deployment-id>
 
-# Monitoring
-fleetctl metrics
-fleetctl logs
+# Other commands
+fleetctl version            # Show version information
+fleetctl init              # Initialize new fleet project
+fleetctl provision <device> # Provision a new device
 ```
 
 ### Device Agent (fleetd)
