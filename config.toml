@@ -1,0 +1,53 @@
+# Fleet Project Configuration
+
+[project]
+id = "fleetd-dev"
+name = "FleetD Development"
+
+[api]
+enabled = true
+port = 8080
+host = "localhost"
+
+[db]
+port = 5432
+host = "localhost"
+name = "fleetd"
+user = "fleetd"
+password = "fleetd_secret"
+
+[stack]
+# Services to start with 'fleet start'
+services = [
+  "postgres",
+  "victoriametrics",
+  "loki",
+  "valkey",
+  "traefik"
+]
+
+[gateway]
+port = 80
+dashboard_port = 8080
+
+[telemetry]
+victoria_metrics_port = 8428
+loki_port = 3100
+grafana_port = 3001
+
+[auth]
+jwt_secret = "development-secret-change-in-production"
+api_keys = []
+
+[provisioning]
+default_image = "raspios-lite"
+default_user = "pi"
+
+# Environment-specific overrides
+[environments.staging]
+api.url = "https://staging.fleetd.sh"
+db.host = "staging-db.fleetd.sh"
+
+[environments.production]
+api.url = "https://api.fleetd.sh"
+db.host = "prod-db.fleetd.sh"
