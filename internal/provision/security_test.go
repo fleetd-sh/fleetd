@@ -7,27 +7,27 @@ import (
 
 func TestValidateDevicePath(t *testing.T) {
 	tests := []struct {
-		name    string
-		path    string
-		wantErr bool
-		errType error
+		name        string
+		path        string
+		wantErr     bool
+		errContains string
 	}{
 		// Valid paths
-		{"valid macOS disk", "/dev/disk2", false, nil},
-		{"valid Linux SCSI", "/dev/sda", false, nil},
-		{"valid Linux SCSI partition", "/dev/sdb", false, nil},
-		{"valid Linux MMC", "/dev/mmcblk0", false, nil},
-		{"valid USB serial", "/dev/ttyUSB0", false, nil},
-		{"valid ACM serial", "/dev/ttyACM1", false, nil},
-		{"valid macOS serial", "/dev/cu.usbserial", false, nil},
+		{"valid macOS disk", "/dev/disk2", false, ""},
+		{"valid Linux SCSI", "/dev/sda", false, ""},
+		{"valid Linux SCSI partition", "/dev/sdb", false, ""},
+		{"valid Linux MMC", "/dev/mmcblk0", false, ""},
+		{"valid USB serial", "/dev/ttyUSB0", false, ""},
+		{"valid ACM serial", "/dev/ttyACM1", false, ""},
+		{"valid macOS serial", "/dev/cu.usbserial", false, ""},
 
 		// Invalid paths
-		{"empty path", "", true, ErrInvalidInput},
-		{"path traversal", "/dev/../etc/passwd", true, ErrPathTraversal},
-		{"path traversal hidden", "/dev/disk2/../../../etc/passwd", true, ErrPathTraversal},
-		{"invalid pattern", "/etc/passwd", true, ErrInvalidInput},
-		{"invalid pattern proc", "/proc/1/mem", true, ErrInvalidInput},
-		{"too long path", "/" + strings.Repeat("a", MaxPathLength), true, ErrInvalidInput},
+		{"empty path", "", true, "device path cannot be empty"},
+		{"path traversal", "/dev/../etc/passwd", true, "path traversal"},
+		{"path traversal hidden", "/dev/disk2/../../../etc/passwd", true, "path traversal"},
+		{"invalid pattern", "/etc/passwd", true, "unrecognized device path pattern"},
+		{"invalid pattern proc", "/proc/1/mem", true, "unrecognized device path pattern"},
+		{"too long path", "/" + strings.Repeat("a", MaxPathLength), true, "device path too long"},
 	}
 
 	for _, tt := range tests {
@@ -36,9 +36,9 @@ func TestValidateDevicePath(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateDevicePath() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if tt.errType != nil && err != nil {
-				if !strings.Contains(err.Error(), tt.errType.Error()) {
-					t.Errorf("ValidateDevicePath() error type = %v, want %v", err, tt.errType)
+			if tt.errContains != "" && err != nil {
+				if !strings.Contains(err.Error(), tt.errContains) {
+					t.Errorf("ValidateDevicePath() error = %v, want error containing %v", err, tt.errContains)
 				}
 			}
 		})
