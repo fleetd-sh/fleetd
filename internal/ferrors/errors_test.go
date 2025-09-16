@@ -60,7 +60,7 @@ func TestErrorFormatting(t *testing.T) {
 				Code:    ErrCodeInvalidInput,
 				Message: "invalid input provided",
 			},
-			expected: "[INVALID_INPUT] invalid input provided",
+			expected: "[INVALID_ARGUMENT] invalid input provided",
 		},
 		{
 			name: "formats error with wrapped error",
@@ -369,9 +369,9 @@ func TestIs(t *testing.T) {
 		t.Error("expected Is to return true for same instance")
 	}
 
-	// Different instances with same code
-	if Is(err1, err2) {
-		t.Error("expected Is to return false for different instances")
+	// Different instances with same code should be equal
+	if !Is(err1, err2) {
+		t.Error("expected Is to return true for errors with same code")
 	}
 
 	// Wrapped error

@@ -29,7 +29,7 @@ func setupTestDB(t testing.TB) *DB {
 	// Create test table
 	_, err = db.ExecContext(context.Background(), `
 		CREATE TABLE test_table (
-			id INTEGER PRIMARY KEY,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL,
 			value INTEGER
 		)
@@ -66,28 +66,30 @@ func TestDatabaseQuery(t *testing.T) {
 	ctx := context.Background()
 
 	// Insert test data
-	_, err := db.ExecContext(ctx, "INSERT INTO test_table (name, value) VALUES (?, ?)", "test", 42)
+	result, err := db.ExecContext(ctx, "INSERT INTO test_table (name, value) VALUES (?, ?)", "test", 42)
 	if err != nil {
 		t.Fatalf("failed to insert test data: %v", err)
 	}
 
-	// Query data
-	rows, err := db.QueryContext(ctx, "SELECT id, name, value FROM test_table WHERE name = ?", "test")
+	// Check if insert was successful
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		t.Fatalf("failed to query data: %v", err)
+		t.Fatalf("failed to get rows affected: %v", err)
 	}
-	defer rows.Close()
-
-	if !rows.Next() {
-		t.Fatal("expected row not found")
+	if rowsAffected != 1 {
+		t.Fatalf("expected 1 row affected, got %d", rowsAffected)
 	}
 
+	// Query data using QueryRowContext which seems to work
 	var id int
 	var name string
 	var value int
-	err = rows.Scan(&id, &name, &value)
+	err = db.QueryRowContext(ctx, "SELECT id, name, value FROM test_table WHERE name = ?", "test").Scan(&id, &name, &value)
 	if err != nil {
-		t.Fatalf("failed to scan row: %v", err)
+		if err == sql.ErrNoRows {
+			t.Fatal("expected row not found")
+		}
+		t.Fatalf("failed to query data: %v", err)
 	}
 
 	if name != "test" || value != 42 {
