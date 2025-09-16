@@ -127,12 +127,12 @@ lint-go:
 
 # Run Go backend development server
 server-dev:
-    go run cmd/fleets/main.go server --port 8080
+    go run cmd/fleets/main.go --port 8080
 
 # Watch and run Go backend
 server-watch:
     VERSION={{version}} COMMIT_SHA={{commit_sha}} BUILD_TIME="{{build_time}}" \
-    gow -e=go,proto,sql -c run cmd/fleets/main.go server --port 8080
+    gow -e=go,proto,sql -c run cmd/fleets/main.go --port 8080
 
 # Web Frontend Commands
 
@@ -222,19 +222,19 @@ docker-build-web tag="latest":
 
 # Run database migrations
 db-migrate:
-    go run cmd/fleets/main.go migrate up
+    go run cmd/fleetctl/main.go migrate up
 
 # Rollback database migration
 db-rollback:
-    go run cmd/fleets/main.go migrate down
+    go run cmd/fleetctl/main.go migrate down
 
 # Create new migration
 db-migration name:
-    go run cmd/fleets/main.go migrate create {{name}}
+    go run cmd/fleetctl/main.go migrate create {{name}}
 
 # Reset database
 db-reset:
-    go run cmd/fleets/main.go migrate reset
+    go run cmd/fleetctl/main.go migrate reset
 
 # Deployment Commands
 
