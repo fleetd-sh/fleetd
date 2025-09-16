@@ -78,7 +78,7 @@ func (p *RaspberryPiOSProvider) ConfigureImage(config Config, bootPath, rootPath
 	// 1. Enable SSH by creating ssh file in boot partition
 	sshFile := filepath.Join(bootPath, "ssh")
 	fmt.Printf("Writing SSH enable file to: %s\n", sshFile)
-	if err := os.WriteFile(sshFile, []byte(""), 0644); err != nil {
+	if err := os.WriteFile(sshFile, []byte(""), 0o644); err != nil {
 		return fmt.Errorf("failed to enable SSH: %w", err)
 	}
 	fmt.Printf("Successfully wrote SSH enable file\n")
@@ -98,7 +98,7 @@ network={
 `, config.Network.WiFiSSID, config.Network.WiFiPass)
 
 		wpaFile := filepath.Join(bootPath, "wpa_supplicant.conf")
-		if err := os.WriteFile(wpaFile, []byte(wpaConf), 0644); err != nil {
+		if err := os.WriteFile(wpaFile, []byte(wpaConf), 0o644); err != nil {
 			return fmt.Errorf("failed to configure WiFi: %w", err)
 		}
 	}
@@ -112,7 +112,7 @@ network={
 	username := "fleetd"
 	userConf := fmt.Sprintf("%s:%s", username, hashedPassword)
 	userConfFile := filepath.Join(bootPath, "userconf.txt")
-	if err := os.WriteFile(userConfFile, []byte(userConf), 0644); err != nil {
+	if err := os.WriteFile(userConfFile, []byte(userConf), 0o644); err != nil {
 		return fmt.Errorf("failed to configure user: %w", err)
 	}
 
@@ -127,7 +127,7 @@ You should change the password after first login.
 `, username, password)
 
 	credsFile := filepath.Join(bootPath, "DEVICE_CREDENTIALS.txt")
-	if err := os.WriteFile(credsFile, []byte(credsInfo), 0600); err != nil {
+	if err := os.WriteFile(credsFile, []byte(credsInfo), 0o600); err != nil {
 		return fmt.Errorf("failed to save credentials: %w", err)
 	}
 
@@ -159,7 +159,7 @@ WantedBy=multi-user.target
 
 	// Write service file to boot partition for later copying
 	serviceFile := filepath.Join(bootPath, "fleetd.service")
-	if err := os.WriteFile(serviceFile, []byte(systemdService), 0644); err != nil {
+	if err := os.WriteFile(serviceFile, []byte(systemdService), 0o644); err != nil {
 		return fmt.Errorf("failed to create service file: %w", err)
 	}
 
@@ -188,7 +188,7 @@ WantedBy=multi-user.target
 	}
 
 	bootFleetd := filepath.Join(bootPath, "fleetd")
-	if err := os.WriteFile(bootFleetd, input, 0755); err != nil {
+	if err := os.WriteFile(bootFleetd, input, 0o755); err != nil {
 		return fmt.Errorf("failed to copy fleetd to boot: %w", err)
 	}
 
@@ -196,7 +196,7 @@ WantedBy=multi-user.target
 	// This is the official way to run scripts on first boot
 	firstrunScript := createRasPiOSFirstRun(config)
 	firstrunFile := filepath.Join(bootPath, "firstrun.sh")
-	if err := os.WriteFile(firstrunFile, []byte(firstrunScript), 0755); err != nil {
+	if err := os.WriteFile(firstrunFile, []byte(firstrunScript), 0o755); err != nil {
 		return fmt.Errorf("failed to create firstrun.sh: %w", err)
 	}
 	fmt.Printf("Created firstrun.sh for automatic installation\n")
@@ -237,7 +237,7 @@ Your device should automatically appear in fleet discovery!
 Note: Check DEVICE_CREDENTIALS.txt for your login credentials (removed after first boot)
 `
 	readmeFile := filepath.Join(bootPath, "FLEETD_README.txt")
-	if err := os.WriteFile(readmeFile, []byte(readme), 0644); err != nil {
+	if err := os.WriteFile(readmeFile, []byte(readme), 0o644); err != nil {
 		return fmt.Errorf("failed to create README: %w", err)
 	}
 

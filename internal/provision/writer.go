@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -23,28 +24,43 @@ type SDCardWriter struct {
 }
 
 // NewSDCardWriter creates a new SD card writer
-func NewSDCardWriter(devicePath string, dryRun bool) *SDCardWriter {
+func NewSDCardWriter(devicePath string, dryRun bool) (*SDCardWriter, error) {
+	// Validate device path
+	if err := ValidateDevicePath(devicePath); err != nil {
+		return nil, fmt.Errorf("invalid device path: %w", err)
+	}
+
 	return &SDCardWriter{
 		devicePath: devicePath,
 		dryRun:     dryRun,
-	}
+	}, nil
 }
 
 // WriteImage writes an OS image to the SD card
 func (w *SDCardWriter) WriteImage(ctx context.Context, imagePath string, progress func(written, total int64)) error {
+	// Validate image path
+	if err := ValidateImagePath(imagePath); err != nil {
+		return fmt.Errorf("invalid image path: %w", err)
+	}
+
 	// Use the provided path directly - assume caller handles decompression
 	return w.WriteDecompressedImage(ctx, imagePath, progress)
 }
 
 // WriteDecompressedImage writes a decompressed image to the SD card
 func (w *SDCardWriter) WriteDecompressedImage(ctx context.Context, imagePath string, progress func(written, total int64)) error {
+	// Validate image path
+	if err := ValidateImagePath(imagePath); err != nil {
+		return fmt.Errorf("invalid image path: %w", err)
+	}
+
 	// Check if we can open the device first
 	if !w.dryRun {
 		// Check device access
 		testFile, err := os.OpenFile(w.devicePath, os.O_RDWR, 0)
 		if err != nil {
 			if os.IsPermission(err) {
-				fmt.Printf("Need sudo access to write to %s\n", w.devicePath)
+				slog.Info("need sudo access to write to device", "device", w.devicePath)
 				fmt.Println("Will prompt for sudo password when ready to write...")
 			} else {
 				return fmt.Errorf("device not accessible: %w", err)
@@ -64,7 +80,10 @@ func (w *SDCardWriter) WriteDecompressedImage(ctx context.Context, imagePath str
 	totalSize := fi.Size()
 
 	if w.dryRun {
-		fmt.Printf("[DRY RUN] Would write %d bytes from %s to %s\n", totalSize, decompressedPath, w.devicePath)
+		slog.Info("dry run: would write image to device",
+			"size_bytes", totalSize,
+			"source", decompressedPath,
+			"target", w.devicePath)
 		if progress != nil {
 			progress(totalSize, totalSize)
 		}
@@ -113,7 +132,9 @@ func (w *SDCardWriter) WriteDecompressedImage(ctx context.Context, imagePath str
 		return fmt.Errorf("failed to sync device: %w", err)
 	}
 
-	fmt.Printf("\nSuccessfully wrote %d bytes to %s\n", written, w.devicePath)
+	slog.Info("successfully wrote image to device",
+		"bytes_written", written,
+		"device", w.devicePath)
 
 	return nil
 }
@@ -130,15 +151,17 @@ func (w *SDCardWriter) MountPartitions(bootLabel, rootLabel string) (bootPath, r
 		// In dry run, create temporary directories
 		bootPath = filepath.Join(os.TempDir(), "fleetd-boot")
 		rootPath = filepath.Join(os.TempDir(), "fleetd-root")
-		os.MkdirAll(bootPath, 0755)
-		os.MkdirAll(rootPath, 0755)
+		os.MkdirAll(bootPath, 0o755)
+		os.MkdirAll(rootPath, 0o755)
 
 		cleanup = func() {
 			os.RemoveAll(bootPath)
 			os.RemoveAll(rootPath)
 		}
 
-		fmt.Printf("[DRY RUN] Would mount partitions to %s and %s\n", bootPath, rootPath)
+		slog.Info("dry run: would mount partitions",
+			"boot_path", bootPath,
+			"root_path", rootPath)
 		return bootPath, rootPath, cleanup, nil
 	}
 
@@ -160,12 +183,14 @@ func (w *SDCardWriter) MountPartitions(bootLabel, rootLabel string) (bootPath, r
 
 	// Check if partitions are already mounted (common on macOS)
 	bootPath, rootPath = w.findExistingMounts(bootDev, rootDev)
-	fmt.Printf("Found existing mounts - bootPath: %s, rootPath: %s\n", bootPath, rootPath)
+	slog.Info("found existing mounts",
+		"boot_path", bootPath,
+		"root_path", rootPath)
 
 	// If not already mounted, create mount points and mount
 	if bootPath == "" {
 		bootPath = filepath.Join(os.TempDir(), "fleetd-boot")
-		if err := os.MkdirAll(bootPath, 0755); err != nil {
+		if err := os.MkdirAll(bootPath, 0o755); err != nil {
 			return "", "", nil, err
 		}
 
@@ -175,13 +200,13 @@ func (w *SDCardWriter) MountPartitions(bootLabel, rootLabel string) (bootPath, r
 			return "", "", nil, fmt.Errorf("failed to mount boot partition: %w", err)
 		}
 	} else {
-		fmt.Printf("Using existing mount point: %s\n", bootPath)
+		slog.Info("using existing mount point", "boot_path", bootPath)
 	}
 
 	// Handle root partition
 	if rootPath == "" && rootDev != "" {
 		rootPath = filepath.Join(os.TempDir(), "fleetd-root")
-		if err := os.MkdirAll(rootPath, 0755); err != nil {
+		if err := os.MkdirAll(rootPath, 0o755); err != nil {
 			// Cleanup boot if we mounted it
 			if strings.Contains(bootPath, "fleetd-boot") {
 				w.unmountPartition(bootPath)
@@ -271,6 +296,7 @@ func (w *SDCardWriter) decompressXZ(ctx context.Context, imagePath string, progr
 	if err != nil {
 		return "", nil, err
 	}
+	defer tempFile.Close()
 	tempPath := tempFile.Name()
 
 	// Create progress reader if callback provided
@@ -288,7 +314,6 @@ func (w *SDCardWriter) decompressXZ(ctx context.Context, imagePath string, progr
 
 	// Decompress
 	_, err = io.Copy(tempFile, reader)
-	tempFile.Close()
 
 	if err != nil {
 		os.Remove(tempPath)
@@ -322,11 +347,11 @@ func (w *SDCardWriter) decompressGZ(ctx context.Context, imagePath string, progr
 	if err != nil {
 		return "", nil, err
 	}
+	defer tempFile.Close()
 	tempPath := tempFile.Name()
 
 	// Decompress
 	_, err = io.Copy(tempFile, gzReader)
-	tempFile.Close()
 
 	if err != nil {
 		os.Remove(tempPath)
@@ -428,11 +453,11 @@ func (w *SDCardWriter) decompressZstd(ctx context.Context, imagePath string, pro
 	if err != nil {
 		return "", nil, err
 	}
+	defer tempFile.Close()
 	tempPath := tempFile.Name()
 
 	// Decompress
 	_, err = io.Copy(tempFile, decoder)
-	tempFile.Close()
 
 	if err != nil {
 		os.Remove(tempPath)
@@ -457,7 +482,7 @@ func (w *SDCardWriter) openDeviceForWriting() (deviceWriter, error) {
 	// Check if this is a regular file (disk image) vs block device
 	if isDiskImage(w.devicePath) {
 		// For disk images, just open as a regular file
-		file, err := os.OpenFile(w.devicePath, os.O_RDWR|os.O_CREATE, 0644)
+		file, err := os.OpenFile(w.devicePath, os.O_RDWR|os.O_CREATE, 0o644)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open disk image: %w", err)
 		}
@@ -472,11 +497,11 @@ func (w *SDCardWriter) openDeviceForWriting() (deviceWriter, error) {
 
 	// If permission denied, try with sudo
 	if os.IsPermission(err) {
-		fmt.Printf("Need sudo access to write to %s\n", w.devicePath)
+		slog.Info("need sudo access to write to device", "device", w.devicePath)
 
 		// Use dd with sudo for the actual writing
 		// We'll return a pipe that dd will read from
-		cmd := exec.Command("sudo", "dd", fmt.Sprintf("of=%s", w.devicePath), "bs=4M", "status=progress")
+		cmd := exec.Command("sudo", "dd", "of="+w.devicePath, "bs=4M", "status=progress")
 
 		// Get stdin pipe
 		stdin, err := cmd.StdinPipe()
@@ -614,12 +639,14 @@ func (w *SDCardWriter) findExistingMounts(bootDev, rootDev string) (bootPath, ro
 			return "", ""
 		}
 
-		fmt.Printf("Looking for devices %s and %s in mount output\n", bootDev, rootDev)
+		slog.Debug("looking for devices in mount output",
+			"boot_device", bootDev,
+			"root_device", rootDev)
 		lines := strings.Split(string(output), "\n")
 		for _, line := range lines {
 			// Look for our boot device
 			if strings.Contains(line, bootDev) {
-				fmt.Printf("Found boot device in mount line: %s\n", line)
+				slog.Debug("found boot device in mount line", "line", line)
 				// Extract mount point
 				// Format: /dev/disk14s1 on /Volumes/bootfs (msdos, ...)
 				// or: /dev/disk14s1 on /Volumes/boot 1 (msdos, ...)
@@ -630,13 +657,13 @@ func (w *SDCardWriter) findExistingMounts(bootDev, rootDev string) (bootPath, ro
 					parenIndex := strings.Index(afterOn, " (")
 					if parenIndex != -1 {
 						bootPath = afterOn[:parenIndex]
-						fmt.Printf("Extracted boot mount path: %s\n", bootPath)
+						slog.Debug("extracted boot mount path", "path", bootPath)
 					}
 				}
 			}
 			// Look for root device
 			if rootDev != "" && strings.Contains(line, rootDev) {
-				fmt.Printf("Found root device in mount line: %s\n", line)
+				slog.Debug("found root device in mount line", "line", line)
 				// Extract mount point (same logic as boot)
 				onIndex := strings.Index(line, " on ")
 				if onIndex != -1 {
@@ -644,7 +671,7 @@ func (w *SDCardWriter) findExistingMounts(bootDev, rootDev string) (bootPath, ro
 					parenIndex := strings.Index(afterOn, " (")
 					if parenIndex != -1 {
 						rootPath = afterOn[:parenIndex]
-						fmt.Printf("Extracted root mount path: %s\n", rootPath)
+						slog.Debug("extracted root mount path", "path", rootPath)
 					}
 				}
 			}

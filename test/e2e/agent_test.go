@@ -95,7 +95,7 @@ func buildAgent(t *testing.T) {
 			testDataDir = "testdata"
 			if _, err := os.Stat(testDataDir); os.IsNotExist(err) {
 				// Create the directory if it doesn't exist
-				if err := os.MkdirAll(testDataDir, 0755); err != nil {
+				if err := os.MkdirAll(testDataDir, 0o755); err != nil {
 					t.Fatalf("Failed to create testdata directory: %v", err)
 				}
 			}

@@ -3,8 +3,8 @@ package sync
 import (
 	"fmt"
 
-	"fleetd.sh/internal/compression"
 	pb "fleetd.sh/gen/fleetd/v1"
+	"fleetd.sh/internal/compression"
 	"google.golang.org/protobuf/proto"
 )
 

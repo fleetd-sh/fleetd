@@ -73,11 +73,11 @@ func (c *FleetClient) GetDevice(ctx context.Context, deviceID string, includeMet
 // UpdateDevice updates device configuration
 func (c *FleetClient) UpdateDevice(ctx context.Context, deviceID string, updates UpdateDeviceOptions) (*controlpb.UpdateDeviceResponse, error) {
 	req := connect.NewRequest(&controlpb.UpdateDeviceRequest{
-		DeviceId:          deviceID,
-		Labels:            updates.Labels,
-		Metadata:          updates.Metadata,
-		AddToGroups:       updates.AddToGroups,
-		RemoveFromGroups:  updates.RemoveFromGroups,
+		DeviceId:         deviceID,
+		Labels:           updates.Labels,
+		Metadata:         updates.Metadata,
+		AddToGroups:      updates.AddToGroups,
+		RemoveFromGroups: updates.RemoveFromGroups,
 	})
 
 	resp, err := c.client.UpdateDevice(ctx, req)
@@ -111,11 +111,11 @@ func (c *FleetClient) ExecuteCommand(ctx context.Context, opts ExecuteCommandOpt
 	}
 
 	req := connect.NewRequest(&controlpb.ExecuteCommandRequest{
-		DeviceIds:       opts.DeviceIDs,
-		GroupIds:        opts.GroupIDs,
-		Command:         opts.Command,
-		ExecuteAt:       executeAt,
-		TimeoutSeconds:  opts.TimeoutSeconds,
+		DeviceIds:      opts.DeviceIDs,
+		GroupIds:       opts.GroupIDs,
+		Command:        opts.Command,
+		ExecuteAt:      executeAt,
+		TimeoutSeconds: opts.TimeoutSeconds,
 	})
 
 	resp, err := c.client.ExecuteCommand(ctx, req)

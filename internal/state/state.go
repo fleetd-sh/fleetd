@@ -35,6 +35,8 @@ type DeviceInfo struct {
 	Capabilities  []string          `json:"capabilities"`
 	Tags          map[string]string `json:"tags"`
 	FirstSeenTime time.Time         `json:"firstSeenTime"`
+	APIKey        string            `json:"apiKey,omitempty"`
+	Configured    bool              `json:"configured"`
 }
 
 type RuntimeState struct {
@@ -70,7 +72,7 @@ type Manager struct {
 func New(path string) (*Manager, error) {
 	// Ensure the directory exists
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create state directory: %w", err)
 	}
 
@@ -142,7 +144,7 @@ func (m *Manager) save() error {
 
 	// Ensure directory exists
 	dir := filepath.Dir(m.path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("failed to create state directory: %w", err)
 	}
 
@@ -158,7 +160,7 @@ func (m *Manager) save() error {
 
 	// Write to temporary file first
 	tmpPath := m.path + ".tmp"
-	if err := os.WriteFile(tmpPath, data, 0644); err != nil {
+	if err := os.WriteFile(tmpPath, data, 0o644); err != nil {
 		return fmt.Errorf("failed to write state: %w", err)
 	}
 

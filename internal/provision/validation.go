@@ -107,7 +107,7 @@ func ValidateImagePath(path string) error {
 	}
 
 	// Check file size (prevent accidentally using wrong files)
-	minSize := int64(100 * 1024 * 1024) // 100MB minimum
+	minSize := int64(100 * 1024 * 1024)       // 100MB minimum
 	maxSize := int64(64 * 1024 * 1024 * 1024) // 64GB maximum
 
 	if info.Size() < minSize {

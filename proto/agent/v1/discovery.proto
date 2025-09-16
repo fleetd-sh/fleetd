@@ -13,6 +13,9 @@ service DiscoveryService {
   
   // Configure device with fleet server details
   rpc ConfigureDevice(ConfigureDeviceRequest) returns (ConfigureDeviceResponse);
+  
+  // Update device configuration
+  rpc UpdateConfig(UpdateConfigRequest) returns (UpdateConfigResponse);
 }
 
 message SystemStats {
@@ -45,4 +48,13 @@ message ConfigureDeviceResponse {
   string message = 2;
   string device_id = 3;    // Server-assigned device ID
   string api_key = 4;      // API key for future authentication
+}
+
+message UpdateConfigRequest {
+  string config = 1;       // JSON configuration
+}
+
+message UpdateConfigResponse {
+  bool success = 1;
+  string message = 2;
 } 

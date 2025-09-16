@@ -14,6 +14,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type DeviceService struct {
@@ -45,12 +46,58 @@ func (s *DeviceService) Register(ctx context.Context, req *connect.Request[pb.Re
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to marshal capabilities: %v", err))
 	}
 
-	_, err = s.db.ExecContext(ctx,
-		`INSERT INTO device (id, name, type, version, api_key, metadata)
-		 VALUES (?, ?, ?, ?, ?, ?)`,
-		deviceID, req.Msg.Name, req.Msg.Type, req.Msg.Version, apiKey, string(metadata))
+	// Marshal system info if provided
+	var systemInfoJSON string
+	if req.Msg.SystemInfo != nil {
+		systemInfoBytes, err := json.Marshal(req.Msg.SystemInfo)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to marshal system info: %v", err))
+		}
+		systemInfoJSON = string(systemInfoBytes)
+	}
+
+	// Begin transaction for device registration
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to begin transaction: %v", err))
+	}
+	defer tx.Rollback()
+
+	// Insert device record
+	_, err = tx.ExecContext(ctx,
+		`INSERT INTO device (id, name, type, version, api_key, metadata, system_info)
+		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		deviceID, req.Msg.Name, req.Msg.Type, req.Msg.Version, apiKey, string(metadata), systemInfoJSON)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert device: %v", err))
+	}
+
+	// If system info is provided, also insert into device_system_info table for history tracking
+	if req.Msg.SystemInfo != nil {
+		extraJSON, _ := json.Marshal(req.Msg.SystemInfo.Extra)
+		_, err = tx.ExecContext(ctx,
+			`INSERT INTO device_system_info (device_id, hostname, os, os_version, arch, cpu_model, cpu_cores, memory_total, storage_total, kernel_version, platform, extra)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			deviceID,
+			req.Msg.SystemInfo.Hostname,
+			req.Msg.SystemInfo.Os,
+			req.Msg.SystemInfo.OsVersion,
+			req.Msg.SystemInfo.Arch,
+			req.Msg.SystemInfo.CpuModel,
+			req.Msg.SystemInfo.CpuCores,
+			req.Msg.SystemInfo.MemoryTotal,
+			req.Msg.SystemInfo.StorageTotal,
+			req.Msg.SystemInfo.KernelVersion,
+			req.Msg.SystemInfo.Platform,
+			string(extraJSON))
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to insert system info: %v", err))
+		}
+	}
+
+	// Commit transaction
+	if err = tx.Commit(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to commit transaction: %v", err))
 	}
 
 	return connect.NewResponse(&pb.RegisterResponse{
@@ -109,21 +156,64 @@ func (s *DeviceService) ReportStatus(ctx context.Context, req *connect.Request[p
 }
 
 func (s *DeviceService) GetDevice(ctx context.Context, req *connect.Request[pb.GetDeviceRequest]) (*connect.Response[pb.GetDeviceResponse], error) {
-	row := s.db.QueryRowContext(ctx, "SELECT id, name, type, version, metadata, last_seen FROM device WHERE id = ?", req.Msg.DeviceId)
+	row := s.db.QueryRowContext(ctx,
+		"SELECT id, name, type, version, metadata, last_seen, system_info FROM device WHERE id = ?",
+		req.Msg.DeviceId)
 	if err := row.Err(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get device: %v", err))
 	}
 
 	var device pb.Device
-	if err := row.Scan(&device.Id, &device.Name, &device.Type, &device.Version, &device.Metadata, &device.LastSeen); err != nil {
+	var metadataJSON sql.NullString
+	var systemInfoJSON sql.NullString
+	var lastSeen sql.NullTime
+	if err := row.Scan(&device.Id, &device.Name, &device.Type, &device.Version, &metadataJSON, &lastSeen, &systemInfoJSON); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("device not found"))
+		}
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to scan device: %v", err))
+	}
+
+	// Handle last_seen timestamp
+	if lastSeen.Valid {
+		device.LastSeen = timestamppb.New(lastSeen.Time)
+	}
+
+	// Unmarshal metadata if present
+	if metadataJSON.Valid && metadataJSON.String != "" {
+		var metadata map[string]string
+		if err := json.Unmarshal([]byte(metadataJSON.String), &metadata); err == nil {
+			device.Metadata = metadata
+		}
+	}
+
+	// Unmarshal system info if present
+	if systemInfoJSON.Valid && systemInfoJSON.String != "" {
+		var sysInfo pb.SystemInfo
+		if err := json.Unmarshal([]byte(systemInfoJSON.String), &sysInfo); err == nil {
+			device.SystemInfo = &sysInfo
+		}
 	}
 
 	return connect.NewResponse(&pb.GetDeviceResponse{Device: &device}), nil
 }
 
 func (s *DeviceService) ListDevices(ctx context.Context, req *connect.Request[pb.ListDevicesRequest]) (*connect.Response[pb.ListDevicesResponse], error) {
-	rows, err := s.db.QueryContext(ctx, "SELECT id, name, type, version, metadata, last_seen FROM device")
+	// Build query with optional filters
+	query := "SELECT id, name, type, version, metadata, last_seen, system_info FROM device WHERE 1=1"
+	args := []any{}
+
+	if req.Msg.Type != "" {
+		query += " AND type = ?"
+		args = append(args, req.Msg.Type)
+	}
+
+	if req.Msg.Status != "" {
+		query += " AND status = ?"
+		args = append(args, req.Msg.Status)
+	}
+
+	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to list devices: %v", err))
 	}
@@ -132,9 +222,34 @@ func (s *DeviceService) ListDevices(ctx context.Context, req *connect.Request[pb
 	var devices []*pb.Device
 	for rows.Next() {
 		var device pb.Device
-		if err := rows.Scan(&device.Id, &device.Name, &device.Type, &device.Version, &device.Metadata, &device.LastSeen); err != nil {
+		var metadataJSON sql.NullString
+		var systemInfoJSON sql.NullString
+		var lastSeen sql.NullTime
+		if err := rows.Scan(&device.Id, &device.Name, &device.Type, &device.Version, &metadataJSON, &lastSeen, &systemInfoJSON); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to scan device: %v", err))
 		}
+
+		// Handle last_seen timestamp
+		if lastSeen.Valid {
+			device.LastSeen = timestamppb.New(lastSeen.Time)
+		}
+
+		// Unmarshal metadata if present
+		if metadataJSON.Valid && metadataJSON.String != "" {
+			var metadata map[string]string
+			if err := json.Unmarshal([]byte(metadataJSON.String), &metadata); err == nil {
+				device.Metadata = metadata
+			}
+		}
+
+		// Unmarshal system info if present
+		if systemInfoJSON.Valid && systemInfoJSON.String != "" {
+			var sysInfo pb.SystemInfo
+			if err := json.Unmarshal([]byte(systemInfoJSON.String), &sysInfo); err == nil {
+				device.SystemInfo = &sysInfo
+			}
+		}
+
 		devices = append(devices, &device)
 	}
 
@@ -155,5 +270,7 @@ func (s *DeviceService) DeleteDevice(ctx context.Context, req *connect.Request[p
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("device not found"))
 	}
 
-	return connect.NewResponse(&pb.DeleteDeviceResponse{}), nil
+	return connect.NewResponse(&pb.DeleteDeviceResponse{
+		Success: true,
+	}), nil
 }

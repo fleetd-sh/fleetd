@@ -371,17 +371,28 @@ func (s *UpdateService) ReportUpdateStatus(ctx context.Context, req *connect.Req
 	}
 
 	// Update campaign statistics
-	var updateSQL string
 	switch req.Msg.Status {
 	case pb.DeviceUpdateStatus_DEVICE_UPDATE_STATUS_INSTALLED:
 		if previousStatus != pb.DeviceUpdateStatus_DEVICE_UPDATE_STATUS_INSTALLED {
-			updateSQL = "updated_devices = updated_devices + 1"
+			// Update successful devices counter
+			_, err = tx.ExecContext(ctx,
+				"UPDATE update_campaign SET updated_devices = updated_devices + 1, updated_at = datetime('now') WHERE id = ?",
+				req.Msg.CampaignId)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update campaign stats: %v", err))
+			}
 		}
 	case pb.DeviceUpdateStatus_DEVICE_UPDATE_STATUS_FAILED,
 		pb.DeviceUpdateStatus_DEVICE_UPDATE_STATUS_ROLLED_BACK:
 		if previousStatus != pb.DeviceUpdateStatus_DEVICE_UPDATE_STATUS_FAILED &&
 			previousStatus != pb.DeviceUpdateStatus_DEVICE_UPDATE_STATUS_ROLLED_BACK {
-			updateSQL = "failed_devices = failed_devices + 1"
+			// Update failed devices counter
+			_, err = tx.ExecContext(ctx,
+				"UPDATE update_campaign SET failed_devices = failed_devices + 1, updated_at = datetime('now') WHERE id = ?",
+				req.Msg.CampaignId)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update campaign stats: %v", err))
+			}
 		}
 	default:
 		// No campaign stats update needed
@@ -391,16 +402,6 @@ func (s *UpdateService) ReportUpdateStatus(ctx context.Context, req *connect.Req
 		return &connect.Response[pb.ReportUpdateStatusResponse]{
 			Msg: &pb.ReportUpdateStatusResponse{Success: true},
 		}, nil
-	}
-
-	if updateSQL != "" {
-		// Update counter first
-		_, err = tx.ExecContext(ctx,
-			fmt.Sprintf("UPDATE update_campaign SET %s, updated_at = datetime('now') WHERE id = ?", updateSQL),
-			req.Msg.CampaignId)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to update campaign stats: %v", err))
-		}
 	}
 
 	// Check if campaign is completed

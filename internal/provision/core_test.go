@@ -233,7 +233,7 @@ func TestVerifyProvisioning(t *testing.T) {
 
 	// Test 2: Write minimal Raspberry Pi OS files
 	cmdlineFile := filepath.Join(tempDir, "cmdline.txt")
-	if err := os.WriteFile(cmdlineFile, []byte("test cmdline config content that is long enough"), 0644); err != nil {
+	if err := os.WriteFile(cmdlineFile, []byte("test cmdline config content that is long enough"), 0o644); err != nil {
 		t.Fatalf("Failed to write cmdline.txt: %v", err)
 	}
 
@@ -247,7 +247,7 @@ func TestVerifyProvisioning(t *testing.T) {
 	fleetdFile := filepath.Join(tempDir, "fleetd")
 	// Create a file larger than 1MB
 	largeContent := make([]byte, 1024*1024+1)
-	if err := os.WriteFile(fleetdFile, largeContent, 0755); err != nil {
+	if err := os.WriteFile(fleetdFile, largeContent, 0o755); err != nil {
 		t.Fatalf("Failed to write fleetd: %v", err)
 	}
 
@@ -259,7 +259,7 @@ func TestVerifyProvisioning(t *testing.T) {
 
 	// Test 4: Test with corrupted fleetd (too small)
 	smallContent := []byte("too small")
-	if err := os.WriteFile(fleetdFile, smallContent, 0755); err != nil {
+	if err := os.WriteFile(fleetdFile, smallContent, 0o755); err != nil {
 		t.Fatalf("Failed to write small fleetd: %v", err)
 	}
 
@@ -292,12 +292,12 @@ func TestVerifyGenericProvisioning(t *testing.T) {
 
 	// Test 2: Add required files
 	sshFile := filepath.Join(tempDir, "ssh")
-	if err := os.WriteFile(sshFile, []byte(""), 0644); err != nil {
+	if err := os.WriteFile(sshFile, []byte(""), 0o644); err != nil {
 		t.Fatalf("Failed to write ssh file: %v", err)
 	}
 
 	userConfFile := filepath.Join(tempDir, "userconf.txt")
-	if err := os.WriteFile(userConfFile, []byte("pi:encryptedpasswordhash"), 0644); err != nil {
+	if err := os.WriteFile(userConfFile, []byte("pi:encryptedpasswordhash"), 0o644); err != nil {
 		t.Fatalf("Failed to write userconf.txt: %v", err)
 	}
 
@@ -328,7 +328,7 @@ network={
     psk="TestPassword"
     key_mgmt=WPA-PSK
 }`
-	if err := os.WriteFile(wpaFile, []byte(wpaContent), 0644); err != nil {
+	if err := os.WriteFile(wpaFile, []byte(wpaContent), 0o644); err != nil {
 		t.Fatalf("Failed to write wpa_supplicant.conf: %v", err)
 	}
 

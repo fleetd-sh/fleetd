@@ -10,11 +10,20 @@ tmp/
 .cursorrules
 .claude/
 
+# coverage
+**/*.cov
+
 # env
 .env*
 
 # closed-source
 platform/
 
+# Cloud/Proprietary features (to be extracted to separate repo later)
+/cloud/
+
 # Add this line if not already present
 test/e2e/testdata/fleetd
+
+# Wiki submodule (when added)
+#wiki/

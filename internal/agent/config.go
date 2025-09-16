@@ -11,6 +11,9 @@ type Config struct {
 	// DeviceID is the unique identifier for this device
 	DeviceID string
 
+	// DeviceName is the human-readable name for this device
+	DeviceName string
+
 	// ServerURL is the URL of the fleet management server
 	ServerURL string
 
@@ -63,6 +66,7 @@ func DefaultConfig() *Config {
 func ParseFlags() *Config {
 	cfg := DefaultConfig()
 
+	flag.StringVar(&cfg.DeviceName, "device-name", "", "Human-readable name for this device")
 	flag.StringVar(&cfg.StorageDir, "storage-dir", cfg.StorageDir, "Directory for storing agent data")
 	flag.StringVar(&cfg.ServerURL, "server-url", cfg.ServerURL, "URL of the fleet management server")
 	flag.BoolVar(&cfg.DisableMDNS, "disable-mdns", false, "Disable mDNS discovery")

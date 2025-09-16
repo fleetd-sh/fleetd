@@ -29,7 +29,7 @@ type BinaryService struct {
 
 func NewBinaryService(db *sql.DB, storagePath string) (*BinaryService, error) {
 	// Ensure storage directory exists
-	if err := os.MkdirAll(storagePath, 0755); err != nil {
+	if err := os.MkdirAll(storagePath, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create storage directory: %v", err)
 	}
 	return &BinaryService{db: db, storagePath: storagePath}, nil
