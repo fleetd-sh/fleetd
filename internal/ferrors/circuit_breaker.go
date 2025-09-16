@@ -248,13 +248,20 @@ func (cb *CircuitBreaker) onFailure(state CircuitBreakerState, err error) {
 	cb.failureCount.Add(1)
 	cb.lastFailureTime.Store(time.Now().UnixNano())
 
-	if cb.config.ShouldTrip != nil && !cb.config.ShouldTrip(err) {
+	// Check if this error should trip the circuit
+	shouldTrip := true
+	if cb.config.ShouldTrip != nil {
+		shouldTrip = cb.config.ShouldTrip(err)
+	}
+
+	if !shouldTrip {
 		return
 	}
 
 	switch state {
 	case StateClosed:
-		if cb.failures.Add(1) >= cb.config.MaxFailures {
+		newFailures := cb.failures.Add(1)
+		if newFailures >= cb.config.MaxFailures {
 			cb.mu.Lock()
 			defer cb.mu.Unlock()
 			cb.setState(StateOpen)
