@@ -116,16 +116,16 @@ func (p *CustomImageProvider) genericPostWriteSetup(bootPath, rootPath string, c
 	if config.Security.EnableSSH {
 		// Try boot partition method
 		sshFile := filepath.Join(bootPath, "ssh")
-		os.WriteFile(sshFile, []byte(""), 0644)
+		os.WriteFile(sshFile, []byte(""), 0o644)
 
 		// Try to add SSH key if provided
 		if config.Security.SSHKey != "" {
 			// Try common SSH key locations
 			for _, user := range []string{"root", "pi", "ubuntu"} {
 				sshDir := filepath.Join(rootPath, "home", user, ".ssh")
-				if err := os.MkdirAll(sshDir, 0700); err == nil {
+				if err := os.MkdirAll(sshDir, 0o700); err == nil {
 					authKeysPath := filepath.Join(sshDir, "authorized_keys")
-					os.WriteFile(authKeysPath, []byte(config.Security.SSHKey), 0600)
+					os.WriteFile(authKeysPath, []byte(config.Security.SSHKey), 0o600)
 				}
 			}
 		}
@@ -192,7 +192,7 @@ server:
 	}
 
 	configPath := filepath.Join(bootPath, "fleetd.yaml")
-	return os.WriteFile(configPath, []byte(fleetdYAML), 0644)
+	return os.WriteFile(configPath, []byte(fleetdYAML), 0o644)
 }
 
 // calculateSHA256 calculates the SHA256 checksum of a file

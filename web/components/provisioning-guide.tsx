@@ -71,7 +71,7 @@ export function ProvisioningGuide() {
   }
 
   const generateCommand = (): string => {
-    let cmd = ['fleet provision']
+    const cmd = ['fleet provision']
 
     // Required parameters
     cmd.push(`--device ${config.devicePath}`)

@@ -40,6 +40,9 @@ const (
 	// DiscoveryServiceConfigureDeviceProcedure is the fully-qualified name of the DiscoveryService's
 	// ConfigureDevice RPC.
 	DiscoveryServiceConfigureDeviceProcedure = "/agent.v1.DiscoveryService/ConfigureDevice"
+	// DiscoveryServiceUpdateConfigProcedure is the fully-qualified name of the DiscoveryService's
+	// UpdateConfig RPC.
+	DiscoveryServiceUpdateConfigProcedure = "/agent.v1.DiscoveryService/UpdateConfig"
 )
 
 // DiscoveryServiceClient is a client for the agent.v1.DiscoveryService service.
@@ -48,6 +51,8 @@ type DiscoveryServiceClient interface {
 	GetDeviceInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetDeviceInfoResponse], error)
 	// Configure device with fleet server details
 	ConfigureDevice(context.Context, *connect.Request[v1.ConfigureDeviceRequest]) (*connect.Response[v1.ConfigureDeviceResponse], error)
+	// Update device configuration
+	UpdateConfig(context.Context, *connect.Request[v1.UpdateConfigRequest]) (*connect.Response[v1.UpdateConfigResponse], error)
 }
 
 // NewDiscoveryServiceClient constructs a client for the agent.v1.DiscoveryService service. By
@@ -73,6 +78,12 @@ func NewDiscoveryServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(discoveryServiceMethods.ByName("ConfigureDevice")),
 			connect.WithClientOptions(opts...),
 		),
+		updateConfig: connect.NewClient[v1.UpdateConfigRequest, v1.UpdateConfigResponse](
+			httpClient,
+			baseURL+DiscoveryServiceUpdateConfigProcedure,
+			connect.WithSchema(discoveryServiceMethods.ByName("UpdateConfig")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -80,6 +91,7 @@ func NewDiscoveryServiceClient(httpClient connect.HTTPClient, baseURL string, op
 type discoveryServiceClient struct {
 	getDeviceInfo   *connect.Client[emptypb.Empty, v1.GetDeviceInfoResponse]
 	configureDevice *connect.Client[v1.ConfigureDeviceRequest, v1.ConfigureDeviceResponse]
+	updateConfig    *connect.Client[v1.UpdateConfigRequest, v1.UpdateConfigResponse]
 }
 
 // GetDeviceInfo calls agent.v1.DiscoveryService.GetDeviceInfo.
@@ -92,12 +104,19 @@ func (c *discoveryServiceClient) ConfigureDevice(ctx context.Context, req *conne
 	return c.configureDevice.CallUnary(ctx, req)
 }
 
+// UpdateConfig calls agent.v1.DiscoveryService.UpdateConfig.
+func (c *discoveryServiceClient) UpdateConfig(ctx context.Context, req *connect.Request[v1.UpdateConfigRequest]) (*connect.Response[v1.UpdateConfigResponse], error) {
+	return c.updateConfig.CallUnary(ctx, req)
+}
+
 // DiscoveryServiceHandler is an implementation of the agent.v1.DiscoveryService service.
 type DiscoveryServiceHandler interface {
 	// Get basic device information before registration
 	GetDeviceInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetDeviceInfoResponse], error)
 	// Configure device with fleet server details
 	ConfigureDevice(context.Context, *connect.Request[v1.ConfigureDeviceRequest]) (*connect.Response[v1.ConfigureDeviceResponse], error)
+	// Update device configuration
+	UpdateConfig(context.Context, *connect.Request[v1.UpdateConfigRequest]) (*connect.Response[v1.UpdateConfigResponse], error)
 }
 
 // NewDiscoveryServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -119,12 +138,20 @@ func NewDiscoveryServiceHandler(svc DiscoveryServiceHandler, opts ...connect.Han
 		connect.WithSchema(discoveryServiceMethods.ByName("ConfigureDevice")),
 		connect.WithHandlerOptions(opts...),
 	)
+	discoveryServiceUpdateConfigHandler := connect.NewUnaryHandler(
+		DiscoveryServiceUpdateConfigProcedure,
+		svc.UpdateConfig,
+		connect.WithSchema(discoveryServiceMethods.ByName("UpdateConfig")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/agent.v1.DiscoveryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DiscoveryServiceGetDeviceInfoProcedure:
 			discoveryServiceGetDeviceInfoHandler.ServeHTTP(w, r)
 		case DiscoveryServiceConfigureDeviceProcedure:
 			discoveryServiceConfigureDeviceHandler.ServeHTTP(w, r)
+		case DiscoveryServiceUpdateConfigProcedure:
+			discoveryServiceUpdateConfigHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -140,4 +167,8 @@ func (UnimplementedDiscoveryServiceHandler) GetDeviceInfo(context.Context, *conn
 
 func (UnimplementedDiscoveryServiceHandler) ConfigureDevice(context.Context, *connect.Request[v1.ConfigureDeviceRequest]) (*connect.Response[v1.ConfigureDeviceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("agent.v1.DiscoveryService.ConfigureDevice is not implemented"))
+}
+
+func (UnimplementedDiscoveryServiceHandler) UpdateConfig(context.Context, *connect.Request[v1.UpdateConfigRequest]) (*connect.Response[v1.UpdateConfigResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("agent.v1.DiscoveryService.UpdateConfig is not implemented"))
 }

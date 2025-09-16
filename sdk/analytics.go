@@ -52,10 +52,10 @@ func (c *AnalyticsClient) QueryMetrics(ctx context.Context, opts QueryMetricsOpt
 // GetDeviceMetrics retrieves metrics for a specific device
 func (c *AnalyticsClient) GetDeviceMetrics(ctx context.Context, opts GetDeviceMetricsOptions) (*controlpb.GetDeviceMetricsResponse, error) {
 	req := connect.NewRequest(&controlpb.GetDeviceMetricsRequest{
-		DeviceId:           opts.DeviceID,
-		MetricNames:        opts.MetricNames,
-		TimeRange:          opts.TimeRange,
-		ResolutionSeconds:  opts.ResolutionSeconds,
+		DeviceId:          opts.DeviceID,
+		MetricNames:       opts.MetricNames,
+		TimeRange:         opts.TimeRange,
+		ResolutionSeconds: opts.ResolutionSeconds,
 	})
 
 	resp, err := c.client.GetDeviceMetrics(ctx, req)
@@ -69,12 +69,12 @@ func (c *AnalyticsClient) GetDeviceMetrics(ctx context.Context, opts GetDeviceMe
 // GetAggregatedMetrics retrieves aggregated metrics
 func (c *AnalyticsClient) GetAggregatedMetrics(ctx context.Context, opts GetAggregatedMetricsOptions) (*controlpb.GetAggregatedMetricsResponse, error) {
 	req := connect.NewRequest(&controlpb.GetAggregatedMetricsRequest{
-		DeviceIds:          opts.DeviceIDs,
-		GroupIds:           opts.GroupIDs,
-		MetricNames:        opts.MetricNames,
-		TimeRange:          opts.TimeRange,
-		Aggregation:        opts.Aggregation,
-		BucketSizeSeconds:  opts.BucketSizeSeconds,
+		DeviceIds:         opts.DeviceIDs,
+		GroupIds:          opts.GroupIDs,
+		MetricNames:       opts.MetricNames,
+		TimeRange:         opts.TimeRange,
+		Aggregation:       opts.Aggregation,
+		BucketSizeSeconds: opts.BucketSizeSeconds,
 	})
 
 	resp, err := c.client.GetAggregatedMetrics(ctx, req)
@@ -126,13 +126,13 @@ func (c *AnalyticsClient) GetAlerts(ctx context.Context, opts GetAlertsOptions) 
 // CreateAlertRule creates an alert rule
 func (c *AnalyticsClient) CreateAlertRule(ctx context.Context, opts CreateAlertRuleOptions) (*controlpb.CreateAlertRuleResponse, error) {
 	req := connect.NewRequest(&controlpb.CreateAlertRuleRequest{
-		Name:                  opts.Name,
-		Description:           opts.Description,
-		Condition:             opts.Condition,
-		Severity:              opts.Severity,
-		DurationSeconds:       opts.DurationSeconds,
-		NotificationChannels:  opts.NotificationChannels,
-		Labels:                opts.Labels,
+		Name:                 opts.Name,
+		Description:          opts.Description,
+		Condition:            opts.Condition,
+		Severity:             opts.Severity,
+		DurationSeconds:      opts.DurationSeconds,
+		NotificationChannels: opts.NotificationChannels,
+		Labels:               opts.Labels,
 	})
 
 	resp, err := c.client.CreateAlertRule(ctx, req)

@@ -35,7 +35,7 @@ func New(basePath string) (*Updater, error) {
 	}
 
 	// Create update directories
-	if err := os.MkdirAll(basePath, 0755); err != nil {
+	if err := os.MkdirAll(basePath, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create update directory: %w", err)
 	}
 
@@ -54,7 +54,7 @@ func (u *Updater) Update(ctx context.Context, binary io.Reader, info UpdateInfo)
 	}
 
 	// Create staging file
-	staging, err := os.OpenFile(u.stagingPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+	staging, err := os.OpenFile(u.stagingPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o755)
 	if err != nil {
 		return fmt.Errorf("failed to create staging file: %w", err)
 	}
@@ -96,7 +96,7 @@ func (u *Updater) verifyWriteAccess() error {
 
 	for _, path := range paths {
 		dir := filepath.Dir(path)
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return fmt.Errorf("cannot create directory %s: %w", dir, err)
 		}
 	}

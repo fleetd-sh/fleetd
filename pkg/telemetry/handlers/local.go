@@ -15,7 +15,7 @@ type LocalFile struct {
 }
 
 func NewLocalFile(path string) (*LocalFile, error) {
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return nil, err
 	}
 	return &LocalFile{path: path}, nil
@@ -40,5 +40,5 @@ func (l *LocalFile) Handle(ctx context.Context, metrics []telemetry.Metric) erro
 		return err
 	}
 
-	return os.WriteFile(l.path, data, 0644)
+	return os.WriteFile(l.path, data, 0o644)
 }

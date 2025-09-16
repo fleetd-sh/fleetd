@@ -5,11 +5,12 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"log/slog"
-	"net"
+	stdnet "net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -29,7 +30,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/host"
+	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 // Agent represents the main fleetd device agent
@@ -50,7 +54,7 @@ type Agent struct {
 	config     *Configuration
 	ready      chan struct{}
 	server     *http.Server
-	listener   net.Listener
+	listener   stdnet.Listener
 }
 
 // New creates a new Agent instance
@@ -88,7 +92,7 @@ func (a *Agent) Start() error {
 	}
 
 	// Ensure directories exist
-	if err := os.MkdirAll(filepath.Join(a.cfg.StorageDir, "state"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(a.cfg.StorageDir, "state"), 0o755); err != nil {
 		return fmt.Errorf("failed to create state directory: %w", err)
 	}
 
@@ -120,6 +124,52 @@ func (a *Agent) Start() error {
 			}
 		}
 		s.LastStartTime = time.Now()
+
+		// Check if we need to register with fleet server
+		if a.cfg.ServerURL != "" && s.DeviceInfo.APIKey == "" {
+			slog.Info("Registering device with fleet server", "server", a.cfg.ServerURL)
+			requestID := fmt.Sprintf("reg-%s-%d", a.cfg.DeviceID[:8], time.Now().Unix())
+			regClient := NewRegistrationClient(a.cfg.ServerURL, requestID)
+
+			// Use hostname as device name if not configured
+			deviceName := a.cfg.DeviceName
+			if deviceName == "" {
+				if hostname, err := os.Hostname(); err == nil {
+					deviceName = hostname
+				} else {
+					deviceName = "fleetd-" + a.cfg.DeviceID[:8]
+				}
+			}
+
+			regResp, err := regClient.RegisterDevice(
+				context.Background(),
+				deviceName,
+				runtime.GOARCH,
+				"0.1.0", // TODO: Get from build info
+			)
+			if err != nil {
+				slog.Error("Failed to register device", "error", err)
+				// Continue without registration - device can work offline
+			} else {
+				// Update state with registration info
+				s.DeviceInfo.ID = regResp.DeviceId
+				s.DeviceInfo.APIKey = regResp.ApiKey
+				s.DeviceInfo.Configured = true
+
+				// Update agent's device info
+				a.deviceInfo.DeviceID = regResp.DeviceId
+				a.deviceInfo.APIKey = regResp.ApiKey
+				a.deviceInfo.Configured = true
+
+				slog.Info("Device registered successfully", "device_id", regResp.DeviceId)
+			}
+		} else if s.DeviceInfo.APIKey != "" {
+			// Restore device info from state
+			a.deviceInfo.DeviceID = s.DeviceInfo.ID
+			a.deviceInfo.APIKey = s.DeviceInfo.APIKey
+			a.deviceInfo.Configured = s.DeviceInfo.Configured
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -154,14 +204,14 @@ func (a *Agent) Start() error {
 	mux.Handle(path, handler)
 
 	// Create listener - bind to all interfaces
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", a.cfg.RPCPort))
+	listener, err := stdnet.Listen("tcp", fmt.Sprintf(":%d", a.cfg.RPCPort))
 	if err != nil {
 		return fmt.Errorf("failed to create listener: %w", err)
 	}
 	a.listener = listener
 
 	// Get the actual port if it was dynamically allocated
-	actualPort := listener.Addr().(*net.TCPAddr).Port
+	actualPort := listener.Addr().(*stdnet.TCPAddr).Port
 
 	// Update discovery with actual port and start it if not disabled
 	if !a.cfg.DisableMDNS {
@@ -460,6 +510,239 @@ type SystemStats struct {
 	DiskUsed    uint64
 }
 
+// CollectSystemInfo gathers comprehensive system information for device registration
+func CollectSystemInfo() (*SystemInfo, error) {
+	info := &SystemInfo{
+		Extra: make(map[string]string),
+	}
+
+	// Get host info
+	hostInfo, err := host.Info()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get host info: %w", err)
+	}
+	info.Hostname = hostInfo.Hostname
+	info.OS = hostInfo.OS
+	info.Platform = hostInfo.Platform
+	info.OSVersion = hostInfo.PlatformVersion
+	info.KernelVersion = hostInfo.KernelVersion
+	info.Arch = hostInfo.KernelArch
+
+	// Get CPU info
+	cpuInfo, err := cpu.Info()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get CPU info: %w", err)
+	}
+	if len(cpuInfo) > 0 {
+		info.CPUModel = cpuInfo[0].ModelName
+		info.CPUCores = int32(cpuInfo[0].Cores)
+		// Add CPU vendor as extra info
+		info.Extra["cpu_vendor"] = cpuInfo[0].VendorID
+		info.Extra["cpu_family"] = cpuInfo[0].Family
+	}
+
+	// Get logical CPU count
+	logicalCores, err := cpu.Counts(true)
+	if err == nil {
+		info.Extra["cpu_logical_cores"] = fmt.Sprintf("%d", logicalCores)
+	}
+
+	// Get memory info
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get memory info: %w", err)
+	}
+	info.MemoryTotal = memInfo.Total
+
+	// Get disk info
+	diskInfo, err := disk.Usage("/")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get disk info: %w", err)
+	}
+	info.StorageTotal = diskInfo.Total
+
+	// Get network interfaces
+	interfaces, err := stdnet.Interfaces()
+	if err == nil {
+		for _, iface := range interfaces {
+			netIface := NetworkInterface{
+				Name:       iface.Name,
+				MACAddress: iface.HardwareAddr.String(),
+				IsUp:       iface.Flags&stdnet.FlagUp != 0,
+				IsLoopback: iface.Flags&stdnet.FlagLoopback != 0,
+				MTU:        uint64(iface.MTU),
+			}
+
+			// Get IP addresses for this interface
+			addrs, err := iface.Addrs()
+			if err == nil {
+				for _, addr := range addrs {
+					netIface.IPAddresses = append(netIface.IPAddresses, addr.String())
+				}
+			}
+
+			info.NetworkInterfaces = append(info.NetworkInterfaces, netIface)
+		}
+	}
+
+	// Get timezone
+	info.Timezone = time.Local.String()
+
+	// Set agent version (TODO: Get from build info)
+	info.AgentVersion = "0.1.0"
+
+	// Get system load averages
+	loadAvg, err := load.Avg()
+	if err == nil {
+		info.LoadAverage = LoadAverage{
+			Load1:  loadAvg.Load1,
+			Load5:  loadAvg.Load5,
+			Load15: loadAvg.Load15,
+		}
+	}
+
+	// Get process count
+	processes, err := process.Processes()
+	if err == nil {
+		info.ProcessCount = int32(len(processes))
+	}
+
+	// Try to get BIOS info from hostInfo
+	// Note: gopsutil doesn't directly provide BIOS info on all platforms
+	// This would need platform-specific implementation for full support
+	// For now, we'll extract what we can from host info
+	if runtime.GOOS == "linux" {
+		// On Linux, try to read from DMI
+		if vendor, err := os.ReadFile("/sys/class/dmi/id/bios_vendor"); err == nil {
+			info.BiosInfo.Vendor = string(bytes.TrimSpace(vendor))
+		}
+		if version, err := os.ReadFile("/sys/class/dmi/id/bios_version"); err == nil {
+			info.BiosInfo.Version = string(bytes.TrimSpace(version))
+		}
+		if date, err := os.ReadFile("/sys/class/dmi/id/bios_date"); err == nil {
+			info.BiosInfo.ReleaseDate = string(bytes.TrimSpace(date))
+		}
+
+		// Get product info
+		if product, err := os.ReadFile("/sys/class/dmi/id/product_name"); err == nil {
+			info.ProductName = string(bytes.TrimSpace(product))
+		}
+		if vendor, err := os.ReadFile("/sys/class/dmi/id/sys_vendor"); err == nil {
+			info.Manufacturer = string(bytes.TrimSpace(vendor))
+		}
+		if serial, err := os.ReadFile("/sys/class/dmi/id/product_serial"); err == nil {
+			info.SerialNumber = string(bytes.TrimSpace(serial))
+		}
+	} else if runtime.GOOS == "darwin" {
+		// On macOS, we can use system_profiler but it's slow
+		// For now, use what's available from host info
+		info.Manufacturer = "Apple Inc."
+		// Serial number would require system_profiler SPHardwareDataType
+	}
+
+	// Add additional useful info
+	info.Extra["boot_time"] = fmt.Sprintf("%d", hostInfo.BootTime)
+	info.Extra["uptime"] = fmt.Sprintf("%d", hostInfo.Uptime)
+	info.Extra["virtualization_system"] = hostInfo.VirtualizationSystem
+	info.Extra["virtualization_role"] = hostInfo.VirtualizationRole
+	info.Extra["host_id"] = hostInfo.HostID // Unique machine ID
+
+	// Add Go runtime info
+	info.Extra["go_version"] = runtime.Version()
+	info.Extra["go_arch"] = runtime.GOARCH
+	info.Extra["go_os"] = runtime.GOOS
+
+	// Add number of CPUs
+	info.Extra["num_cpu"] = fmt.Sprintf("%d", runtime.NumCPU())
+
+	return info, nil
+}
+
+// SystemInfo represents comprehensive system information
+type SystemInfo struct {
+	Hostname      string
+	OS            string
+	OSVersion     string
+	Arch          string
+	CPUModel      string
+	CPUCores      int32
+	MemoryTotal   uint64
+	StorageTotal  uint64
+	KernelVersion string
+	Platform      string
+	Extra         map[string]string
+
+	// Network information
+	NetworkInterfaces []NetworkInterface
+
+	// System identification
+	Timezone     string
+	AgentVersion string
+	SerialNumber string
+	ProductName  string
+	Manufacturer string
+
+	// Runtime metrics
+	LoadAverage  LoadAverage
+	ProcessCount int32
+
+	// BIOS/Firmware
+	BiosInfo BiosInfo
+}
+
+type NetworkInterface struct {
+	Name        string
+	MACAddress  string
+	IPAddresses []string
+	IsUp        bool
+	IsLoopback  bool
+	MTU         uint64
+}
+
+type LoadAverage struct {
+	Load1  float64
+	Load5  float64
+	Load15 float64
+}
+
+type BiosInfo struct {
+	Vendor      string
+	Version     string
+	ReleaseDate string
+}
+
+// GetSystemStats collects current system statistics
+func GetSystemStats() (*SystemStats, error) {
+	stats := &SystemStats{}
+
+	// Get CPU usage
+	cpuPercent, err := cpu.Percent(time.Second, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get CPU usage: %w", err)
+	}
+	if len(cpuPercent) > 0 {
+		stats.CPUUsage = cpuPercent[0]
+	}
+
+	// Get memory stats
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get memory stats: %w", err)
+	}
+	stats.MemoryTotal = memInfo.Total
+	stats.MemoryUsed = memInfo.Used
+
+	// Get disk stats
+	diskInfo, err := disk.Usage("/")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get disk stats: %w", err)
+	}
+	stats.DiskTotal = diskInfo.Total
+	stats.DiskUsed = diskInfo.Used
+
+	return stats, nil
+}
+
 type Configuration struct {
 	DeviceName  string
 	APIEndpoint string
@@ -498,6 +781,38 @@ func (a *Agent) Configure(cfg Configuration) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	return a.configure(cfg)
+}
+
+// UpdateConfigFromJSON updates configuration from a JSON string
+func (a *Agent) UpdateConfigFromJSON(configJSON string) error {
+	var config map[string]any
+	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
+		return fmt.Errorf("failed to parse config JSON: %w", err)
+	}
+
+	// Build configuration from JSON
+	cfg := Configuration{}
+
+	if serverURL, ok := config["server_url"].(string); ok {
+		cfg.APIEndpoint = serverURL
+		a.cfg.ServerURL = serverURL
+	}
+
+	if deviceName, ok := config["device_name"].(string); ok {
+		cfg.DeviceName = deviceName
+	}
+
+	if apiKey, ok := config["api_key"].(string); ok {
+		// Store API key if provided
+		a.deviceInfo.APIKey = apiKey
+	}
+
+	// Apply configuration if we have at least a server URL
+	if cfg.APIEndpoint != "" {
+		return a.Configure(cfg)
+	}
+
+	return nil
 }
 
 // configure is the internal implementation of configuration updates

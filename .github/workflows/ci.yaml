@@ -27,8 +27,11 @@ jobs:
 
     - name: Check formatting
       run: |
-        if [ -n "$(go fmt ./...)" ]; then
-          echo "Code is not formatted. Please run 'go fmt ./...'"
+        UNFORMATTED=$(go fmt ./...)
+        if [ -n "$UNFORMATTED" ]; then
+          echo "The following files are not formatted:"
+          echo "$UNFORMATTED"
+          echo "Please run 'go fmt ./...'"
           exit 1
         fi
 

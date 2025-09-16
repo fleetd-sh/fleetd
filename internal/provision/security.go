@@ -32,47 +32,7 @@ var (
 
 	// Hostname validation regex (RFC 1123)
 	hostnameRegex = regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$`)
-
-	// Device path validation patterns
-	validDevicePaths = []string{
-		`^/dev/disk\d+$`,         // macOS
-		`^/dev/sd[a-z]+$`,        // Linux SCSI/SATA
-		`^/dev/mmcblk\d+$`,       // Linux MMC/SD
-		`^/dev/tty(USB|ACM)\d+$`, // Serial USB
-		`^/dev/cu\..+$`,          // macOS serial
-	}
 )
-
-// ValidateDevicePath validates a device path for safety
-func ValidateDevicePath(path string) error {
-	if path == "" {
-		return fmt.Errorf("%w: empty device path", ErrInvalidInput)
-	}
-
-	if len(path) > MaxPathLength {
-		return fmt.Errorf("%w: device path too long", ErrInvalidInput)
-	}
-
-	// Check for path traversal attempts
-	if strings.Contains(path, "..") {
-		return fmt.Errorf("%w: invalid device path", ErrPathTraversal)
-	}
-
-	// Validate against known device patterns
-	valid := false
-	for _, pattern := range validDevicePaths {
-		if matched, _ := regexp.MatchString(pattern, path); matched {
-			valid = true
-			break
-		}
-	}
-
-	if !valid {
-		return fmt.Errorf("%w: unrecognized device path pattern: %s", ErrInvalidInput, path)
-	}
-
-	return nil
-}
 
 // ValidateHostname validates a hostname according to RFC 1123
 func ValidateHostname(hostname string) error {

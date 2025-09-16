@@ -151,7 +151,10 @@ func (p *CoreProvisioner) ProvisionWithImage(ctx context.Context, osType, arch s
 	}
 
 	// Create SD card writer
-	writer := NewSDCardWriter(p.config.DevicePath, dryRun)
+	writer, err := NewSDCardWriter(p.config.DevicePath, dryRun)
+	if err != nil {
+		return fmt.Errorf("failed to create writer: %w", err)
+	}
 
 	// Write image to SD card
 	if progress != nil {
@@ -200,7 +203,7 @@ func (p *CoreProvisioner) ProvisionWithImage(ctx context.Context, osType, arch s
 
 	for path, content := range pluginFiles {
 		fullPath := filepath.Join(bootPath, path)
-		if err := os.WriteFile(fullPath, content, 0644); err != nil {
+		if err := os.WriteFile(fullPath, content, 0o644); err != nil {
 			cleanup()
 			return fmt.Errorf("failed to write plugin file %s: %w", path, err)
 		}
@@ -298,7 +301,10 @@ func (p *CoreProvisioner) ProvisionWithCustomImage(ctx context.Context, imageURL
 	}
 
 	// Create SD card writer
-	writer := NewSDCardWriter(p.config.DevicePath, dryRun)
+	writer, err := NewSDCardWriter(p.config.DevicePath, dryRun)
+	if err != nil {
+		return fmt.Errorf("failed to create writer: %w", err)
+	}
 
 	// Write image to SD card
 	if progress != nil {
@@ -347,7 +353,7 @@ func (p *CoreProvisioner) ProvisionWithCustomImage(ctx context.Context, imageURL
 
 	for path, content := range pluginFiles {
 		fullPath := filepath.Join(bootPath, path)
-		if err := os.WriteFile(fullPath, content, 0644); err != nil {
+		if err := os.WriteFile(fullPath, content, 0o644); err != nil {
 			cleanup()
 			return fmt.Errorf("failed to write plugin file %s: %w", path, err)
 		}
@@ -509,7 +515,10 @@ func (p *CoreProvisioner) ConfigureOnly(ctx context.Context, osType string, dryR
 	}
 
 	// Create SD card writer (no image writing)
-	writer := NewSDCardWriter(p.config.DevicePath, dryRun)
+	writer, err := NewSDCardWriter(p.config.DevicePath, dryRun)
+	if err != nil {
+		return fmt.Errorf("failed to create writer: %w", err)
+	}
 
 	// Mount existing partitions
 	if progress != nil {
@@ -544,7 +553,7 @@ func (p *CoreProvisioner) ConfigureOnly(ctx context.Context, osType string, dryR
 
 	for path, content := range pluginFiles {
 		fullPath := filepath.Join(bootPath, path)
-		if err := os.WriteFile(fullPath, content, 0644); err != nil {
+		if err := os.WriteFile(fullPath, content, 0o644); err != nil {
 			cleanup()
 			return fmt.Errorf("failed to write plugin file %s: %w", path, err)
 		}
@@ -592,7 +601,10 @@ func (p *CoreProvisioner) configureGeneric(ctx context.Context, dryRun bool, pro
 	// For generic configuration, we assume the boot partition is already mounted
 	// This is a simplified version that just writes basic files
 
-	writer := NewSDCardWriter(p.config.DevicePath, dryRun)
+	writer, err := NewSDCardWriter(p.config.DevicePath, dryRun)
+	if err != nil {
+		return fmt.Errorf("failed to create writer: %w", err)
+	}
 
 	// Try to find existing mount points
 	bootDev, _, err := writer.findPartitions()
@@ -612,7 +624,7 @@ func (p *CoreProvisioner) configureGeneric(ctx context.Context, dryRun bool, pro
 	// Write basic configuration files
 	// 1. Enable SSH
 	sshFile := filepath.Join(bootPath, "ssh")
-	if err := os.WriteFile(sshFile, []byte(""), 0644); err != nil {
+	if err := os.WriteFile(sshFile, []byte(""), 0o644); err != nil {
 		return fmt.Errorf("failed to enable SSH: %w", err)
 	}
 
@@ -630,7 +642,7 @@ network={
 `, p.config.Network.WiFiSSID, p.config.Network.WiFiPass)
 
 		wpaFile := filepath.Join(bootPath, "wpa_supplicant.conf")
-		if err := os.WriteFile(wpaFile, []byte(wpaConf), 0644); err != nil {
+		if err := os.WriteFile(wpaFile, []byte(wpaConf), 0o644); err != nil {
 			return fmt.Errorf("failed to configure WiFi: %w", err)
 		}
 	}
@@ -638,7 +650,7 @@ network={
 	// 3. Create user configuration
 	userConf := "pi:$6$Zmd8gFg8RFR0M5Xf$nFgQNqVKDMFfKz3lYkvEGywz.8INzF9fPE8ci3IMTLfxKPpMFsNs8Sw9koYoB1sZ8sNHZGJ/M0uYUUJw8Xqdn."
 	userConfFile := filepath.Join(bootPath, "userconf.txt")
-	if err := os.WriteFile(userConfFile, []byte(userConf), 0644); err != nil {
+	if err := os.WriteFile(userConfFile, []byte(userConf), 0o644); err != nil {
 		return fmt.Errorf("failed to configure user: %w", err)
 	}
 

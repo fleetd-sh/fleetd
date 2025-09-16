@@ -72,3 +72,28 @@ func (s *DiscoveryService) ConfigureDevice(
 
 	return connect.NewResponse(resp), nil
 }
+
+func (s *DiscoveryService) UpdateConfig(
+	ctx context.Context,
+	req *connect.Request[agentpb.UpdateConfigRequest],
+) (*connect.Response[agentpb.UpdateConfigResponse], error) {
+	// Parse the JSON config and update agent configuration
+	config := req.Msg.Config
+
+	// For now, we'll just update the server URL if provided
+	// This can be extended to handle more configuration options
+	if config != "" {
+		// The agent's Configure method will handle the actual configuration update
+		// including persisting to disk
+		err := s.agent.UpdateConfigFromJSON(config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal,
+				fmt.Errorf("failed to update configuration: %w", err))
+		}
+	}
+
+	return connect.NewResponse(&agentpb.UpdateConfigResponse{
+		Success: true,
+		Message: "Configuration updated successfully",
+	}), nil
+}

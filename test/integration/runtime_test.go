@@ -23,7 +23,7 @@ func TestBinaryDeployment(t *testing.T) {
 trap 'exit 0' TERM
 sleep 10
 `)
-	if err := os.WriteFile(binaryPath, data, 0755); err != nil {
+	if err := os.WriteFile(binaryPath, data, 0o755); err != nil {
 		t.Fatalf("Failed to create test binary: %v", err)
 	}
 

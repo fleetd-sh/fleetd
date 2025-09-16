@@ -80,7 +80,7 @@ type resourceStats struct {
 
 // New creates a new runtime manager
 func New(baseDir string) (*Runtime, error) {
-	if err := os.MkdirAll(baseDir, 0755); err != nil {
+	if err := os.MkdirAll(baseDir, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create base directory: %w", err)
 	}
 
@@ -107,7 +107,7 @@ func (r *Runtime) Deploy(name string, binary io.Reader) error {
 	tmpPath := binPath + ".tmp"
 	r.logger.Debug("Creating temporary file", "path", tmpPath)
 
-	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
+	f, err := os.OpenFile(tmpPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o755)
 	if err != nil {
 		return fmt.Errorf("failed to create temporary file: %w", err)
 	}
@@ -203,10 +203,22 @@ func (r *Runtime) Start(name string, args []string, config *Config) error {
 
 	// Monitor process
 	go func() {
-		cmd.Wait()
-		r.mu.Lock()
-		delete(r.processes, name)
-		r.mu.Unlock()
+		// Wait for either process exit or context cancellation
+		waitDone := make(chan struct{})
+		go func() {
+			cmd.Wait()
+			close(waitDone)
+		}()
+
+		select {
+		case <-ctx.Done():
+			// Context cancelled, process will be cleaned up by Stop()
+		case <-waitDone:
+			// Process exited normally, clean up
+			r.mu.Lock()
+			delete(r.processes, name)
+			r.mu.Unlock()
+		}
 	}()
 
 	return nil

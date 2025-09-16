@@ -9,14 +9,14 @@ import (
 
 func newLogManager(name string, baseDir string, maxSize int64, keepFiles int) (*logManager, error) {
 	logDir := filepath.Join(baseDir, "logs", name)
-	if err := os.MkdirAll(logDir, 0755); err != nil {
+	if err := os.MkdirAll(logDir, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create log directory: %w", err)
 	}
 
 	stdout, err := os.OpenFile(
 		filepath.Join(logDir, "stdout.log"),
 		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
-		0644,
+		0o644,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stdout log: %w", err)
@@ -25,7 +25,7 @@ func newLogManager(name string, baseDir string, maxSize int64, keepFiles int) (*
 	stderr, err := os.OpenFile(
 		filepath.Join(logDir, "stderr.log"),
 		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
-		0644,
+		0o644,
 	)
 	if err != nil {
 		stdout.Close()
@@ -81,7 +81,7 @@ func (lm *logManager) rotate(isStdout bool) error {
 	}
 
 	// Create new log file
-	newFile, err := os.OpenFile(currentPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	newFile, err := os.OpenFile(currentPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("failed to create new log file: %w", err)
 	}

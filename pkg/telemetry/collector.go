@@ -65,7 +65,6 @@ func (c *Collector) AddSource(s Source) {
 	c.sources = append(c.sources, s)
 }
 
-// Start begins the collection process
 func (c *Collector) Start() {
 	c.wg.Add(1)
 	go func() {
@@ -87,7 +86,6 @@ func (c *Collector) Start() {
 	}()
 }
 
-// Stop halts the collection process
 func (c *Collector) Stop() {
 	c.cancel()
 	c.wg.Wait()
@@ -111,7 +109,6 @@ func (c *Collector) collect() error {
 		allMetrics = append(allMetrics, metrics...)
 	}
 
-	// Process through all handlers
 	for _, handler := range handlers {
 		if err := handler.Handle(c.ctx, allMetrics); err != nil {
 			slog.Error("Handler error", "error", err)

@@ -109,7 +109,7 @@ func (m *ImageManager) DownloadImage(ctx context.Context, providerName, arch str
 	}
 
 	// Create cache directory
-	if err := os.MkdirAll(m.cacheDir, 0755); err != nil {
+	if err := os.MkdirAll(m.cacheDir, 0o755); err != nil {
 		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
@@ -163,7 +163,14 @@ func (m *ImageManager) downloadFile(ctx context.Context, url, destPath string, p
 		return err
 	}
 	defer out.Close()
-	defer os.Remove(tmpPath) // Clean up on error
+
+	// Clean up temp file on failure
+	success := false
+	defer func() {
+		if !success {
+			os.Remove(tmpPath)
+		}
+	}()
 
 	// Create HTTP request with context
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -205,7 +212,12 @@ func (m *ImageManager) downloadFile(ctx context.Context, url, destPath string, p
 	out.Close()
 
 	// Move to final location
-	return os.Rename(tmpPath, destPath)
+	if err := os.Rename(tmpPath, destPath); err != nil {
+		return err
+	}
+
+	success = true
+	return nil
 }
 
 // progressReader wraps an io.Reader with progress reporting
@@ -233,7 +245,7 @@ func (m *ImageManager) GetDecompressedImage(ctx context.Context, compressedPath 
 	}
 
 	// Create decompressed cache directory if it doesn't exist
-	if err := os.MkdirAll(m.decompressedCacheDir, 0755); err != nil {
+	if err := os.MkdirAll(m.decompressedCacheDir, 0o755); err != nil {
 		return "", fmt.Errorf("failed to create decompressed cache directory: %w", err)
 	}
 

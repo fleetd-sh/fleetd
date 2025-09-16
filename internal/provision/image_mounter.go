@@ -58,11 +58,11 @@ func (m *macOSDiskImageMounter) Mount(imagePath string) (string, string, func(),
 	rootPath := filepath.Join(os.TempDir(), "fleetd-root-image")
 
 	// Create mount points
-	if err := os.MkdirAll(bootPath, 0755); err != nil {
+	if err := os.MkdirAll(bootPath, 0o755); err != nil {
 		m.detach(diskDevice)
 		return "", "", nil, err
 	}
-	if err := os.MkdirAll(rootPath, 0755); err != nil {
+	if err := os.MkdirAll(rootPath, 0o755); err != nil {
 		m.detach(diskDevice)
 		return "", "", nil, err
 	}
@@ -159,11 +159,11 @@ func (m *linuxDiskImageMounter) Mount(imagePath string) (string, string, func(),
 	rootPath := filepath.Join(os.TempDir(), "fleetd-root-image")
 
 	// Create mount points
-	if err := os.MkdirAll(bootPath, 0755); err != nil {
+	if err := os.MkdirAll(bootPath, 0o755); err != nil {
 		m.detachLoop(loopDevice)
 		return "", "", nil, err
 	}
-	if err := os.MkdirAll(rootPath, 0755); err != nil {
+	if err := os.MkdirAll(rootPath, 0o755); err != nil {
 		m.detachLoop(loopDevice)
 		return "", "", nil, err
 	}
