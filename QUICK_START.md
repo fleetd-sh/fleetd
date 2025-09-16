@@ -5,7 +5,7 @@
 Start the entire fleetd platform with a single command (similar to Supabase):
 
 ```bash
-fleet start
+fleetctl start
 ```
 
 This command will:
@@ -31,15 +31,15 @@ git clone https://github.com/fleetd/fleetd.git
 cd fleetd
 
 # Build the CLI
-go build -o fleet ./cmd/fleet
+go build -o fleetctl ./cmd/fleetctl
 
 # Start everything
-./fleet start
+./fleetctl start
 ```
 
 You'll see output like:
 ```
- Fleet Platform is running!
+ fleetd Platform is running!
 
  Service URLs
   • Dashboard:         http://localhost:3000
@@ -58,14 +58,13 @@ You'll see output like:
   • Config:        ./config.toml
   • Secrets:       ./.env
   • Database:      ./fleet.db
-  • Compose:       ./docker-compose.fleet.yml
 ```
 
 ### 2. Provision SD Cards for k3s
 
 **For k3s Server (Control Plane):**
 ```bash
-./fleet provision \
+./fleetctl provision \
   --device /dev/disk2 \
   --name "k3s-server-01" \
   --wifi-ssid "YourWiFi" \
@@ -77,7 +76,7 @@ You'll see output like:
 
 **For k3s Worker Node:**
 ```bash
-./fleet provision \
+./fleetctl provision \
   --device /dev/disk3 \
   --name "k3s-worker-01" \
   --wifi-ssid "YourWiFi" \
@@ -121,43 +120,43 @@ sudo k3s kubectl get nodes
 ### Custom Start Options
 ```bash
 # Start without web UI
-fleet start --no-web
+fleetctl start --no-web
 
 # Start without Fleet server (infrastructure only)
-fleet start --no-server
+fleetctl start --no-server
 
 # Exclude specific services
-fleet start --exclude clickhouse,grafana
+fleetctl start --exclude clickhouse,grafana
 
 # Reset all data and regenerate secrets
-fleet start --reset
+fleetctl start --reset
 
 # Use specific port for API
-fleet start --expose-port 9090
+fleetctl start --expose-port 9090
 ```
 
 ### Manual Service Management
 ```bash
 # Check status
-fleet status
+fleetctl status
 
 # View logs
-fleet logs fleet-server
-fleet logs fleet-web
+fleetctl logs fleets
+fleetctl logs web
 
 # Stop everything
-fleet stop
+fleetctl stop
 
 # Reset (careful - deletes all data!)
-fleet reset
+fleetctl reset
 ```
 
 ##  What's Running?
 
 | Service | Purpose | URL |
 |---------|---------|-----|
-| Fleet Server | Management API | http://localhost:8080 |
-| Fleet Web | Dashboard UI | http://localhost:3000 |
+| fleets | Management API Server | http://localhost:8080 |
+| Web Dashboard | Management UI | http://localhost:3000 |
 | PostgreSQL | Primary database | localhost:5432 |
 | VictoriaMetrics | Time-series metrics | http://localhost:8428 |
 | Loki | Log aggregation | http://localhost:3100 |
@@ -181,8 +180,8 @@ docker ps
 docker-compose logs -f
 
 # Check specific service
-fleet logs postgres
-fleet logs fleet-server
+fleetctl logs postgres
+fleetctl logs fleets
 ```
 
 ### Can't discover devices?
@@ -193,10 +192,10 @@ fleet logs fleet-server
 ### Web UI not loading?
 ```bash
 # Check if web container is running
-docker ps | grep fleet-web
+docker ps | grep web
 
 # Check web logs
-docker logs fleet-web
+docker logs fleetd-web
 
 # Rebuild if needed
 cd web && npm install && npm run dev
