@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"fleetd.sh/cmd/fleet/cmd"
+	"fleetd.sh/cmd/fleetctl/cmd"
 )
 
 func main() {

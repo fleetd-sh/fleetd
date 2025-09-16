@@ -3,38 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import {
-  CreateUpdateRequest,
-  CreateUpdateResponse,
-  DeleteDeviceRequest,
-  DeployUpdateRequest,
-  DeployUpdateResponse,
-  DiscoverDevicesRequest,
-  DiscoverDevicesResponse,
-  Event,
-  GetConfigurationRequest,
-  GetConfigurationResponse,
-  GetDeviceRequest,
-  GetDeviceResponse,
-  GetDeviceStatsRequest,
-  GetDeviceStatsResponse,
-  GetTelemetryRequest,
-  GetTelemetryResponse,
-  GetUpdateStatusRequest,
-  GetUpdateStatusResponse,
-  ListDevicesRequest,
-  ListDevicesResponse,
-  ListUpdatesRequest,
-  ListUpdatesResponse,
-  StreamEventsRequest,
-  StreamTelemetryRequest,
-  TelemetryEvent,
-  UpdateConfigurationRequest,
-  UpdateConfigurationResponse,
-  UpdateDeviceRequest,
-  UpdateDeviceResponse,
-} from './fleet_pb.js'
-import { Empty, MethodKind } from '@bufbuild/protobuf'
+import { CreateUpdateRequest, CreateUpdateResponse, DeleteDeviceRequest, DeployUpdateRequest, DeployUpdateResponse, DiscoverDevicesRequest, DiscoverDevicesResponse, Event, GetConfigurationRequest, GetConfigurationResponse, GetDeviceRequest, GetDeviceResponse, GetDeviceStatsRequest, GetDeviceStatsResponse, GetTelemetryRequest, GetTelemetryResponse, GetUpdateStatusRequest, GetUpdateStatusResponse, ListDevicesRequest, ListDevicesResponse, ListUpdatesRequest, ListUpdatesResponse, StreamEventsRequest, StreamTelemetryRequest, TelemetryEvent, UpdateConfigurationRequest, UpdateConfigurationResponse, UpdateDeviceRequest, UpdateDeviceResponse } from "./fleet_pb.js";
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * FleetService provides the public API for fleet management
@@ -43,7 +13,7 @@ import { Empty, MethodKind } from '@bufbuild/protobuf'
  * @generated from service public.v1.FleetService
  */
 export const FleetService = {
-  typeName: 'public.v1.FleetService',
+  typeName: "public.v1.FleetService",
   methods: {
     /**
      * Device management
@@ -51,7 +21,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.ListDevices
      */
     listDevices: {
-      name: 'ListDevices',
+      name: "ListDevices",
       I: ListDevicesRequest,
       O: ListDevicesResponse,
       kind: MethodKind.Unary,
@@ -60,7 +30,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.GetDevice
      */
     getDevice: {
-      name: 'GetDevice',
+      name: "GetDevice",
       I: GetDeviceRequest,
       O: GetDeviceResponse,
       kind: MethodKind.Unary,
@@ -69,7 +39,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.UpdateDevice
      */
     updateDevice: {
-      name: 'UpdateDevice',
+      name: "UpdateDevice",
       I: UpdateDeviceRequest,
       O: UpdateDeviceResponse,
       kind: MethodKind.Unary,
@@ -78,7 +48,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.DeleteDevice
      */
     deleteDevice: {
-      name: 'DeleteDevice',
+      name: "DeleteDevice",
       I: DeleteDeviceRequest,
       O: Empty,
       kind: MethodKind.Unary,
@@ -87,7 +57,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.GetDeviceStats
      */
     getDeviceStats: {
-      name: 'GetDeviceStats',
+      name: "GetDeviceStats",
       I: GetDeviceStatsRequest,
       O: GetDeviceStatsResponse,
       kind: MethodKind.Unary,
@@ -98,7 +68,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.DiscoverDevices
      */
     discoverDevices: {
-      name: 'DiscoverDevices',
+      name: "DiscoverDevices",
       I: DiscoverDevicesRequest,
       O: DiscoverDevicesResponse,
       kind: MethodKind.Unary,
@@ -109,7 +79,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.GetTelemetry
      */
     getTelemetry: {
-      name: 'GetTelemetry',
+      name: "GetTelemetry",
       I: GetTelemetryRequest,
       O: GetTelemetryResponse,
       kind: MethodKind.Unary,
@@ -118,7 +88,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.StreamTelemetry
      */
     streamTelemetry: {
-      name: 'StreamTelemetry',
+      name: "StreamTelemetry",
       I: StreamTelemetryRequest,
       O: TelemetryEvent,
       kind: MethodKind.ServerStreaming,
@@ -129,7 +99,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.ListUpdates
      */
     listUpdates: {
-      name: 'ListUpdates',
+      name: "ListUpdates",
       I: ListUpdatesRequest,
       O: ListUpdatesResponse,
       kind: MethodKind.Unary,
@@ -138,7 +108,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.CreateUpdate
      */
     createUpdate: {
-      name: 'CreateUpdate',
+      name: "CreateUpdate",
       I: CreateUpdateRequest,
       O: CreateUpdateResponse,
       kind: MethodKind.Unary,
@@ -147,7 +117,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.DeployUpdate
      */
     deployUpdate: {
-      name: 'DeployUpdate',
+      name: "DeployUpdate",
       I: DeployUpdateRequest,
       O: DeployUpdateResponse,
       kind: MethodKind.Unary,
@@ -156,7 +126,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.GetUpdateStatus
      */
     getUpdateStatus: {
-      name: 'GetUpdateStatus',
+      name: "GetUpdateStatus",
       I: GetUpdateStatusRequest,
       O: GetUpdateStatusResponse,
       kind: MethodKind.Unary,
@@ -167,7 +137,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.GetConfiguration
      */
     getConfiguration: {
-      name: 'GetConfiguration',
+      name: "GetConfiguration",
       I: GetConfigurationRequest,
       O: GetConfigurationResponse,
       kind: MethodKind.Unary,
@@ -176,7 +146,7 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.UpdateConfiguration
      */
     updateConfiguration: {
-      name: 'UpdateConfiguration',
+      name: "UpdateConfiguration",
       I: UpdateConfigurationRequest,
       O: UpdateConfigurationResponse,
       kind: MethodKind.Unary,
@@ -187,10 +157,11 @@ export const FleetService = {
      * @generated from rpc public.v1.FleetService.StreamEvents
      */
     streamEvents: {
-      name: 'StreamEvents',
+      name: "StreamEvents",
       I: StreamEventsRequest,
       O: Event,
       kind: MethodKind.ServerStreaming,
     },
-  },
-} as const
+  }
+} as const;
+

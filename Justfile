@@ -98,7 +98,7 @@ build target arch="":
 build-go:
     just build fleetd
     just build fleets
-    just build fleet
+    just build fleetctl
 
 # Run Go unit tests
 test-go:
@@ -192,75 +192,20 @@ proto-lint:
 proto-breaking:
     buf breaking --against '.git#branch=main'
 
-# Data Stack Commands
+# Platform Commands (managed by fleetctl)
 
-# Start the full data stack (PostgreSQL, VictoriaMetrics, Loki, ClickHouse)
-stack-up:
-    docker-compose up -d
+# Start the entire platform
+platform-start:
+    go run cmd/fleetctl/main.go start
 
-# Stop the data stack
-stack-down:
-    docker-compose down
+# Stop the platform
+platform-stop:
+    go run cmd/fleetctl/main.go stop
 
-# View data stack logs
-stack-logs service="":
-    docker-compose logs -f {{service}}
+# Check platform status
+platform-status:
+    go run cmd/fleetctl/main.go status
 
-# Reset data stack (WARNING: deletes all data)
-stack-reset:
-    docker-compose down -v
-    docker-compose up -d
-
-# Check data stack health
-stack-health:
-    @echo "Checking service health..."
-    @docker-compose ps
-    @echo ""
-    @echo "PostgreSQL:"
-    @docker exec -it fleetd-postgres-1 pg_isready -U fleetd || echo "Not ready"
-    @echo ""
-    @echo "VictoriaMetrics:"
-    @curl -s http://localhost:8428/health || echo "Not ready"
-    @echo ""
-    @echo "Loki:"
-    @curl -s http://localhost:3100/ready || echo "Not ready"
-    @echo ""
-    @echo "ClickHouse:"
-    @curl -s http://localhost:8123/ping || echo "Not ready"
-
-# Gateway Stack Commands
-
-# Start the gateway and all services
-gateway-up:
-    docker-compose -f docker-compose.gateway.yml up -d
-
-# Stop the gateway stack
-gateway-down:
-    docker-compose -f docker-compose.gateway.yml down
-
-# View gateway logs
-gateway-logs:
-    docker-compose -f docker-compose.gateway.yml logs -f traefik
-
-# Reload gateway configuration
-gateway-reload:
-    docker-compose -f docker-compose.gateway.yml exec traefik kill -USR1 1
-
-# Show gateway routes
-gateway-routes:
-    @curl -s http://localhost:8080/api/http/routers | jq '.'
-
-# Show gateway services
-gateway-services:
-    @curl -s http://localhost:8080/api/http/services | jq '.'
-
-# Test gateway health endpoints
-gateway-test:
-    @echo "Testing gateway health endpoints..."
-    @curl -s http://localhost/health | jq '.'
-    @echo ""
-    @echo "Testing metrics endpoint..."
-    @curl -s http://localhost:8080/metrics | head -20
 
 # Docker Commands
 
@@ -272,17 +217,6 @@ docker-build tag="latest":
 docker-build-web tag="latest":
     docker build -t fleetd/web:{{tag}} -f web/Dockerfile ./web
 
-# Run with docker-compose
-docker-up:
-    docker-compose up -d
-
-# Stop docker-compose
-docker-down:
-    docker-compose down
-
-# View docker logs
-docker-logs service="":
-    docker-compose logs -f {{service}}
 
 # Database Commands
 
@@ -374,14 +308,9 @@ todos:
 # Start all services for local development
 local:
     #!/usr/bin/env sh
-    trap 'just local-down' INT TERM EXIT
     echo "Starting local development environment..."
-    docker-compose -f docker-compose.dev.yml up -d valkey
+    echo "Use 'fleetctl start --profile development' to start platform services"
     just dev
-
-# Stop local development services
-local-down:
-    docker-compose -f docker-compose.dev.yml down
 
 # Open project in browser
 open:
