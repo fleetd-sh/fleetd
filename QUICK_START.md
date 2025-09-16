@@ -2,7 +2,7 @@
 
 ##  One-Command Platform Launch
 
-Start the entire fleetd platform with a single command (similar to Supabase):
+Start the entire fleetd platform with a single command:
 
 ```bash
 fleetctl start
