@@ -217,4 +217,4 @@ You now have:
 3. Configure alerts for device health
 4. Explore the Fleet API for automation
 
-For more details, see the [full documentation](./docs/README.md).
+For more details, see the [full documentation](https://github.com/fleetd-sh/fleetd/wiki).
