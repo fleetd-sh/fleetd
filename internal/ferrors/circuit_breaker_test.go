@@ -151,13 +151,21 @@ func TestCircuitBreakerMetrics(t *testing.T) {
 }
 
 func TestCircuitBreakerShouldTrip(t *testing.T) {
+	tripCount := 0
 	config := &CircuitBreakerConfig{
 		MaxFailures: 3,
+		Interval:    1 * time.Second, // Set interval to prevent resetting failures
+		Timeout:     1 * time.Second,
 		ShouldTrip: func(err error) bool {
 			// Only trip on specific errors
 			var fleetErr *FleetError
 			if As(err, &fleetErr) {
-				return fleetErr.Code == ErrCodeTimeout
+				shouldTrip := fleetErr.Code == ErrCodeTimeout
+				if shouldTrip {
+					tripCount++
+					t.Logf("ShouldTrip called %d times, error code: %s, returning true", tripCount, fleetErr.Code)
+				}
+				return shouldTrip
 			}
 			return false
 		},
@@ -179,13 +187,18 @@ func TestCircuitBreakerShouldTrip(t *testing.T) {
 
 	// Tripping errors should open circuit
 	for i := 0; i < 3; i++ {
-		cb.Execute(ctx, func() error {
+		err := cb.Execute(ctx, func() error {
 			return New(ErrCodeTimeout, "timeout")
 		})
+		if err == nil {
+			t.Errorf("expected error on attempt %d", i+1)
+		}
 	}
 
-	if cb.GetState() != StateOpen {
-		t.Errorf("expected circuit to be OPEN, got %s", cb.GetState())
+	state := cb.GetState()
+	if state != StateOpen {
+		metrics := cb.GetMetrics()
+		t.Errorf("expected circuit to be OPEN after 3 failures, got %s (failures: %v)", state, metrics["failures"])
 	}
 }
 
@@ -364,7 +377,8 @@ func TestCircuitBreakerStateTransitions(t *testing.T) {
 func TestCircuitBreakerMaxRequests(t *testing.T) {
 	config := &CircuitBreakerConfig{
 		MaxFailures: 3,
-		MaxRequests: 2, // Allow 2 requests in half-open
+		MaxRequests: 2,               // Allow 2 requests in half-open
+		Interval:    1 * time.Second, // Set interval to prevent resetting failures
 		Timeout:     100 * time.Millisecond,
 	}
 

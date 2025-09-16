@@ -274,7 +274,8 @@ func TestRetryWithBackoff(t *testing.T) {
 	err := RetryWithBackoff(ctx, func() error {
 		attempts++
 		if attempts < 3 {
-			return stderrors.New("retry")
+			// Return a retryable error
+			return New(ErrCodeUnavailable, "service unavailable")
 		}
 		return nil
 	})
@@ -295,7 +296,8 @@ func TestRetryWithCustom(t *testing.T) {
 	err := RetryWithCustom(ctx, 2, 5*time.Millisecond, func() error {
 		attempts++
 		if attempts < 2 {
-			return stderrors.New("retry")
+			// Return a retryable error
+			return New(ErrCodeUnavailable, "service unavailable")
 		}
 		return nil
 	})
