@@ -3,8 +3,17 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { DeployBinaryRequest, DeployBinaryResponse, ListBinariesRequest, ListBinariesResponse, StartBinaryRequest, StartBinaryResponse, StopBinaryRequest, StopBinaryResponse } from "./agent_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
+import {
+  DeployBinaryRequest,
+  DeployBinaryResponse,
+  ListBinariesRequest,
+  ListBinariesResponse,
+  StartBinaryRequest,
+  StartBinaryResponse,
+  StopBinaryRequest,
+  StopBinaryResponse,
+} from './agent_pb.js'
+import { MethodKind } from '@bufbuild/protobuf'
 
 /**
  * Daemon service definition
@@ -12,7 +21,7 @@ import { MethodKind } from "@bufbuild/protobuf";
  * @generated from service agent.v1.DaemonService
  */
 export const DaemonService = {
-  typeName: "agent.v1.DaemonService",
+  typeName: 'agent.v1.DaemonService',
   methods: {
     /**
      * Binary management
@@ -20,7 +29,7 @@ export const DaemonService = {
      * @generated from rpc agent.v1.DaemonService.DeployBinary
      */
     deployBinary: {
-      name: "DeployBinary",
+      name: 'DeployBinary',
       I: DeployBinaryRequest,
       O: DeployBinaryResponse,
       kind: MethodKind.Unary,
@@ -29,7 +38,7 @@ export const DaemonService = {
      * @generated from rpc agent.v1.DaemonService.StartBinary
      */
     startBinary: {
-      name: "StartBinary",
+      name: 'StartBinary',
       I: StartBinaryRequest,
       O: StartBinaryResponse,
       kind: MethodKind.Unary,
@@ -38,7 +47,7 @@ export const DaemonService = {
      * @generated from rpc agent.v1.DaemonService.StopBinary
      */
     stopBinary: {
-      name: "StopBinary",
+      name: 'StopBinary',
       I: StopBinaryRequest,
       O: StopBinaryResponse,
       kind: MethodKind.Unary,
@@ -47,11 +56,10 @@ export const DaemonService = {
      * @generated from rpc agent.v1.DaemonService.ListBinaries
      */
     listBinaries: {
-      name: "ListBinaries",
+      name: 'ListBinaries',
       I: ListBinariesRequest,
       O: ListBinariesResponse,
       kind: MethodKind.Unary,
     },
-  }
-} as const;
-
+  },
+} as const

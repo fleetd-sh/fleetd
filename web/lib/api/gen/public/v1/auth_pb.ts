@@ -2,591 +2,615 @@
 // @generated from file public/v1/auth.proto (package public.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { EmptySchema, Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_empty, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
+import type { EmptySchema, Timestamp } from '@bufbuild/protobuf/wkt'
+import { file_google_protobuf_empty, file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt'
+import type { Message } from '@bufbuild/protobuf'
 
 /**
  * Describes the file public/v1/auth.proto.
  */
-export const file_public_v1_auth: GenFile = /*@__PURE__*/
-  fileDesc("ChRwdWJsaWMvdjEvYXV0aC5wcm90bxIJcHVibGljLnYxIvQBCgRVc2VyEgoKAmlkGAEgASgJEg0KBWVtYWlsGAIgASgJEgwKBG5hbWUYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRIhCgRyb2xlGAUgASgOMhMucHVibGljLnYxLlVzZXJSb2xlEhcKD29yZ2FuaXphdGlvbl9pZBgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpsYXN0X2xvZ2luGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBITCgtwZXJtaXNzaW9ucxgJIAMoCSJ/CgxMb2dpblJlcXVlc3QSMQoIcGFzc3dvcmQYASABKAsyHS5wdWJsaWMudjEuUGFzc3dvcmRDcmVkZW50aWFsSAASLgoHYXBpX2tleRgCIAEoCzIbLnB1YmxpYy52MS5BUElLZXlDcmVkZW50aWFsSABCDAoKY3JlZGVudGlhbCI1ChJQYXNzd29yZENyZWRlbnRpYWwSDQoFZW1haWwYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiHwoQQVBJS2V5Q3JlZGVudGlhbBILCgNrZXkYASABKAkibwoNTG9naW5SZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRISCgpleHBpcmVzX2luGAMgASgDEh0KBHVzZXIYBCABKAsyDy5wdWJsaWMudjEuVXNlciImCg1Mb2dvdXRSZXF1ZXN0EhUKDXJlZnJlc2hfdG9rZW4YASABKAkiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfaW4YAyABKAMiNwoWR2V0Q3VycmVudFVzZXJSZXNwb25zZRIdCgR1c2VyGAEgASgLMg8ucHVibGljLnYxLlVzZXIieAoTQ3JlYXRlQVBJS2V5UmVxdWVzdBIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEg4KBnNjb3BlcxgDIAMoCRIuCgpleHBpcmVzX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKdAQoUQ3JlYXRlQVBJS2V5UmVzcG9uc2USCgoCaWQYASABKAkSCwoDa2V5GAIgASgJEgwKBG5hbWUYAyABKAkSLgoKY3JlYXRlZF9hdBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKZXhwaXJlc19hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiOwoSTGlzdEFQSUtleXNSZXF1ZXN0EhEKCXBhZ2Vfc2l6ZRgBIAEoBRISCgpwYWdlX3Rva2VuGAIgASgJIk8KE0xpc3RBUElLZXlzUmVzcG9uc2USHwoEa2V5cxgBIAMoCzIRLnB1YmxpYy52MS5BUElLZXkSFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJItYBCgZBUElLZXkSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIOCgZzY29wZXMYBCADKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKZXhwaXJlc19hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJbGFzdF91c2VkGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIlChNSZXZva2VBUElLZXlSZXF1ZXN0Eg4KBmtleV9pZBgBIAEoCSJEChdHZXRTU09Qcm92aWRlcnNSZXNwb25zZRIpCglwcm92aWRlcnMYASADKAsyFi5wdWJsaWMudjEuU1NPUHJvdmlkZXIidAoLU1NPUHJvdmlkZXISCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIoCgR0eXBlGAMgASgOMhoucHVibGljLnYxLlNTT1Byb3ZpZGVyVHlwZRIQCghpY29uX3VybBgEIAEoCRIPCgdlbmFibGVkGAUgASgIIkQKF0luaXRpYXRlU1NPTG9naW5SZXF1ZXN0EhMKC3Byb3ZpZGVyX2lkGAEgASgJEhQKDHJlZGlyZWN0X3VybBgCIAEoCSI7ChhJbml0aWF0ZVNTT0xvZ2luUmVzcG9uc2USEAoIYXV0aF91cmwYASABKAkSDQoFc3RhdGUYAiABKAkiNgoXQ29tcGxldGVTU09Mb2dpblJlcXVlc3QSDAoEY29kZRgBIAEoCRINCgVzdGF0ZRgCIAEoCSJ6ChhDb21wbGV0ZVNTT0xvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19pbhgDIAEoAxIdCgR1c2VyGAQgASgLMg8ucHVibGljLnYxLlVzZXIqfQoIVXNlclJvbGUSGQoVVVNFUl9ST0xFX1VOU1BFQ0lGSUVEEAASFAoQVVNFUl9ST0xFX1ZJRVdFUhABEhYKElVTRVJfUk9MRV9PUEVSQVRPUhACEhMKD1VTRVJfUk9MRV9BRE1JThADEhMKD1VTRVJfUk9MRV9PV05FUhAEKuQBCg9TU09Qcm92aWRlclR5cGUSIQodU1NPX1BST1ZJREVSX1RZUEVfVU5TUEVDSUZJRUQQABIcChhTU09fUFJPVklERVJfVFlQRV9HT09HTEUQARIcChhTU09fUFJPVklERVJfVFlQRV9HSVRIVUIQAhIaChZTU09fUFJPVklERVJfVFlQRV9PS1RBEAMSHgoaU1NPX1BST1ZJREVSX1RZUEVfQVpVUkVfQUQQBBIaChZTU09fUFJPVklERVJfVFlQRV9TQU1MEAUSGgoWU1NPX1BST1ZJREVSX1RZUEVfT0lEQxAGMpMGCgtBdXRoU2VydmljZRI6CgVMb2dpbhIXLnB1YmxpYy52MS5Mb2dpblJlcXVlc3QaGC5wdWJsaWMudjEuTG9naW5SZXNwb25zZRI6CgZMb2dvdXQSGC5wdWJsaWMudjEuTG9nb3V0UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJPCgxSZWZyZXNoVG9rZW4SHi5wdWJsaWMudjEuUmVmcmVzaFRva2VuUmVxdWVzdBofLnB1YmxpYy52MS5SZWZyZXNoVG9rZW5SZXNwb25zZRJLCg5HZXRDdXJyZW50VXNlchIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRohLnB1YmxpYy52MS5HZXRDdXJyZW50VXNlclJlc3BvbnNlEk8KDENyZWF0ZUFQSUtleRIeLnB1YmxpYy52MS5DcmVhdGVBUElLZXlSZXF1ZXN0Gh8ucHVibGljLnYxLkNyZWF0ZUFQSUtleVJlc3BvbnNlEkwKC0xpc3RBUElLZXlzEh0ucHVibGljLnYxLkxpc3RBUElLZXlzUmVxdWVzdBoeLnB1YmxpYy52MS5MaXN0QVBJS2V5c1Jlc3BvbnNlEkYKDFJldm9rZUFQSUtleRIeLnB1YmxpYy52MS5SZXZva2VBUElLZXlSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ek0KD0dldFNTT1Byb3ZpZGVycxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoiLnB1YmxpYy52MS5HZXRTU09Qcm92aWRlcnNSZXNwb25zZRJbChBJbml0aWF0ZVNTT0xvZ2luEiIucHVibGljLnYxLkluaXRpYXRlU1NPTG9naW5SZXF1ZXN0GiMucHVibGljLnYxLkluaXRpYXRlU1NPTG9naW5SZXNwb25zZRJbChBDb21wbGV0ZVNTT0xvZ2luEiIucHVibGljLnYxLkNvbXBsZXRlU1NPTG9naW5SZXF1ZXN0GiMucHVibGljLnYxLkNvbXBsZXRlU1NPTG9naW5SZXNwb25zZUKDAQoNY29tLnB1YmxpYy52MUIJQXV0aFByb3RvUAFaIGZsZWV0ZC5zaC9nZW4vcHVibGljL3YxO3B1YmxpY3YxogIDUFhYqgIJUHVibGljLlYxygIKUHVibGljX1xWMeICFlB1YmxpY19cVjFcR1BCTWV0YWRhdGHqAgpQdWJsaWM6OlYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
+export const file_public_v1_auth: GenFile =
+  /*@__PURE__*/
+  fileDesc(
+    'ChRwdWJsaWMvdjEvYXV0aC5wcm90bxIJcHVibGljLnYxIvQBCgRVc2VyEgoKAmlkGAEgASgJEg0KBWVtYWlsGAIgASgJEgwKBG5hbWUYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRIhCgRyb2xlGAUgASgOMhMucHVibGljLnYxLlVzZXJSb2xlEhcKD29yZ2FuaXphdGlvbl9pZBgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpsYXN0X2xvZ2luGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBITCgtwZXJtaXNzaW9ucxgJIAMoCSJ/CgxMb2dpblJlcXVlc3QSMQoIcGFzc3dvcmQYASABKAsyHS5wdWJsaWMudjEuUGFzc3dvcmRDcmVkZW50aWFsSAASLgoHYXBpX2tleRgCIAEoCzIbLnB1YmxpYy52MS5BUElLZXlDcmVkZW50aWFsSABCDAoKY3JlZGVudGlhbCI1ChJQYXNzd29yZENyZWRlbnRpYWwSDQoFZW1haWwYASABKAkSEAoIcGFzc3dvcmQYAiABKAkiHwoQQVBJS2V5Q3JlZGVudGlhbBILCgNrZXkYASABKAkibwoNTG9naW5SZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRISCgpleHBpcmVzX2luGAMgASgDEh0KBHVzZXIYBCABKAsyDy5wdWJsaWMudjEuVXNlciImCg1Mb2dvdXRSZXF1ZXN0EhUKDXJlZnJlc2hfdG9rZW4YASABKAkiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfaW4YAyABKAMiNwoWR2V0Q3VycmVudFVzZXJSZXNwb25zZRIdCgR1c2VyGAEgASgLMg8ucHVibGljLnYxLlVzZXIieAoTQ3JlYXRlQVBJS2V5UmVxdWVzdBIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEg4KBnNjb3BlcxgDIAMoCRIuCgpleHBpcmVzX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKdAQoUQ3JlYXRlQVBJS2V5UmVzcG9uc2USCgoCaWQYASABKAkSCwoDa2V5GAIgASgJEgwKBG5hbWUYAyABKAkSLgoKY3JlYXRlZF9hdBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKZXhwaXJlc19hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiOwoSTGlzdEFQSUtleXNSZXF1ZXN0EhEKCXBhZ2Vfc2l6ZRgBIAEoBRISCgpwYWdlX3Rva2VuGAIgASgJIk8KE0xpc3RBUElLZXlzUmVzcG9uc2USHwoEa2V5cxgBIAMoCzIRLnB1YmxpYy52MS5BUElLZXkSFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJItYBCgZBUElLZXkSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIOCgZzY29wZXMYBCADKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKZXhwaXJlc19hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJbGFzdF91c2VkGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIlChNSZXZva2VBUElLZXlSZXF1ZXN0Eg4KBmtleV9pZBgBIAEoCSJEChdHZXRTU09Qcm92aWRlcnNSZXNwb25zZRIpCglwcm92aWRlcnMYASADKAsyFi5wdWJsaWMudjEuU1NPUHJvdmlkZXIidAoLU1NPUHJvdmlkZXISCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIoCgR0eXBlGAMgASgOMhoucHVibGljLnYxLlNTT1Byb3ZpZGVyVHlwZRIQCghpY29uX3VybBgEIAEoCRIPCgdlbmFibGVkGAUgASgIIkQKF0luaXRpYXRlU1NPTG9naW5SZXF1ZXN0EhMKC3Byb3ZpZGVyX2lkGAEgASgJEhQKDHJlZGlyZWN0X3VybBgCIAEoCSI7ChhJbml0aWF0ZVNTT0xvZ2luUmVzcG9uc2USEAoIYXV0aF91cmwYASABKAkSDQoFc3RhdGUYAiABKAkiNgoXQ29tcGxldGVTU09Mb2dpblJlcXVlc3QSDAoEY29kZRgBIAEoCRINCgVzdGF0ZRgCIAEoCSJ6ChhDb21wbGV0ZVNTT0xvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19pbhgDIAEoAxIdCgR1c2VyGAQgASgLMg8ucHVibGljLnYxLlVzZXIqfQoIVXNlclJvbGUSGQoVVVNFUl9ST0xFX1VOU1BFQ0lGSUVEEAASFAoQVVNFUl9ST0xFX1ZJRVdFUhABEhYKElVTRVJfUk9MRV9PUEVSQVRPUhACEhMKD1VTRVJfUk9MRV9BRE1JThADEhMKD1VTRVJfUk9MRV9PV05FUhAEKuQBCg9TU09Qcm92aWRlclR5cGUSIQodU1NPX1BST1ZJREVSX1RZUEVfVU5TUEVDSUZJRUQQABIcChhTU09fUFJPVklERVJfVFlQRV9HT09HTEUQARIcChhTU09fUFJPVklERVJfVFlQRV9HSVRIVUIQAhIaChZTU09fUFJPVklERVJfVFlQRV9PS1RBEAMSHgoaU1NPX1BST1ZJREVSX1RZUEVfQVpVUkVfQUQQBBIaChZTU09fUFJPVklERVJfVFlQRV9TQU1MEAUSGgoWU1NPX1BST1ZJREVSX1RZUEVfT0lEQxAGMpMGCgtBdXRoU2VydmljZRI6CgVMb2dpbhIXLnB1YmxpYy52MS5Mb2dpblJlcXVlc3QaGC5wdWJsaWMudjEuTG9naW5SZXNwb25zZRI6CgZMb2dvdXQSGC5wdWJsaWMudjEuTG9nb3V0UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJPCgxSZWZyZXNoVG9rZW4SHi5wdWJsaWMudjEuUmVmcmVzaFRva2VuUmVxdWVzdBofLnB1YmxpYy52MS5SZWZyZXNoVG9rZW5SZXNwb25zZRJLCg5HZXRDdXJyZW50VXNlchIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRohLnB1YmxpYy52MS5HZXRDdXJyZW50VXNlclJlc3BvbnNlEk8KDENyZWF0ZUFQSUtleRIeLnB1YmxpYy52MS5DcmVhdGVBUElLZXlSZXF1ZXN0Gh8ucHVibGljLnYxLkNyZWF0ZUFQSUtleVJlc3BvbnNlEkwKC0xpc3RBUElLZXlzEh0ucHVibGljLnYxLkxpc3RBUElLZXlzUmVxdWVzdBoeLnB1YmxpYy52MS5MaXN0QVBJS2V5c1Jlc3BvbnNlEkYKDFJldm9rZUFQSUtleRIeLnB1YmxpYy52MS5SZXZva2VBUElLZXlSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Ek0KD0dldFNTT1Byb3ZpZGVycxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoiLnB1YmxpYy52MS5HZXRTU09Qcm92aWRlcnNSZXNwb25zZRJbChBJbml0aWF0ZVNTT0xvZ2luEiIucHVibGljLnYxLkluaXRpYXRlU1NPTG9naW5SZXF1ZXN0GiMucHVibGljLnYxLkluaXRpYXRlU1NPTG9naW5SZXNwb25zZRJbChBDb21wbGV0ZVNTT0xvZ2luEiIucHVibGljLnYxLkNvbXBsZXRlU1NPTG9naW5SZXF1ZXN0GiMucHVibGljLnYxLkNvbXBsZXRlU1NPTG9naW5SZXNwb25zZUKDAQoNY29tLnB1YmxpYy52MUIJQXV0aFByb3RvUAFaIGZsZWV0ZC5zaC9nZW4vcHVibGljL3YxO3B1YmxpY3YxogIDUFhYqgIJUHVibGljLlYxygIKUHVibGljX1xWMeICFlB1YmxpY19cVjFcR1BCTWV0YWRhdGHqAgpQdWJsaWM6OlYxYgZwcm90bzM',
+    [file_google_protobuf_timestamp, file_google_protobuf_empty],
+  )
 
 /**
  * User represents an authenticated user
  *
  * @generated from message public.v1.User
  */
-export type User = Message<"public.v1.User"> & {
+export type User = Message<'public.v1.User'> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string;
+  id: string
 
   /**
    * @generated from field: string email = 2;
    */
-  email: string;
+  email: string
 
   /**
    * @generated from field: string name = 3;
    */
-  name: string;
+  name: string
 
   /**
    * @generated from field: string avatar_url = 4;
    */
-  avatarUrl: string;
+  avatarUrl: string
 
   /**
    * @generated from field: public.v1.UserRole role = 5;
    */
-  role: UserRole;
+  role: UserRole
 
   /**
    * @generated from field: string organization_id = 6;
    */
-  organizationId: string;
+  organizationId: string
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 7;
    */
-  createdAt?: Timestamp;
+  createdAt?: Timestamp
 
   /**
    * @generated from field: google.protobuf.Timestamp last_login = 8;
    */
-  lastLogin?: Timestamp;
+  lastLogin?: Timestamp
 
   /**
    * @generated from field: repeated string permissions = 9;
    */
-  permissions: string[];
-};
+  permissions: string[]
+}
 
 /**
  * Describes the message public.v1.User.
  * Use `create(UserSchema)` to create a new message.
  */
-export const UserSchema: GenMessage<User> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 0);
+export const UserSchema: GenMessage<User> = /*@__PURE__*/ messageDesc(file_public_v1_auth, 0)
 
 /**
  * Authentication messages
  *
  * @generated from message public.v1.LoginRequest
  */
-export type LoginRequest = Message<"public.v1.LoginRequest"> & {
+export type LoginRequest = Message<'public.v1.LoginRequest'> & {
   /**
    * @generated from oneof public.v1.LoginRequest.credential
    */
-  credential: {
-    /**
-     * @generated from field: public.v1.PasswordCredential password = 1;
-     */
-    value: PasswordCredential;
-    case: "password";
-  } | {
-    /**
-     * @generated from field: public.v1.APIKeyCredential api_key = 2;
-     */
-    value: APIKeyCredential;
-    case: "apiKey";
-  } | { case: undefined; value?: undefined };
-};
+  credential:
+    | {
+        /**
+         * @generated from field: public.v1.PasswordCredential password = 1;
+         */
+        value: PasswordCredential
+        case: 'password'
+      }
+    | {
+        /**
+         * @generated from field: public.v1.APIKeyCredential api_key = 2;
+         */
+        value: APIKeyCredential
+        case: 'apiKey'
+      }
+    | { case: undefined; value?: undefined }
+}
 
 /**
  * Describes the message public.v1.LoginRequest.
  * Use `create(LoginRequestSchema)` to create a new message.
  */
-export const LoginRequestSchema: GenMessage<LoginRequest> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 1);
+export const LoginRequestSchema: GenMessage<LoginRequest> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 1)
 
 /**
  * @generated from message public.v1.PasswordCredential
  */
-export type PasswordCredential = Message<"public.v1.PasswordCredential"> & {
+export type PasswordCredential = Message<'public.v1.PasswordCredential'> & {
   /**
    * @generated from field: string email = 1;
    */
-  email: string;
+  email: string
 
   /**
    * @generated from field: string password = 2;
    */
-  password: string;
-};
+  password: string
+}
 
 /**
  * Describes the message public.v1.PasswordCredential.
  * Use `create(PasswordCredentialSchema)` to create a new message.
  */
-export const PasswordCredentialSchema: GenMessage<PasswordCredential> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 2);
+export const PasswordCredentialSchema: GenMessage<PasswordCredential> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 2)
 
 /**
  * @generated from message public.v1.APIKeyCredential
  */
-export type APIKeyCredential = Message<"public.v1.APIKeyCredential"> & {
+export type APIKeyCredential = Message<'public.v1.APIKeyCredential'> & {
   /**
    * @generated from field: string key = 1;
    */
-  key: string;
-};
+  key: string
+}
 
 /**
  * Describes the message public.v1.APIKeyCredential.
  * Use `create(APIKeyCredentialSchema)` to create a new message.
  */
-export const APIKeyCredentialSchema: GenMessage<APIKeyCredential> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 3);
+export const APIKeyCredentialSchema: GenMessage<APIKeyCredential> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 3)
 
 /**
  * @generated from message public.v1.LoginResponse
  */
-export type LoginResponse = Message<"public.v1.LoginResponse"> & {
+export type LoginResponse = Message<'public.v1.LoginResponse'> & {
   /**
    * @generated from field: string access_token = 1;
    */
-  accessToken: string;
+  accessToken: string
 
   /**
    * @generated from field: string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken: string
 
   /**
    * @generated from field: int64 expires_in = 3;
    */
-  expiresIn: bigint;
+  expiresIn: bigint
 
   /**
    * @generated from field: public.v1.User user = 4;
    */
-  user?: User;
-};
+  user?: User
+}
 
 /**
  * Describes the message public.v1.LoginResponse.
  * Use `create(LoginResponseSchema)` to create a new message.
  */
-export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 4);
+export const LoginResponseSchema: GenMessage<LoginResponse> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 4)
 
 /**
  * @generated from message public.v1.LogoutRequest
  */
-export type LogoutRequest = Message<"public.v1.LogoutRequest"> & {
+export type LogoutRequest = Message<'public.v1.LogoutRequest'> & {
   /**
    * @generated from field: string refresh_token = 1;
    */
-  refreshToken: string;
-};
+  refreshToken: string
+}
 
 /**
  * Describes the message public.v1.LogoutRequest.
  * Use `create(LogoutRequestSchema)` to create a new message.
  */
-export const LogoutRequestSchema: GenMessage<LogoutRequest> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 5);
+export const LogoutRequestSchema: GenMessage<LogoutRequest> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 5)
 
 /**
  * @generated from message public.v1.RefreshTokenRequest
  */
-export type RefreshTokenRequest = Message<"public.v1.RefreshTokenRequest"> & {
+export type RefreshTokenRequest = Message<'public.v1.RefreshTokenRequest'> & {
   /**
    * @generated from field: string refresh_token = 1;
    */
-  refreshToken: string;
-};
+  refreshToken: string
+}
 
 /**
  * Describes the message public.v1.RefreshTokenRequest.
  * Use `create(RefreshTokenRequestSchema)` to create a new message.
  */
-export const RefreshTokenRequestSchema: GenMessage<RefreshTokenRequest> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 6);
+export const RefreshTokenRequestSchema: GenMessage<RefreshTokenRequest> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 6)
 
 /**
  * @generated from message public.v1.RefreshTokenResponse
  */
-export type RefreshTokenResponse = Message<"public.v1.RefreshTokenResponse"> & {
+export type RefreshTokenResponse = Message<'public.v1.RefreshTokenResponse'> & {
   /**
    * @generated from field: string access_token = 1;
    */
-  accessToken: string;
+  accessToken: string
 
   /**
    * @generated from field: string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken: string
 
   /**
    * @generated from field: int64 expires_in = 3;
    */
-  expiresIn: bigint;
-};
+  expiresIn: bigint
+}
 
 /**
  * Describes the message public.v1.RefreshTokenResponse.
  * Use `create(RefreshTokenResponseSchema)` to create a new message.
  */
-export const RefreshTokenResponseSchema: GenMessage<RefreshTokenResponse> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 7);
+export const RefreshTokenResponseSchema: GenMessage<RefreshTokenResponse> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 7)
 
 /**
  * @generated from message public.v1.GetCurrentUserResponse
  */
-export type GetCurrentUserResponse = Message<"public.v1.GetCurrentUserResponse"> & {
+export type GetCurrentUserResponse = Message<'public.v1.GetCurrentUserResponse'> & {
   /**
    * @generated from field: public.v1.User user = 1;
    */
-  user?: User;
-};
+  user?: User
+}
 
 /**
  * Describes the message public.v1.GetCurrentUserResponse.
  * Use `create(GetCurrentUserResponseSchema)` to create a new message.
  */
-export const GetCurrentUserResponseSchema: GenMessage<GetCurrentUserResponse> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 8);
+export const GetCurrentUserResponseSchema: GenMessage<GetCurrentUserResponse> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 8)
 
 /**
  * API Key management
  *
  * @generated from message public.v1.CreateAPIKeyRequest
  */
-export type CreateAPIKeyRequest = Message<"public.v1.CreateAPIKeyRequest"> & {
+export type CreateAPIKeyRequest = Message<'public.v1.CreateAPIKeyRequest'> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string;
+  name: string
 
   /**
    * @generated from field: string description = 2;
    */
-  description: string;
+  description: string
 
   /**
    * @generated from field: repeated string scopes = 3;
    */
-  scopes: string[];
+  scopes: string[]
 
   /**
    * @generated from field: google.protobuf.Timestamp expires_at = 4;
    */
-  expiresAt?: Timestamp;
-};
+  expiresAt?: Timestamp
+}
 
 /**
  * Describes the message public.v1.CreateAPIKeyRequest.
  * Use `create(CreateAPIKeyRequestSchema)` to create a new message.
  */
-export const CreateAPIKeyRequestSchema: GenMessage<CreateAPIKeyRequest> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 9);
+export const CreateAPIKeyRequestSchema: GenMessage<CreateAPIKeyRequest> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 9)
 
 /**
  * @generated from message public.v1.CreateAPIKeyResponse
  */
-export type CreateAPIKeyResponse = Message<"public.v1.CreateAPIKeyResponse"> & {
+export type CreateAPIKeyResponse = Message<'public.v1.CreateAPIKeyResponse'> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string;
+  id: string
 
   /**
    * Only returned once at creation
    *
    * @generated from field: string key = 2;
    */
-  key: string;
+  key: string
 
   /**
    * @generated from field: string name = 3;
    */
-  name: string;
+  name: string
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 4;
    */
-  createdAt?: Timestamp;
+  createdAt?: Timestamp
 
   /**
    * @generated from field: google.protobuf.Timestamp expires_at = 5;
    */
-  expiresAt?: Timestamp;
-};
+  expiresAt?: Timestamp
+}
 
 /**
  * Describes the message public.v1.CreateAPIKeyResponse.
  * Use `create(CreateAPIKeyResponseSchema)` to create a new message.
  */
-export const CreateAPIKeyResponseSchema: GenMessage<CreateAPIKeyResponse> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 10);
+export const CreateAPIKeyResponseSchema: GenMessage<CreateAPIKeyResponse> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 10)
 
 /**
  * @generated from message public.v1.ListAPIKeysRequest
  */
-export type ListAPIKeysRequest = Message<"public.v1.ListAPIKeysRequest"> & {
+export type ListAPIKeysRequest = Message<'public.v1.ListAPIKeysRequest'> & {
   /**
    * @generated from field: int32 page_size = 1;
    */
-  pageSize: number;
+  pageSize: number
 
   /**
    * @generated from field: string page_token = 2;
    */
-  pageToken: string;
-};
+  pageToken: string
+}
 
 /**
  * Describes the message public.v1.ListAPIKeysRequest.
  * Use `create(ListAPIKeysRequestSchema)` to create a new message.
  */
-export const ListAPIKeysRequestSchema: GenMessage<ListAPIKeysRequest> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 11);
+export const ListAPIKeysRequestSchema: GenMessage<ListAPIKeysRequest> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 11)
 
 /**
  * @generated from message public.v1.ListAPIKeysResponse
  */
-export type ListAPIKeysResponse = Message<"public.v1.ListAPIKeysResponse"> & {
+export type ListAPIKeysResponse = Message<'public.v1.ListAPIKeysResponse'> & {
   /**
    * @generated from field: repeated public.v1.APIKey keys = 1;
    */
-  keys: APIKey[];
+  keys: APIKey[]
 
   /**
    * @generated from field: string next_page_token = 2;
    */
-  nextPageToken: string;
-};
+  nextPageToken: string
+}
 
 /**
  * Describes the message public.v1.ListAPIKeysResponse.
  * Use `create(ListAPIKeysResponseSchema)` to create a new message.
  */
-export const ListAPIKeysResponseSchema: GenMessage<ListAPIKeysResponse> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 12);
+export const ListAPIKeysResponseSchema: GenMessage<ListAPIKeysResponse> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 12)
 
 /**
  * @generated from message public.v1.APIKey
  */
-export type APIKey = Message<"public.v1.APIKey"> & {
+export type APIKey = Message<'public.v1.APIKey'> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string;
+  id: string
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string;
+  name: string
 
   /**
    * @generated from field: string description = 3;
    */
-  description: string;
+  description: string
 
   /**
    * @generated from field: repeated string scopes = 4;
    */
-  scopes: string[];
+  scopes: string[]
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 5;
    */
-  createdAt?: Timestamp;
+  createdAt?: Timestamp
 
   /**
    * @generated from field: google.protobuf.Timestamp expires_at = 6;
    */
-  expiresAt?: Timestamp;
+  expiresAt?: Timestamp
 
   /**
    * @generated from field: google.protobuf.Timestamp last_used = 7;
    */
-  lastUsed?: Timestamp;
-};
+  lastUsed?: Timestamp
+}
 
 /**
  * Describes the message public.v1.APIKey.
  * Use `create(APIKeySchema)` to create a new message.
  */
-export const APIKeySchema: GenMessage<APIKey> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 13);
+export const APIKeySchema: GenMessage<APIKey> = /*@__PURE__*/ messageDesc(file_public_v1_auth, 13)
 
 /**
  * @generated from message public.v1.RevokeAPIKeyRequest
  */
-export type RevokeAPIKeyRequest = Message<"public.v1.RevokeAPIKeyRequest"> & {
+export type RevokeAPIKeyRequest = Message<'public.v1.RevokeAPIKeyRequest'> & {
   /**
    * @generated from field: string key_id = 1;
    */
-  keyId: string;
-};
+  keyId: string
+}
 
 /**
  * Describes the message public.v1.RevokeAPIKeyRequest.
  * Use `create(RevokeAPIKeyRequestSchema)` to create a new message.
  */
-export const RevokeAPIKeyRequestSchema: GenMessage<RevokeAPIKeyRequest> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 14);
+export const RevokeAPIKeyRequestSchema: GenMessage<RevokeAPIKeyRequest> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 14)
 
 /**
  * SSO messages
  *
  * @generated from message public.v1.GetSSOProvidersResponse
  */
-export type GetSSOProvidersResponse = Message<"public.v1.GetSSOProvidersResponse"> & {
+export type GetSSOProvidersResponse = Message<'public.v1.GetSSOProvidersResponse'> & {
   /**
    * @generated from field: repeated public.v1.SSOProvider providers = 1;
    */
-  providers: SSOProvider[];
-};
+  providers: SSOProvider[]
+}
 
 /**
  * Describes the message public.v1.GetSSOProvidersResponse.
  * Use `create(GetSSOProvidersResponseSchema)` to create a new message.
  */
-export const GetSSOProvidersResponseSchema: GenMessage<GetSSOProvidersResponse> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 15);
+export const GetSSOProvidersResponseSchema: GenMessage<GetSSOProvidersResponse> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 15)
 
 /**
  * @generated from message public.v1.SSOProvider
  */
-export type SSOProvider = Message<"public.v1.SSOProvider"> & {
+export type SSOProvider = Message<'public.v1.SSOProvider'> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string;
+  id: string
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string;
+  name: string
 
   /**
    * @generated from field: public.v1.SSOProviderType type = 3;
    */
-  type: SSOProviderType;
+  type: SSOProviderType
 
   /**
    * @generated from field: string icon_url = 4;
    */
-  iconUrl: string;
+  iconUrl: string
 
   /**
    * @generated from field: bool enabled = 5;
    */
-  enabled: boolean;
-};
+  enabled: boolean
+}
 
 /**
  * Describes the message public.v1.SSOProvider.
  * Use `create(SSOProviderSchema)` to create a new message.
  */
-export const SSOProviderSchema: GenMessage<SSOProvider> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 16);
+export const SSOProviderSchema: GenMessage<SSOProvider> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 16)
 
 /**
  * @generated from message public.v1.InitiateSSOLoginRequest
  */
-export type InitiateSSOLoginRequest = Message<"public.v1.InitiateSSOLoginRequest"> & {
+export type InitiateSSOLoginRequest = Message<'public.v1.InitiateSSOLoginRequest'> & {
   /**
    * @generated from field: string provider_id = 1;
    */
-  providerId: string;
+  providerId: string
 
   /**
    * @generated from field: string redirect_url = 2;
    */
-  redirectUrl: string;
-};
+  redirectUrl: string
+}
 
 /**
  * Describes the message public.v1.InitiateSSOLoginRequest.
  * Use `create(InitiateSSOLoginRequestSchema)` to create a new message.
  */
-export const InitiateSSOLoginRequestSchema: GenMessage<InitiateSSOLoginRequest> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 17);
+export const InitiateSSOLoginRequestSchema: GenMessage<InitiateSSOLoginRequest> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 17)
 
 /**
  * @generated from message public.v1.InitiateSSOLoginResponse
  */
-export type InitiateSSOLoginResponse = Message<"public.v1.InitiateSSOLoginResponse"> & {
+export type InitiateSSOLoginResponse = Message<'public.v1.InitiateSSOLoginResponse'> & {
   /**
    * @generated from field: string auth_url = 1;
    */
-  authUrl: string;
+  authUrl: string
 
   /**
    * @generated from field: string state = 2;
    */
-  state: string;
-};
+  state: string
+}
 
 /**
  * Describes the message public.v1.InitiateSSOLoginResponse.
  * Use `create(InitiateSSOLoginResponseSchema)` to create a new message.
  */
-export const InitiateSSOLoginResponseSchema: GenMessage<InitiateSSOLoginResponse> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 18);
+export const InitiateSSOLoginResponseSchema: GenMessage<InitiateSSOLoginResponse> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 18)
 
 /**
  * @generated from message public.v1.CompleteSSOLoginRequest
  */
-export type CompleteSSOLoginRequest = Message<"public.v1.CompleteSSOLoginRequest"> & {
+export type CompleteSSOLoginRequest = Message<'public.v1.CompleteSSOLoginRequest'> & {
   /**
    * @generated from field: string code = 1;
    */
-  code: string;
+  code: string
 
   /**
    * @generated from field: string state = 2;
    */
-  state: string;
-};
+  state: string
+}
 
 /**
  * Describes the message public.v1.CompleteSSOLoginRequest.
  * Use `create(CompleteSSOLoginRequestSchema)` to create a new message.
  */
-export const CompleteSSOLoginRequestSchema: GenMessage<CompleteSSOLoginRequest> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 19);
+export const CompleteSSOLoginRequestSchema: GenMessage<CompleteSSOLoginRequest> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 19)
 
 /**
  * @generated from message public.v1.CompleteSSOLoginResponse
  */
-export type CompleteSSOLoginResponse = Message<"public.v1.CompleteSSOLoginResponse"> & {
+export type CompleteSSOLoginResponse = Message<'public.v1.CompleteSSOLoginResponse'> & {
   /**
    * @generated from field: string access_token = 1;
    */
-  accessToken: string;
+  accessToken: string
 
   /**
    * @generated from field: string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken: string
 
   /**
    * @generated from field: int64 expires_in = 3;
    */
-  expiresIn: bigint;
+  expiresIn: bigint
 
   /**
    * @generated from field: public.v1.User user = 4;
    */
-  user?: User;
-};
+  user?: User
+}
 
 /**
  * Describes the message public.v1.CompleteSSOLoginResponse.
  * Use `create(CompleteSSOLoginResponseSchema)` to create a new message.
  */
-export const CompleteSSOLoginResponseSchema: GenMessage<CompleteSSOLoginResponse> = /*@__PURE__*/
-  messageDesc(file_public_v1_auth, 20);
+export const CompleteSSOLoginResponseSchema: GenMessage<CompleteSSOLoginResponse> =
+  /*@__PURE__*/
+  messageDesc(file_public_v1_auth, 20)
 
 /**
  * @generated from enum public.v1.UserRole
@@ -621,8 +645,7 @@ export enum UserRole {
 /**
  * Describes the enum public.v1.UserRole.
  */
-export const UserRoleSchema: GenEnum<UserRole> = /*@__PURE__*/
-  enumDesc(file_public_v1_auth, 0);
+export const UserRoleSchema: GenEnum<UserRole> = /*@__PURE__*/ enumDesc(file_public_v1_auth, 0)
 
 /**
  * @generated from enum public.v1.SSOProviderType
@@ -667,8 +690,9 @@ export enum SSOProviderType {
 /**
  * Describes the enum public.v1.SSOProviderType.
  */
-export const SSOProviderTypeSchema: GenEnum<SSOProviderType> = /*@__PURE__*/
-  enumDesc(file_public_v1_auth, 1);
+export const SSOProviderTypeSchema: GenEnum<SSOProviderType> =
+  /*@__PURE__*/
+  enumDesc(file_public_v1_auth, 1)
 
 /**
  * AuthService handles authentication and authorization
@@ -683,86 +707,84 @@ export const AuthService: GenService<{
    * @generated from rpc public.v1.AuthService.Login
    */
   login: {
-    methodKind: "unary";
-    input: typeof LoginRequestSchema;
-    output: typeof LoginResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof LoginRequestSchema
+    output: typeof LoginResponseSchema
+  }
   /**
    * @generated from rpc public.v1.AuthService.Logout
    */
   logout: {
-    methodKind: "unary";
-    input: typeof LogoutRequestSchema;
-    output: typeof EmptySchema;
-  },
+    methodKind: 'unary'
+    input: typeof LogoutRequestSchema
+    output: typeof EmptySchema
+  }
   /**
    * @generated from rpc public.v1.AuthService.RefreshToken
    */
   refreshToken: {
-    methodKind: "unary";
-    input: typeof RefreshTokenRequestSchema;
-    output: typeof RefreshTokenResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof RefreshTokenRequestSchema
+    output: typeof RefreshTokenResponseSchema
+  }
   /**
    * @generated from rpc public.v1.AuthService.GetCurrentUser
    */
   getCurrentUser: {
-    methodKind: "unary";
-    input: typeof EmptySchema;
-    output: typeof GetCurrentUserResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof EmptySchema
+    output: typeof GetCurrentUserResponseSchema
+  }
   /**
    * API Keys (for programmatic access)
    *
    * @generated from rpc public.v1.AuthService.CreateAPIKey
    */
   createAPIKey: {
-    methodKind: "unary";
-    input: typeof CreateAPIKeyRequestSchema;
-    output: typeof CreateAPIKeyResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof CreateAPIKeyRequestSchema
+    output: typeof CreateAPIKeyResponseSchema
+  }
   /**
    * @generated from rpc public.v1.AuthService.ListAPIKeys
    */
   listAPIKeys: {
-    methodKind: "unary";
-    input: typeof ListAPIKeysRequestSchema;
-    output: typeof ListAPIKeysResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof ListAPIKeysRequestSchema
+    output: typeof ListAPIKeysResponseSchema
+  }
   /**
    * @generated from rpc public.v1.AuthService.RevokeAPIKey
    */
   revokeAPIKey: {
-    methodKind: "unary";
-    input: typeof RevokeAPIKeyRequestSchema;
-    output: typeof EmptySchema;
-  },
+    methodKind: 'unary'
+    input: typeof RevokeAPIKeyRequestSchema
+    output: typeof EmptySchema
+  }
   /**
    * SSO Configuration (cloud offering)
    *
    * @generated from rpc public.v1.AuthService.GetSSOProviders
    */
   getSSOProviders: {
-    methodKind: "unary";
-    input: typeof EmptySchema;
-    output: typeof GetSSOProvidersResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof EmptySchema
+    output: typeof GetSSOProvidersResponseSchema
+  }
   /**
    * @generated from rpc public.v1.AuthService.InitiateSSOLogin
    */
   initiateSSOLogin: {
-    methodKind: "unary";
-    input: typeof InitiateSSOLoginRequestSchema;
-    output: typeof InitiateSSOLoginResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof InitiateSSOLoginRequestSchema
+    output: typeof InitiateSSOLoginResponseSchema
+  }
   /**
    * @generated from rpc public.v1.AuthService.CompleteSSOLogin
    */
   completeSSOLogin: {
-    methodKind: "unary";
-    input: typeof CompleteSSOLoginRequestSchema;
-    output: typeof CompleteSSOLoginResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_public_v1_auth, 0);
-
+    methodKind: 'unary'
+    input: typeof CompleteSSOLoginRequestSchema
+    output: typeof CompleteSSOLoginResponseSchema
+  }
+}> = /*@__PURE__*/ serviceDesc(file_public_v1_auth, 0)

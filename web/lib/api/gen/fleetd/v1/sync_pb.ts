@@ -2,824 +2,855 @@
 // @generated from file fleetd/v1/sync.proto (package fleetd.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
+import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
+import type { Timestamp } from '@bufbuild/protobuf/wkt'
+import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt'
+import type { Message } from '@bufbuild/protobuf'
 
 /**
  * Describes the file fleetd/v1/sync.proto.
  */
-export const file_fleetd_v1_sync: GenFile = /*@__PURE__*/
-  fileDesc("ChRmbGVldGQvdjEvc3luYy5wcm90bxIJZmxlZXRkLnYxIsMCChRTeW5jRGV2aWNlQ2FwYWJpbGl0eRIMCgR0aWVyGAEgASgFEhEKCXRvdGFsX3JhbRgCIAEoAxIVCg1hdmFpbGFibGVfcmFtGAMgASgDEhIKCnRvdGFsX2Rpc2sYBCABKAMSFgoOYXZhaWxhYmxlX2Rpc2sYBSABKAMSEQoJY3B1X2NvcmVzGAYgASgFEhQKDGFyY2hpdGVjdHVyZRgHIAEoCRIKCgJvcxgIIAEoCRISCgpoYXNfc3FsaXRlGAkgASgIEhoKEmxvY2FsX3N0b3JhZ2Vfc2l6ZRgKIAEoAxIdChVtYXhfbWV0cmljc19pbl9tZW1vcnkYCyABKAUSEwoLaGFzX25ldHdvcmsYDCABKAgSFgoOYmFuZHdpZHRoX2ticHMYDSABKAUSFgoOc3VwcG9ydHNfaHR0cDIYDiABKAgisgEKBk1ldHJpYxIMCgRuYW1lGAEgASgJEg0KBXZhbHVlGAIgASgBEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoGbGFiZWxzGAQgAygLMh0uZmxlZXRkLnYxLk1ldHJpYy5MYWJlbHNFbnRyeRotCgtMYWJlbHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIncKDE1ldHJpY3NCYXRjaBIiCgdtZXRyaWNzGAEgAygLMhEuZmxlZXRkLnYxLk1ldHJpYxITCgtjb21wcmVzc2lvbhgCIAEoCRIXCg9jb21wcmVzc2VkX2RhdGEYAyABKAwSFQoNb3JpZ2luYWxfc2l6ZRgEIAEoBSLJAQoITG9nRW50cnkSDQoFbGV2ZWwYASABKAkSDwoHbWVzc2FnZRgCIAEoCRItCgl0aW1lc3RhbXAYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBnNvdXJjZRgEIAEoCRIvCgZmaWVsZHMYBSADKAsyHy5mbGVldGQudjEuTG9nRW50cnkuRmllbGRzRW50cnkaLQoLRmllbGRzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJcCglMb2dzQmF0Y2gSIQoEbG9ncxgBIAMoCzITLmZsZWV0ZC52MS5Mb2dFbnRyeRITCgtjb21wcmVzc2lvbhgCIAEoCRIXCg9jb21wcmVzc2VkX2RhdGEYAyABKAwi1wEKDFN5bmNNZXRhZGF0YRIRCglkZXZpY2VfaWQYASABKAkSDgoGb3JnX2lkGAIgASgJEhcKD3NlcXVlbmNlX251bWJlchgDIAEoAxIvCgtjbGllbnRfdGltZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcmV0cnlfY291bnQYBSABKAUSEAoIY2hlY2tzdW0YBiABKAwSMwoKY2FwYWJpbGl0eRgHIAEoCzIfLmZsZWV0ZC52MS5TeW5jRGV2aWNlQ2FwYWJpbGl0eSL6AgoKU3luY0NvbmZpZxISCgpiYXRjaF9zaXplGAEgASgFEh0KFXN5bmNfaW50ZXJ2YWxfc2Vjb25kcxgCIAEoBRIXCg9yZXRlbnRpb25faG91cnMYAyABKAUSGwoTY29tcHJlc3Npb25fZW5hYmxlZBgEIAEoCBIYChBjb21wcmVzc2lvbl90eXBlGAUgASgJEhMKC21heF9yZXRyaWVzGAYgASgFEh8KF2luaXRpYWxfYmFja29mZl9zZWNvbmRzGAcgASgFEhsKE21heF9iYWNrb2ZmX3NlY29uZHMYCCABKAUSGgoSYmFja29mZl9tdWx0aXBsaWVyGAkgASgBEh4KFm1heF9tZXRyaWNzX3Blcl9zZWNvbmQYCiABKAUSGwoTbWF4X2xvZ3NfcGVyX3NlY29uZBgLIAEoBRIfChdtYXhfbG9jYWxfc3RvcmFnZV9ieXRlcxgMIAEoAxIcChRtYXhfbWV0cmljc19yZXRhaW5lZBgNIAEoBSJnChJTeW5jTWV0cmljc1JlcXVlc3QSKQoIbWV0YWRhdGEYASABKAsyFy5mbGVldGQudjEuU3luY01ldGFkYXRhEiYKBWJhdGNoGAIgASgLMhcuZmxlZXRkLnYxLk1ldHJpY3NCYXRjaCK3AQoTU3luY01ldHJpY3NSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEhkKEWxhc3Rfc2VxdWVuY2VfYWNrGAIgASgDEhUKDWVycm9yX21lc3NhZ2UYAyABKAkSLAoNY29uZmlnX3VwZGF0ZRgEIAEoCzIVLmZsZWV0ZC52MS5TeW5jQ29uZmlnEi8KC3NlcnZlcl90aW1lGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJhCg9TeW5jTG9nc1JlcXVlc3QSKQoIbWV0YWRhdGEYASABKAsyFy5mbGVldGQudjEuU3luY01ldGFkYXRhEiMKBWJhdGNoGAIgASgLMhQuZmxlZXRkLnYxLkxvZ3NCYXRjaCKDAQoQU3luY0xvZ3NSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEhkKEWxhc3Rfc2VxdWVuY2VfYWNrGAIgASgDEhUKDWVycm9yX21lc3NhZ2UYAyABKAkSLAoNY29uZmlnX3VwZGF0ZRgEIAEoCzIVLmZsZWV0ZC52MS5TeW5jQ29uZmlnIl4KFEdldFN5bmNDb25maWdSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRIzCgpjYXBhYmlsaXR5GAIgASgLMh8uZmxlZXRkLnYxLlN5bmNEZXZpY2VDYXBhYmlsaXR5ItwBChVHZXRTeW5jQ29uZmlnUmVzcG9uc2USJQoGY29uZmlnGAEgASgLMhUuZmxlZXRkLnYxLlN5bmNDb25maWcSGAoQbWV0cmljc19lbmRwb2ludBgCIAEoCRIVCg1sb2dzX2VuZHBvaW50GAMgASgJEhcKD2V2ZW50c19lbmRwb2ludBgEIAEoCRIaChJlbmFibGVfY29tcHJlc3Npb24YBSABKAgSFwoPZW5hYmxlX2JhdGNoaW5nGAYgASgIEh0KFWVuYWJsZV9lZGdlX2FuYWx5dGljcxgHIAEoCCLhAQoIU3luY0RhdGESKgoHbWV0cmljcxgBIAEoCzIXLmZsZWV0ZC52MS5NZXRyaWNzQmF0Y2hIABIkCgRsb2dzGAIgASgLMhQuZmxlZXRkLnYxLkxvZ3NCYXRjaEgAEi0KCWhlYXJ0YmVhdBgDIAEoCzIYLmZsZWV0ZC52MS5TeW5jSGVhcnRiZWF0SAASIQoDYWNrGAQgASgLMhIuZmxlZXRkLnYxLlN5bmNBY2tIABIpCghtZXRhZGF0YRgKIAEoCzIXLmZsZWV0ZC52MS5TeW5jTWV0YWRhdGFCBgoEZGF0YSKTAgoLU3luY0NvbW1hbmQSLgoNY29uZmlnX3VwZGF0ZRgBIAEoCzIVLmZsZWV0ZC52MS5TeW5jQ29uZmlnSAASJQoFZmx1c2gYAiABKAsyFC5mbGVldGQudjEuU3luY0ZsdXNoSAASJQoFcGF1c2UYAyABKAsyFC5mbGVldGQudjEuU3luY1BhdXNlSAASJwoGcmVzdW1lGAQgASgLMhUuZmxlZXRkLnYxLlN5bmNSZXN1bWVIABIhCgNhY2sYBSABKAsyEi5mbGVldGQudjEuU3luY0Fja0gAEi8KC3NlcnZlcl90aW1lGAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIJCgdjb21tYW5kIpUBCg1TeW5jSGVhcnRiZWF0EhgKEHVuc3luY2VkX21ldHJpY3MYASABKAMSFQoNdW5zeW5jZWRfbG9ncxgCIAEoAxIaChJzdG9yYWdlX3VzZWRfYnl0ZXMYAyABKAMSGQoRY3B1X3VzYWdlX3BlcmNlbnQYBCABKAESHAoUbWVtb3J5X3VzYWdlX3BlcmNlbnQYBSABKAEiSgoHU3luY0FjaxIXCg9zZXF1ZW5jZV9udW1iZXIYASABKAMSDwoHc3VjY2VzcxgCIAEoCBIVCg1lcnJvcl9tZXNzYWdlGAMgASgJIioKCVN5bmNGbHVzaBINCgVmb3JjZRgBIAEoCBIOCgZyZWFzb24YAiABKAkiNQoJU3luY1BhdXNlEhgKEGR1cmF0aW9uX3NlY29uZHMYASABKAUSDgoGcmVhc29uGAIgASgJIhwKClN5bmNSZXN1bWUSDgoGcmVhc29uGAEgASgJMrMCCgtTeW5jU2VydmljZRJMCgtTeW5jTWV0cmljcxIdLmZsZWV0ZC52MS5TeW5jTWV0cmljc1JlcXVlc3QaHi5mbGVldGQudjEuU3luY01ldHJpY3NSZXNwb25zZRJDCghTeW5jTG9ncxIaLmZsZWV0ZC52MS5TeW5jTG9nc1JlcXVlc3QaGy5mbGVldGQudjEuU3luY0xvZ3NSZXNwb25zZRJSCg1HZXRTeW5jQ29uZmlnEh8uZmxlZXRkLnYxLkdldFN5bmNDb25maWdSZXF1ZXN0GiAuZmxlZXRkLnYxLkdldFN5bmNDb25maWdSZXNwb25zZRI9CgpTdHJlYW1TeW5jEhMuZmxlZXRkLnYxLlN5bmNEYXRhGhYuZmxlZXRkLnYxLlN5bmNDb21tYW5kKAEwAUKAAQoNY29tLmZsZWV0ZC52MUIJU3luY1Byb3RvUAFaH2ZsZWV0ZC5zaC9nZW4vZmxlZXRkL3YxO2ZsZWV0cGKiAgNGWFiqAglGbGVldGQuVjHKAglGbGVldGRcVjHiAhVGbGVldGRcVjFcR1BCTWV0YWRhdGHqAgpGbGVldGQ6OlYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+export const file_fleetd_v1_sync: GenFile =
+  /*@__PURE__*/
+  fileDesc(
+    'ChRmbGVldGQvdjEvc3luYy5wcm90bxIJZmxlZXRkLnYxIsMCChRTeW5jRGV2aWNlQ2FwYWJpbGl0eRIMCgR0aWVyGAEgASgFEhEKCXRvdGFsX3JhbRgCIAEoAxIVCg1hdmFpbGFibGVfcmFtGAMgASgDEhIKCnRvdGFsX2Rpc2sYBCABKAMSFgoOYXZhaWxhYmxlX2Rpc2sYBSABKAMSEQoJY3B1X2NvcmVzGAYgASgFEhQKDGFyY2hpdGVjdHVyZRgHIAEoCRIKCgJvcxgIIAEoCRISCgpoYXNfc3FsaXRlGAkgASgIEhoKEmxvY2FsX3N0b3JhZ2Vfc2l6ZRgKIAEoAxIdChVtYXhfbWV0cmljc19pbl9tZW1vcnkYCyABKAUSEwoLaGFzX25ldHdvcmsYDCABKAgSFgoOYmFuZHdpZHRoX2ticHMYDSABKAUSFgoOc3VwcG9ydHNfaHR0cDIYDiABKAgisgEKBk1ldHJpYxIMCgRuYW1lGAEgASgJEg0KBXZhbHVlGAIgASgBEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoGbGFiZWxzGAQgAygLMh0uZmxlZXRkLnYxLk1ldHJpYy5MYWJlbHNFbnRyeRotCgtMYWJlbHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIncKDE1ldHJpY3NCYXRjaBIiCgdtZXRyaWNzGAEgAygLMhEuZmxlZXRkLnYxLk1ldHJpYxITCgtjb21wcmVzc2lvbhgCIAEoCRIXCg9jb21wcmVzc2VkX2RhdGEYAyABKAwSFQoNb3JpZ2luYWxfc2l6ZRgEIAEoBSLJAQoITG9nRW50cnkSDQoFbGV2ZWwYASABKAkSDwoHbWVzc2FnZRgCIAEoCRItCgl0aW1lc3RhbXAYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBnNvdXJjZRgEIAEoCRIvCgZmaWVsZHMYBSADKAsyHy5mbGVldGQudjEuTG9nRW50cnkuRmllbGRzRW50cnkaLQoLRmllbGRzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJcCglMb2dzQmF0Y2gSIQoEbG9ncxgBIAMoCzITLmZsZWV0ZC52MS5Mb2dFbnRyeRITCgtjb21wcmVzc2lvbhgCIAEoCRIXCg9jb21wcmVzc2VkX2RhdGEYAyABKAwi1wEKDFN5bmNNZXRhZGF0YRIRCglkZXZpY2VfaWQYASABKAkSDgoGb3JnX2lkGAIgASgJEhcKD3NlcXVlbmNlX251bWJlchgDIAEoAxIvCgtjbGllbnRfdGltZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcmV0cnlfY291bnQYBSABKAUSEAoIY2hlY2tzdW0YBiABKAwSMwoKY2FwYWJpbGl0eRgHIAEoCzIfLmZsZWV0ZC52MS5TeW5jRGV2aWNlQ2FwYWJpbGl0eSL6AgoKU3luY0NvbmZpZxISCgpiYXRjaF9zaXplGAEgASgFEh0KFXN5bmNfaW50ZXJ2YWxfc2Vjb25kcxgCIAEoBRIXCg9yZXRlbnRpb25faG91cnMYAyABKAUSGwoTY29tcHJlc3Npb25fZW5hYmxlZBgEIAEoCBIYChBjb21wcmVzc2lvbl90eXBlGAUgASgJEhMKC21heF9yZXRyaWVzGAYgASgFEh8KF2luaXRpYWxfYmFja29mZl9zZWNvbmRzGAcgASgFEhsKE21heF9iYWNrb2ZmX3NlY29uZHMYCCABKAUSGgoSYmFja29mZl9tdWx0aXBsaWVyGAkgASgBEh4KFm1heF9tZXRyaWNzX3Blcl9zZWNvbmQYCiABKAUSGwoTbWF4X2xvZ3NfcGVyX3NlY29uZBgLIAEoBRIfChdtYXhfbG9jYWxfc3RvcmFnZV9ieXRlcxgMIAEoAxIcChRtYXhfbWV0cmljc19yZXRhaW5lZBgNIAEoBSJnChJTeW5jTWV0cmljc1JlcXVlc3QSKQoIbWV0YWRhdGEYASABKAsyFy5mbGVldGQudjEuU3luY01ldGFkYXRhEiYKBWJhdGNoGAIgASgLMhcuZmxlZXRkLnYxLk1ldHJpY3NCYXRjaCK3AQoTU3luY01ldHJpY3NSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEhkKEWxhc3Rfc2VxdWVuY2VfYWNrGAIgASgDEhUKDWVycm9yX21lc3NhZ2UYAyABKAkSLAoNY29uZmlnX3VwZGF0ZRgEIAEoCzIVLmZsZWV0ZC52MS5TeW5jQ29uZmlnEi8KC3NlcnZlcl90aW1lGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJhCg9TeW5jTG9nc1JlcXVlc3QSKQoIbWV0YWRhdGEYASABKAsyFy5mbGVldGQudjEuU3luY01ldGFkYXRhEiMKBWJhdGNoGAIgASgLMhQuZmxlZXRkLnYxLkxvZ3NCYXRjaCKDAQoQU3luY0xvZ3NSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEhkKEWxhc3Rfc2VxdWVuY2VfYWNrGAIgASgDEhUKDWVycm9yX21lc3NhZ2UYAyABKAkSLAoNY29uZmlnX3VwZGF0ZRgEIAEoCzIVLmZsZWV0ZC52MS5TeW5jQ29uZmlnIl4KFEdldFN5bmNDb25maWdSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRIzCgpjYXBhYmlsaXR5GAIgASgLMh8uZmxlZXRkLnYxLlN5bmNEZXZpY2VDYXBhYmlsaXR5ItwBChVHZXRTeW5jQ29uZmlnUmVzcG9uc2USJQoGY29uZmlnGAEgASgLMhUuZmxlZXRkLnYxLlN5bmNDb25maWcSGAoQbWV0cmljc19lbmRwb2ludBgCIAEoCRIVCg1sb2dzX2VuZHBvaW50GAMgASgJEhcKD2V2ZW50c19lbmRwb2ludBgEIAEoCRIaChJlbmFibGVfY29tcHJlc3Npb24YBSABKAgSFwoPZW5hYmxlX2JhdGNoaW5nGAYgASgIEh0KFWVuYWJsZV9lZGdlX2FuYWx5dGljcxgHIAEoCCLhAQoIU3luY0RhdGESKgoHbWV0cmljcxgBIAEoCzIXLmZsZWV0ZC52MS5NZXRyaWNzQmF0Y2hIABIkCgRsb2dzGAIgASgLMhQuZmxlZXRkLnYxLkxvZ3NCYXRjaEgAEi0KCWhlYXJ0YmVhdBgDIAEoCzIYLmZsZWV0ZC52MS5TeW5jSGVhcnRiZWF0SAASIQoDYWNrGAQgASgLMhIuZmxlZXRkLnYxLlN5bmNBY2tIABIpCghtZXRhZGF0YRgKIAEoCzIXLmZsZWV0ZC52MS5TeW5jTWV0YWRhdGFCBgoEZGF0YSKTAgoLU3luY0NvbW1hbmQSLgoNY29uZmlnX3VwZGF0ZRgBIAEoCzIVLmZsZWV0ZC52MS5TeW5jQ29uZmlnSAASJQoFZmx1c2gYAiABKAsyFC5mbGVldGQudjEuU3luY0ZsdXNoSAASJQoFcGF1c2UYAyABKAsyFC5mbGVldGQudjEuU3luY1BhdXNlSAASJwoGcmVzdW1lGAQgASgLMhUuZmxlZXRkLnYxLlN5bmNSZXN1bWVIABIhCgNhY2sYBSABKAsyEi5mbGVldGQudjEuU3luY0Fja0gAEi8KC3NlcnZlcl90aW1lGAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEIJCgdjb21tYW5kIpUBCg1TeW5jSGVhcnRiZWF0EhgKEHVuc3luY2VkX21ldHJpY3MYASABKAMSFQoNdW5zeW5jZWRfbG9ncxgCIAEoAxIaChJzdG9yYWdlX3VzZWRfYnl0ZXMYAyABKAMSGQoRY3B1X3VzYWdlX3BlcmNlbnQYBCABKAESHAoUbWVtb3J5X3VzYWdlX3BlcmNlbnQYBSABKAEiSgoHU3luY0FjaxIXCg9zZXF1ZW5jZV9udW1iZXIYASABKAMSDwoHc3VjY2VzcxgCIAEoCBIVCg1lcnJvcl9tZXNzYWdlGAMgASgJIioKCVN5bmNGbHVzaBINCgVmb3JjZRgBIAEoCBIOCgZyZWFzb24YAiABKAkiNQoJU3luY1BhdXNlEhgKEGR1cmF0aW9uX3NlY29uZHMYASABKAUSDgoGcmVhc29uGAIgASgJIhwKClN5bmNSZXN1bWUSDgoGcmVhc29uGAEgASgJMrMCCgtTeW5jU2VydmljZRJMCgtTeW5jTWV0cmljcxIdLmZsZWV0ZC52MS5TeW5jTWV0cmljc1JlcXVlc3QaHi5mbGVldGQudjEuU3luY01ldHJpY3NSZXNwb25zZRJDCghTeW5jTG9ncxIaLmZsZWV0ZC52MS5TeW5jTG9nc1JlcXVlc3QaGy5mbGVldGQudjEuU3luY0xvZ3NSZXNwb25zZRJSCg1HZXRTeW5jQ29uZmlnEh8uZmxlZXRkLnYxLkdldFN5bmNDb25maWdSZXF1ZXN0GiAuZmxlZXRkLnYxLkdldFN5bmNDb25maWdSZXNwb25zZRI9CgpTdHJlYW1TeW5jEhMuZmxlZXRkLnYxLlN5bmNEYXRhGhYuZmxlZXRkLnYxLlN5bmNDb21tYW5kKAEwAUKAAQoNY29tLmZsZWV0ZC52MUIJU3luY1Byb3RvUAFaH2ZsZWV0ZC5zaC9nZW4vZmxlZXRkL3YxO2ZsZWV0cGKiAgNGWFiqAglGbGVldGQuVjHKAglGbGVldGRcVjHiAhVGbGVldGRcVjFcR1BCTWV0YWRhdGHqAgpGbGVldGQ6OlYxYgZwcm90bzM',
+    [file_google_protobuf_timestamp],
+  )
 
 /**
  * Device capability information for sync
  *
  * @generated from message fleetd.v1.SyncDeviceCapability
  */
-export type SyncDeviceCapability = Message<"fleetd.v1.SyncDeviceCapability"> & {
+export type SyncDeviceCapability = Message<'fleetd.v1.SyncDeviceCapability'> & {
   /**
    * 1=Full, 2=Constrained, 3=Minimal
    *
    * @generated from field: int32 tier = 1;
    */
-  tier: number;
+  tier: number
 
   /**
    * @generated from field: int64 total_ram = 2;
    */
-  totalRam: bigint;
+  totalRam: bigint
 
   /**
    * @generated from field: int64 available_ram = 3;
    */
-  availableRam: bigint;
+  availableRam: bigint
 
   /**
    * @generated from field: int64 total_disk = 4;
    */
-  totalDisk: bigint;
+  totalDisk: bigint
 
   /**
    * @generated from field: int64 available_disk = 5;
    */
-  availableDisk: bigint;
+  availableDisk: bigint
 
   /**
    * @generated from field: int32 cpu_cores = 6;
    */
-  cpuCores: number;
+  cpuCores: number
 
   /**
    * @generated from field: string architecture = 7;
    */
-  architecture: string;
+  architecture: string
 
   /**
    * @generated from field: string os = 8;
    */
-  os: string;
+  os: string
 
   /**
    * Storage capabilities
    *
    * @generated from field: bool has_sqlite = 9;
    */
-  hasSqlite: boolean;
+  hasSqlite: boolean
 
   /**
    * @generated from field: int64 local_storage_size = 10;
    */
-  localStorageSize: bigint;
+  localStorageSize: bigint
 
   /**
    * @generated from field: int32 max_metrics_in_memory = 11;
    */
-  maxMetricsInMemory: number;
+  maxMetricsInMemory: number
 
   /**
    * Network capabilities
    *
    * @generated from field: bool has_network = 12;
    */
-  hasNetwork: boolean;
+  hasNetwork: boolean
 
   /**
    * @generated from field: int32 bandwidth_kbps = 13;
    */
-  bandwidthKbps: number;
+  bandwidthKbps: number
 
   /**
    * @generated from field: bool supports_http2 = 14;
    */
-  supportsHttp2: boolean;
-};
+  supportsHttp2: boolean
+}
 
 /**
  * Describes the message fleetd.v1.SyncDeviceCapability.
  * Use `create(SyncDeviceCapabilitySchema)` to create a new message.
  */
-export const SyncDeviceCapabilitySchema: GenMessage<SyncDeviceCapability> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 0);
+export const SyncDeviceCapabilitySchema: GenMessage<SyncDeviceCapability> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 0)
 
 /**
  * Metric data point
  *
  * @generated from message fleetd.v1.Metric
  */
-export type Metric = Message<"fleetd.v1.Metric"> & {
+export type Metric = Message<'fleetd.v1.Metric'> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string;
+  name: string
 
   /**
    * @generated from field: double value = 2;
    */
-  value: number;
+  value: number
 
   /**
    * @generated from field: google.protobuf.Timestamp timestamp = 3;
    */
-  timestamp?: Timestamp;
+  timestamp?: Timestamp
 
   /**
    * @generated from field: map<string, string> labels = 4;
    */
-  labels: { [key: string]: string };
-};
+  labels: { [key: string]: string }
+}
 
 /**
  * Describes the message fleetd.v1.Metric.
  * Use `create(MetricSchema)` to create a new message.
  */
-export const MetricSchema: GenMessage<Metric> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 1);
+export const MetricSchema: GenMessage<Metric> = /*@__PURE__*/ messageDesc(file_fleetd_v1_sync, 1)
 
 /**
  * Compressed metrics batch
  *
  * @generated from message fleetd.v1.MetricsBatch
  */
-export type MetricsBatch = Message<"fleetd.v1.MetricsBatch"> & {
+export type MetricsBatch = Message<'fleetd.v1.MetricsBatch'> & {
   /**
    * @generated from field: repeated fleetd.v1.Metric metrics = 1;
    */
-  metrics: Metric[];
+  metrics: Metric[]
 
   /**
    * none, gzip, zstd
    *
    * @generated from field: string compression = 2;
    */
-  compression: string;
+  compression: string
 
   /**
    * If compression != none
    *
    * @generated from field: bytes compressed_data = 3;
    */
-  compressedData: Uint8Array;
+  compressedData: Uint8Array
 
   /**
    * @generated from field: int32 original_size = 4;
    */
-  originalSize: number;
-};
+  originalSize: number
+}
 
 /**
  * Describes the message fleetd.v1.MetricsBatch.
  * Use `create(MetricsBatchSchema)` to create a new message.
  */
-export const MetricsBatchSchema: GenMessage<MetricsBatch> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 2);
+export const MetricsBatchSchema: GenMessage<MetricsBatch> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 2)
 
 /**
  * Log entry
  *
  * @generated from message fleetd.v1.LogEntry
  */
-export type LogEntry = Message<"fleetd.v1.LogEntry"> & {
+export type LogEntry = Message<'fleetd.v1.LogEntry'> & {
   /**
    * debug, info, warn, error, fatal
    *
    * @generated from field: string level = 1;
    */
-  level: string;
+  level: string
 
   /**
    * @generated from field: string message = 2;
    */
-  message: string;
+  message: string
 
   /**
    * @generated from field: google.protobuf.Timestamp timestamp = 3;
    */
-  timestamp?: Timestamp;
+  timestamp?: Timestamp
 
   /**
    * @generated from field: string source = 4;
    */
-  source: string;
+  source: string
 
   /**
    * @generated from field: map<string, string> fields = 5;
    */
-  fields: { [key: string]: string };
-};
+  fields: { [key: string]: string }
+}
 
 /**
  * Describes the message fleetd.v1.LogEntry.
  * Use `create(LogEntrySchema)` to create a new message.
  */
-export const LogEntrySchema: GenMessage<LogEntry> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 3);
+export const LogEntrySchema: GenMessage<LogEntry> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 3)
 
 /**
  * Logs batch
  *
  * @generated from message fleetd.v1.LogsBatch
  */
-export type LogsBatch = Message<"fleetd.v1.LogsBatch"> & {
+export type LogsBatch = Message<'fleetd.v1.LogsBatch'> & {
   /**
    * @generated from field: repeated fleetd.v1.LogEntry logs = 1;
    */
-  logs: LogEntry[];
+  logs: LogEntry[]
 
   /**
    * @generated from field: string compression = 2;
    */
-  compression: string;
+  compression: string
 
   /**
    * @generated from field: bytes compressed_data = 3;
    */
-  compressedData: Uint8Array;
-};
+  compressedData: Uint8Array
+}
 
 /**
  * Describes the message fleetd.v1.LogsBatch.
  * Use `create(LogsBatchSchema)` to create a new message.
  */
-export const LogsBatchSchema: GenMessage<LogsBatch> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 4);
+export const LogsBatchSchema: GenMessage<LogsBatch> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 4)
 
 /**
  * Sync metadata
  *
  * @generated from message fleetd.v1.SyncMetadata
  */
-export type SyncMetadata = Message<"fleetd.v1.SyncMetadata"> & {
+export type SyncMetadata = Message<'fleetd.v1.SyncMetadata'> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string;
+  deviceId: string
 
   /**
    * @generated from field: string org_id = 2;
    */
-  orgId: string;
+  orgId: string
 
   /**
    * @generated from field: int64 sequence_number = 3;
    */
-  sequenceNumber: bigint;
+  sequenceNumber: bigint
 
   /**
    * @generated from field: google.protobuf.Timestamp client_time = 4;
    */
-  clientTime?: Timestamp;
+  clientTime?: Timestamp
 
   /**
    * @generated from field: int32 retry_count = 5;
    */
-  retryCount: number;
+  retryCount: number
 
   /**
    * SHA256 of uncompressed data
    *
    * @generated from field: bytes checksum = 6;
    */
-  checksum: Uint8Array;
+  checksum: Uint8Array
 
   /**
    * @generated from field: fleetd.v1.SyncDeviceCapability capability = 7;
    */
-  capability?: SyncDeviceCapability;
-};
+  capability?: SyncDeviceCapability
+}
 
 /**
  * Describes the message fleetd.v1.SyncMetadata.
  * Use `create(SyncMetadataSchema)` to create a new message.
  */
-export const SyncMetadataSchema: GenMessage<SyncMetadata> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 5);
+export const SyncMetadataSchema: GenMessage<SyncMetadata> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 5)
 
 /**
  * Sync configuration
  *
  * @generated from message fleetd.v1.SyncConfig
  */
-export type SyncConfig = Message<"fleetd.v1.SyncConfig"> & {
+export type SyncConfig = Message<'fleetd.v1.SyncConfig'> & {
   /**
    * @generated from field: int32 batch_size = 1;
    */
-  batchSize: number;
+  batchSize: number
 
   /**
    * @generated from field: int32 sync_interval_seconds = 2;
    */
-  syncIntervalSeconds: number;
+  syncIntervalSeconds: number
 
   /**
    * @generated from field: int32 retention_hours = 3;
    */
-  retentionHours: number;
+  retentionHours: number
 
   /**
    * @generated from field: bool compression_enabled = 4;
    */
-  compressionEnabled: boolean;
+  compressionEnabled: boolean
 
   /**
    * @generated from field: string compression_type = 5;
    */
-  compressionType: string;
+  compressionType: string
 
   /**
    * @generated from field: int32 max_retries = 6;
    */
-  maxRetries: number;
+  maxRetries: number
 
   /**
    * Backoff configuration
    *
    * @generated from field: int32 initial_backoff_seconds = 7;
    */
-  initialBackoffSeconds: number;
+  initialBackoffSeconds: number
 
   /**
    * @generated from field: int32 max_backoff_seconds = 8;
    */
-  maxBackoffSeconds: number;
+  maxBackoffSeconds: number
 
   /**
    * @generated from field: double backoff_multiplier = 9;
    */
-  backoffMultiplier: number;
+  backoffMultiplier: number
 
   /**
    * Rate limiting
    *
    * @generated from field: int32 max_metrics_per_second = 10;
    */
-  maxMetricsPerSecond: number;
+  maxMetricsPerSecond: number
 
   /**
    * @generated from field: int32 max_logs_per_second = 11;
    */
-  maxLogsPerSecond: number;
+  maxLogsPerSecond: number
 
   /**
    * Storage configuration
    *
    * @generated from field: int64 max_local_storage_bytes = 12;
    */
-  maxLocalStorageBytes: bigint;
+  maxLocalStorageBytes: bigint
 
   /**
    * @generated from field: int32 max_metrics_retained = 13;
    */
-  maxMetricsRetained: number;
-};
+  maxMetricsRetained: number
+}
 
 /**
  * Describes the message fleetd.v1.SyncConfig.
  * Use `create(SyncConfigSchema)` to create a new message.
  */
-export const SyncConfigSchema: GenMessage<SyncConfig> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 6);
+export const SyncConfigSchema: GenMessage<SyncConfig> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 6)
 
 /**
  * Request to sync metrics
  *
  * @generated from message fleetd.v1.SyncMetricsRequest
  */
-export type SyncMetricsRequest = Message<"fleetd.v1.SyncMetricsRequest"> & {
+export type SyncMetricsRequest = Message<'fleetd.v1.SyncMetricsRequest'> & {
   /**
    * @generated from field: fleetd.v1.SyncMetadata metadata = 1;
    */
-  metadata?: SyncMetadata;
+  metadata?: SyncMetadata
 
   /**
    * @generated from field: fleetd.v1.MetricsBatch batch = 2;
    */
-  batch?: MetricsBatch;
-};
+  batch?: MetricsBatch
+}
 
 /**
  * Describes the message fleetd.v1.SyncMetricsRequest.
  * Use `create(SyncMetricsRequestSchema)` to create a new message.
  */
-export const SyncMetricsRequestSchema: GenMessage<SyncMetricsRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 7);
+export const SyncMetricsRequestSchema: GenMessage<SyncMetricsRequest> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 7)
 
 /**
  * Response from metrics sync
  *
  * @generated from message fleetd.v1.SyncMetricsResponse
  */
-export type SyncMetricsResponse = Message<"fleetd.v1.SyncMetricsResponse"> & {
+export type SyncMetricsResponse = Message<'fleetd.v1.SyncMetricsResponse'> & {
   /**
    * @generated from field: bool success = 1;
    */
-  success: boolean;
+  success: boolean
 
   /**
    * @generated from field: int64 last_sequence_ack = 2;
    */
-  lastSequenceAck: bigint;
+  lastSequenceAck: bigint
 
   /**
    * @generated from field: string error_message = 3;
    */
-  errorMessage: string;
+  errorMessage: string
 
   /**
    * Server can send back updated config
    *
    * @generated from field: fleetd.v1.SyncConfig config_update = 4;
    */
-  configUpdate?: SyncConfig;
+  configUpdate?: SyncConfig
 
   /**
    * Server time for clock sync
    *
    * @generated from field: google.protobuf.Timestamp server_time = 5;
    */
-  serverTime?: Timestamp;
-};
+  serverTime?: Timestamp
+}
 
 /**
  * Describes the message fleetd.v1.SyncMetricsResponse.
  * Use `create(SyncMetricsResponseSchema)` to create a new message.
  */
-export const SyncMetricsResponseSchema: GenMessage<SyncMetricsResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 8);
+export const SyncMetricsResponseSchema: GenMessage<SyncMetricsResponse> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 8)
 
 /**
  * Request to sync logs
  *
  * @generated from message fleetd.v1.SyncLogsRequest
  */
-export type SyncLogsRequest = Message<"fleetd.v1.SyncLogsRequest"> & {
+export type SyncLogsRequest = Message<'fleetd.v1.SyncLogsRequest'> & {
   /**
    * @generated from field: fleetd.v1.SyncMetadata metadata = 1;
    */
-  metadata?: SyncMetadata;
+  metadata?: SyncMetadata
 
   /**
    * @generated from field: fleetd.v1.LogsBatch batch = 2;
    */
-  batch?: LogsBatch;
-};
+  batch?: LogsBatch
+}
 
 /**
  * Describes the message fleetd.v1.SyncLogsRequest.
  * Use `create(SyncLogsRequestSchema)` to create a new message.
  */
-export const SyncLogsRequestSchema: GenMessage<SyncLogsRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 9);
+export const SyncLogsRequestSchema: GenMessage<SyncLogsRequest> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 9)
 
 /**
  * Response from logs sync
  *
  * @generated from message fleetd.v1.SyncLogsResponse
  */
-export type SyncLogsResponse = Message<"fleetd.v1.SyncLogsResponse"> & {
+export type SyncLogsResponse = Message<'fleetd.v1.SyncLogsResponse'> & {
   /**
    * @generated from field: bool success = 1;
    */
-  success: boolean;
+  success: boolean
 
   /**
    * @generated from field: int64 last_sequence_ack = 2;
    */
-  lastSequenceAck: bigint;
+  lastSequenceAck: bigint
 
   /**
    * @generated from field: string error_message = 3;
    */
-  errorMessage: string;
+  errorMessage: string
 
   /**
    * @generated from field: fleetd.v1.SyncConfig config_update = 4;
    */
-  configUpdate?: SyncConfig;
-};
+  configUpdate?: SyncConfig
+}
 
 /**
  * Describes the message fleetd.v1.SyncLogsResponse.
  * Use `create(SyncLogsResponseSchema)` to create a new message.
  */
-export const SyncLogsResponseSchema: GenMessage<SyncLogsResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 10);
+export const SyncLogsResponseSchema: GenMessage<SyncLogsResponse> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 10)
 
 /**
  * Request for sync configuration
  *
  * @generated from message fleetd.v1.GetSyncConfigRequest
  */
-export type GetSyncConfigRequest = Message<"fleetd.v1.GetSyncConfigRequest"> & {
+export type GetSyncConfigRequest = Message<'fleetd.v1.GetSyncConfigRequest'> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string;
+  deviceId: string
 
   /**
    * @generated from field: fleetd.v1.SyncDeviceCapability capability = 2;
    */
-  capability?: SyncDeviceCapability;
-};
+  capability?: SyncDeviceCapability
+}
 
 /**
  * Describes the message fleetd.v1.GetSyncConfigRequest.
  * Use `create(GetSyncConfigRequestSchema)` to create a new message.
  */
-export const GetSyncConfigRequestSchema: GenMessage<GetSyncConfigRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 11);
+export const GetSyncConfigRequestSchema: GenMessage<GetSyncConfigRequest> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 11)
 
 /**
  * Response with sync configuration
  *
  * @generated from message fleetd.v1.GetSyncConfigResponse
  */
-export type GetSyncConfigResponse = Message<"fleetd.v1.GetSyncConfigResponse"> & {
+export type GetSyncConfigResponse = Message<'fleetd.v1.GetSyncConfigResponse'> & {
   /**
    * @generated from field: fleetd.v1.SyncConfig config = 1;
    */
-  config?: SyncConfig;
+  config?: SyncConfig
 
   /**
    * Server endpoints for different data types
    *
    * @generated from field: string metrics_endpoint = 2;
    */
-  metricsEndpoint: string;
+  metricsEndpoint: string
 
   /**
    * @generated from field: string logs_endpoint = 3;
    */
-  logsEndpoint: string;
+  logsEndpoint: string
 
   /**
    * @generated from field: string events_endpoint = 4;
    */
-  eventsEndpoint: string;
+  eventsEndpoint: string
 
   /**
    * Feature flags
    *
    * @generated from field: bool enable_compression = 5;
    */
-  enableCompression: boolean;
+  enableCompression: boolean
 
   /**
    * @generated from field: bool enable_batching = 6;
    */
-  enableBatching: boolean;
+  enableBatching: boolean
 
   /**
    * @generated from field: bool enable_edge_analytics = 7;
    */
-  enableEdgeAnalytics: boolean;
-};
+  enableEdgeAnalytics: boolean
+}
 
 /**
  * Describes the message fleetd.v1.GetSyncConfigResponse.
  * Use `create(GetSyncConfigResponseSchema)` to create a new message.
  */
-export const GetSyncConfigResponseSchema: GenMessage<GetSyncConfigResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 12);
+export const GetSyncConfigResponseSchema: GenMessage<GetSyncConfigResponse> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 12)
 
 /**
  * Bidirectional sync data
  *
  * @generated from message fleetd.v1.SyncData
  */
-export type SyncData = Message<"fleetd.v1.SyncData"> & {
+export type SyncData = Message<'fleetd.v1.SyncData'> & {
   /**
    * @generated from oneof fleetd.v1.SyncData.data
    */
-  data: {
-    /**
-     * @generated from field: fleetd.v1.MetricsBatch metrics = 1;
-     */
-    value: MetricsBatch;
-    case: "metrics";
-  } | {
-    /**
-     * @generated from field: fleetd.v1.LogsBatch logs = 2;
-     */
-    value: LogsBatch;
-    case: "logs";
-  } | {
-    /**
-     * @generated from field: fleetd.v1.SyncHeartbeat heartbeat = 3;
-     */
-    value: SyncHeartbeat;
-    case: "heartbeat";
-  } | {
-    /**
-     * @generated from field: fleetd.v1.SyncAck ack = 4;
-     */
-    value: SyncAck;
-    case: "ack";
-  } | { case: undefined; value?: undefined };
+  data:
+    | {
+        /**
+         * @generated from field: fleetd.v1.MetricsBatch metrics = 1;
+         */
+        value: MetricsBatch
+        case: 'metrics'
+      }
+    | {
+        /**
+         * @generated from field: fleetd.v1.LogsBatch logs = 2;
+         */
+        value: LogsBatch
+        case: 'logs'
+      }
+    | {
+        /**
+         * @generated from field: fleetd.v1.SyncHeartbeat heartbeat = 3;
+         */
+        value: SyncHeartbeat
+        case: 'heartbeat'
+      }
+    | {
+        /**
+         * @generated from field: fleetd.v1.SyncAck ack = 4;
+         */
+        value: SyncAck
+        case: 'ack'
+      }
+    | { case: undefined; value?: undefined }
 
   /**
    * @generated from field: fleetd.v1.SyncMetadata metadata = 10;
    */
-  metadata?: SyncMetadata;
-};
+  metadata?: SyncMetadata
+}
 
 /**
  * Describes the message fleetd.v1.SyncData.
  * Use `create(SyncDataSchema)` to create a new message.
  */
-export const SyncDataSchema: GenMessage<SyncData> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 13);
+export const SyncDataSchema: GenMessage<SyncData> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 13)
 
 /**
  * Sync command from server
  *
  * @generated from message fleetd.v1.SyncCommand
  */
-export type SyncCommand = Message<"fleetd.v1.SyncCommand"> & {
+export type SyncCommand = Message<'fleetd.v1.SyncCommand'> & {
   /**
    * @generated from oneof fleetd.v1.SyncCommand.command
    */
-  command: {
-    /**
-     * @generated from field: fleetd.v1.SyncConfig config_update = 1;
-     */
-    value: SyncConfig;
-    case: "configUpdate";
-  } | {
-    /**
-     * @generated from field: fleetd.v1.SyncFlush flush = 2;
-     */
-    value: SyncFlush;
-    case: "flush";
-  } | {
-    /**
-     * @generated from field: fleetd.v1.SyncPause pause = 3;
-     */
-    value: SyncPause;
-    case: "pause";
-  } | {
-    /**
-     * @generated from field: fleetd.v1.SyncResume resume = 4;
-     */
-    value: SyncResume;
-    case: "resume";
-  } | {
-    /**
-     * @generated from field: fleetd.v1.SyncAck ack = 5;
-     */
-    value: SyncAck;
-    case: "ack";
-  } | { case: undefined; value?: undefined };
+  command:
+    | {
+        /**
+         * @generated from field: fleetd.v1.SyncConfig config_update = 1;
+         */
+        value: SyncConfig
+        case: 'configUpdate'
+      }
+    | {
+        /**
+         * @generated from field: fleetd.v1.SyncFlush flush = 2;
+         */
+        value: SyncFlush
+        case: 'flush'
+      }
+    | {
+        /**
+         * @generated from field: fleetd.v1.SyncPause pause = 3;
+         */
+        value: SyncPause
+        case: 'pause'
+      }
+    | {
+        /**
+         * @generated from field: fleetd.v1.SyncResume resume = 4;
+         */
+        value: SyncResume
+        case: 'resume'
+      }
+    | {
+        /**
+         * @generated from field: fleetd.v1.SyncAck ack = 5;
+         */
+        value: SyncAck
+        case: 'ack'
+      }
+    | { case: undefined; value?: undefined }
 
   /**
    * @generated from field: google.protobuf.Timestamp server_time = 10;
    */
-  serverTime?: Timestamp;
-};
+  serverTime?: Timestamp
+}
 
 /**
  * Describes the message fleetd.v1.SyncCommand.
  * Use `create(SyncCommandSchema)` to create a new message.
  */
-export const SyncCommandSchema: GenMessage<SyncCommand> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 14);
+export const SyncCommandSchema: GenMessage<SyncCommand> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 14)
 
 /**
  * Heartbeat message
  *
  * @generated from message fleetd.v1.SyncHeartbeat
  */
-export type SyncHeartbeat = Message<"fleetd.v1.SyncHeartbeat"> & {
+export type SyncHeartbeat = Message<'fleetd.v1.SyncHeartbeat'> & {
   /**
    * @generated from field: int64 unsynced_metrics = 1;
    */
-  unsyncedMetrics: bigint;
+  unsyncedMetrics: bigint
 
   /**
    * @generated from field: int64 unsynced_logs = 2;
    */
-  unsyncedLogs: bigint;
+  unsyncedLogs: bigint
 
   /**
    * @generated from field: int64 storage_used_bytes = 3;
    */
-  storageUsedBytes: bigint;
+  storageUsedBytes: bigint
 
   /**
    * @generated from field: double cpu_usage_percent = 4;
    */
-  cpuUsagePercent: number;
+  cpuUsagePercent: number
 
   /**
    * @generated from field: double memory_usage_percent = 5;
    */
-  memoryUsagePercent: number;
-};
+  memoryUsagePercent: number
+}
 
 /**
  * Describes the message fleetd.v1.SyncHeartbeat.
  * Use `create(SyncHeartbeatSchema)` to create a new message.
  */
-export const SyncHeartbeatSchema: GenMessage<SyncHeartbeat> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 15);
+export const SyncHeartbeatSchema: GenMessage<SyncHeartbeat> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 15)
 
 /**
  * Acknowledgment message
  *
  * @generated from message fleetd.v1.SyncAck
  */
-export type SyncAck = Message<"fleetd.v1.SyncAck"> & {
+export type SyncAck = Message<'fleetd.v1.SyncAck'> & {
   /**
    * @generated from field: int64 sequence_number = 1;
    */
-  sequenceNumber: bigint;
+  sequenceNumber: bigint
 
   /**
    * @generated from field: bool success = 2;
    */
-  success: boolean;
+  success: boolean
 
   /**
    * @generated from field: string error_message = 3;
    */
-  errorMessage: string;
-};
+  errorMessage: string
+}
 
 /**
  * Describes the message fleetd.v1.SyncAck.
  * Use `create(SyncAckSchema)` to create a new message.
  */
-export const SyncAckSchema: GenMessage<SyncAck> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 16);
+export const SyncAckSchema: GenMessage<SyncAck> = /*@__PURE__*/ messageDesc(file_fleetd_v1_sync, 16)
 
 /**
  * Flush command
  *
  * @generated from message fleetd.v1.SyncFlush
  */
-export type SyncFlush = Message<"fleetd.v1.SyncFlush"> & {
+export type SyncFlush = Message<'fleetd.v1.SyncFlush'> & {
   /**
    * @generated from field: bool force = 1;
    */
-  force: boolean;
+  force: boolean
 
   /**
    * @generated from field: string reason = 2;
    */
-  reason: string;
-};
+  reason: string
+}
 
 /**
  * Describes the message fleetd.v1.SyncFlush.
  * Use `create(SyncFlushSchema)` to create a new message.
  */
-export const SyncFlushSchema: GenMessage<SyncFlush> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 17);
+export const SyncFlushSchema: GenMessage<SyncFlush> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 17)
 
 /**
  * Pause sync command
  *
  * @generated from message fleetd.v1.SyncPause
  */
-export type SyncPause = Message<"fleetd.v1.SyncPause"> & {
+export type SyncPause = Message<'fleetd.v1.SyncPause'> & {
   /**
    * @generated from field: int32 duration_seconds = 1;
    */
-  durationSeconds: number;
+  durationSeconds: number
 
   /**
    * @generated from field: string reason = 2;
    */
-  reason: string;
-};
+  reason: string
+}
 
 /**
  * Describes the message fleetd.v1.SyncPause.
  * Use `create(SyncPauseSchema)` to create a new message.
  */
-export const SyncPauseSchema: GenMessage<SyncPause> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 18);
+export const SyncPauseSchema: GenMessage<SyncPause> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 18)
 
 /**
  * Resume sync command
  *
  * @generated from message fleetd.v1.SyncResume
  */
-export type SyncResume = Message<"fleetd.v1.SyncResume"> & {
+export type SyncResume = Message<'fleetd.v1.SyncResume'> & {
   /**
    * @generated from field: string reason = 1;
    */
-  reason: string;
-};
+  reason: string
+}
 
 /**
  * Describes the message fleetd.v1.SyncResume.
  * Use `create(SyncResumeSchema)` to create a new message.
  */
-export const SyncResumeSchema: GenMessage<SyncResume> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_sync, 19);
+export const SyncResumeSchema: GenMessage<SyncResume> =
+  /*@__PURE__*/
+  messageDesc(file_fleetd_v1_sync, 19)
 
 /**
  * SyncService handles data synchronization between devices and server
@@ -833,40 +864,38 @@ export const SyncService: GenService<{
    * @generated from rpc fleetd.v1.SyncService.SyncMetrics
    */
   syncMetrics: {
-    methodKind: "unary";
-    input: typeof SyncMetricsRequestSchema;
-    output: typeof SyncMetricsResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof SyncMetricsRequestSchema
+    output: typeof SyncMetricsResponseSchema
+  }
   /**
    * SyncLogs uploads logs from device to server
    *
    * @generated from rpc fleetd.v1.SyncService.SyncLogs
    */
   syncLogs: {
-    methodKind: "unary";
-    input: typeof SyncLogsRequestSchema;
-    output: typeof SyncLogsResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof SyncLogsRequestSchema
+    output: typeof SyncLogsResponseSchema
+  }
   /**
    * GetSyncConfig gets updated sync configuration for device
    *
    * @generated from rpc fleetd.v1.SyncService.GetSyncConfig
    */
   getSyncConfig: {
-    methodKind: "unary";
-    input: typeof GetSyncConfigRequestSchema;
-    output: typeof GetSyncConfigResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof GetSyncConfigRequestSchema
+    output: typeof GetSyncConfigResponseSchema
+  }
   /**
    * StreamSync establishes bidirectional sync stream
    *
    * @generated from rpc fleetd.v1.SyncService.StreamSync
    */
   streamSync: {
-    methodKind: "bidi_streaming";
-    input: typeof SyncDataSchema;
-    output: typeof SyncCommandSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_fleetd_v1_sync, 0);
-
+    methodKind: 'bidi_streaming'
+    input: typeof SyncDataSchema
+    output: typeof SyncCommandSchema
+  }
+}> = /*@__PURE__*/ serviceDesc(file_fleetd_v1_sync, 0)

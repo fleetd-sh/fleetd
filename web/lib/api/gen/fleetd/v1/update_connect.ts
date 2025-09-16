@@ -3,14 +3,25 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateUpdateCampaignRequest, CreateUpdateCampaignResponse, GetDeviceUpdateStatusRequest, GetDeviceUpdateStatusResponse, GetUpdateCampaignRequest, GetUpdateCampaignResponse, ListUpdateCampaignsRequest, ListUpdateCampaignsResponse, ReportUpdateStatusRequest, ReportUpdateStatusResponse } from "./update_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
+import {
+  CreateUpdateCampaignRequest,
+  CreateUpdateCampaignResponse,
+  GetDeviceUpdateStatusRequest,
+  GetDeviceUpdateStatusResponse,
+  GetUpdateCampaignRequest,
+  GetUpdateCampaignResponse,
+  ListUpdateCampaignsRequest,
+  ListUpdateCampaignsResponse,
+  ReportUpdateStatusRequest,
+  ReportUpdateStatusResponse,
+} from './update_pb.js'
+import { MethodKind } from '@bufbuild/protobuf'
 
 /**
  * @generated from service fleetd.v1.UpdateService
  */
 export const UpdateService = {
-  typeName: "fleetd.v1.UpdateService",
+  typeName: 'fleetd.v1.UpdateService',
   methods: {
     /**
      * Create a new update campaign
@@ -18,7 +29,7 @@ export const UpdateService = {
      * @generated from rpc fleetd.v1.UpdateService.CreateUpdateCampaign
      */
     createUpdateCampaign: {
-      name: "CreateUpdateCampaign",
+      name: 'CreateUpdateCampaign',
       I: CreateUpdateCampaignRequest,
       O: CreateUpdateCampaignResponse,
       kind: MethodKind.Unary,
@@ -29,7 +40,7 @@ export const UpdateService = {
      * @generated from rpc fleetd.v1.UpdateService.GetUpdateCampaign
      */
     getUpdateCampaign: {
-      name: "GetUpdateCampaign",
+      name: 'GetUpdateCampaign',
       I: GetUpdateCampaignRequest,
       O: GetUpdateCampaignResponse,
       kind: MethodKind.Unary,
@@ -40,7 +51,7 @@ export const UpdateService = {
      * @generated from rpc fleetd.v1.UpdateService.ListUpdateCampaigns
      */
     listUpdateCampaigns: {
-      name: "ListUpdateCampaigns",
+      name: 'ListUpdateCampaigns',
       I: ListUpdateCampaignsRequest,
       O: ListUpdateCampaignsResponse,
       kind: MethodKind.Unary,
@@ -51,7 +62,7 @@ export const UpdateService = {
      * @generated from rpc fleetd.v1.UpdateService.GetDeviceUpdateStatus
      */
     getDeviceUpdateStatus: {
-      name: "GetDeviceUpdateStatus",
+      name: 'GetDeviceUpdateStatus',
       I: GetDeviceUpdateStatusRequest,
       O: GetDeviceUpdateStatusResponse,
       kind: MethodKind.Unary,
@@ -62,11 +73,10 @@ export const UpdateService = {
      * @generated from rpc fleetd.v1.UpdateService.ReportUpdateStatus
      */
     reportUpdateStatus: {
-      name: "ReportUpdateStatus",
+      name: 'ReportUpdateStatus',
       I: ReportUpdateStatusRequest,
       O: ReportUpdateStatusResponse,
       kind: MethodKind.Unary,
     },
-  }
-} as const;
-
+  },
+} as const

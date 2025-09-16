@@ -3,8 +3,17 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetSyncConfigRequest, GetSyncConfigResponse, SyncCommand, SyncData, SyncLogsRequest, SyncLogsResponse, SyncMetricsRequest, SyncMetricsResponse } from "./sync_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
+import {
+  GetSyncConfigRequest,
+  GetSyncConfigResponse,
+  SyncCommand,
+  SyncData,
+  SyncLogsRequest,
+  SyncLogsResponse,
+  SyncMetricsRequest,
+  SyncMetricsResponse,
+} from './sync_pb.js'
+import { MethodKind } from '@bufbuild/protobuf'
 
 /**
  * SyncService handles data synchronization between devices and server
@@ -12,7 +21,7 @@ import { MethodKind } from "@bufbuild/protobuf";
  * @generated from service fleetd.v1.SyncService
  */
 export const SyncService = {
-  typeName: "fleetd.v1.SyncService",
+  typeName: 'fleetd.v1.SyncService',
   methods: {
     /**
      * SyncMetrics uploads metrics from device to server
@@ -20,7 +29,7 @@ export const SyncService = {
      * @generated from rpc fleetd.v1.SyncService.SyncMetrics
      */
     syncMetrics: {
-      name: "SyncMetrics",
+      name: 'SyncMetrics',
       I: SyncMetricsRequest,
       O: SyncMetricsResponse,
       kind: MethodKind.Unary,
@@ -31,7 +40,7 @@ export const SyncService = {
      * @generated from rpc fleetd.v1.SyncService.SyncLogs
      */
     syncLogs: {
-      name: "SyncLogs",
+      name: 'SyncLogs',
       I: SyncLogsRequest,
       O: SyncLogsResponse,
       kind: MethodKind.Unary,
@@ -42,7 +51,7 @@ export const SyncService = {
      * @generated from rpc fleetd.v1.SyncService.GetSyncConfig
      */
     getSyncConfig: {
-      name: "GetSyncConfig",
+      name: 'GetSyncConfig',
       I: GetSyncConfigRequest,
       O: GetSyncConfigResponse,
       kind: MethodKind.Unary,
@@ -53,11 +62,10 @@ export const SyncService = {
      * @generated from rpc fleetd.v1.SyncService.StreamSync
      */
     streamSync: {
-      name: "StreamSync",
+      name: 'StreamSync',
       I: SyncData,
       O: SyncCommand,
       kind: MethodKind.BiDiStreaming,
     },
-  }
-} as const;
-
+  },
+} as const
