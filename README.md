@@ -1,4 +1,4 @@
-# FleetD
+# fleetd
 
 > [!WARNING]
 > This is _very_ early work in progress.
