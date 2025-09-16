@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "biome check --write .",
     "format": "biome format --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'No tests configured yet' && exit 0"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.2.0",
