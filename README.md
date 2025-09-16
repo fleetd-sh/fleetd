@@ -311,26 +311,16 @@ just watch-test
 
 ## 📚 Documentation
 
-Comprehensive documentation is available in the `/docs` directory:
+Comprehensive documentation is available in our [Wiki](https://github.com/fleetd-sh/fleetd/wiki):
 
-- [Architecture Overview](docs/architecture.md)
-- [API Reference](docs/API_REFERENCE.md)
-- [Developer Guide](docs/DEVELOPER_GUIDE.md)
-- [Production Guide](docs/PRODUCTION_GUIDE.md)
-- [Authentication](docs/AUTHENTICATION.md)
-- [Data Architecture](docs/DATA_ARCHITECTURE.md)
-- [Fleet Management](docs/FLEET_MANAGEMENT.md)
-- [Software Lifecycle](docs/SOFTWARE_LIFECYCLE.md)
-
-### Generate Documentation
-
-```bash
-# Generate API documentation
-just docs-api
-
-# Serve documentation locally
-just docs-serve
-```
+- [Getting Started](https://github.com/fleetd-sh/fleetd/wiki/Getting-Started)
+- [Architecture Overview](https://github.com/fleetd-sh/fleetd/wiki/Architecture)
+- [CLI Reference](https://github.com/fleetd-sh/fleetd/wiki/CLI-Reference)
+- [API Documentation](https://github.com/fleetd-sh/fleetd/wiki/API-Documentation)
+- [Device Management](https://github.com/fleetd-sh/fleetd/wiki/Device-Management)
+- [Deployment Guide](https://github.com/fleetd-sh/fleetd/wiki/Deployment-Guide)
+- [Troubleshooting](https://github.com/fleetd-sh/fleetd/wiki/Troubleshooting)
+- [Contributing](https://github.com/fleetd-sh/fleetd/wiki/Contributing)
 
 ## 🔧 Utility Commands
 
@@ -387,7 +377,7 @@ fleetd/
 │   └── lib/              # Utilities and API
 ├── docker/               # Docker configurations
 ├── deployments/          # Deployment manifests
-├── docs/                 # Documentation
+├── wiki/                 # Documentation wiki (submodule)
 └── test/                 # Integration tests
 ```
 
@@ -431,7 +421,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🆘 Support
 
 - [GitHub Issues](https://github.com/fleetd/fleetd/issues)
-- [Documentation](https://fleetd.sh/docs)
+- [Documentation](https://github.com/fleetd-sh/fleetd/wiki)
 - [Discord Community](https://discord.gg/fleetd)
 
 ## 🎯 Roadmap

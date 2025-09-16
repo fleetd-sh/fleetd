@@ -276,14 +276,9 @@ audit:
     go list -json -m all | nancy sleuth
     cd web && bun audit
 
-# Generate API documentation
-docs-api:
-    buf export . --output=docs/api
-    echo "API documentation generated in docs/api/"
-
-# Start documentation server
-docs-serve:
-    cd docs && python -m http.server 8000
+# Open wiki documentation
+docs:
+    open https://github.com/fleetd-sh/fleetd/wiki
 
 # Run pre-commit checks
 pre-commit: format-all lint-all test-all
