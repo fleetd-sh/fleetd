@@ -2,219 +2,230 @@
 // @generated from file agent/v1/discovery.proto (package agent.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { EmptySchema } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_empty } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
+import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
+import type { EmptySchema } from '@bufbuild/protobuf/wkt'
+import { file_google_protobuf_empty } from '@bufbuild/protobuf/wkt'
+import type { Message } from '@bufbuild/protobuf'
 
 /**
  * Describes the file agent/v1/discovery.proto.
  */
-export const file_agent_v1_discovery: GenFile = /*@__PURE__*/
-  fileDesc("ChhhZ2VudC92MS9kaXNjb3ZlcnkucHJvdG8SCGFnZW50LnYxInIKC1N5c3RlbVN0YXRzEhEKCWNwdV91c2FnZRgBIAEoARIUCgxtZW1vcnlfdG90YWwYAiABKAQSEwoLbWVtb3J5X3VzZWQYAyABKAQSEgoKZGlza190b3RhbBgEIAEoBBIRCglkaXNrX3VzZWQYBSABKAQieQoKRGV2aWNlSW5mbxIKCgJpZBgBIAEoCRISCgpjb25maWd1cmVkGAIgASgIEhMKC2RldmljZV90eXBlGAMgASgJEg8KB3ZlcnNpb24YBCABKAkSJQoGc3lzdGVtGAUgASgLMhUuYWdlbnQudjEuU3lzdGVtU3RhdHMiQgoVR2V0RGV2aWNlSW5mb1Jlc3BvbnNlEikKC2RldmljZV9pbmZvGAEgASgLMhQuYWdlbnQudjEuRGV2aWNlSW5mbyJDChZDb25maWd1cmVEZXZpY2VSZXF1ZXN0EhMKC2RldmljZV9uYW1lGAEgASgJEhQKDGFwaV9lbmRwb2ludBgCIAEoCSJfChdDb25maWd1cmVEZXZpY2VSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg8KB21lc3NhZ2UYAiABKAkSEQoJZGV2aWNlX2lkGAMgASgJEg8KB2FwaV9rZXkYBCABKAkiJQoTVXBkYXRlQ29uZmlnUmVxdWVzdBIOCgZjb25maWcYASABKAkiOAoUVXBkYXRlQ29uZmlnUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIPCgdtZXNzYWdlGAIgASgJMoMCChBEaXNjb3ZlcnlTZXJ2aWNlEkgKDUdldERldmljZUluZm8SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaHy5hZ2VudC52MS5HZXREZXZpY2VJbmZvUmVzcG9uc2USVgoPQ29uZmlndXJlRGV2aWNlEiAuYWdlbnQudjEuQ29uZmlndXJlRGV2aWNlUmVxdWVzdBohLmFnZW50LnYxLkNvbmZpZ3VyZURldmljZVJlc3BvbnNlEk0KDFVwZGF0ZUNvbmZpZxIdLmFnZW50LnYxLlVwZGF0ZUNvbmZpZ1JlcXVlc3QaHi5hZ2VudC52MS5VcGRhdGVDb25maWdSZXNwb25zZUJ/Cgxjb20uYWdlbnQudjFCDkRpc2NvdmVyeVByb3RvUAFaHmZsZWV0ZC5zaC9nZW4vYWdlbnQvdjE7YWdlbnRwYqICA0FYWKoCCEFnZW50LlYxygIIQWdlbnRcVjHiAhRBZ2VudFxWMVxHUEJNZXRhZGF0YeoCCUFnZW50OjpWMWIGcHJvdG8z", [file_google_protobuf_empty]);
+export const file_agent_v1_discovery: GenFile =
+  /*@__PURE__*/
+  fileDesc(
+    'ChhhZ2VudC92MS9kaXNjb3ZlcnkucHJvdG8SCGFnZW50LnYxInIKC1N5c3RlbVN0YXRzEhEKCWNwdV91c2FnZRgBIAEoARIUCgxtZW1vcnlfdG90YWwYAiABKAQSEwoLbWVtb3J5X3VzZWQYAyABKAQSEgoKZGlza190b3RhbBgEIAEoBBIRCglkaXNrX3VzZWQYBSABKAQieQoKRGV2aWNlSW5mbxIKCgJpZBgBIAEoCRISCgpjb25maWd1cmVkGAIgASgIEhMKC2RldmljZV90eXBlGAMgASgJEg8KB3ZlcnNpb24YBCABKAkSJQoGc3lzdGVtGAUgASgLMhUuYWdlbnQudjEuU3lzdGVtU3RhdHMiQgoVR2V0RGV2aWNlSW5mb1Jlc3BvbnNlEikKC2RldmljZV9pbmZvGAEgASgLMhQuYWdlbnQudjEuRGV2aWNlSW5mbyJDChZDb25maWd1cmVEZXZpY2VSZXF1ZXN0EhMKC2RldmljZV9uYW1lGAEgASgJEhQKDGFwaV9lbmRwb2ludBgCIAEoCSJfChdDb25maWd1cmVEZXZpY2VSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg8KB21lc3NhZ2UYAiABKAkSEQoJZGV2aWNlX2lkGAMgASgJEg8KB2FwaV9rZXkYBCABKAkiJQoTVXBkYXRlQ29uZmlnUmVxdWVzdBIOCgZjb25maWcYASABKAkiOAoUVXBkYXRlQ29uZmlnUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIPCgdtZXNzYWdlGAIgASgJMoMCChBEaXNjb3ZlcnlTZXJ2aWNlEkgKDUdldERldmljZUluZm8SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaHy5hZ2VudC52MS5HZXREZXZpY2VJbmZvUmVzcG9uc2USVgoPQ29uZmlndXJlRGV2aWNlEiAuYWdlbnQudjEuQ29uZmlndXJlRGV2aWNlUmVxdWVzdBohLmFnZW50LnYxLkNvbmZpZ3VyZURldmljZVJlc3BvbnNlEk0KDFVwZGF0ZUNvbmZpZxIdLmFnZW50LnYxLlVwZGF0ZUNvbmZpZ1JlcXVlc3QaHi5hZ2VudC52MS5VcGRhdGVDb25maWdSZXNwb25zZUJ/Cgxjb20uYWdlbnQudjFCDkRpc2NvdmVyeVByb3RvUAFaHmZsZWV0ZC5zaC9nZW4vYWdlbnQvdjE7YWdlbnRwYqICA0FYWKoCCEFnZW50LlYxygIIQWdlbnRcVjHiAhRBZ2VudFxWMVxHUEJNZXRhZGF0YeoCCUFnZW50OjpWMWIGcHJvdG8z',
+    [file_google_protobuf_empty],
+  )
 
 /**
  * @generated from message agent.v1.SystemStats
  */
-export type SystemStats = Message<"agent.v1.SystemStats"> & {
+export type SystemStats = Message<'agent.v1.SystemStats'> & {
   /**
    * @generated from field: double cpu_usage = 1;
    */
-  cpuUsage: number;
+  cpuUsage: number
 
   /**
    * @generated from field: uint64 memory_total = 2;
    */
-  memoryTotal: bigint;
+  memoryTotal: bigint
 
   /**
    * @generated from field: uint64 memory_used = 3;
    */
-  memoryUsed: bigint;
+  memoryUsed: bigint
 
   /**
    * @generated from field: uint64 disk_total = 4;
    */
-  diskTotal: bigint;
+  diskTotal: bigint
 
   /**
    * @generated from field: uint64 disk_used = 5;
    */
-  diskUsed: bigint;
-};
+  diskUsed: bigint
+}
 
 /**
  * Describes the message agent.v1.SystemStats.
  * Use `create(SystemStatsSchema)` to create a new message.
  */
-export const SystemStatsSchema: GenMessage<SystemStats> = /*@__PURE__*/
-  messageDesc(file_agent_v1_discovery, 0);
+export const SystemStatsSchema: GenMessage<SystemStats> =
+  /*@__PURE__*/
+  messageDesc(file_agent_v1_discovery, 0)
 
 /**
  * @generated from message agent.v1.DeviceInfo
  */
-export type DeviceInfo = Message<"agent.v1.DeviceInfo"> & {
+export type DeviceInfo = Message<'agent.v1.DeviceInfo'> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string;
+  id: string
 
   /**
    * Whether device is registered with fleet server
    *
    * @generated from field: bool configured = 2;
    */
-  configured: boolean;
+  configured: boolean
 
   /**
    * Device hardware type
    *
    * @generated from field: string device_type = 3;
    */
-  deviceType: string;
+  deviceType: string
 
   /**
    * Current software version
    *
    * @generated from field: string version = 4;
    */
-  version: string;
+  version: string
 
   /**
    * System stats
    *
    * @generated from field: agent.v1.SystemStats system = 5;
    */
-  system?: SystemStats;
-};
+  system?: SystemStats
+}
 
 /**
  * Describes the message agent.v1.DeviceInfo.
  * Use `create(DeviceInfoSchema)` to create a new message.
  */
-export const DeviceInfoSchema: GenMessage<DeviceInfo> = /*@__PURE__*/
-  messageDesc(file_agent_v1_discovery, 1);
+export const DeviceInfoSchema: GenMessage<DeviceInfo> =
+  /*@__PURE__*/
+  messageDesc(file_agent_v1_discovery, 1)
 
 /**
  * @generated from message agent.v1.GetDeviceInfoResponse
  */
-export type GetDeviceInfoResponse = Message<"agent.v1.GetDeviceInfoResponse"> & {
+export type GetDeviceInfoResponse = Message<'agent.v1.GetDeviceInfoResponse'> & {
   /**
    * @generated from field: agent.v1.DeviceInfo device_info = 1;
    */
-  deviceInfo?: DeviceInfo;
-};
+  deviceInfo?: DeviceInfo
+}
 
 /**
  * Describes the message agent.v1.GetDeviceInfoResponse.
  * Use `create(GetDeviceInfoResponseSchema)` to create a new message.
  */
-export const GetDeviceInfoResponseSchema: GenMessage<GetDeviceInfoResponse> = /*@__PURE__*/
-  messageDesc(file_agent_v1_discovery, 2);
+export const GetDeviceInfoResponseSchema: GenMessage<GetDeviceInfoResponse> =
+  /*@__PURE__*/
+  messageDesc(file_agent_v1_discovery, 2)
 
 /**
  * @generated from message agent.v1.ConfigureDeviceRequest
  */
-export type ConfigureDeviceRequest = Message<"agent.v1.ConfigureDeviceRequest"> & {
+export type ConfigureDeviceRequest = Message<'agent.v1.ConfigureDeviceRequest'> & {
   /**
    * Human-readable device name
    *
    * @generated from field: string device_name = 1;
    */
-  deviceName: string;
+  deviceName: string
 
   /**
    * Fleet server endpoint URL
    *
    * @generated from field: string api_endpoint = 2;
    */
-  apiEndpoint: string;
-};
+  apiEndpoint: string
+}
 
 /**
  * Describes the message agent.v1.ConfigureDeviceRequest.
  * Use `create(ConfigureDeviceRequestSchema)` to create a new message.
  */
-export const ConfigureDeviceRequestSchema: GenMessage<ConfigureDeviceRequest> = /*@__PURE__*/
-  messageDesc(file_agent_v1_discovery, 3);
+export const ConfigureDeviceRequestSchema: GenMessage<ConfigureDeviceRequest> =
+  /*@__PURE__*/
+  messageDesc(file_agent_v1_discovery, 3)
 
 /**
  * @generated from message agent.v1.ConfigureDeviceResponse
  */
-export type ConfigureDeviceResponse = Message<"agent.v1.ConfigureDeviceResponse"> & {
+export type ConfigureDeviceResponse = Message<'agent.v1.ConfigureDeviceResponse'> & {
   /**
    * @generated from field: bool success = 1;
    */
-  success: boolean;
+  success: boolean
 
   /**
    * @generated from field: string message = 2;
    */
-  message: string;
+  message: string
 
   /**
    * Server-assigned device ID
    *
    * @generated from field: string device_id = 3;
    */
-  deviceId: string;
+  deviceId: string
 
   /**
    * API key for future authentication
    *
    * @generated from field: string api_key = 4;
    */
-  apiKey: string;
-};
+  apiKey: string
+}
 
 /**
  * Describes the message agent.v1.ConfigureDeviceResponse.
  * Use `create(ConfigureDeviceResponseSchema)` to create a new message.
  */
-export const ConfigureDeviceResponseSchema: GenMessage<ConfigureDeviceResponse> = /*@__PURE__*/
-  messageDesc(file_agent_v1_discovery, 4);
+export const ConfigureDeviceResponseSchema: GenMessage<ConfigureDeviceResponse> =
+  /*@__PURE__*/
+  messageDesc(file_agent_v1_discovery, 4)
 
 /**
  * @generated from message agent.v1.UpdateConfigRequest
  */
-export type UpdateConfigRequest = Message<"agent.v1.UpdateConfigRequest"> & {
+export type UpdateConfigRequest = Message<'agent.v1.UpdateConfigRequest'> & {
   /**
    * JSON configuration
    *
    * @generated from field: string config = 1;
    */
-  config: string;
-};
+  config: string
+}
 
 /**
  * Describes the message agent.v1.UpdateConfigRequest.
  * Use `create(UpdateConfigRequestSchema)` to create a new message.
  */
-export const UpdateConfigRequestSchema: GenMessage<UpdateConfigRequest> = /*@__PURE__*/
-  messageDesc(file_agent_v1_discovery, 5);
+export const UpdateConfigRequestSchema: GenMessage<UpdateConfigRequest> =
+  /*@__PURE__*/
+  messageDesc(file_agent_v1_discovery, 5)
 
 /**
  * @generated from message agent.v1.UpdateConfigResponse
  */
-export type UpdateConfigResponse = Message<"agent.v1.UpdateConfigResponse"> & {
+export type UpdateConfigResponse = Message<'agent.v1.UpdateConfigResponse'> & {
   /**
    * @generated from field: bool success = 1;
    */
-  success: boolean;
+  success: boolean
 
   /**
    * @generated from field: string message = 2;
    */
-  message: string;
-};
+  message: string
+}
 
 /**
  * Describes the message agent.v1.UpdateConfigResponse.
  * Use `create(UpdateConfigResponseSchema)` to create a new message.
  */
-export const UpdateConfigResponseSchema: GenMessage<UpdateConfigResponse> = /*@__PURE__*/
-  messageDesc(file_agent_v1_discovery, 6);
+export const UpdateConfigResponseSchema: GenMessage<UpdateConfigResponse> =
+  /*@__PURE__*/
+  messageDesc(file_agent_v1_discovery, 6)
 
 /**
  * Discovery service for initial device setup
@@ -228,30 +239,28 @@ export const DiscoveryService: GenService<{
    * @generated from rpc agent.v1.DiscoveryService.GetDeviceInfo
    */
   getDeviceInfo: {
-    methodKind: "unary";
-    input: typeof EmptySchema;
-    output: typeof GetDeviceInfoResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof EmptySchema
+    output: typeof GetDeviceInfoResponseSchema
+  }
   /**
    * Configure device with fleet server details
    *
    * @generated from rpc agent.v1.DiscoveryService.ConfigureDevice
    */
   configureDevice: {
-    methodKind: "unary";
-    input: typeof ConfigureDeviceRequestSchema;
-    output: typeof ConfigureDeviceResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof ConfigureDeviceRequestSchema
+    output: typeof ConfigureDeviceResponseSchema
+  }
   /**
    * Update device configuration
    *
    * @generated from rpc agent.v1.DiscoveryService.UpdateConfig
    */
   updateConfig: {
-    methodKind: "unary";
-    input: typeof UpdateConfigRequestSchema;
-    output: typeof UpdateConfigResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_agent_v1_discovery, 0);
-
+    methodKind: 'unary'
+    input: typeof UpdateConfigRequestSchema
+    output: typeof UpdateConfigResponseSchema
+  }
+}> = /*@__PURE__*/ serviceDesc(file_agent_v1_discovery, 0)

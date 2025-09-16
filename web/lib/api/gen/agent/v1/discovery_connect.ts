@@ -3,8 +3,14 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { ConfigureDeviceRequest, ConfigureDeviceResponse, GetDeviceInfoResponse, UpdateConfigRequest, UpdateConfigResponse } from "./discovery_pb.js";
+import { Empty, MethodKind } from '@bufbuild/protobuf'
+import {
+  ConfigureDeviceRequest,
+  ConfigureDeviceResponse,
+  GetDeviceInfoResponse,
+  UpdateConfigRequest,
+  UpdateConfigResponse,
+} from './discovery_pb.js'
 
 /**
  * Discovery service for initial device setup
@@ -12,7 +18,7 @@ import { ConfigureDeviceRequest, ConfigureDeviceResponse, GetDeviceInfoResponse,
  * @generated from service agent.v1.DiscoveryService
  */
 export const DiscoveryService = {
-  typeName: "agent.v1.DiscoveryService",
+  typeName: 'agent.v1.DiscoveryService',
   methods: {
     /**
      * Get basic device information before registration
@@ -20,7 +26,7 @@ export const DiscoveryService = {
      * @generated from rpc agent.v1.DiscoveryService.GetDeviceInfo
      */
     getDeviceInfo: {
-      name: "GetDeviceInfo",
+      name: 'GetDeviceInfo',
       I: Empty,
       O: GetDeviceInfoResponse,
       kind: MethodKind.Unary,
@@ -31,7 +37,7 @@ export const DiscoveryService = {
      * @generated from rpc agent.v1.DiscoveryService.ConfigureDevice
      */
     configureDevice: {
-      name: "ConfigureDevice",
+      name: 'ConfigureDevice',
       I: ConfigureDeviceRequest,
       O: ConfigureDeviceResponse,
       kind: MethodKind.Unary,
@@ -42,11 +48,10 @@ export const DiscoveryService = {
      * @generated from rpc agent.v1.DiscoveryService.UpdateConfig
      */
     updateConfig: {
-      name: "UpdateConfig",
+      name: 'UpdateConfig',
       I: UpdateConfigRequest,
       O: UpdateConfigResponse,
       kind: MethodKind.Unary,
     },
-  }
-} as const;
-
+  },
+} as const
