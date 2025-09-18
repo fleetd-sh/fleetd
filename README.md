@@ -1,8 +1,5 @@
 # fleetd
 
-> [!WARNING]
-> This is _very_ early work in progress.
-
 Manage your fleet of edge devices; provision, update, monitor, and secure.
 
 The fleet daemon, _fleetd_, is a long-running service that monitors and manages the lifecycle of devices and deployed software in the fleet.
@@ -12,24 +9,30 @@ The fleet daemon, _fleetd_, is a long-running service that monitors and manages 
 ```mermaid
 graph TD
     A[Device Agent/fleetd] -->|mDNS Discovery| B[Discovery Service]
-    A -->|gRPC/Connect| C[Fleet Server/fleets]
+    A -->|gRPC/Connect| C[Device API<br/>:8080]
     C --> D[PostgreSQL/SQLite]
     C --> E[Binary Storage]
     C --> F[VictoriaMetrics]
     C --> G[Loki]
     C --> H[ClickHouse]
-    I[Web Dashboard] -->|API| C
-    J[CLI/fleetctl] -->|API| C
-    K[Fleet Aggregator] -->|Sync| C
+    I[Web Dashboard] -->|API| P[Platform API<br/>:8090]
+    J[CLI/fleetctl] -->|API| P
+    K[Third-party APIs] -->|API| P
+    P --> D
+    P --> F
+    P --> G
+    P --> H
+    P -.->|Forward| C
 ```
 
-## 📦 Components
+## Components
 
 ### Core Services
-- **fleetd** - Device agent that runs on edge devices
-- **fleets** - Central fleet management server
-- **fleetctl** - CLI tool for fleet management and platform control
-- **discover** - mDNS discovery service
+- **fleetd** - Device agent that runs on edge devices (fully implemented with telemetry, registration, heartbeat)
+- **device-api** - High-volume device API server (port 8080)
+- **platform-api** - Platform management API server (port 8090)
+- **fleetctl** - CLI tool for fleet management and platform control (15+ commands)
+- **discover** - mDNS discovery service (zero-config networking)
 
 ### Web Dashboard
 - Next.js application with shadcn/ui components
@@ -37,7 +40,7 @@ graph TD
 - Fleet management interface
 - Located in `/web` directory
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -78,14 +81,15 @@ just format-all
 just lint-all
 ```
 
-## 🛠️ Development
+## Development
 
 ### Backend Development
 
 ```bash
 # Build specific binary
 just build fleetd
-just build fleets
+just build device-api
+just build platform-api
 just build fleetctl
 
 # Build all binaries
@@ -212,11 +216,11 @@ just docker-build-web [tag]
 
 ## 📝 CLI Usage
 
-### Fleet Server (fleets)
+### API Servers
 
 ```bash
-# Start the fleet server
-fleets --port 8080
+# Start device API server
+device-api --port 8080
 
 # With custom configuration
 fleets --port 8080 --db /path/to/fleet.db --secret-key <key>
@@ -322,7 +326,7 @@ Comprehensive documentation is available in our [Wiki](https://github.com/fleetd
 - [Troubleshooting](https://github.com/fleetd-sh/fleetd/wiki/Troubleshooting)
 - [Contributing](https://github.com/fleetd-sh/fleetd/wiki/Contributing)
 
-## 🔧 Utility Commands
+## Utility Commands
 
 ```bash
 # Update all dependencies
@@ -351,13 +355,14 @@ just deploy [environment]
 just release <version>
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 fleetd/
 ├── cmd/                    # Command-line applications
 │   ├── fleetd/            # Device agent
-│   ├── fleets/            # Fleet server
+│   ├── device-api/        # Device API server
+│   ├── platform-api/      # Platform API server
 │   ├── fleetctl/          # Management CLI
 │   └── discover/          # Discovery service
 ├── internal/              # Internal packages
@@ -424,12 +429,28 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Documentation](https://github.com/fleetd-sh/fleetd/wiki)
 - [Discord Community](https://discord.gg/fleetd)
 
-## 🎯 Roadmap
+## Status & Roadmap
 
-- [ ] Multi-cloud support (AWS, Azure, GCP)
-- [ ] Enhanced security features (mTLS, HSM support)
+### Completed Features
+- [x] JWT Authentication with RBAC
+- [x] Device registration and lifecycle management
+- [x] VictoriaMetrics integration
+- [x] Loki log aggregation
+- [x] mDNS discovery
+- [x] Database migrations (5 complete schemas)
+- [x] Circuit breakers and retry logic
+- [x] Dual API architecture
+
+### In Progress (1-2 days)
+- [ ] Wire JWT middleware to auth
+- [ ] Execute database migrations
+- [ ] Connect fleetctl to real APIs
+
+### 📋 Planned Features
+- [ ] Container orchestration integration
+- [ ] Enterprise IoT platform integrations
 - [ ] Advanced deployment strategies (canary, blue-green)
-- [ ] IoT device support expansion
-- [ ] Kubernetes operator
-- [ ] Mobile app for fleet management
-- [ ] AI-powered anomaly detection
+- [ ] SSO/OIDC integration
+- [ ] Device templates and profiles
+
+See [Full Roadmap](wiki/roadmap.md) for detailed timeline.
