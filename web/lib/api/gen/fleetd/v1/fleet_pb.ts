@@ -2,6 +2,7 @@
 // @generated from file fleetd/v1/fleet.proto (package fleetd.v1, syntax proto3)
 /* eslint-disable */
 
+import type { JsonObject, Message } from "@bufbuild/protobuf";
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
@@ -13,7 +14,6 @@ import type { Device } from "./device_pb";
 import { file_fleetd_v1_device } from "./device_pb";
 import type { LogEntry } from "./sync_pb";
 import { file_fleetd_v1_sync } from "./sync_pb";
-import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file fleetd/v1/fleet.proto.

@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   DeleteDeviceRequest,
   DeleteDeviceResponse,
@@ -17,7 +18,6 @@ import {
   ReportStatusRequest,
   ReportStatusResponse,
 } from "./device_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service fleetd.v1.DeviceService

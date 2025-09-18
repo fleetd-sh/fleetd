@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   CreateUpdateCampaignRequest,
   CreateUpdateCampaignResponse,
@@ -15,7 +16,6 @@ import {
   ReportUpdateStatusRequest,
   ReportUpdateStatusResponse,
 } from "./update_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service fleetd.v1.UpdateService

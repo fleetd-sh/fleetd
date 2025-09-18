@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 import {
   CreateUpdateRequest,
   CreateUpdateResponse,
@@ -34,7 +35,6 @@ import {
   UpdateDeviceRequest,
   UpdateDeviceResponse,
 } from "./fleet_pb.js";
-import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * FleetService provides the public API for fleet management
