@@ -1,0 +1,164 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "fleetd/v1/device.proto";
+import "fleetd/v1/sync.proto";
+
+// FleetService manages fleet-level operations
+service FleetService {
+  // List all fleets
+  rpc ListFleets(ListFleetsRequest) returns (ListFleetsResponse);
+
+  // Get a specific fleet
+  rpc GetFleet(GetFleetRequest) returns (GetFleetResponse);
+
+  // Create a new fleet
+  rpc CreateFleet(CreateFleetRequest) returns (CreateFleetResponse);
+
+  // Update a fleet
+  rpc UpdateFleet(UpdateFleetRequest) returns (UpdateFleetResponse);
+
+  // Delete a fleet
+  rpc DeleteFleet(DeleteFleetRequest) returns (DeleteFleetResponse);
+
+  // Get logs for a specific device in the fleet
+  rpc GetDeviceLogs(GetDeviceLogsRequest) returns (GetDeviceLogsResponse);
+}
+
+// Fleet represents a group of devices
+message Fleet {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  int32 device_count = 6;
+  map<string, string> tags = 7;
+  FleetConfig config = 8;
+}
+
+// FleetConfig contains fleet-wide configuration
+message FleetConfig {
+  // Update strategy: "rolling", "canary", "blue-green"
+  string update_strategy = 1;
+
+  // Maximum concurrent updates
+  int32 max_concurrent_updates = 2;
+
+  // Auto-rollback on failure
+  bool auto_rollback = 3;
+
+  // Telemetry configuration
+  TelemetryConfig telemetry = 4;
+
+  // Security configuration
+  SecurityConfig security = 5;
+}
+
+message TelemetryConfig {
+  int32 metrics_interval_seconds = 1;
+  bool logs_enabled = 2;
+  bool traces_enabled = 3;
+  int32 retention_days = 4;
+}
+
+message SecurityConfig {
+  bool tls_required = 1;
+  string min_tls_version = 2;
+  bool audit_logging = 3;
+  repeated string allowed_ips = 4;
+}
+
+// Request/Response messages for Fleet operations
+message ListFleetsRequest {
+  // Optional filters
+  map<string, string> tags = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListFleetsResponse {
+  repeated Fleet fleets = 1;
+  string next_page_token = 2;
+}
+
+message GetFleetRequest {
+  string id = 1;
+}
+
+message GetFleetResponse {
+  Fleet fleet = 1;
+}
+
+message CreateFleetRequest {
+  string name = 1;
+  string description = 2;
+  map<string, string> tags = 3;
+  FleetConfig config = 4;
+}
+
+message CreateFleetResponse {
+  Fleet fleet = 1;
+}
+
+message UpdateFleetRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  map<string, string> tags = 4;
+  FleetConfig config = 5;
+}
+
+message UpdateFleetResponse {
+  Fleet fleet = 1;
+}
+
+message DeleteFleetRequest {
+  string id = 1;
+}
+
+message DeleteFleetResponse {
+  bool success = 1;
+}
+
+// Additional messages for device logs
+message GetDeviceLogsRequest {
+  string device_id = 1;
+  int32 limit = 2;
+  google.protobuf.Timestamp since = 3;
+  google.protobuf.Timestamp until = 4;
+  repeated string levels = 5; // INFO, WARN, ERROR, etc.
+}
+
+message GetDeviceLogsResponse {
+  repeated LogEntry logs = 1;  // Uses LogEntry from sync.proto
+}
+
+// Update device configuration
+message UpdateDeviceRequest {
+  string id = 1;
+  string name = 2;
+  string fleet_id = 3;
+  google.protobuf.Struct config = 4;
+  map<string, string> tags = 5;
+}
+
+message UpdateDeviceResponse {
+  // References Device from device.proto
+  Device device = 1;
+}
+
+// Additional device capabilities
+message DeviceCapabilities {
+  int32 cpu_cores = 1;
+  int64 memory_bytes = 2;
+  int64 storage_bytes = 3;
+  string architecture = 4;
+  string os = 5;
+  string os_version = 6;
+}
