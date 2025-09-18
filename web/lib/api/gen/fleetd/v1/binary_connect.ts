@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   DownloadBinaryRequest,
   DownloadBinaryResponse,
@@ -13,7 +14,6 @@ import {
   UploadBinaryRequest,
   UploadBinaryResponse,
 } from "./binary_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service fleetd.v1.BinaryService

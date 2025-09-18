@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 import {
   CompleteSSOLoginRequest,
   CompleteSSOLoginResponse,
@@ -21,7 +22,6 @@ import {
   RefreshTokenResponse,
   RevokeAPIKeyRequest,
 } from "./auth_pb.js";
-import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * AuthService handles authentication and authorization

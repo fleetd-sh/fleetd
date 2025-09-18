@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   CancelDeploymentRequest,
   CancelDeploymentResponse,
@@ -33,7 +34,6 @@ import {
   UploadArtifactRequest,
   UploadArtifactResponse,
 } from "./artifact_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * ArtifactService manages software artifacts for deployment

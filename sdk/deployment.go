@@ -69,16 +69,16 @@ func (c *DeploymentClient) GetDeploymentHistory(ctx context.Context, opts GetDep
 
 // CreateDeploymentOptions contains options for creating a deployment
 type CreateDeploymentOptions struct {
-	Name           string
-	Description    string
-	ArtifactURL    string
-	TargetGroups   []string
-	TargetDevices  []string
-	RolloutPolicy  RolloutPolicy
-	HealthChecks   []HealthCheck
-	Metadata       map[string]string
-	ScheduledTime  *time.Time
-	AutoRollback   bool
+	Name          string
+	Description   string
+	ArtifactURL   string
+	TargetGroups  []string
+	TargetDevices []string
+	RolloutPolicy RolloutPolicy
+	HealthChecks  []HealthCheck
+	Metadata      map[string]string
+	ScheduledTime *time.Time
+	AutoRollback  bool
 }
 
 // UpdateDeploymentOptions contains options for updating a deployment
@@ -128,11 +128,11 @@ type RolloutPolicy struct {
 
 // HealthCheck defines a health check for deployments
 type HealthCheck struct {
-	Type              string
-	Endpoint          string
-	Interval          time.Duration
-	Timeout           time.Duration
-	SuccessThreshold  int32
-	FailureThreshold  int32
-	InitialDelay      time.Duration
+	Type             string
+	Endpoint         string
+	Interval         time.Duration
+	Timeout          time.Duration
+	SuccessThreshold int32
+	FailureThreshold int32
+	InitialDelay     time.Duration
 }

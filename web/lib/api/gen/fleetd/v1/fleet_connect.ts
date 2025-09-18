@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   CreateFleetRequest,
   CreateFleetResponse,
@@ -17,7 +18,6 @@ import {
   UpdateFleetRequest,
   UpdateFleetResponse,
 } from "./fleet_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * FleetService manages fleet-level operations

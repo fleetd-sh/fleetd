@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   DeployBinaryRequest,
   DeployBinaryResponse,
@@ -13,7 +14,6 @@ import {
   StopBinaryRequest,
   StopBinaryResponse,
 } from "./agent_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * Daemon service definition

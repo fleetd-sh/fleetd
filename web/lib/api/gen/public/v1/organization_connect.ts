@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { Empty, MethodKind } from "@bufbuild/protobuf";
 import {
   CreateTeamRequest,
   CreateTeamResponse,
@@ -26,7 +27,6 @@ import {
   UpdateTeamRequest,
   UpdateTeamResponse,
 } from "./organization_pb.js";
-import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
  * OrganizationService manages organizations and teams

@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   ApplyWorkloadRequest,
   ApplyWorkloadResponse,
@@ -19,7 +20,6 @@ import {
   RemoveNodeRequest,
   RemoveNodeResponse,
 } from "./cluster_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * ClusterService manages k3s clusters on linux-based devices

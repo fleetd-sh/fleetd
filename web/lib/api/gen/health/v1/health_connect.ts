@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { HealthCheckRequest, HealthCheckResponse } from "./health_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
+import { HealthCheckRequest, HealthCheckResponse } from "./health_pb.js";
 
 /**
  * @generated from service grpc.health.v1.Health

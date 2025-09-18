@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   GetSyncConfigRequest,
   GetSyncConfigResponse,
@@ -13,7 +14,6 @@ import {
   SyncMetricsRequest,
   SyncMetricsResponse,
 } from "./sync_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * SyncService handles data synchronization between devices and server

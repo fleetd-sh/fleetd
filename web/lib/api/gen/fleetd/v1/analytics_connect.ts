@@ -3,6 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { MethodKind } from "@bufbuild/protobuf";
 import {
   GetDeviceHealthRequest,
   GetDeviceHealthResponse,
@@ -13,7 +14,6 @@ import {
   GetUpdateAnalyticsRequest,
   GetUpdateAnalyticsResponse,
 } from "./analytics_pb.js";
-import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service fleetd.v1.AnalyticsService

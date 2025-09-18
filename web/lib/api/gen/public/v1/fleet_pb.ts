@@ -2,6 +2,7 @@
 // @generated from file public/v1/fleet.proto (package public.v1, syntax proto3)
 /* eslint-disable */
 
+import type { JsonObject, Message } from "@bufbuild/protobuf";
 import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { EmptySchema, Timestamp } from "@bufbuild/protobuf/wkt";
@@ -10,7 +11,6 @@ import {
   file_google_protobuf_struct,
   file_google_protobuf_timestamp,
 } from "@bufbuild/protobuf/wkt";
-import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file public/v1/fleet.proto.
