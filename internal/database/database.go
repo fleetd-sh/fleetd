@@ -163,26 +163,29 @@ func New(config *Config) (*DB, error) {
 }
 
 func (db *DB) connect() error {
-	sqlDB, err := sql.Open(db.config.Driver, db.config.DSN)
+	// Use retry logic for database connection
+	ctx := context.Background()
+	retryConfig := DefaultRetryConfig()
+
+	sqlDB, err := OpenWithRetry(ctx, db.config.Driver, db.config.DSN, retryConfig)
 	if err != nil {
 		return ferrors.Wrapf(err, ferrors.ErrCodeUnavailable,
-			"failed to open database connection")
+			"failed to open database connection with retry")
 	}
 
-	// Configure connection pool
-	sqlDB.SetMaxOpenConns(db.config.MaxOpenConns)
-	sqlDB.SetMaxIdleConns(db.config.MaxIdleConns)
-	sqlDB.SetConnMaxLifetime(db.config.ConnMaxLifetime)
-	sqlDB.SetConnMaxIdleTime(db.config.ConnMaxIdleTime)
-
-	// Test connection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := sqlDB.PingContext(ctx); err != nil {
-		sqlDB.Close()
-		return ferrors.Wrapf(err, ferrors.ErrCodeUnavailable,
-			"failed to ping database")
+	// Connection pool configuration is already set in OpenWithRetry
+	// Override with custom values if specified
+	if db.config.MaxOpenConns > 0 {
+		sqlDB.SetMaxOpenConns(db.config.MaxOpenConns)
+	}
+	if db.config.MaxIdleConns > 0 {
+		sqlDB.SetMaxIdleConns(db.config.MaxIdleConns)
+	}
+	if db.config.ConnMaxLifetime > 0 {
+		sqlDB.SetConnMaxLifetime(db.config.ConnMaxLifetime)
+	}
+	if db.config.ConnMaxIdleTime > 0 {
+		sqlDB.SetConnMaxIdleTime(db.config.ConnMaxIdleTime)
 	}
 
 	db.DB = sqlDB
@@ -505,12 +508,30 @@ func (db *DB) healthCheck() {
 }
 
 func (db *DB) runMigrations() error {
-	// TODO: Implement migration logic
-	// This would use a migration library like golang-migrate
-	db.logger.Info("Running database migrations",
-		"path", db.config.MigrationsPath,
-	)
-	return nil
+	// Use the migration runner from migrations.go
+	migrationConfig := &MigrationConfig{
+		Driver:         db.config.Driver,
+		DSN:            db.config.DSN,
+		MigrationsPath: db.config.MigrationsPath,
+		Logger:         db.logger,
+	}
+
+	migrator, err := NewMigrator(migrationConfig)
+	if err != nil {
+		return err
+	}
+
+	// Initialize with the database connection
+	if err := migrator.Initialize(db.DB, db.config.Driver); err != nil {
+		return err
+	}
+
+	// Run migrations with retry logic
+	ctx := context.Background()
+	retryConfig := DefaultRetryConfig()
+	return ExecuteWithRetry(ctx, db.DB, func() error {
+		return migrator.Up(ctx)
+	}, retryConfig)
 }
 
 // Close closes the database connection

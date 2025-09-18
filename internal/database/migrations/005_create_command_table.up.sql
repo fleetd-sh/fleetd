@@ -3,13 +3,13 @@ CREATE TABLE IF NOT EXISTS commands (
     id VARCHAR(255) PRIMARY KEY,
     device_id VARCHAR(255) NOT NULL REFERENCES device(id) ON DELETE CASCADE,
     command_type VARCHAR(100) NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     status VARCHAR(50) DEFAULT 'pending',
     priority INT DEFAULT 0,
     timeout_seconds INT DEFAULT 300,
     retry_count INT DEFAULT 0,
     max_retries INT DEFAULT 3,
-    result JSONB,
+    result TEXT,
     error_message TEXT,
     scheduled_at TIMESTAMP,
     started_at TIMESTAMP,
@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS commands (
 
 -- Create command_logs table for command execution history
 CREATE TABLE IF NOT EXISTS command_logs (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     command_id VARCHAR(255) NOT NULL REFERENCES commands(id) ON DELETE CASCADE,
     device_id VARCHAR(255) NOT NULL REFERENCES device(id) ON DELETE CASCADE,
     log_level VARCHAR(20) NOT NULL, -- debug, info, warning, error
     message TEXT NOT NULL,
-    details JSONB,
+    details TEXT,
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     channel VARCHAR(50) NOT NULL, -- email, sms, push, webhook
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
-    data JSONB,
+    data TEXT,
     status VARCHAR(50) DEFAULT 'pending',
     priority VARCHAR(20) DEFAULT 'normal', -- low, normal, high, critical
     read_at TIMESTAMP,
@@ -56,12 +56,12 @@ CREATE TABLE IF NOT EXISTS webhooks (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     url TEXT NOT NULL,
-    events TEXT[] NOT NULL,
-    headers JSONB,
+    events TEXT NOT NULL,
+    headers TEXT,
     secret VARCHAR(255),
     enabled BOOLEAN DEFAULT TRUE,
-    retry_config JSONB,
-    metadata JSONB,
+    retry_config TEXT,
+    metadata TEXT,
     last_triggered_at TIMESTAMP,
     failure_count INT DEFAULT 0,
     created_by VARCHAR(255) REFERENCES users(id),
@@ -71,10 +71,10 @@ CREATE TABLE IF NOT EXISTS webhooks (
 
 -- Create webhook_deliveries table
 CREATE TABLE IF NOT EXISTS webhook_deliveries (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     webhook_id VARCHAR(255) NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
     event VARCHAR(100) NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     response_status INT,
     response_body TEXT,
     delivered BOOLEAN DEFAULT FALSE,
@@ -89,8 +89,8 @@ CREATE TABLE IF NOT EXISTS device_groups (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
     description TEXT,
-    filter JSONB, -- Dynamic filter criteria
-    metadata JSONB,
+    filter TEXT, -- Dynamic filter criteria
+    metadata TEXT,
     created_by VARCHAR(255) REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -121,7 +121,8 @@ CREATE INDEX idx_notifications_priority ON notifications(priority);
 CREATE INDEX idx_notifications_created_at ON notifications(created_at DESC);
 
 CREATE INDEX idx_webhooks_enabled ON webhooks(enabled);
-CREATE INDEX idx_webhooks_events ON webhooks USING GIN(events);
+-- Note: GIN indexes not supported in SQLite
+-- CREATE INDEX idx_webhooks_events ON webhooks USING GIN(events);
 
 CREATE INDEX idx_webhook_deliveries_webhook_id ON webhook_deliveries(webhook_id);
 CREATE INDEX idx_webhook_deliveries_delivered ON webhook_deliveries(delivered);
@@ -130,23 +131,31 @@ CREATE INDEX idx_webhook_deliveries_created_at ON webhook_deliveries(created_at 
 CREATE INDEX idx_device_group_members_group_id ON device_group_members(group_id);
 CREATE INDEX idx_device_group_members_device_id ON device_group_members(device_id);
 
--- Triggers
+-- SQLite Triggers
 CREATE TRIGGER commands_updated_at
-    BEFORE UPDATE ON commands
+    AFTER UPDATE ON commands
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE commands SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER notifications_updated_at
-    BEFORE UPDATE ON notifications
+    AFTER UPDATE ON notifications
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE notifications SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER webhooks_updated_at
-    BEFORE UPDATE ON webhooks
+    AFTER UPDATE ON webhooks
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE webhooks SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER device_groups_updated_at
-    BEFORE UPDATE ON device_groups
+    AFTER UPDATE ON device_groups
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE device_groups SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;

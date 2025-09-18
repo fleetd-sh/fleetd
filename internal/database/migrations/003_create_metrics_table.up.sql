@@ -1,19 +1,19 @@
 -- Create metrics table for device metrics
 CREATE TABLE IF NOT EXISTS metric (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     device_id VARCHAR(255) NOT NULL REFERENCES device(id) ON DELETE CASCADE,
     metric_type VARCHAR(100) NOT NULL,
     metric_name VARCHAR(255) NOT NULL,
     value DOUBLE PRECISION NOT NULL,
     unit VARCHAR(50),
-    labels JSONB,
+    labels TEXT,
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create aggregated metrics table for performance
 CREATE TABLE IF NOT EXISTS metric_aggregate (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     device_id VARCHAR(255) REFERENCES device(id) ON DELETE CASCADE,
     metric_type VARCHAR(100) NOT NULL,
     metric_name VARCHAR(255) NOT NULL,
@@ -28,19 +28,19 @@ CREATE TABLE IF NOT EXISTS metric_aggregate (
     p50 DOUBLE PRECISION,
     p95 DOUBLE PRECISION,
     p99 DOUBLE PRECISION,
-    labels JSONB,
+    labels TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(device_id, metric_name, period, start_time)
 );
 
 -- Create health check table
 CREATE TABLE IF NOT EXISTS health_check (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     device_id VARCHAR(255) NOT NULL REFERENCES device(id) ON DELETE CASCADE,
     check_type VARCHAR(100) NOT NULL,
     status VARCHAR(50) NOT NULL,
     message TEXT,
-    details JSONB,
+    details TEXT,
     duration_ms INT,
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS alert (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     status VARCHAR(50) DEFAULT 'active',
-    metadata JSONB,
+    metadata TEXT,
     triggered_at TIMESTAMP NOT NULL,
     acknowledged_at TIMESTAMP,
     resolved_at TIMESTAMP,
@@ -82,26 +82,13 @@ CREATE INDEX idx_alert_status ON alert(status);
 CREATE INDEX idx_alert_severity ON alert(severity);
 CREATE INDEX idx_alert_triggered_at ON alert(triggered_at DESC);
 
--- Partition metrics table by month for better performance
--- Note: This requires PostgreSQL 10+
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1 FROM pg_class c
-        JOIN pg_namespace n ON n.oid = c.relnamespace
-        WHERE c.relname = 'metric' AND n.nspname = 'public'
-    ) THEN
-        -- Convert to partitioned table if PostgreSQL version supports it
-        IF current_setting('server_version_num')::integer >= 100000 THEN
-            -- This would need to be done manually as ALTER TABLE cannot convert existing table
-            -- Just add a comment for documentation
-            COMMENT ON TABLE metric IS 'Consider partitioning by timestamp for large datasets';
-        END IF;
-    END IF;
-END $$;
+-- Note: Table partitioning not supported in SQLite
+-- For large datasets, consider archiving old metrics or using a time-series database
 
--- Trigger for alerts
+-- SQLite Trigger for alerts
 CREATE TRIGGER alert_updated_at
-    BEFORE UPDATE ON alert
+    AFTER UPDATE ON alert
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE alert SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
