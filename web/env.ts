@@ -1,5 +1,5 @@
-import { createEnv } from '@t3-oss/env-nextjs'
-import { z } from 'zod'
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
 
 export const env = createEnv({
   /**
@@ -8,7 +8,7 @@ export const env = createEnv({
    */
   server: {
     // Backend API URL for server-side requests
-    BACKEND_URL: z.string().url().default('http://localhost:8080'),
+    BACKEND_URL: z.string().url().default("http://localhost:8080"),
 
     // Authentication secrets (future cloud offering)
     AUTH_SECRET: z.string().min(32).optional(),
@@ -40,7 +40,7 @@ export const env = createEnv({
     ENABLE_BILLING: z.coerce.boolean().default(false),
 
     // Node environment
-    NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   },
 
   /**
@@ -49,11 +49,11 @@ export const env = createEnv({
    */
   client: {
     // Public API URL for client-side requests
-    NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:8080'),
+    NEXT_PUBLIC_API_URL: z.string().url().default("http://localhost:8080"),
 
     // App configuration
-    NEXT_PUBLIC_APP_NAME: z.string().default('FleetD'),
-    NEXT_PUBLIC_APP_VERSION: z.string().default('0.1.0'),
+    NEXT_PUBLIC_APP_NAME: z.string().default("FleetD"),
+    NEXT_PUBLIC_APP_VERSION: z.string().default("0.1.0"),
 
     // Feature flags (client-visible)
     NEXT_PUBLIC_ENABLE_ANALYTICS: z.coerce.boolean().default(false),
@@ -69,12 +69,12 @@ export const env = createEnv({
     NEXT_PUBLIC_SSO_PROVIDERS: z.string().optional(), // comma-separated list
 
     // Cloud vs OSS mode
-    NEXT_PUBLIC_DEPLOYMENT_MODE: z.enum(['oss', 'cloud']).default('oss'),
+    NEXT_PUBLIC_DEPLOYMENT_MODE: z.enum(["oss", "cloud"]).default("oss"),
 
     // Support links
-    NEXT_PUBLIC_DOCS_URL: z.string().url().default('https://docs.fleetd.sh'),
+    NEXT_PUBLIC_DOCS_URL: z.string().url().default("https://docs.fleetd.sh"),
     NEXT_PUBLIC_SUPPORT_URL: z.string().url().optional(),
-    NEXT_PUBLIC_GITHUB_URL: z.string().url().default('https://github.com/fleetd'),
+    NEXT_PUBLIC_GITHUB_URL: z.string().url().default("https://github.com/fleetd"),
   },
 
   /**
@@ -127,4 +127,4 @@ export const env = createEnv({
    * Tell the library when we're in a server context
    */
   emptyStringAsUndefined: true,
-})
+});

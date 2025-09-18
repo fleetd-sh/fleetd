@@ -3,14 +3,14 @@
  */
 
 interface TokenPair {
-  accessToken: string
-  refreshToken: string
+  accessToken: string;
+  refreshToken: string;
 }
 
 interface StorageOptions {
-  secure?: boolean // Use secure cookies in production
-  sameSite?: 'strict' | 'lax' | 'none'
-  domain?: string
+  secure?: boolean; // Use secure cookies in production
+  sameSite?: "strict" | "lax" | "none";
+  domain?: string;
 }
 
 /**
@@ -18,25 +18,25 @@ interface StorageOptions {
  * that works in both server and client environments
  */
 class AuthStorage {
-  private readonly isServer = typeof window === 'undefined'
+  private readonly isServer = typeof window === "undefined";
   private readonly storageKey = {
-    accessToken: 'auth_token',
-    refreshToken: 'refresh_token',
-    orgId: 'org_id',
-    userId: 'user_id',
-  } as const
+    accessToken: "auth_token",
+    refreshToken: "refresh_token",
+    orgId: "org_id",
+    userId: "user_id",
+  } as const;
 
   /**
    * Get access token
    */
   getAccessToken(): string | null {
-    if (this.isServer) return null
+    if (this.isServer) return null;
 
     try {
-      return localStorage.getItem(this.storageKey.accessToken)
+      return localStorage.getItem(this.storageKey.accessToken);
     } catch (error) {
-      console.warn('Failed to get access token:', error)
-      return null
+      console.warn("Failed to get access token:", error);
+      return null;
     }
   }
 
@@ -44,13 +44,13 @@ class AuthStorage {
    * Get refresh token
    */
   getRefreshToken(): string | null {
-    if (this.isServer) return null
+    if (this.isServer) return null;
 
     try {
-      return localStorage.getItem(this.storageKey.refreshToken)
+      return localStorage.getItem(this.storageKey.refreshToken);
     } catch (error) {
-      console.warn('Failed to get refresh token:', error)
-      return null
+      console.warn("Failed to get refresh token:", error);
+      return null;
     }
   }
 
@@ -58,13 +58,13 @@ class AuthStorage {
    * Get organization ID
    */
   getOrgId(): string | null {
-    if (this.isServer) return null
+    if (this.isServer) return null;
 
     try {
-      return localStorage.getItem(this.storageKey.orgId)
+      return localStorage.getItem(this.storageKey.orgId);
     } catch (error) {
-      console.warn('Failed to get org ID:', error)
-      return null
+      console.warn("Failed to get org ID:", error);
+      return null;
     }
   }
 
@@ -72,13 +72,13 @@ class AuthStorage {
    * Get user ID
    */
   getUserId(): string | null {
-    if (this.isServer) return null
+    if (this.isServer) return null;
 
     try {
-      return localStorage.getItem(this.storageKey.userId)
+      return localStorage.getItem(this.storageKey.userId);
     } catch (error) {
-      console.warn('Failed to get user ID:', error)
-      return null
+      console.warn("Failed to get user ID:", error);
+      return null;
     }
   }
 
@@ -86,13 +86,13 @@ class AuthStorage {
    * Set tokens
    */
   setTokens(tokens: TokenPair): void {
-    if (this.isServer) return
+    if (this.isServer) return;
 
     try {
-      localStorage.setItem(this.storageKey.accessToken, tokens.accessToken)
-      localStorage.setItem(this.storageKey.refreshToken, tokens.refreshToken)
+      localStorage.setItem(this.storageKey.accessToken, tokens.accessToken);
+      localStorage.setItem(this.storageKey.refreshToken, tokens.refreshToken);
     } catch (error) {
-      console.error('Failed to set tokens:', error)
+      console.error("Failed to set tokens:", error);
     }
   }
 
@@ -100,12 +100,12 @@ class AuthStorage {
    * Set organization context
    */
   setOrgId(orgId: string): void {
-    if (this.isServer) return
+    if (this.isServer) return;
 
     try {
-      localStorage.setItem(this.storageKey.orgId, orgId)
+      localStorage.setItem(this.storageKey.orgId, orgId);
     } catch (error) {
-      console.error('Failed to set org ID:', error)
+      console.error("Failed to set org ID:", error);
     }
   }
 
@@ -113,12 +113,12 @@ class AuthStorage {
    * Set user ID
    */
   setUserId(userId: string): void {
-    if (this.isServer) return
+    if (this.isServer) return;
 
     try {
-      localStorage.setItem(this.storageKey.userId, userId)
+      localStorage.setItem(this.storageKey.userId, userId);
     } catch (error) {
-      console.error('Failed to set user ID:', error)
+      console.error("Failed to set user ID:", error);
     }
   }
 
@@ -126,14 +126,14 @@ class AuthStorage {
    * Clear all auth data
    */
   clear(): void {
-    if (this.isServer) return
+    if (this.isServer) return;
 
     try {
       for (const key of Object.values(this.storageKey)) {
-        localStorage.removeItem(key)
+        localStorage.removeItem(key);
       }
     } catch (error) {
-      console.error('Failed to clear auth storage:', error)
+      console.error("Failed to clear auth storage:", error);
     }
   }
 
@@ -141,31 +141,31 @@ class AuthStorage {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    return !!this.getAccessToken()
+    return !!this.getAccessToken();
   }
 
   /**
    * Get auth headers for requests
    */
   getAuthHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {}
+    const headers: Record<string, string> = {};
 
-    const token = this.getAccessToken()
+    const token = this.getAccessToken();
     if (token) {
-      headers.Authorization = `Bearer ${token}`
+      headers.Authorization = `Bearer ${token}`;
     }
 
-    const orgId = this.getOrgId()
+    const orgId = this.getOrgId();
     if (orgId) {
-      headers['X-Organization-ID'] = orgId
+      headers["X-Organization-ID"] = orgId;
     }
 
-    return headers
+    return headers;
   }
 }
 
 // Export singleton instance
-export const authStorage = new AuthStorage()
+export const authStorage = new AuthStorage();
 
 // Export type for testing/mocking
-export type { AuthStorage }
+export type { AuthStorage };

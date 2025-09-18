@@ -1,73 +1,73 @@
-'use client'
+"use client";
 
-import { DeviceAutoSetup } from '@/components/device-auto-setup'
-import { DeviceList } from '@/components/device-list'
-import { DeviceStats } from '@/components/device-stats'
-import { ProvisioningGuide } from '@/components/provisioning-guide'
-import { QuickProvision } from '@/components/quick-provision'
-import { TelemetryChart } from '@/components/telemetry-chart'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { useToast } from '@/hooks/use-toast'
-import { api } from '@/lib/api'
-import type { Device, TelemetryData } from '@/lib/types'
-import { MagnifyingGlassIcon, PlusIcon, ReloadIcon } from '@radix-ui/react-icons'
-import { useQuery } from '@tanstack/react-query'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { MagnifyingGlassIcon, PlusIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { DeviceAutoSetup } from "@/components/device-auto-setup";
+import { DeviceList } from "@/components/device-list";
+import { DeviceStats } from "@/components/device-stats";
+import { ProvisioningGuide } from "@/components/provisioning-guide";
+import { QuickProvision } from "@/components/quick-provision";
+import { TelemetryChart } from "@/components/telemetry-chart";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
+import type { Device, TelemetryData } from "@/lib/types";
 
 interface DashboardContentProps {
   initialData: {
-    devices: Device[]
-    telemetry: TelemetryData[]
-  }
+    devices: Device[];
+    telemetry: TelemetryData[];
+  };
 }
 
 export function DashboardContent({ initialData }: DashboardContentProps) {
-  const { toast } = useToast()
-  const [selectedDevice, setSelectedDevice] = useState<string | null>(null)
-  const [showProvisioningGuide, setShowProvisioningGuide] = useState(false)
+  const { toast } = useToast();
+  const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
+  const [showProvisioningGuide, setShowProvisioningGuide] = useState(false);
 
   const { data: devices, refetch: refetchDevices } = useQuery({
-    queryKey: ['devices'],
+    queryKey: ["devices"],
     queryFn: api.getDevices,
     initialData: initialData.devices,
     refetchInterval: 10000,
-  })
+  });
 
   const { data: telemetry, refetch: refetchTelemetry } = useQuery({
-    queryKey: ['telemetry', selectedDevice],
+    queryKey: ["telemetry", selectedDevice],
     queryFn: () => (selectedDevice ? api.getTelemetry(selectedDevice) : api.getMetrics()),
     initialData: initialData.telemetry,
     refetchInterval: 5000,
-  })
+  });
 
   const handleDiscoverDevices = async () => {
     try {
-      const discovered = await api.discoverDevices()
+      const discovered = await api.discoverDevices();
       toast({
-        title: 'Discovery Complete',
+        title: "Discovery Complete",
         description: `Found ${discovered.length} device(s) on the network`,
-      })
-      refetchDevices()
-    } catch (error) {
+      });
+      refetchDevices();
+    } catch (_error) {
       toast({
-        title: 'Discovery Failed',
-        description: 'Failed to discover devices on the network',
-        variant: 'destructive',
-      })
+        title: "Discovery Failed",
+        description: "Failed to discover devices on the network",
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const handleRefresh = () => {
-    refetchDevices()
-    refetchTelemetry()
+    refetchDevices();
+    refetchTelemetry();
     toast({
-      title: 'Refreshed',
-      description: 'Dashboard data has been updated',
-    })
-  }
+      title: "Refreshed",
+      description: "Dashboard data has been updated",
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -146,7 +146,7 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
           <Card>
             <CardHeader>
               <CardTitle>
-                {selectedDevice ? `Telemetry for ${selectedDevice}` : 'Recent Telemetry'}
+                {selectedDevice ? `Telemetry for ${selectedDevice}` : "Recent Telemetry"}
               </CardTitle>
               <CardDescription>Real-time metrics from your devices</CardDescription>
             </CardHeader>
@@ -167,5 +167,5 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

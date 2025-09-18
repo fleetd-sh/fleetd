@@ -2,13 +2,13 @@
 // @generated from file public/v1/organization.proto (package public.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
-import type { EmptySchema, Timestamp } from '@bufbuild/protobuf/wkt'
-import { file_google_protobuf_empty, file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt'
-import type { UserRole } from './auth_pb'
-import { file_public_v1_auth } from './auth_pb'
-import type { Message } from '@bufbuild/protobuf'
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { EmptySchema, Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_empty, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { UserRole } from "./auth_pb";
+import { file_public_v1_auth } from "./auth_pb";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file public/v1/organization.proto.
@@ -16,56 +16,56 @@ import type { Message } from '@bufbuild/protobuf'
 export const file_public_v1_organization: GenFile =
   /*@__PURE__*/
   fileDesc(
-    'ChxwdWJsaWMvdjEvb3JnYW5pemF0aW9uLnByb3RvEglwdWJsaWMudjEi+gEKDE9yZ2FuaXphdGlvbhIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEgwKBHNsdWcYAyABKAkSEAoIbG9nb191cmwYBCABKAkSHQoEcGxhbhgFIAEoDjIPLnB1YmxpYy52MS5QbGFuEi4KCmNyZWF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjEKCHNldHRpbmdzGAggASgLMh8ucHVibGljLnYxLk9yZ2FuaXphdGlvblNldHRpbmdzIqkBChRPcmdhbml6YXRpb25TZXR0aW5ncxITCgtyZXF1aXJlXzJmYRgBIAEoCBIXCg9hbGxvd2VkX2RvbWFpbnMYAiADKAkSEwoLc3NvX2VuYWJsZWQYAyABKAgSFwoPc3NvX3Byb3ZpZGVyX2lkGAQgASgJEh8KF3Nlc3Npb25fdGltZW91dF9taW51dGVzGAUgASgFEhQKDGlwX3doaXRlbGlzdBgGIAMoCSLXAQoEVGVhbRIKCgJpZBgBIAEoCRIXCg9vcmdhbml6YXRpb25faWQYAiABKAkSDAoEbmFtZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRITCgtkZXZpY2VfdGFncxgFIAMoCRISCgptZW1iZXJfaWRzGAYgAygJEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIs8BCgZNZW1iZXISCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRINCgVlbWFpbBgDIAEoCRIMCgRuYW1lGAQgASgJEiEKBHJvbGUYBSABKA4yEy5wdWJsaWMudjEuVXNlclJvbGUSEAoIdGVhbV9pZHMYBiADKAkSLQoJam9pbmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBInCgZzdGF0dXMYCCABKA4yFy5wdWJsaWMudjEuTWVtYmVyU3RhdHVzIjEKFkdldE9yZ2FuaXphdGlvblJlcXVlc3QSFwoPb3JnYW5pemF0aW9uX2lkGAEgASgJIkgKF0dldE9yZ2FuaXphdGlvblJlc3BvbnNlEi0KDG9yZ2FuaXphdGlvbhgBIAEoCzIXLnB1YmxpYy52MS5Pcmdhbml6YXRpb24ihwEKGVVwZGF0ZU9yZ2FuaXphdGlvblJlcXVlc3QSFwoPb3JnYW5pemF0aW9uX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEAoIbG9nb191cmwYAyABKAkSMQoIc2V0dGluZ3MYBCABKAsyHy5wdWJsaWMudjEuT3JnYW5pemF0aW9uU2V0dGluZ3MiSwoaVXBkYXRlT3JnYW5pemF0aW9uUmVzcG9uc2USLQoMb3JnYW5pemF0aW9uGAEgASgLMhcucHVibGljLnYxLk9yZ2FuaXphdGlvbiJSChBMaXN0VGVhbXNSZXF1ZXN0EhcKD29yZ2FuaXphdGlvbl9pZBgBIAEoCRIRCglwYWdlX3NpemUYAiABKAUSEgoKcGFnZV90b2tlbhgDIAEoCSJMChFMaXN0VGVhbXNSZXNwb25zZRIeCgV0ZWFtcxgBIAMoCzIPLnB1YmxpYy52MS5UZWFtEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSJkChFDcmVhdGVUZWFtUmVxdWVzdBIXCg9vcmdhbml6YXRpb25faWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRITCgtkZXZpY2VfdGFncxgEIAMoCSIzChJDcmVhdGVUZWFtUmVzcG9uc2USHQoEdGVhbRgBIAEoCzIPLnB1YmxpYy52MS5UZWFtInAKEVVwZGF0ZVRlYW1SZXF1ZXN0Eg8KB3RlYW1faWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRITCgtkZXZpY2VfdGFncxgEIAMoCRISCgptZW1iZXJfaWRzGAUgAygJIjMKElVwZGF0ZVRlYW1SZXNwb25zZRIdCgR0ZWFtGAEgASgLMg8ucHVibGljLnYxLlRlYW0iJAoRRGVsZXRlVGVhbVJlcXVlc3QSDwoHdGVhbV9pZBgBIAEoCSJlChJMaXN0TWVtYmVyc1JlcXVlc3QSFwoPb3JnYW5pemF0aW9uX2lkGAEgASgJEg8KB3RlYW1faWQYAiABKAkSEQoJcGFnZV9zaXplGAMgASgFEhIKCnBhZ2VfdG9rZW4YBCABKAkiUgoTTGlzdE1lbWJlcnNSZXNwb25zZRIiCgdtZW1iZXJzGAEgAygLMhEucHVibGljLnYxLk1lbWJlchIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkicgoTSW52aXRlTWVtYmVyUmVxdWVzdBIXCg9vcmdhbml6YXRpb25faWQYASABKAkSDQoFZW1haWwYAiABKAkSIQoEcm9sZRgDIAEoDjITLnB1YmxpYy52MS5Vc2VyUm9sZRIQCgh0ZWFtX2lkcxgEIAMoCSJSChRJbnZpdGVNZW1iZXJSZXNwb25zZRIhCgZtZW1iZXIYASABKAsyES5wdWJsaWMudjEuTWVtYmVyEhcKD2ludml0YXRpb25fbGluaxgCIAEoCSJPChdVcGRhdGVNZW1iZXJSb2xlUmVxdWVzdBIRCgltZW1iZXJfaWQYASABKAkSIQoEcm9sZRgCIAEoDjITLnB1YmxpYy52MS5Vc2VyUm9sZSI9ChhVcGRhdGVNZW1iZXJSb2xlUmVzcG9uc2USIQoGbWVtYmVyGAEgASgLMhEucHVibGljLnYxLk1lbWJlciIoChNSZW1vdmVNZW1iZXJSZXF1ZXN0EhEKCW1lbWJlcl9pZBgBIAEoCSLSAgoWR2V0QmlsbGluZ0luZm9SZXNwb25zZRIlCgxjdXJyZW50X3BsYW4YASABKA4yDy5wdWJsaWMudjEuUGxhbhI4ChRiaWxsaW5nX3BlcmlvZF9zdGFydBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASNgoSYmlsbGluZ19wZXJpb2RfZW5kGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxkZXZpY2VfbGltaXQYBCABKAMSIAoYdGVsZW1ldHJ5X3JldGVudGlvbl9kYXlzGAUgASgDEhkKEXVwZGF0ZV9zdG9yYWdlX2diGAYgASgDEh0KFWN1c3RvbV9kb21haW5fZW5hYmxlZBgHIAEoCBITCgtzc29fZW5hYmxlZBgIIAEoCBIYChBwcmlvcml0eV9zdXBwb3J0GAkgASgIIm8KD0dldFVzYWdlUmVxdWVzdBIuCgpzdGFydF90aW1lGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfdGltZRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAisQEKEEdldFVzYWdlUmVzcG9uc2USFAoMZGV2aWNlX2NvdW50GAEgASgDEhgKEHRlbGVtZXRyeV9wb2ludHMYAiABKAMSEQoJYXBpX2NhbGxzGAMgASgDEhcKD2JhbmR3aWR0aF9ieXRlcxgEIAEoAxIVCg1zdG9yYWdlX2J5dGVzGAUgASgDEioKC2RhaWx5X3VzYWdlGAYgAygLMhUucHVibGljLnYxLlVzYWdlQnlEYXkieQoKVXNhZ2VCeURheRIoCgRkYXRlGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxkZXZpY2VfY291bnQYAiABKAMSGAoQdGVsZW1ldHJ5X3BvaW50cxgDIAEoAxIRCglhcGlfY2FsbHMYBCABKAMqfwoEUGxhbhIUChBQTEFOX1VOU1BFQ0lGSUVEEAASDQoJUExBTl9GUkVFEAESEAoMUExBTl9TVEFSVEVSEAISFQoRUExBTl9QUk9GRVNTSU9OQUwQAxITCg9QTEFOX0VOVEVSUFJJU0UQBBIUChBQTEFOX1NFTEZfSE9TVEVEEAUqfwoMTWVtYmVyU3RhdHVzEh0KGU1FTUJFUl9TVEFUVVNfVU5TUEVDSUZJRUQQABIYChRNRU1CRVJfU1RBVFVTX0FDVElWRRABEhkKFU1FTUJFUl9TVEFUVVNfSU5WSVRFRBACEhsKF01FTUJFUl9TVEFUVVNfU1VTUEVOREVEEAMyygcKE09yZ2FuaXphdGlvblNlcnZpY2USWAoPR2V0T3JnYW5pemF0aW9uEiEucHVibGljLnYxLkdldE9yZ2FuaXphdGlvblJlcXVlc3QaIi5wdWJsaWMudjEuR2V0T3JnYW5pemF0aW9uUmVzcG9uc2USYQoSVXBkYXRlT3JnYW5pemF0aW9uEiQucHVibGljLnYxLlVwZGF0ZU9yZ2FuaXphdGlvblJlcXVlc3QaJS5wdWJsaWMudjEuVXBkYXRlT3JnYW5pemF0aW9uUmVzcG9uc2USRgoJTGlzdFRlYW1zEhsucHVibGljLnYxLkxpc3RUZWFtc1JlcXVlc3QaHC5wdWJsaWMudjEuTGlzdFRlYW1zUmVzcG9uc2USSQoKQ3JlYXRlVGVhbRIcLnB1YmxpYy52MS5DcmVhdGVUZWFtUmVxdWVzdBodLnB1YmxpYy52MS5DcmVhdGVUZWFtUmVzcG9uc2USSQoKVXBkYXRlVGVhbRIcLnB1YmxpYy52MS5VcGRhdGVUZWFtUmVxdWVzdBodLnB1YmxpYy52MS5VcGRhdGVUZWFtUmVzcG9uc2USQgoKRGVsZXRlVGVhbRIcLnB1YmxpYy52MS5EZWxldGVUZWFtUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJMCgtMaXN0TWVtYmVycxIdLnB1YmxpYy52MS5MaXN0TWVtYmVyc1JlcXVlc3QaHi5wdWJsaWMudjEuTGlzdE1lbWJlcnNSZXNwb25zZRJPCgxJbnZpdGVNZW1iZXISHi5wdWJsaWMudjEuSW52aXRlTWVtYmVyUmVxdWVzdBofLnB1YmxpYy52MS5JbnZpdGVNZW1iZXJSZXNwb25zZRJbChBVcGRhdGVNZW1iZXJSb2xlEiIucHVibGljLnYxLlVwZGF0ZU1lbWJlclJvbGVSZXF1ZXN0GiMucHVibGljLnYxLlVwZGF0ZU1lbWJlclJvbGVSZXNwb25zZRJGCgxSZW1vdmVNZW1iZXISHi5wdWJsaWMudjEuUmVtb3ZlTWVtYmVyUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJLCg5HZXRCaWxsaW5nSW5mbxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRohLnB1YmxpYy52MS5HZXRCaWxsaW5nSW5mb1Jlc3BvbnNlEkMKCEdldFVzYWdlEhoucHVibGljLnYxLkdldFVzYWdlUmVxdWVzdBobLnB1YmxpYy52MS5HZXRVc2FnZVJlc3BvbnNlQosBCg1jb20ucHVibGljLnYxQhFPcmdhbml6YXRpb25Qcm90b1ABWiBmbGVldGQuc2gvZ2VuL3B1YmxpYy92MTtwdWJsaWN2MaICA1BYWKoCCVB1YmxpYy5WMcoCClB1YmxpY19cVjHiAhZQdWJsaWNfXFYxXEdQQk1ldGFkYXRh6gIKUHVibGljOjpWMWIGcHJvdG8z',
+    "ChxwdWJsaWMvdjEvb3JnYW5pemF0aW9uLnByb3RvEglwdWJsaWMudjEi+gEKDE9yZ2FuaXphdGlvbhIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEgwKBHNsdWcYAyABKAkSEAoIbG9nb191cmwYBCABKAkSHQoEcGxhbhgFIAEoDjIPLnB1YmxpYy52MS5QbGFuEi4KCmNyZWF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjEKCHNldHRpbmdzGAggASgLMh8ucHVibGljLnYxLk9yZ2FuaXphdGlvblNldHRpbmdzIqkBChRPcmdhbml6YXRpb25TZXR0aW5ncxITCgtyZXF1aXJlXzJmYRgBIAEoCBIXCg9hbGxvd2VkX2RvbWFpbnMYAiADKAkSEwoLc3NvX2VuYWJsZWQYAyABKAgSFwoPc3NvX3Byb3ZpZGVyX2lkGAQgASgJEh8KF3Nlc3Npb25fdGltZW91dF9taW51dGVzGAUgASgFEhQKDGlwX3doaXRlbGlzdBgGIAMoCSLXAQoEVGVhbRIKCgJpZBgBIAEoCRIXCg9vcmdhbml6YXRpb25faWQYAiABKAkSDAoEbmFtZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRITCgtkZXZpY2VfdGFncxgFIAMoCRISCgptZW1iZXJfaWRzGAYgAygJEi4KCmNyZWF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIs8BCgZNZW1iZXISCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRINCgVlbWFpbBgDIAEoCRIMCgRuYW1lGAQgASgJEiEKBHJvbGUYBSABKA4yEy5wdWJsaWMudjEuVXNlclJvbGUSEAoIdGVhbV9pZHMYBiADKAkSLQoJam9pbmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBInCgZzdGF0dXMYCCABKA4yFy5wdWJsaWMudjEuTWVtYmVyU3RhdHVzIjEKFkdldE9yZ2FuaXphdGlvblJlcXVlc3QSFwoPb3JnYW5pemF0aW9uX2lkGAEgASgJIkgKF0dldE9yZ2FuaXphdGlvblJlc3BvbnNlEi0KDG9yZ2FuaXphdGlvbhgBIAEoCzIXLnB1YmxpYy52MS5Pcmdhbml6YXRpb24ihwEKGVVwZGF0ZU9yZ2FuaXphdGlvblJlcXVlc3QSFwoPb3JnYW5pemF0aW9uX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEAoIbG9nb191cmwYAyABKAkSMQoIc2V0dGluZ3MYBCABKAsyHy5wdWJsaWMudjEuT3JnYW5pemF0aW9uU2V0dGluZ3MiSwoaVXBkYXRlT3JnYW5pemF0aW9uUmVzcG9uc2USLQoMb3JnYW5pemF0aW9uGAEgASgLMhcucHVibGljLnYxLk9yZ2FuaXphdGlvbiJSChBMaXN0VGVhbXNSZXF1ZXN0EhcKD29yZ2FuaXphdGlvbl9pZBgBIAEoCRIRCglwYWdlX3NpemUYAiABKAUSEgoKcGFnZV90b2tlbhgDIAEoCSJMChFMaXN0VGVhbXNSZXNwb25zZRIeCgV0ZWFtcxgBIAMoCzIPLnB1YmxpYy52MS5UZWFtEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSJkChFDcmVhdGVUZWFtUmVxdWVzdBIXCg9vcmdhbml6YXRpb25faWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRITCgtkZXZpY2VfdGFncxgEIAMoCSIzChJDcmVhdGVUZWFtUmVzcG9uc2USHQoEdGVhbRgBIAEoCzIPLnB1YmxpYy52MS5UZWFtInAKEVVwZGF0ZVRlYW1SZXF1ZXN0Eg8KB3RlYW1faWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRITCgtkZXZpY2VfdGFncxgEIAMoCRISCgptZW1iZXJfaWRzGAUgAygJIjMKElVwZGF0ZVRlYW1SZXNwb25zZRIdCgR0ZWFtGAEgASgLMg8ucHVibGljLnYxLlRlYW0iJAoRRGVsZXRlVGVhbVJlcXVlc3QSDwoHdGVhbV9pZBgBIAEoCSJlChJMaXN0TWVtYmVyc1JlcXVlc3QSFwoPb3JnYW5pemF0aW9uX2lkGAEgASgJEg8KB3RlYW1faWQYAiABKAkSEQoJcGFnZV9zaXplGAMgASgFEhIKCnBhZ2VfdG9rZW4YBCABKAkiUgoTTGlzdE1lbWJlcnNSZXNwb25zZRIiCgdtZW1iZXJzGAEgAygLMhEucHVibGljLnYxLk1lbWJlchIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkicgoTSW52aXRlTWVtYmVyUmVxdWVzdBIXCg9vcmdhbml6YXRpb25faWQYASABKAkSDQoFZW1haWwYAiABKAkSIQoEcm9sZRgDIAEoDjITLnB1YmxpYy52MS5Vc2VyUm9sZRIQCgh0ZWFtX2lkcxgEIAMoCSJSChRJbnZpdGVNZW1iZXJSZXNwb25zZRIhCgZtZW1iZXIYASABKAsyES5wdWJsaWMudjEuTWVtYmVyEhcKD2ludml0YXRpb25fbGluaxgCIAEoCSJPChdVcGRhdGVNZW1iZXJSb2xlUmVxdWVzdBIRCgltZW1iZXJfaWQYASABKAkSIQoEcm9sZRgCIAEoDjITLnB1YmxpYy52MS5Vc2VyUm9sZSI9ChhVcGRhdGVNZW1iZXJSb2xlUmVzcG9uc2USIQoGbWVtYmVyGAEgASgLMhEucHVibGljLnYxLk1lbWJlciIoChNSZW1vdmVNZW1iZXJSZXF1ZXN0EhEKCW1lbWJlcl9pZBgBIAEoCSLSAgoWR2V0QmlsbGluZ0luZm9SZXNwb25zZRIlCgxjdXJyZW50X3BsYW4YASABKA4yDy5wdWJsaWMudjEuUGxhbhI4ChRiaWxsaW5nX3BlcmlvZF9zdGFydBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASNgoSYmlsbGluZ19wZXJpb2RfZW5kGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxkZXZpY2VfbGltaXQYBCABKAMSIAoYdGVsZW1ldHJ5X3JldGVudGlvbl9kYXlzGAUgASgDEhkKEXVwZGF0ZV9zdG9yYWdlX2diGAYgASgDEh0KFWN1c3RvbV9kb21haW5fZW5hYmxlZBgHIAEoCBITCgtzc29fZW5hYmxlZBgIIAEoCBIYChBwcmlvcml0eV9zdXBwb3J0GAkgASgIIm8KD0dldFVzYWdlUmVxdWVzdBIuCgpzdGFydF90aW1lGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfdGltZRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAisQEKEEdldFVzYWdlUmVzcG9uc2USFAoMZGV2aWNlX2NvdW50GAEgASgDEhgKEHRlbGVtZXRyeV9wb2ludHMYAiABKAMSEQoJYXBpX2NhbGxzGAMgASgDEhcKD2JhbmR3aWR0aF9ieXRlcxgEIAEoAxIVCg1zdG9yYWdlX2J5dGVzGAUgASgDEioKC2RhaWx5X3VzYWdlGAYgAygLMhUucHVibGljLnYxLlVzYWdlQnlEYXkieQoKVXNhZ2VCeURheRIoCgRkYXRlGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxkZXZpY2VfY291bnQYAiABKAMSGAoQdGVsZW1ldHJ5X3BvaW50cxgDIAEoAxIRCglhcGlfY2FsbHMYBCABKAMqfwoEUGxhbhIUChBQTEFOX1VOU1BFQ0lGSUVEEAASDQoJUExBTl9GUkVFEAESEAoMUExBTl9TVEFSVEVSEAISFQoRUExBTl9QUk9GRVNTSU9OQUwQAxITCg9QTEFOX0VOVEVSUFJJU0UQBBIUChBQTEFOX1NFTEZfSE9TVEVEEAUqfwoMTWVtYmVyU3RhdHVzEh0KGU1FTUJFUl9TVEFUVVNfVU5TUEVDSUZJRUQQABIYChRNRU1CRVJfU1RBVFVTX0FDVElWRRABEhkKFU1FTUJFUl9TVEFUVVNfSU5WSVRFRBACEhsKF01FTUJFUl9TVEFUVVNfU1VTUEVOREVEEAMyygcKE09yZ2FuaXphdGlvblNlcnZpY2USWAoPR2V0T3JnYW5pemF0aW9uEiEucHVibGljLnYxLkdldE9yZ2FuaXphdGlvblJlcXVlc3QaIi5wdWJsaWMudjEuR2V0T3JnYW5pemF0aW9uUmVzcG9uc2USYQoSVXBkYXRlT3JnYW5pemF0aW9uEiQucHVibGljLnYxLlVwZGF0ZU9yZ2FuaXphdGlvblJlcXVlc3QaJS5wdWJsaWMudjEuVXBkYXRlT3JnYW5pemF0aW9uUmVzcG9uc2USRgoJTGlzdFRlYW1zEhsucHVibGljLnYxLkxpc3RUZWFtc1JlcXVlc3QaHC5wdWJsaWMudjEuTGlzdFRlYW1zUmVzcG9uc2USSQoKQ3JlYXRlVGVhbRIcLnB1YmxpYy52MS5DcmVhdGVUZWFtUmVxdWVzdBodLnB1YmxpYy52MS5DcmVhdGVUZWFtUmVzcG9uc2USSQoKVXBkYXRlVGVhbRIcLnB1YmxpYy52MS5VcGRhdGVUZWFtUmVxdWVzdBodLnB1YmxpYy52MS5VcGRhdGVUZWFtUmVzcG9uc2USQgoKRGVsZXRlVGVhbRIcLnB1YmxpYy52MS5EZWxldGVUZWFtUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJMCgtMaXN0TWVtYmVycxIdLnB1YmxpYy52MS5MaXN0TWVtYmVyc1JlcXVlc3QaHi5wdWJsaWMudjEuTGlzdE1lbWJlcnNSZXNwb25zZRJPCgxJbnZpdGVNZW1iZXISHi5wdWJsaWMudjEuSW52aXRlTWVtYmVyUmVxdWVzdBofLnB1YmxpYy52MS5JbnZpdGVNZW1iZXJSZXNwb25zZRJbChBVcGRhdGVNZW1iZXJSb2xlEiIucHVibGljLnYxLlVwZGF0ZU1lbWJlclJvbGVSZXF1ZXN0GiMucHVibGljLnYxLlVwZGF0ZU1lbWJlclJvbGVSZXNwb25zZRJGCgxSZW1vdmVNZW1iZXISHi5wdWJsaWMudjEuUmVtb3ZlTWVtYmVyUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJLCg5HZXRCaWxsaW5nSW5mbxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRohLnB1YmxpYy52MS5HZXRCaWxsaW5nSW5mb1Jlc3BvbnNlEkMKCEdldFVzYWdlEhoucHVibGljLnYxLkdldFVzYWdlUmVxdWVzdBobLnB1YmxpYy52MS5HZXRVc2FnZVJlc3BvbnNlQosBCg1jb20ucHVibGljLnYxQhFPcmdhbml6YXRpb25Qcm90b1ABWiBmbGVldGQuc2gvZ2VuL3B1YmxpYy92MTtwdWJsaWN2MaICA1BYWKoCCVB1YmxpYy5WMcoCClB1YmxpY19cVjHiAhZQdWJsaWNfXFYxXEdQQk1ldGFkYXRh6gIKUHVibGljOjpWMWIGcHJvdG8z",
     [file_google_protobuf_timestamp, file_google_protobuf_empty, file_public_v1_auth],
-  )
+  );
 
 /**
  * Organization represents a tenant
  *
  * @generated from message public.v1.Organization
  */
-export type Organization = Message<'public.v1.Organization'> & {
+export type Organization = Message<"public.v1.Organization"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string slug = 3;
    */
-  slug: string
+  slug: string;
 
   /**
    * @generated from field: string logo_url = 4;
    */
-  logoUrl: string
+  logoUrl: string;
 
   /**
    * @generated from field: public.v1.Plan plan = 5;
    */
-  plan: Plan
+  plan: Plan;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 6;
    */
-  createdAt?: Timestamp
+  createdAt?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp updated_at = 7;
    */
-  updatedAt?: Timestamp
+  updatedAt?: Timestamp;
 
   /**
    * @generated from field: public.v1.OrganizationSettings settings = 8;
    */
-  settings?: OrganizationSettings
-}
+  settings?: OrganizationSettings;
+};
 
 /**
  * Describes the message public.v1.Organization.
@@ -73,42 +73,42 @@ export type Organization = Message<'public.v1.Organization'> & {
  */
 export const OrganizationSchema: GenMessage<Organization> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 0)
+  messageDesc(file_public_v1_organization, 0);
 
 /**
  * @generated from message public.v1.OrganizationSettings
  */
-export type OrganizationSettings = Message<'public.v1.OrganizationSettings'> & {
+export type OrganizationSettings = Message<"public.v1.OrganizationSettings"> & {
   /**
    * @generated from field: bool require_2fa = 1;
    */
-  require2fa: boolean
+  require2fa: boolean;
 
   /**
    * @generated from field: repeated string allowed_domains = 2;
    */
-  allowedDomains: string[]
+  allowedDomains: string[];
 
   /**
    * @generated from field: bool sso_enabled = 3;
    */
-  ssoEnabled: boolean
+  ssoEnabled: boolean;
 
   /**
    * @generated from field: string sso_provider_id = 4;
    */
-  ssoProviderId: string
+  ssoProviderId: string;
 
   /**
    * @generated from field: int32 session_timeout_minutes = 5;
    */
-  sessionTimeoutMinutes: number
+  sessionTimeoutMinutes: number;
 
   /**
    * @generated from field: repeated string ip_whitelist = 6;
    */
-  ipWhitelist: string[]
-}
+  ipWhitelist: string[];
+};
 
 /**
  * Describes the message public.v1.OrganizationSettings.
@@ -116,56 +116,56 @@ export type OrganizationSettings = Message<'public.v1.OrganizationSettings'> & {
  */
 export const OrganizationSettingsSchema: GenMessage<OrganizationSettings> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 1)
+  messageDesc(file_public_v1_organization, 1);
 
 /**
  * Team for organizing devices and access
  *
  * @generated from message public.v1.Team
  */
-export type Team = Message<'public.v1.Team'> & {
+export type Team = Message<"public.v1.Team"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: string organization_id = 2;
    */
-  organizationId: string
+  organizationId: string;
 
   /**
    * @generated from field: string name = 3;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string description = 4;
    */
-  description: string
+  description: string;
 
   /**
    * Devices with these tags belong to this team
    *
    * @generated from field: repeated string device_tags = 5;
    */
-  deviceTags: string[]
+  deviceTags: string[];
 
   /**
    * @generated from field: repeated string member_ids = 6;
    */
-  memberIds: string[]
+  memberIds: string[];
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 7;
    */
-  createdAt?: Timestamp
+  createdAt?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp updated_at = 8;
    */
-  updatedAt?: Timestamp
-}
+  updatedAt?: Timestamp;
+};
 
 /**
  * Describes the message public.v1.Team.
@@ -173,54 +173,54 @@ export type Team = Message<'public.v1.Team'> & {
  */
 export const TeamSchema: GenMessage<Team> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 2)
+  messageDesc(file_public_v1_organization, 2);
 
 /**
  * Member of an organization
  *
  * @generated from message public.v1.Member
  */
-export type Member = Message<'public.v1.Member'> & {
+export type Member = Message<"public.v1.Member"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: string user_id = 2;
    */
-  userId: string
+  userId: string;
 
   /**
    * @generated from field: string email = 3;
    */
-  email: string
+  email: string;
 
   /**
    * @generated from field: string name = 4;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: public.v1.UserRole role = 5;
    */
-  role: UserRole
+  role: UserRole;
 
   /**
    * @generated from field: repeated string team_ids = 6;
    */
-  teamIds: string[]
+  teamIds: string[];
 
   /**
    * @generated from field: google.protobuf.Timestamp joined_at = 7;
    */
-  joinedAt?: Timestamp
+  joinedAt?: Timestamp;
 
   /**
    * @generated from field: public.v1.MemberStatus status = 8;
    */
-  status: MemberStatus
-}
+  status: MemberStatus;
+};
 
 /**
  * Describes the message public.v1.Member.
@@ -228,19 +228,19 @@ export type Member = Message<'public.v1.Member'> & {
  */
 export const MemberSchema: GenMessage<Member> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 3)
+  messageDesc(file_public_v1_organization, 3);
 
 /**
  * Organization management messages
  *
  * @generated from message public.v1.GetOrganizationRequest
  */
-export type GetOrganizationRequest = Message<'public.v1.GetOrganizationRequest'> & {
+export type GetOrganizationRequest = Message<"public.v1.GetOrganizationRequest"> & {
   /**
    * @generated from field: string organization_id = 1;
    */
-  organizationId: string
-}
+  organizationId: string;
+};
 
 /**
  * Describes the message public.v1.GetOrganizationRequest.
@@ -248,17 +248,17 @@ export type GetOrganizationRequest = Message<'public.v1.GetOrganizationRequest'>
  */
 export const GetOrganizationRequestSchema: GenMessage<GetOrganizationRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 4)
+  messageDesc(file_public_v1_organization, 4);
 
 /**
  * @generated from message public.v1.GetOrganizationResponse
  */
-export type GetOrganizationResponse = Message<'public.v1.GetOrganizationResponse'> & {
+export type GetOrganizationResponse = Message<"public.v1.GetOrganizationResponse"> & {
   /**
    * @generated from field: public.v1.Organization organization = 1;
    */
-  organization?: Organization
-}
+  organization?: Organization;
+};
 
 /**
  * Describes the message public.v1.GetOrganizationResponse.
@@ -266,32 +266,32 @@ export type GetOrganizationResponse = Message<'public.v1.GetOrganizationResponse
  */
 export const GetOrganizationResponseSchema: GenMessage<GetOrganizationResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 5)
+  messageDesc(file_public_v1_organization, 5);
 
 /**
  * @generated from message public.v1.UpdateOrganizationRequest
  */
-export type UpdateOrganizationRequest = Message<'public.v1.UpdateOrganizationRequest'> & {
+export type UpdateOrganizationRequest = Message<"public.v1.UpdateOrganizationRequest"> & {
   /**
    * @generated from field: string organization_id = 1;
    */
-  organizationId: string
+  organizationId: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string logo_url = 3;
    */
-  logoUrl: string
+  logoUrl: string;
 
   /**
    * @generated from field: public.v1.OrganizationSettings settings = 4;
    */
-  settings?: OrganizationSettings
-}
+  settings?: OrganizationSettings;
+};
 
 /**
  * Describes the message public.v1.UpdateOrganizationRequest.
@@ -299,17 +299,17 @@ export type UpdateOrganizationRequest = Message<'public.v1.UpdateOrganizationReq
  */
 export const UpdateOrganizationRequestSchema: GenMessage<UpdateOrganizationRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 6)
+  messageDesc(file_public_v1_organization, 6);
 
 /**
  * @generated from message public.v1.UpdateOrganizationResponse
  */
-export type UpdateOrganizationResponse = Message<'public.v1.UpdateOrganizationResponse'> & {
+export type UpdateOrganizationResponse = Message<"public.v1.UpdateOrganizationResponse"> & {
   /**
    * @generated from field: public.v1.Organization organization = 1;
    */
-  organization?: Organization
-}
+  organization?: Organization;
+};
 
 /**
  * Describes the message public.v1.UpdateOrganizationResponse.
@@ -317,29 +317,29 @@ export type UpdateOrganizationResponse = Message<'public.v1.UpdateOrganizationRe
  */
 export const UpdateOrganizationResponseSchema: GenMessage<UpdateOrganizationResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 7)
+  messageDesc(file_public_v1_organization, 7);
 
 /**
  * Team management messages
  *
  * @generated from message public.v1.ListTeamsRequest
  */
-export type ListTeamsRequest = Message<'public.v1.ListTeamsRequest'> & {
+export type ListTeamsRequest = Message<"public.v1.ListTeamsRequest"> & {
   /**
    * @generated from field: string organization_id = 1;
    */
-  organizationId: string
+  organizationId: string;
 
   /**
    * @generated from field: int32 page_size = 2;
    */
-  pageSize: number
+  pageSize: number;
 
   /**
    * @generated from field: string page_token = 3;
    */
-  pageToken: string
-}
+  pageToken: string;
+};
 
 /**
  * Describes the message public.v1.ListTeamsRequest.
@@ -347,22 +347,22 @@ export type ListTeamsRequest = Message<'public.v1.ListTeamsRequest'> & {
  */
 export const ListTeamsRequestSchema: GenMessage<ListTeamsRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 8)
+  messageDesc(file_public_v1_organization, 8);
 
 /**
  * @generated from message public.v1.ListTeamsResponse
  */
-export type ListTeamsResponse = Message<'public.v1.ListTeamsResponse'> & {
+export type ListTeamsResponse = Message<"public.v1.ListTeamsResponse"> & {
   /**
    * @generated from field: repeated public.v1.Team teams = 1;
    */
-  teams: Team[]
+  teams: Team[];
 
   /**
    * @generated from field: string next_page_token = 2;
    */
-  nextPageToken: string
-}
+  nextPageToken: string;
+};
 
 /**
  * Describes the message public.v1.ListTeamsResponse.
@@ -370,32 +370,32 @@ export type ListTeamsResponse = Message<'public.v1.ListTeamsResponse'> & {
  */
 export const ListTeamsResponseSchema: GenMessage<ListTeamsResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 9)
+  messageDesc(file_public_v1_organization, 9);
 
 /**
  * @generated from message public.v1.CreateTeamRequest
  */
-export type CreateTeamRequest = Message<'public.v1.CreateTeamRequest'> & {
+export type CreateTeamRequest = Message<"public.v1.CreateTeamRequest"> & {
   /**
    * @generated from field: string organization_id = 1;
    */
-  organizationId: string
+  organizationId: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string description = 3;
    */
-  description: string
+  description: string;
 
   /**
    * @generated from field: repeated string device_tags = 4;
    */
-  deviceTags: string[]
-}
+  deviceTags: string[];
+};
 
 /**
  * Describes the message public.v1.CreateTeamRequest.
@@ -403,17 +403,17 @@ export type CreateTeamRequest = Message<'public.v1.CreateTeamRequest'> & {
  */
 export const CreateTeamRequestSchema: GenMessage<CreateTeamRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 10)
+  messageDesc(file_public_v1_organization, 10);
 
 /**
  * @generated from message public.v1.CreateTeamResponse
  */
-export type CreateTeamResponse = Message<'public.v1.CreateTeamResponse'> & {
+export type CreateTeamResponse = Message<"public.v1.CreateTeamResponse"> & {
   /**
    * @generated from field: public.v1.Team team = 1;
    */
-  team?: Team
-}
+  team?: Team;
+};
 
 /**
  * Describes the message public.v1.CreateTeamResponse.
@@ -421,37 +421,37 @@ export type CreateTeamResponse = Message<'public.v1.CreateTeamResponse'> & {
  */
 export const CreateTeamResponseSchema: GenMessage<CreateTeamResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 11)
+  messageDesc(file_public_v1_organization, 11);
 
 /**
  * @generated from message public.v1.UpdateTeamRequest
  */
-export type UpdateTeamRequest = Message<'public.v1.UpdateTeamRequest'> & {
+export type UpdateTeamRequest = Message<"public.v1.UpdateTeamRequest"> & {
   /**
    * @generated from field: string team_id = 1;
    */
-  teamId: string
+  teamId: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string description = 3;
    */
-  description: string
+  description: string;
 
   /**
    * @generated from field: repeated string device_tags = 4;
    */
-  deviceTags: string[]
+  deviceTags: string[];
 
   /**
    * @generated from field: repeated string member_ids = 5;
    */
-  memberIds: string[]
-}
+  memberIds: string[];
+};
 
 /**
  * Describes the message public.v1.UpdateTeamRequest.
@@ -459,17 +459,17 @@ export type UpdateTeamRequest = Message<'public.v1.UpdateTeamRequest'> & {
  */
 export const UpdateTeamRequestSchema: GenMessage<UpdateTeamRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 12)
+  messageDesc(file_public_v1_organization, 12);
 
 /**
  * @generated from message public.v1.UpdateTeamResponse
  */
-export type UpdateTeamResponse = Message<'public.v1.UpdateTeamResponse'> & {
+export type UpdateTeamResponse = Message<"public.v1.UpdateTeamResponse"> & {
   /**
    * @generated from field: public.v1.Team team = 1;
    */
-  team?: Team
-}
+  team?: Team;
+};
 
 /**
  * Describes the message public.v1.UpdateTeamResponse.
@@ -477,17 +477,17 @@ export type UpdateTeamResponse = Message<'public.v1.UpdateTeamResponse'> & {
  */
 export const UpdateTeamResponseSchema: GenMessage<UpdateTeamResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 13)
+  messageDesc(file_public_v1_organization, 13);
 
 /**
  * @generated from message public.v1.DeleteTeamRequest
  */
-export type DeleteTeamRequest = Message<'public.v1.DeleteTeamRequest'> & {
+export type DeleteTeamRequest = Message<"public.v1.DeleteTeamRequest"> & {
   /**
    * @generated from field: string team_id = 1;
    */
-  teamId: string
-}
+  teamId: string;
+};
 
 /**
  * Describes the message public.v1.DeleteTeamRequest.
@@ -495,34 +495,34 @@ export type DeleteTeamRequest = Message<'public.v1.DeleteTeamRequest'> & {
  */
 export const DeleteTeamRequestSchema: GenMessage<DeleteTeamRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 14)
+  messageDesc(file_public_v1_organization, 14);
 
 /**
  * Member management messages
  *
  * @generated from message public.v1.ListMembersRequest
  */
-export type ListMembersRequest = Message<'public.v1.ListMembersRequest'> & {
+export type ListMembersRequest = Message<"public.v1.ListMembersRequest"> & {
   /**
    * @generated from field: string organization_id = 1;
    */
-  organizationId: string
+  organizationId: string;
 
   /**
    * @generated from field: string team_id = 2;
    */
-  teamId: string
+  teamId: string;
 
   /**
    * @generated from field: int32 page_size = 3;
    */
-  pageSize: number
+  pageSize: number;
 
   /**
    * @generated from field: string page_token = 4;
    */
-  pageToken: string
-}
+  pageToken: string;
+};
 
 /**
  * Describes the message public.v1.ListMembersRequest.
@@ -530,22 +530,22 @@ export type ListMembersRequest = Message<'public.v1.ListMembersRequest'> & {
  */
 export const ListMembersRequestSchema: GenMessage<ListMembersRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 15)
+  messageDesc(file_public_v1_organization, 15);
 
 /**
  * @generated from message public.v1.ListMembersResponse
  */
-export type ListMembersResponse = Message<'public.v1.ListMembersResponse'> & {
+export type ListMembersResponse = Message<"public.v1.ListMembersResponse"> & {
   /**
    * @generated from field: repeated public.v1.Member members = 1;
    */
-  members: Member[]
+  members: Member[];
 
   /**
    * @generated from field: string next_page_token = 2;
    */
-  nextPageToken: string
-}
+  nextPageToken: string;
+};
 
 /**
  * Describes the message public.v1.ListMembersResponse.
@@ -553,32 +553,32 @@ export type ListMembersResponse = Message<'public.v1.ListMembersResponse'> & {
  */
 export const ListMembersResponseSchema: GenMessage<ListMembersResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 16)
+  messageDesc(file_public_v1_organization, 16);
 
 /**
  * @generated from message public.v1.InviteMemberRequest
  */
-export type InviteMemberRequest = Message<'public.v1.InviteMemberRequest'> & {
+export type InviteMemberRequest = Message<"public.v1.InviteMemberRequest"> & {
   /**
    * @generated from field: string organization_id = 1;
    */
-  organizationId: string
+  organizationId: string;
 
   /**
    * @generated from field: string email = 2;
    */
-  email: string
+  email: string;
 
   /**
    * @generated from field: public.v1.UserRole role = 3;
    */
-  role: UserRole
+  role: UserRole;
 
   /**
    * @generated from field: repeated string team_ids = 4;
    */
-  teamIds: string[]
-}
+  teamIds: string[];
+};
 
 /**
  * Describes the message public.v1.InviteMemberRequest.
@@ -586,22 +586,22 @@ export type InviteMemberRequest = Message<'public.v1.InviteMemberRequest'> & {
  */
 export const InviteMemberRequestSchema: GenMessage<InviteMemberRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 17)
+  messageDesc(file_public_v1_organization, 17);
 
 /**
  * @generated from message public.v1.InviteMemberResponse
  */
-export type InviteMemberResponse = Message<'public.v1.InviteMemberResponse'> & {
+export type InviteMemberResponse = Message<"public.v1.InviteMemberResponse"> & {
   /**
    * @generated from field: public.v1.Member member = 1;
    */
-  member?: Member
+  member?: Member;
 
   /**
    * @generated from field: string invitation_link = 2;
    */
-  invitationLink: string
-}
+  invitationLink: string;
+};
 
 /**
  * Describes the message public.v1.InviteMemberResponse.
@@ -609,22 +609,22 @@ export type InviteMemberResponse = Message<'public.v1.InviteMemberResponse'> & {
  */
 export const InviteMemberResponseSchema: GenMessage<InviteMemberResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 18)
+  messageDesc(file_public_v1_organization, 18);
 
 /**
  * @generated from message public.v1.UpdateMemberRoleRequest
  */
-export type UpdateMemberRoleRequest = Message<'public.v1.UpdateMemberRoleRequest'> & {
+export type UpdateMemberRoleRequest = Message<"public.v1.UpdateMemberRoleRequest"> & {
   /**
    * @generated from field: string member_id = 1;
    */
-  memberId: string
+  memberId: string;
 
   /**
    * @generated from field: public.v1.UserRole role = 2;
    */
-  role: UserRole
-}
+  role: UserRole;
+};
 
 /**
  * Describes the message public.v1.UpdateMemberRoleRequest.
@@ -632,17 +632,17 @@ export type UpdateMemberRoleRequest = Message<'public.v1.UpdateMemberRoleRequest
  */
 export const UpdateMemberRoleRequestSchema: GenMessage<UpdateMemberRoleRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 19)
+  messageDesc(file_public_v1_organization, 19);
 
 /**
  * @generated from message public.v1.UpdateMemberRoleResponse
  */
-export type UpdateMemberRoleResponse = Message<'public.v1.UpdateMemberRoleResponse'> & {
+export type UpdateMemberRoleResponse = Message<"public.v1.UpdateMemberRoleResponse"> & {
   /**
    * @generated from field: public.v1.Member member = 1;
    */
-  member?: Member
-}
+  member?: Member;
+};
 
 /**
  * Describes the message public.v1.UpdateMemberRoleResponse.
@@ -650,17 +650,17 @@ export type UpdateMemberRoleResponse = Message<'public.v1.UpdateMemberRoleRespon
  */
 export const UpdateMemberRoleResponseSchema: GenMessage<UpdateMemberRoleResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 20)
+  messageDesc(file_public_v1_organization, 20);
 
 /**
  * @generated from message public.v1.RemoveMemberRequest
  */
-export type RemoveMemberRequest = Message<'public.v1.RemoveMemberRequest'> & {
+export type RemoveMemberRequest = Message<"public.v1.RemoveMemberRequest"> & {
   /**
    * @generated from field: string member_id = 1;
    */
-  memberId: string
-}
+  memberId: string;
+};
 
 /**
  * Describes the message public.v1.RemoveMemberRequest.
@@ -668,59 +668,59 @@ export type RemoveMemberRequest = Message<'public.v1.RemoveMemberRequest'> & {
  */
 export const RemoveMemberRequestSchema: GenMessage<RemoveMemberRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 21)
+  messageDesc(file_public_v1_organization, 21);
 
 /**
  * Billing messages (cloud offering)
  *
  * @generated from message public.v1.GetBillingInfoResponse
  */
-export type GetBillingInfoResponse = Message<'public.v1.GetBillingInfoResponse'> & {
+export type GetBillingInfoResponse = Message<"public.v1.GetBillingInfoResponse"> & {
   /**
    * @generated from field: public.v1.Plan current_plan = 1;
    */
-  currentPlan: Plan
+  currentPlan: Plan;
 
   /**
    * @generated from field: google.protobuf.Timestamp billing_period_start = 2;
    */
-  billingPeriodStart?: Timestamp
+  billingPeriodStart?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp billing_period_end = 3;
    */
-  billingPeriodEnd?: Timestamp
+  billingPeriodEnd?: Timestamp;
 
   /**
    * @generated from field: int64 device_limit = 4;
    */
-  deviceLimit: bigint
+  deviceLimit: bigint;
 
   /**
    * @generated from field: int64 telemetry_retention_days = 5;
    */
-  telemetryRetentionDays: bigint
+  telemetryRetentionDays: bigint;
 
   /**
    * @generated from field: int64 update_storage_gb = 6;
    */
-  updateStorageGb: bigint
+  updateStorageGb: bigint;
 
   /**
    * @generated from field: bool custom_domain_enabled = 7;
    */
-  customDomainEnabled: boolean
+  customDomainEnabled: boolean;
 
   /**
    * @generated from field: bool sso_enabled = 8;
    */
-  ssoEnabled: boolean
+  ssoEnabled: boolean;
 
   /**
    * @generated from field: bool priority_support = 9;
    */
-  prioritySupport: boolean
-}
+  prioritySupport: boolean;
+};
 
 /**
  * Describes the message public.v1.GetBillingInfoResponse.
@@ -728,22 +728,22 @@ export type GetBillingInfoResponse = Message<'public.v1.GetBillingInfoResponse'>
  */
 export const GetBillingInfoResponseSchema: GenMessage<GetBillingInfoResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 22)
+  messageDesc(file_public_v1_organization, 22);
 
 /**
  * @generated from message public.v1.GetUsageRequest
  */
-export type GetUsageRequest = Message<'public.v1.GetUsageRequest'> & {
+export type GetUsageRequest = Message<"public.v1.GetUsageRequest"> & {
   /**
    * @generated from field: google.protobuf.Timestamp start_time = 1;
    */
-  startTime?: Timestamp
+  startTime?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp end_time = 2;
    */
-  endTime?: Timestamp
-}
+  endTime?: Timestamp;
+};
 
 /**
  * Describes the message public.v1.GetUsageRequest.
@@ -751,42 +751,42 @@ export type GetUsageRequest = Message<'public.v1.GetUsageRequest'> & {
  */
 export const GetUsageRequestSchema: GenMessage<GetUsageRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 23)
+  messageDesc(file_public_v1_organization, 23);
 
 /**
  * @generated from message public.v1.GetUsageResponse
  */
-export type GetUsageResponse = Message<'public.v1.GetUsageResponse'> & {
+export type GetUsageResponse = Message<"public.v1.GetUsageResponse"> & {
   /**
    * @generated from field: int64 device_count = 1;
    */
-  deviceCount: bigint
+  deviceCount: bigint;
 
   /**
    * @generated from field: int64 telemetry_points = 2;
    */
-  telemetryPoints: bigint
+  telemetryPoints: bigint;
 
   /**
    * @generated from field: int64 api_calls = 3;
    */
-  apiCalls: bigint
+  apiCalls: bigint;
 
   /**
    * @generated from field: int64 bandwidth_bytes = 4;
    */
-  bandwidthBytes: bigint
+  bandwidthBytes: bigint;
 
   /**
    * @generated from field: int64 storage_bytes = 5;
    */
-  storageBytes: bigint
+  storageBytes: bigint;
 
   /**
    * @generated from field: repeated public.v1.UsageByDay daily_usage = 6;
    */
-  dailyUsage: UsageByDay[]
-}
+  dailyUsage: UsageByDay[];
+};
 
 /**
  * Describes the message public.v1.GetUsageResponse.
@@ -794,32 +794,32 @@ export type GetUsageResponse = Message<'public.v1.GetUsageResponse'> & {
  */
 export const GetUsageResponseSchema: GenMessage<GetUsageResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 24)
+  messageDesc(file_public_v1_organization, 24);
 
 /**
  * @generated from message public.v1.UsageByDay
  */
-export type UsageByDay = Message<'public.v1.UsageByDay'> & {
+export type UsageByDay = Message<"public.v1.UsageByDay"> & {
   /**
    * @generated from field: google.protobuf.Timestamp date = 1;
    */
-  date?: Timestamp
+  date?: Timestamp;
 
   /**
    * @generated from field: int64 device_count = 2;
    */
-  deviceCount: bigint
+  deviceCount: bigint;
 
   /**
    * @generated from field: int64 telemetry_points = 3;
    */
-  telemetryPoints: bigint
+  telemetryPoints: bigint;
 
   /**
    * @generated from field: int64 api_calls = 4;
    */
-  apiCalls: bigint
-}
+  apiCalls: bigint;
+};
 
 /**
  * Describes the message public.v1.UsageByDay.
@@ -827,7 +827,7 @@ export type UsageByDay = Message<'public.v1.UsageByDay'> & {
  */
 export const UsageByDaySchema: GenMessage<UsageByDay> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_organization, 25)
+  messageDesc(file_public_v1_organization, 25);
 
 /**
  * @generated from enum public.v1.Plan
@@ -869,7 +869,7 @@ export enum Plan {
 /**
  * Describes the enum public.v1.Plan.
  */
-export const PlanSchema: GenEnum<Plan> = /*@__PURE__*/ enumDesc(file_public_v1_organization, 0)
+export const PlanSchema: GenEnum<Plan> = /*@__PURE__*/ enumDesc(file_public_v1_organization, 0);
 
 /**
  * @generated from enum public.v1.MemberStatus
@@ -901,7 +901,7 @@ export enum MemberStatus {
  */
 export const MemberStatusSchema: GenEnum<MemberStatus> =
   /*@__PURE__*/
-  enumDesc(file_public_v1_organization, 1)
+  enumDesc(file_public_v1_organization, 1);
 
 /**
  * OrganizationService manages organizations and teams
@@ -916,102 +916,102 @@ export const OrganizationService: GenService<{
    * @generated from rpc public.v1.OrganizationService.GetOrganization
    */
   getOrganization: {
-    methodKind: 'unary'
-    input: typeof GetOrganizationRequestSchema
-    output: typeof GetOrganizationResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetOrganizationRequestSchema;
+    output: typeof GetOrganizationResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.OrganizationService.UpdateOrganization
    */
   updateOrganization: {
-    methodKind: 'unary'
-    input: typeof UpdateOrganizationRequestSchema
-    output: typeof UpdateOrganizationResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof UpdateOrganizationRequestSchema;
+    output: typeof UpdateOrganizationResponseSchema;
+  };
   /**
    * Team management
    *
    * @generated from rpc public.v1.OrganizationService.ListTeams
    */
   listTeams: {
-    methodKind: 'unary'
-    input: typeof ListTeamsRequestSchema
-    output: typeof ListTeamsResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof ListTeamsRequestSchema;
+    output: typeof ListTeamsResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.OrganizationService.CreateTeam
    */
   createTeam: {
-    methodKind: 'unary'
-    input: typeof CreateTeamRequestSchema
-    output: typeof CreateTeamResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof CreateTeamRequestSchema;
+    output: typeof CreateTeamResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.OrganizationService.UpdateTeam
    */
   updateTeam: {
-    methodKind: 'unary'
-    input: typeof UpdateTeamRequestSchema
-    output: typeof UpdateTeamResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof UpdateTeamRequestSchema;
+    output: typeof UpdateTeamResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.OrganizationService.DeleteTeam
    */
   deleteTeam: {
-    methodKind: 'unary'
-    input: typeof DeleteTeamRequestSchema
-    output: typeof EmptySchema
-  }
+    methodKind: "unary";
+    input: typeof DeleteTeamRequestSchema;
+    output: typeof EmptySchema;
+  };
   /**
    * Member management
    *
    * @generated from rpc public.v1.OrganizationService.ListMembers
    */
   listMembers: {
-    methodKind: 'unary'
-    input: typeof ListMembersRequestSchema
-    output: typeof ListMembersResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof ListMembersRequestSchema;
+    output: typeof ListMembersResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.OrganizationService.InviteMember
    */
   inviteMember: {
-    methodKind: 'unary'
-    input: typeof InviteMemberRequestSchema
-    output: typeof InviteMemberResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof InviteMemberRequestSchema;
+    output: typeof InviteMemberResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.OrganizationService.UpdateMemberRole
    */
   updateMemberRole: {
-    methodKind: 'unary'
-    input: typeof UpdateMemberRoleRequestSchema
-    output: typeof UpdateMemberRoleResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof UpdateMemberRoleRequestSchema;
+    output: typeof UpdateMemberRoleResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.OrganizationService.RemoveMember
    */
   removeMember: {
-    methodKind: 'unary'
-    input: typeof RemoveMemberRequestSchema
-    output: typeof EmptySchema
-  }
+    methodKind: "unary";
+    input: typeof RemoveMemberRequestSchema;
+    output: typeof EmptySchema;
+  };
   /**
    * Billing (cloud offering)
    *
    * @generated from rpc public.v1.OrganizationService.GetBillingInfo
    */
   getBillingInfo: {
-    methodKind: 'unary'
-    input: typeof EmptySchema
-    output: typeof GetBillingInfoResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof EmptySchema;
+    output: typeof GetBillingInfoResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.OrganizationService.GetUsage
    */
   getUsage: {
-    methodKind: 'unary'
-    input: typeof GetUsageRequestSchema
-    output: typeof GetUsageResponseSchema
-  }
-}> = /*@__PURE__*/ serviceDesc(file_public_v1_organization, 0)
+    methodKind: "unary";
+    input: typeof GetUsageRequestSchema;
+    output: typeof GetUsageResponseSchema;
+  };
+}> = /*@__PURE__*/ serviceDesc(file_public_v1_organization, 0);

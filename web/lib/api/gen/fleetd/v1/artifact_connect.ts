@@ -32,8 +32,8 @@ import {
   ListDeploymentsResponse,
   UploadArtifactRequest,
   UploadArtifactResponse,
-} from './artifact_pb.js'
-import { MethodKind } from '@bufbuild/protobuf'
+} from "./artifact_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * ArtifactService manages software artifacts for deployment
@@ -41,7 +41,7 @@ import { MethodKind } from '@bufbuild/protobuf'
  * @generated from service fleetd.v1.ArtifactService
  */
 export const ArtifactService = {
-  typeName: 'fleetd.v1.ArtifactService',
+  typeName: "fleetd.v1.ArtifactService",
   methods: {
     /**
      * Upload a new artifact version
@@ -49,7 +49,7 @@ export const ArtifactService = {
      * @generated from rpc fleetd.v1.ArtifactService.UploadArtifact
      */
     uploadArtifact: {
-      name: 'UploadArtifact',
+      name: "UploadArtifact",
       I: UploadArtifactRequest,
       O: UploadArtifactResponse,
       kind: MethodKind.ClientStreaming,
@@ -60,7 +60,7 @@ export const ArtifactService = {
      * @generated from rpc fleetd.v1.ArtifactService.GetArtifact
      */
     getArtifact: {
-      name: 'GetArtifact',
+      name: "GetArtifact",
       I: GetArtifactRequest,
       O: GetArtifactResponse,
       kind: MethodKind.Unary,
@@ -71,7 +71,7 @@ export const ArtifactService = {
      * @generated from rpc fleetd.v1.ArtifactService.ListArtifacts
      */
     listArtifacts: {
-      name: 'ListArtifacts',
+      name: "ListArtifacts",
       I: ListArtifactsRequest,
       O: ListArtifactsResponse,
       kind: MethodKind.Unary,
@@ -82,7 +82,7 @@ export const ArtifactService = {
      * @generated from rpc fleetd.v1.ArtifactService.DeleteArtifact
      */
     deleteArtifact: {
-      name: 'DeleteArtifact',
+      name: "DeleteArtifact",
       I: DeleteArtifactRequest,
       O: DeleteArtifactResponse,
       kind: MethodKind.Unary,
@@ -93,13 +93,13 @@ export const ArtifactService = {
      * @generated from rpc fleetd.v1.ArtifactService.GetDownloadURL
      */
     getDownloadURL: {
-      name: 'GetDownloadURL',
+      name: "GetDownloadURL",
       I: GetDownloadURLRequest,
       O: GetDownloadURLResponse,
       kind: MethodKind.Unary,
     },
   },
-} as const
+} as const;
 
 /**
  * ApplicationService manages application definitions
@@ -107,7 +107,7 @@ export const ArtifactService = {
  * @generated from service fleetd.v1.ApplicationService
  */
 export const ApplicationService = {
-  typeName: 'fleetd.v1.ApplicationService',
+  typeName: "fleetd.v1.ApplicationService",
   methods: {
     /**
      * Create or update application definition
@@ -115,7 +115,7 @@ export const ApplicationService = {
      * @generated from rpc fleetd.v1.ApplicationService.CreateApplication
      */
     createApplication: {
-      name: 'CreateApplication',
+      name: "CreateApplication",
       I: CreateApplicationRequest,
       O: CreateApplicationResponse,
       kind: MethodKind.Unary,
@@ -126,7 +126,7 @@ export const ApplicationService = {
      * @generated from rpc fleetd.v1.ApplicationService.GetApplication
      */
     getApplication: {
-      name: 'GetApplication',
+      name: "GetApplication",
       I: GetApplicationRequest,
       O: GetApplicationResponse,
       kind: MethodKind.Unary,
@@ -137,7 +137,7 @@ export const ApplicationService = {
      * @generated from rpc fleetd.v1.ApplicationService.ListApplications
      */
     listApplications: {
-      name: 'ListApplications',
+      name: "ListApplications",
       I: ListApplicationsRequest,
       O: ListApplicationsResponse,
       kind: MethodKind.Unary,
@@ -148,13 +148,13 @@ export const ApplicationService = {
      * @generated from rpc fleetd.v1.ApplicationService.DeleteApplication
      */
     deleteApplication: {
-      name: 'DeleteApplication',
+      name: "DeleteApplication",
       I: DeleteApplicationRequest,
       O: DeleteApplicationResponse,
       kind: MethodKind.Unary,
     },
   },
-} as const
+} as const;
 
 /**
  * DeploymentService manages software deployments to devices
@@ -162,7 +162,7 @@ export const ApplicationService = {
  * @generated from service fleetd.v1.DeploymentService
  */
 export const DeploymentService = {
-  typeName: 'fleetd.v1.DeploymentService',
+  typeName: "fleetd.v1.DeploymentService",
   methods: {
     /**
      * Create a new deployment
@@ -170,7 +170,7 @@ export const DeploymentService = {
      * @generated from rpc fleetd.v1.DeploymentService.CreateDeployment
      */
     createDeployment: {
-      name: 'CreateDeployment',
+      name: "CreateDeployment",
       I: CreateDeploymentRequest,
       O: CreateDeploymentResponse,
       kind: MethodKind.Unary,
@@ -181,7 +181,7 @@ export const DeploymentService = {
      * @generated from rpc fleetd.v1.DeploymentService.GetDeployment
      */
     getDeployment: {
-      name: 'GetDeployment',
+      name: "GetDeployment",
       I: GetDeploymentRequest,
       O: GetDeploymentResponse,
       kind: MethodKind.Unary,
@@ -192,7 +192,7 @@ export const DeploymentService = {
      * @generated from rpc fleetd.v1.DeploymentService.ListDeployments
      */
     listDeployments: {
-      name: 'ListDeployments',
+      name: "ListDeployments",
       I: ListDeploymentsRequest,
       O: ListDeploymentsResponse,
       kind: MethodKind.Unary,
@@ -203,7 +203,7 @@ export const DeploymentService = {
      * @generated from rpc fleetd.v1.DeploymentService.CancelDeployment
      */
     cancelDeployment: {
-      name: 'CancelDeployment',
+      name: "CancelDeployment",
       I: CancelDeploymentRequest,
       O: CancelDeploymentResponse,
       kind: MethodKind.Unary,
@@ -214,10 +214,10 @@ export const DeploymentService = {
      * @generated from rpc fleetd.v1.DeploymentService.GetDeploymentMetrics
      */
     getDeploymentMetrics: {
-      name: 'GetDeploymentMetrics',
+      name: "GetDeploymentMetrics",
       I: GetDeploymentMetricsRequest,
       O: GetDeploymentMetricsResponse,
       kind: MethodKind.Unary,
     },
   },
-} as const
+} as const;

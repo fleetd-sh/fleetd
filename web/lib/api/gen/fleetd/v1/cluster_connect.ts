@@ -18,8 +18,8 @@ import {
   ListClustersResponse,
   RemoveNodeRequest,
   RemoveNodeResponse,
-} from './cluster_pb.js'
-import { MethodKind } from '@bufbuild/protobuf'
+} from "./cluster_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * ClusterService manages k3s clusters on linux-based devices
@@ -27,7 +27,7 @@ import { MethodKind } from '@bufbuild/protobuf'
  * @generated from service fleetd.v1.ClusterService
  */
 export const ClusterService = {
-  typeName: 'fleetd.v1.ClusterService',
+  typeName: "fleetd.v1.ClusterService",
   methods: {
     /**
      * Create a new k3s cluster
@@ -35,7 +35,7 @@ export const ClusterService = {
      * @generated from rpc fleetd.v1.ClusterService.CreateCluster
      */
     createCluster: {
-      name: 'CreateCluster',
+      name: "CreateCluster",
       I: CreateClusterRequest,
       O: CreateClusterResponse,
       kind: MethodKind.Unary,
@@ -46,7 +46,7 @@ export const ClusterService = {
      * @generated from rpc fleetd.v1.ClusterService.JoinCluster
      */
     joinCluster: {
-      name: 'JoinCluster',
+      name: "JoinCluster",
       I: JoinClusterRequest,
       O: JoinClusterResponse,
       kind: MethodKind.Unary,
@@ -57,7 +57,7 @@ export const ClusterService = {
      * @generated from rpc fleetd.v1.ClusterService.GetCluster
      */
     getCluster: {
-      name: 'GetCluster',
+      name: "GetCluster",
       I: GetClusterRequest,
       O: GetClusterResponse,
       kind: MethodKind.Unary,
@@ -68,7 +68,7 @@ export const ClusterService = {
      * @generated from rpc fleetd.v1.ClusterService.ListClusters
      */
     listClusters: {
-      name: 'ListClusters',
+      name: "ListClusters",
       I: ListClustersRequest,
       O: ListClustersResponse,
       kind: MethodKind.Unary,
@@ -79,7 +79,7 @@ export const ClusterService = {
      * @generated from rpc fleetd.v1.ClusterService.ApplyWorkload
      */
     applyWorkload: {
-      name: 'ApplyWorkload',
+      name: "ApplyWorkload",
       I: ApplyWorkloadRequest,
       O: ApplyWorkloadResponse,
       kind: MethodKind.Unary,
@@ -90,7 +90,7 @@ export const ClusterService = {
      * @generated from rpc fleetd.v1.ClusterService.GetNodeStatus
      */
     getNodeStatus: {
-      name: 'GetNodeStatus',
+      name: "GetNodeStatus",
       I: GetNodeStatusRequest,
       O: GetNodeStatusResponse,
       kind: MethodKind.Unary,
@@ -101,10 +101,10 @@ export const ClusterService = {
      * @generated from rpc fleetd.v1.ClusterService.RemoveNode
      */
     removeNode: {
-      name: 'RemoveNode',
+      name: "RemoveNode",
       I: RemoveNodeRequest,
       O: RemoveNodeResponse,
       kind: MethodKind.Unary,
     },
   },
-} as const
+} as const;

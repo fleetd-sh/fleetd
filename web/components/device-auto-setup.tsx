@@ -1,8 +1,20 @@
-'use client'
+"use client";
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  CheckCircledIcon,
+  DownloadIcon,
+  GearIcon,
+  InfoCircledIcon,
+  LightningBoltIcon,
+  MagicWandIcon,
+  RocketIcon,
+} from "@radix-ui/react-icons";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -10,133 +22,118 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ScrollArea } from '@/components/ui/scroll-area'
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useToast } from '@/hooks/use-toast'
-import { api } from '@/lib/api'
-import type { DiscoveredDevice } from '@/lib/api/gen/public/v1/fleet_pb'
-import type { Device } from '@/lib/types'
-import {
-  CheckCircledIcon,
-  CrossCircledIcon,
-  DownloadIcon,
-  GearIcon,
-  InfoCircledIcon,
-  LightningBoltIcon,
-  MagicWandIcon,
-  RocketIcon,
-} from '@radix-ui/react-icons'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 
 interface ProvisioningProfile {
-  id: string
-  name: string
-  description: string
-  wifiSSID?: string
-  enableSSH: boolean
-  autoUpdate: boolean
-  plugins: string[]
-  createdAt: string
-  lastUsed?: string
+  id: string;
+  name: string;
+  description: string;
+  wifiSSID?: string;
+  enableSSH: boolean;
+  autoUpdate: boolean;
+  plugins: string[];
+  createdAt: string;
+  lastUsed?: string;
 }
 
 // DiscoveredDevice type is imported from protobuf-generated types
 
 export function DeviceAutoSetup() {
-  const { toast } = useToast()
-  const [selectedDevices, setSelectedDevices] = useState<Set<string>>(new Set())
-  const [selectedProfile, setSelectedProfile] = useState<string>('')
-  const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false)
-  const [autoSetupEnabled, setAutoSetupEnabled] = useState(false)
+  const { toast } = useToast();
+  const [selectedDevices, setSelectedDevices] = useState<Set<string>>(new Set());
+  const [selectedProfile, setSelectedProfile] = useState<string>("");
+  const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
+  const [autoSetupEnabled, setAutoSetupEnabled] = useState(false);
 
   // Fetch discovered devices
   const { data: discoveredDevices, refetch: refetchDiscovered } = useQuery({
-    queryKey: ['discovered-devices'],
+    queryKey: ["discovered-devices"],
     queryFn: api.getDiscoveredDevices,
     refetchInterval: 30000,
-  })
+  });
 
   // Fetch provisioning profiles
   const { data: profiles, refetch: refetchProfiles } = useQuery({
-    queryKey: ['provisioning-profiles'],
+    queryKey: ["provisioning-profiles"],
     queryFn: api.getProvisioningProfiles,
-  })
+  });
 
   // Auto-setup mutation
   const setupDevicesMutation = useMutation({
     mutationFn: async ({ deviceIds, profileId }: { deviceIds: string[]; profileId: string }) => {
-      return api.setupDevices(deviceIds, profileId)
+      return api.setupDevices(deviceIds, profileId);
     },
     onSuccess: (data) => {
       toast({
-        title: 'Setup Complete',
+        title: "Setup Complete",
         description: `Successfully configured ${data.length} device(s)`,
-      })
-      setSelectedDevices(new Set())
-      refetchDiscovered()
+      });
+      setSelectedDevices(new Set());
+      refetchDiscovered();
     },
     onError: () => {
       toast({
-        title: 'Setup Failed',
-        description: 'Failed to configure selected devices',
-        variant: 'destructive',
-      })
+        title: "Setup Failed",
+        description: "Failed to configure selected devices",
+        variant: "destructive",
+      });
     },
-  })
+  });
 
   // Create profile mutation
   const createProfileMutation = useMutation({
     mutationFn: api.createProvisioningProfile,
     onSuccess: () => {
       toast({
-        title: 'Profile Created',
-        description: 'Provisioning profile saved successfully',
-      })
-      refetchProfiles()
+        title: "Profile Created",
+        description: "Provisioning profile saved successfully",
+      });
+      refetchProfiles();
     },
-  })
+  });
 
   const handleSelectAll = () => {
-    if (!discoveredDevices) return
+    if (!discoveredDevices) return;
 
-    const unregistered = discoveredDevices.filter((d) => !d.isRegistered)
+    const unregistered = discoveredDevices.filter((d) => !d.isRegistered);
     if (selectedDevices.size === unregistered.length) {
-      setSelectedDevices(new Set())
+      setSelectedDevices(new Set());
     } else {
-      setSelectedDevices(new Set(unregistered.map((d) => d.deviceId)))
+      setSelectedDevices(new Set(unregistered.map((d) => d.deviceId)));
     }
-  }
+  };
 
   const handleAutoSetup = () => {
     if (selectedDevices.size === 0 || !selectedProfile) {
       toast({
-        title: 'Selection Required',
-        description: 'Please select devices and a provisioning profile',
-        variant: 'destructive',
-      })
-      return
+        title: "Selection Required",
+        description: "Please select devices and a provisioning profile",
+        variant: "destructive",
+      });
+      return;
     }
 
     setupDevicesMutation.mutate({
       deviceIds: Array.from(selectedDevices),
       profileId: selectedProfile,
-    })
-  }
+    });
+  };
 
-  const unregisteredDevices = discoveredDevices?.filter((d) => !d.isRegistered) || []
+  const unregisteredDevices = discoveredDevices?.filter((d) => !d.isRegistered) || [];
 
   return (
     <>
@@ -171,8 +168,8 @@ export function DeviceAutoSetup() {
               {unregisteredDevices.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={handleSelectAll}>
                   {selectedDevices.size === unregisteredDevices.length
-                    ? 'Deselect All'
-                    : 'Select All'}
+                    ? "Deselect All"
+                    : "Select All"}
                 </Button>
               )}
             </div>
@@ -201,24 +198,24 @@ export function DeviceAutoSetup() {
                         transition={{ delay: index * 0.05 }}
                         className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                           selectedDevices.has(device.deviceId)
-                            ? 'bg-primary/10 border-primary'
-                            : 'hover:bg-muted'
+                            ? "bg-primary/10 border-primary"
+                            : "hover:bg-muted"
                         }`}
                         onClick={() => {
-                          const newSelected = new Set(selectedDevices)
+                          const newSelected = new Set(selectedDevices);
                           if (newSelected.has(device.deviceId)) {
-                            newSelected.delete(device.deviceId)
+                            newSelected.delete(device.deviceId);
                           } else {
-                            newSelected.add(device.deviceId)
+                            newSelected.add(device.deviceId);
                           }
-                          setSelectedDevices(newSelected)
+                          setSelectedDevices(newSelected);
                         }}
                       >
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-sm">
-                                {device.deviceName || 'Unknown Device'}
+                                {device.deviceName || "Unknown Device"}
                               </span>
                               {device.version && (
                                 <Badge variant="outline" className="text-xs">
@@ -286,7 +283,7 @@ export function DeviceAutoSetup() {
                           enableSSH: profile.enableSSH || false,
                           autoUpdate: profile.autoUpdate || false,
                           plugins: profile.plugins || [],
-                        })
+                        });
                       }
                     }}
                   />
@@ -305,7 +302,7 @@ export function DeviceAutoSetup() {
               }
             >
               {setupDevicesMutation.isPending ? (
-                <>Loading...</>
+                "Loading..."
               ) : (
                 <>
                   <RocketIcon className="mr-2 h-4 w-4" />
@@ -337,7 +334,7 @@ export function DeviceAutoSetup() {
           {autoSetupEnabled && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               className="p-3 bg-primary/5 rounded-lg border border-primary/20"
             >
               <div className="flex items-center gap-2">
@@ -352,7 +349,7 @@ export function DeviceAutoSetup() {
         </CardContent>
       </Card>
     </>
-  )
+  );
 }
 
 // Profile Manager Component
@@ -360,17 +357,17 @@ function ProfileManager({
   profiles,
   onCreateProfile,
 }: {
-  profiles: ProvisioningProfile[]
-  onCreateProfile: (profile: Partial<ProvisioningProfile>) => void
+  profiles: ProvisioningProfile[];
+  onCreateProfile: (profile: Partial<ProvisioningProfile>) => void;
 }) {
   const [newProfile, setNewProfile] = useState<Partial<ProvisioningProfile>>({
-    name: '',
-    description: '',
-    wifiSSID: '',
+    name: "",
+    description: "",
+    wifiSSID: "",
     enableSSH: true,
     autoUpdate: true,
     plugins: [],
-  })
+  });
 
   return (
     <Tabs defaultValue="existing" className="w-full">
@@ -472,12 +469,12 @@ function ProfileManager({
         </div>
       </TabsContent>
     </Tabs>
-  )
+  );
 }
 
 // Manual Setup Instructions Component
 function ManualSetupInstructions({ profileId }: { profileId: string }) {
-  const serverUrl = typeof window !== 'undefined' ? window.location.origin : ''
+  const serverUrl = typeof window !== "undefined" ? window.location.origin : "";
 
   const setupScript = `#!/bin/bash
 # FleetD Device Setup Script
@@ -497,7 +494,7 @@ systemctl enable fleetd
 systemctl start fleetd
 
 echo "Device configured successfully!"
-`
+`;
 
   return (
     <div className="space-y-4">
@@ -511,7 +508,7 @@ echo "Device configured successfully!"
           size="sm"
           className="mt-2"
           onClick={() => {
-            navigator.clipboard.writeText(setupScript)
+            navigator.clipboard.writeText(setupScript);
           }}
         >
           Copy Script
@@ -543,5 +540,5 @@ echo "Device configured successfully!"
         </ol>
       </div>
     </div>
-  )
+  );
 }

@@ -1,98 +1,91 @@
-'use client'
+"use client";
 
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import {
+  AlertCircleIcon,
+  CheckCircleIcon,
+  DownloadIcon,
+  HistoryIcon,
+  LayersIcon,
+  PackageIcon,
+  PauseIcon,
+  RefreshCwIcon,
+  RocketIcon,
+  TrendingUpIcon,
+  UploadIcon,
+  XCircleIcon,
+} from "lucide-react";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  AlertCircleIcon,
-  ArrowUpIcon,
-  CheckCircleIcon,
-  CpuIcon,
-  DownloadIcon,
-  GitBranchIcon,
-  HistoryIcon,
-  LayersIcon,
-  PackageIcon,
-  PauseIcon,
-  PlayIcon,
-  RefreshCwIcon,
-  RocketIcon,
-  StopCircleIcon,
-  TrendingDownIcon,
-  TrendingUpIcon,
-  UploadIcon,
-  XCircleIcon,
-} from 'lucide-react'
-import { useState } from 'react'
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Device {
-  id: string
-  name: string
-  [key: string]: unknown
+  id: string;
+  name: string;
+  [key: string]: unknown;
 }
 
 interface DeploymentManagerProps {
-  applicationId?: string
-  devices?: Device[]
+  applicationId?: string;
+  devices?: Device[];
 }
 
 export function DeploymentManager({ applicationId, devices = [] }: DeploymentManagerProps) {
-  const [selectedStrategy, setSelectedStrategy] = useState('canary')
-  const [targetGroup, setTargetGroup] = useState('all')
+  const [selectedStrategy, setSelectedStrategy] = useState("canary");
+  const [targetGroup, setTargetGroup] = useState("all");
   const [canaryConfig, setCanaryConfig] = useState({
     initialPercentage: 10,
     incrementPercentage: 20,
     incrementInterval: 300, // seconds
     successThreshold: 0.95,
-  })
-  const [rollbackEnabled, setRollbackEnabled] = useState(true)
+  });
+  const [rollbackEnabled, setRollbackEnabled] = useState(true);
   interface Deployment {
-    id: string
-    application: string
-    version: string
-    previousVersion: string
-    status: string
-    strategy: string
-    progress: number
-    targetDevices: number
-    currentDevices: number
-    successRate: number
-    startedAt: string
-    estimatedCompletion: string
+    id: string;
+    application: string;
+    version: string;
+    previousVersion: string;
+    status: string;
+    strategy: string;
+    progress: number;
+    targetDevices: number;
+    currentDevices: number;
+    successRate: number;
+    startedAt: string;
+    estimatedCompletion: string;
     phases: Array<{
-      name: string
-      status: string
-      percentage: number
-      devices: number
-      successRate: number
-    }>
+      name: string;
+      status: string;
+      percentage: number;
+      devices: number;
+      successRate: number;
+    }>;
   }
 
-  const [currentDeployment, setCurrentDeployment] = useState<Deployment | null>(null)
+  const [currentDeployment, setCurrentDeployment] = useState<Deployment | null>(null);
 
   // Mock deployment status
   const mockDeployment: Deployment = {
-    id: 'dep-123',
-    application: 'edge-inference',
-    version: '2.1.0',
-    previousVersion: '2.0.0',
-    status: 'in_progress',
-    strategy: 'canary',
+    id: "dep-123",
+    application: "edge-inference",
+    version: "2.1.0",
+    previousVersion: "2.0.0",
+    status: "in_progress",
+    strategy: "canary",
     progress: 35,
     targetDevices: 150,
     currentDevices: 53,
@@ -101,49 +94,49 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
     estimatedCompletion: new Date(Date.now() + 2400000).toISOString(), // 40 minutes from now
     phases: [
       {
-        name: 'Phase 1 (10%)',
-        status: 'completed',
+        name: "Phase 1 (10%)",
+        status: "completed",
         percentage: 10,
         devices: 15,
         successRate: 1.0,
       },
       {
-        name: 'Phase 2 (30%)',
-        status: 'completed',
+        name: "Phase 2 (30%)",
+        status: "completed",
         percentage: 30,
         devices: 30,
         successRate: 0.97,
       },
       {
-        name: 'Phase 3 (50%)',
-        status: 'in_progress',
+        name: "Phase 3 (50%)",
+        status: "in_progress",
         percentage: 50,
         devices: 30,
         successRate: 0.8,
       },
       {
-        name: 'Phase 4 (100%)',
-        status: 'pending',
+        name: "Phase 4 (100%)",
+        status: "pending",
         percentage: 100,
         devices: 75,
         successRate: 0,
       },
     ],
-  }
+  };
 
   const startDeployment = () => {
-    setCurrentDeployment(mockDeployment)
-  }
+    setCurrentDeployment(mockDeployment);
+  };
 
   const rollbackDeployment = () => {
     // Implement rollback logic
-    console.log('Rolling back deployment')
-  }
+    console.log("Rolling back deployment");
+  };
 
   const pauseDeployment = () => {
     // Implement pause logic
-    console.log('Pausing deployment')
-  }
+    console.log("Pausing deployment");
+  };
 
   return (
     <div className="space-y-6">
@@ -152,10 +145,10 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
         <Alert
           className={
             Math.floor(currentDeployment.currentDevices * (1 - currentDeployment.successRate)) > 5
-              ? 'border-red-500'
-              : currentDeployment.status === 'completed'
-                ? 'border-green-500'
-                : 'border-blue-500'
+              ? "border-red-500"
+              : currentDeployment.status === "completed"
+                ? "border-green-500"
+                : "border-blue-500"
           }
         >
           <AlertCircleIcon className="h-4 w-4" />
@@ -232,7 +225,7 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                 <Label>Deployment Strategy</Label>
                 <RadioGroup value={selectedStrategy} onValueChange={setSelectedStrategy}>
                   <div className="grid grid-cols-2 gap-4 mt-2">
-                    <Card className={selectedStrategy === 'canary' ? 'border-primary' : ''}>
+                    <Card className={selectedStrategy === "canary" ? "border-primary" : ""}>
                       <CardHeader className="p-4">
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="canary" id="canary" />
@@ -250,7 +243,7 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                       </CardHeader>
                     </Card>
 
-                    <Card className={selectedStrategy === 'rolling' ? 'border-primary' : ''}>
+                    <Card className={selectedStrategy === "rolling" ? "border-primary" : ""}>
                       <CardHeader className="p-4">
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="rolling" id="rolling" />
@@ -268,7 +261,7 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                       </CardHeader>
                     </Card>
 
-                    <Card className={selectedStrategy === 'blue-green' ? 'border-primary' : ''}>
+                    <Card className={selectedStrategy === "blue-green" ? "border-primary" : ""}>
                       <CardHeader className="p-4">
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="blue-green" id="blue-green" />
@@ -286,7 +279,7 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                       </CardHeader>
                     </Card>
 
-                    <Card className={selectedStrategy === 'all-at-once' ? 'border-primary' : ''}>
+                    <Card className={selectedStrategy === "all-at-once" ? "border-primary" : ""}>
                       <CardHeader className="p-4">
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="all-at-once" id="all-at-once" />
@@ -308,7 +301,7 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
               </div>
 
               {/* Strategy Configuration */}
-              {selectedStrategy === 'canary' && (
+              {selectedStrategy === "canary" && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-sm">Canary Configuration</CardTitle>
@@ -448,17 +441,17 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                       {currentDeployment.application} v{currentDeployment.version}
                     </CardTitle>
                     <CardDescription>
-                      Deploying to {currentDeployment.targetDevices} devices using{' '}
+                      Deploying to {currentDeployment.targetDevices} devices using{" "}
                       {currentDeployment.strategy} strategy
                     </CardDescription>
                   </div>
                   <Badge
                     variant={
-                      currentDeployment.status === 'completed'
-                        ? 'default'
-                        : currentDeployment.status === 'failed'
-                          ? 'destructive'
-                          : 'secondary'
+                      currentDeployment.status === "completed"
+                        ? "default"
+                        : currentDeployment.status === "failed"
+                          ? "destructive"
+                          : "secondary"
                     }
                   >
                     {currentDeployment.status.toUpperCase()}
@@ -476,14 +469,14 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                   <div className="flex justify-between text-xs text-muted-foreground mt-2">
                     <span>
                       <CheckCircleIcon className="h-3 w-3 inline text-green-500 mr-1" />
-                      {Math.floor(currentDeployment.currentDevices * currentDeployment.successRate)}{' '}
+                      {Math.floor(currentDeployment.currentDevices * currentDeployment.successRate)}{" "}
                       Success
                     </span>
                     <span>
                       <XCircleIcon className="h-3 w-3 inline text-red-500 mr-1" />
                       {Math.floor(
                         currentDeployment.currentDevices * (1 - currentDeployment.successRate),
-                      )}{' '}
+                      )}{" "}
                       Failed
                     </span>
                     <span>
@@ -504,11 +497,11 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                       >
                         <Badge
                           variant={
-                            phase.status === 'completed'
-                              ? 'default'
-                              : phase.status === 'in_progress'
-                                ? 'secondary'
-                                : 'outline'
+                            phase.status === "completed"
+                              ? "default"
+                              : phase.status === "in_progress"
+                                ? "secondary"
+                                : "outline"
                           }
                           className="w-24"
                         >
@@ -517,9 +510,9 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                         <div className="flex-1">
                           <Progress
                             value={
-                              phase.status === 'completed'
+                              phase.status === "completed"
                                 ? 100
-                                : phase.status === 'in_progress'
+                                : phase.status === "in_progress"
                                   ? 50
                                   : 0
                             }
@@ -562,7 +555,7 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {['2.1.0', '2.0.0', '1.9.5'].map((version) => (
+                {["2.1.0", "2.0.0", "1.9.5"].map((version) => (
                   <div
                     key={version}
                     className="flex items-center justify-between p-3 border rounded-lg"
@@ -577,8 +570,8 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>45.2 MB</span>
                       <span>linux/arm64</span>
-                      <Badge variant={version === '2.1.0' ? 'default' : 'outline'}>
-                        {version === '2.1.0' ? 'Latest' : 'Stable'}
+                      <Badge variant={version === "2.1.0" ? "default" : "outline"}>
+                        {version === "2.1.0" ? "Latest" : "Stable"}
                       </Badge>
                       <Button size="sm" variant="ghost">
                         <DownloadIcon className="h-4 w-4" />
@@ -592,5 +585,5 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

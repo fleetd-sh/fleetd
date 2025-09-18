@@ -2,11 +2,11 @@
 // @generated from file fleetd/v1/update.proto (package fleetd.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
-import type { Timestamp } from '@bufbuild/protobuf/wkt'
-import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt'
-import type { Message } from '@bufbuild/protobuf'
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file fleetd/v1/update.proto.
@@ -14,89 +14,89 @@ import type { Message } from '@bufbuild/protobuf'
 export const file_fleetd_v1_update: GenFile =
   /*@__PURE__*/
   fileDesc(
-    'ChZmbGVldGQvdjEvdXBkYXRlLnByb3RvEglmbGVldGQudjEipwQKDlVwZGF0ZUNhbXBhaWduEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkSEQoJYmluYXJ5X2lkGAQgASgJEhYKDnRhcmdldF92ZXJzaW9uGAUgASgJEhgKEHRhcmdldF9wbGF0Zm9ybXMYBiADKAkSHAoUdGFyZ2V0X2FyY2hpdGVjdHVyZXMYByADKAkSRgoPdGFyZ2V0X21ldGFkYXRhGAggAygLMi0uZmxlZXRkLnYxLlVwZGF0ZUNhbXBhaWduLlRhcmdldE1ldGFkYXRhRW50cnkSKwoIc3RyYXRlZ3kYCSABKA4yGS5mbGVldGQudjEuVXBkYXRlU3RyYXRlZ3kSLwoGc3RhdHVzGAogASgOMh8uZmxlZXRkLnYxLlVwZGF0ZUNhbXBhaWduU3RhdHVzEi4KCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDXRvdGFsX2RldmljZXMYDSABKAUSFwoPdXBkYXRlZF9kZXZpY2VzGA4gASgFEhYKDmZhaWxlZF9kZXZpY2VzGA8gASgFGjUKE1RhcmdldE1ldGFkYXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASLcAgobQ3JlYXRlVXBkYXRlQ2FtcGFpZ25SZXF1ZXN0EgwKBG5hbWUYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSEQoJYmluYXJ5X2lkGAMgASgJEhYKDnRhcmdldF92ZXJzaW9uGAQgASgJEhgKEHRhcmdldF9wbGF0Zm9ybXMYBSADKAkSHAoUdGFyZ2V0X2FyY2hpdGVjdHVyZXMYBiADKAkSUwoPdGFyZ2V0X21ldGFkYXRhGAcgAygLMjouZmxlZXRkLnYxLkNyZWF0ZVVwZGF0ZUNhbXBhaWduUmVxdWVzdC5UYXJnZXRNZXRhZGF0YUVudHJ5EisKCHN0cmF0ZWd5GAggASgOMhkuZmxlZXRkLnYxLlVwZGF0ZVN0cmF0ZWd5GjUKE1RhcmdldE1ldGFkYXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASIzChxDcmVhdGVVcGRhdGVDYW1wYWlnblJlc3BvbnNlEhMKC2NhbXBhaWduX2lkGAEgASgJIi8KGEdldFVwZGF0ZUNhbXBhaWduUmVxdWVzdBITCgtjYW1wYWlnbl9pZBgBIAEoCSJIChlHZXRVcGRhdGVDYW1wYWlnblJlc3BvbnNlEisKCGNhbXBhaWduGAEgASgLMhkuZmxlZXRkLnYxLlVwZGF0ZUNhbXBhaWduInQKGkxpc3RVcGRhdGVDYW1wYWlnbnNSZXF1ZXN0Ei8KBnN0YXR1cxgBIAEoDjIfLmZsZWV0ZC52MS5VcGRhdGVDYW1wYWlnblN0YXR1cxIRCglwYWdlX3NpemUYAiABKAUSEgoKcGFnZV90b2tlbhgDIAEoCSJkChtMaXN0VXBkYXRlQ2FtcGFpZ25zUmVzcG9uc2USLAoJY2FtcGFpZ25zGAEgAygLMhkuZmxlZXRkLnYxLlVwZGF0ZUNhbXBhaWduEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSJGChxHZXREZXZpY2VVcGRhdGVTdGF0dXNSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRITCgtjYW1wYWlnbl9pZBgCIAEoCSK/AQodR2V0RGV2aWNlVXBkYXRlU3RhdHVzUmVzcG9uc2USEQoJZGV2aWNlX2lkGAEgASgJEhMKC2NhbXBhaWduX2lkGAIgASgJEi0KBnN0YXR1cxgDIAEoDjIdLmZsZWV0ZC52MS5EZXZpY2VVcGRhdGVTdGF0dXMSFQoNZXJyb3JfbWVzc2FnZRgEIAEoCRIwCgxsYXN0X3VwZGF0ZWQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIokBChlSZXBvcnRVcGRhdGVTdGF0dXNSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRITCgtjYW1wYWlnbl9pZBgCIAEoCRItCgZzdGF0dXMYAyABKA4yHS5mbGVldGQudjEuRGV2aWNlVXBkYXRlU3RhdHVzEhUKDWVycm9yX21lc3NhZ2UYBCABKAkiLQoaUmVwb3J0VXBkYXRlU3RhdHVzUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCqJAQoOVXBkYXRlU3RyYXRlZ3kSHwobVVBEQVRFX1NUUkFURUdZX1VOU1BFQ0lGSUVEEAASHQoZVVBEQVRFX1NUUkFURUdZX0lNTUVESUFURRABEhsKF1VQREFURV9TVFJBVEVHWV9ST0xMSU5HEAISGgoWVVBEQVRFX1NUUkFURUdZX01BTlVBTBADKvkBChRVcGRhdGVDYW1wYWlnblN0YXR1cxImCiJVUERBVEVfQ0FNUEFJR05fU1RBVFVTX1VOU1BFQ0lGSUVEEAASIgoeVVBEQVRFX0NBTVBBSUdOX1NUQVRVU19DUkVBVEVEEAESJgoiVVBEQVRFX0NBTVBBSUdOX1NUQVRVU19JTl9QUk9HUkVTUxACEiQKIFVQREFURV9DQU1QQUlHTl9TVEFUVVNfQ09NUExFVEVEEAMSIQodVVBEQVRFX0NBTVBBSUdOX1NUQVRVU19GQUlMRUQQBBIkCiBVUERBVEVfQ0FNUEFJR05fU1RBVFVTX0NBTkNFTExFRBAFKrcCChJEZXZpY2VVcGRhdGVTdGF0dXMSJAogREVWSUNFX1VQREFURV9TVEFUVVNfVU5TUEVDSUZJRUQQABIgChxERVZJQ0VfVVBEQVRFX1NUQVRVU19QRU5ESU5HEAESJAogREVWSUNFX1VQREFURV9TVEFUVVNfRE9XTkxPQURJTkcQAhIjCh9ERVZJQ0VfVVBEQVRFX1NUQVRVU19ET1dOTE9BREVEEAMSIwofREVWSUNFX1VQREFURV9TVEFUVVNfSU5TVEFMTElORxAEEiIKHkRFVklDRV9VUERBVEVfU1RBVFVTX0lOU1RBTExFRBAFEh8KG0RFVklDRV9VUERBVEVfU1RBVFVTX0ZBSUxFRBAGEiQKIERFVklDRV9VUERBVEVfU1RBVFVTX1JPTExFRF9CQUNLEAcyjQQKDVVwZGF0ZVNlcnZpY2USZwoUQ3JlYXRlVXBkYXRlQ2FtcGFpZ24SJi5mbGVldGQudjEuQ3JlYXRlVXBkYXRlQ2FtcGFpZ25SZXF1ZXN0GicuZmxlZXRkLnYxLkNyZWF0ZVVwZGF0ZUNhbXBhaWduUmVzcG9uc2USXgoRR2V0VXBkYXRlQ2FtcGFpZ24SIy5mbGVldGQudjEuR2V0VXBkYXRlQ2FtcGFpZ25SZXF1ZXN0GiQuZmxlZXRkLnYxLkdldFVwZGF0ZUNhbXBhaWduUmVzcG9uc2USZAoTTGlzdFVwZGF0ZUNhbXBhaWducxIlLmZsZWV0ZC52MS5MaXN0VXBkYXRlQ2FtcGFpZ25zUmVxdWVzdBomLmZsZWV0ZC52MS5MaXN0VXBkYXRlQ2FtcGFpZ25zUmVzcG9uc2USagoVR2V0RGV2aWNlVXBkYXRlU3RhdHVzEicuZmxlZXRkLnYxLkdldERldmljZVVwZGF0ZVN0YXR1c1JlcXVlc3QaKC5mbGVldGQudjEuR2V0RGV2aWNlVXBkYXRlU3RhdHVzUmVzcG9uc2USYQoSUmVwb3J0VXBkYXRlU3RhdHVzEiQuZmxlZXRkLnYxLlJlcG9ydFVwZGF0ZVN0YXR1c1JlcXVlc3QaJS5mbGVldGQudjEuUmVwb3J0VXBkYXRlU3RhdHVzUmVzcG9uc2VCggEKDWNvbS5mbGVldGQudjFCC1VwZGF0ZVByb3RvUAFaH2ZsZWV0ZC5zaC9nZW4vZmxlZXRkL3YxO2ZsZWV0cGKiAgNGWFiqAglGbGVldGQuVjHKAglGbGVldGRcVjHiAhVGbGVldGRcVjFcR1BCTWV0YWRhdGHqAgpGbGVldGQ6OlYxYgZwcm90bzM',
+    "ChZmbGVldGQvdjEvdXBkYXRlLnByb3RvEglmbGVldGQudjEipwQKDlVwZGF0ZUNhbXBhaWduEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkSEQoJYmluYXJ5X2lkGAQgASgJEhYKDnRhcmdldF92ZXJzaW9uGAUgASgJEhgKEHRhcmdldF9wbGF0Zm9ybXMYBiADKAkSHAoUdGFyZ2V0X2FyY2hpdGVjdHVyZXMYByADKAkSRgoPdGFyZ2V0X21ldGFkYXRhGAggAygLMi0uZmxlZXRkLnYxLlVwZGF0ZUNhbXBhaWduLlRhcmdldE1ldGFkYXRhRW50cnkSKwoIc3RyYXRlZ3kYCSABKA4yGS5mbGVldGQudjEuVXBkYXRlU3RyYXRlZ3kSLwoGc3RhdHVzGAogASgOMh8uZmxlZXRkLnYxLlVwZGF0ZUNhbXBhaWduU3RhdHVzEi4KCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDXRvdGFsX2RldmljZXMYDSABKAUSFwoPdXBkYXRlZF9kZXZpY2VzGA4gASgFEhYKDmZhaWxlZF9kZXZpY2VzGA8gASgFGjUKE1RhcmdldE1ldGFkYXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASLcAgobQ3JlYXRlVXBkYXRlQ2FtcGFpZ25SZXF1ZXN0EgwKBG5hbWUYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSEQoJYmluYXJ5X2lkGAMgASgJEhYKDnRhcmdldF92ZXJzaW9uGAQgASgJEhgKEHRhcmdldF9wbGF0Zm9ybXMYBSADKAkSHAoUdGFyZ2V0X2FyY2hpdGVjdHVyZXMYBiADKAkSUwoPdGFyZ2V0X21ldGFkYXRhGAcgAygLMjouZmxlZXRkLnYxLkNyZWF0ZVVwZGF0ZUNhbXBhaWduUmVxdWVzdC5UYXJnZXRNZXRhZGF0YUVudHJ5EisKCHN0cmF0ZWd5GAggASgOMhkuZmxlZXRkLnYxLlVwZGF0ZVN0cmF0ZWd5GjUKE1RhcmdldE1ldGFkYXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASIzChxDcmVhdGVVcGRhdGVDYW1wYWlnblJlc3BvbnNlEhMKC2NhbXBhaWduX2lkGAEgASgJIi8KGEdldFVwZGF0ZUNhbXBhaWduUmVxdWVzdBITCgtjYW1wYWlnbl9pZBgBIAEoCSJIChlHZXRVcGRhdGVDYW1wYWlnblJlc3BvbnNlEisKCGNhbXBhaWduGAEgASgLMhkuZmxlZXRkLnYxLlVwZGF0ZUNhbXBhaWduInQKGkxpc3RVcGRhdGVDYW1wYWlnbnNSZXF1ZXN0Ei8KBnN0YXR1cxgBIAEoDjIfLmZsZWV0ZC52MS5VcGRhdGVDYW1wYWlnblN0YXR1cxIRCglwYWdlX3NpemUYAiABKAUSEgoKcGFnZV90b2tlbhgDIAEoCSJkChtMaXN0VXBkYXRlQ2FtcGFpZ25zUmVzcG9uc2USLAoJY2FtcGFpZ25zGAEgAygLMhkuZmxlZXRkLnYxLlVwZGF0ZUNhbXBhaWduEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSJGChxHZXREZXZpY2VVcGRhdGVTdGF0dXNSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRITCgtjYW1wYWlnbl9pZBgCIAEoCSK/AQodR2V0RGV2aWNlVXBkYXRlU3RhdHVzUmVzcG9uc2USEQoJZGV2aWNlX2lkGAEgASgJEhMKC2NhbXBhaWduX2lkGAIgASgJEi0KBnN0YXR1cxgDIAEoDjIdLmZsZWV0ZC52MS5EZXZpY2VVcGRhdGVTdGF0dXMSFQoNZXJyb3JfbWVzc2FnZRgEIAEoCRIwCgxsYXN0X3VwZGF0ZWQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIokBChlSZXBvcnRVcGRhdGVTdGF0dXNSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRITCgtjYW1wYWlnbl9pZBgCIAEoCRItCgZzdGF0dXMYAyABKA4yHS5mbGVldGQudjEuRGV2aWNlVXBkYXRlU3RhdHVzEhUKDWVycm9yX21lc3NhZ2UYBCABKAkiLQoaUmVwb3J0VXBkYXRlU3RhdHVzUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCqJAQoOVXBkYXRlU3RyYXRlZ3kSHwobVVBEQVRFX1NUUkFURUdZX1VOU1BFQ0lGSUVEEAASHQoZVVBEQVRFX1NUUkFURUdZX0lNTUVESUFURRABEhsKF1VQREFURV9TVFJBVEVHWV9ST0xMSU5HEAISGgoWVVBEQVRFX1NUUkFURUdZX01BTlVBTBADKvkBChRVcGRhdGVDYW1wYWlnblN0YXR1cxImCiJVUERBVEVfQ0FNUEFJR05fU1RBVFVTX1VOU1BFQ0lGSUVEEAASIgoeVVBEQVRFX0NBTVBBSUdOX1NUQVRVU19DUkVBVEVEEAESJgoiVVBEQVRFX0NBTVBBSUdOX1NUQVRVU19JTl9QUk9HUkVTUxACEiQKIFVQREFURV9DQU1QQUlHTl9TVEFUVVNfQ09NUExFVEVEEAMSIQodVVBEQVRFX0NBTVBBSUdOX1NUQVRVU19GQUlMRUQQBBIkCiBVUERBVEVfQ0FNUEFJR05fU1RBVFVTX0NBTkNFTExFRBAFKrcCChJEZXZpY2VVcGRhdGVTdGF0dXMSJAogREVWSUNFX1VQREFURV9TVEFUVVNfVU5TUEVDSUZJRUQQABIgChxERVZJQ0VfVVBEQVRFX1NUQVRVU19QRU5ESU5HEAESJAogREVWSUNFX1VQREFURV9TVEFUVVNfRE9XTkxPQURJTkcQAhIjCh9ERVZJQ0VfVVBEQVRFX1NUQVRVU19ET1dOTE9BREVEEAMSIwofREVWSUNFX1VQREFURV9TVEFUVVNfSU5TVEFMTElORxAEEiIKHkRFVklDRV9VUERBVEVfU1RBVFVTX0lOU1RBTExFRBAFEh8KG0RFVklDRV9VUERBVEVfU1RBVFVTX0ZBSUxFRBAGEiQKIERFVklDRV9VUERBVEVfU1RBVFVTX1JPTExFRF9CQUNLEAcyjQQKDVVwZGF0ZVNlcnZpY2USZwoUQ3JlYXRlVXBkYXRlQ2FtcGFpZ24SJi5mbGVldGQudjEuQ3JlYXRlVXBkYXRlQ2FtcGFpZ25SZXF1ZXN0GicuZmxlZXRkLnYxLkNyZWF0ZVVwZGF0ZUNhbXBhaWduUmVzcG9uc2USXgoRR2V0VXBkYXRlQ2FtcGFpZ24SIy5mbGVldGQudjEuR2V0VXBkYXRlQ2FtcGFpZ25SZXF1ZXN0GiQuZmxlZXRkLnYxLkdldFVwZGF0ZUNhbXBhaWduUmVzcG9uc2USZAoTTGlzdFVwZGF0ZUNhbXBhaWducxIlLmZsZWV0ZC52MS5MaXN0VXBkYXRlQ2FtcGFpZ25zUmVxdWVzdBomLmZsZWV0ZC52MS5MaXN0VXBkYXRlQ2FtcGFpZ25zUmVzcG9uc2USagoVR2V0RGV2aWNlVXBkYXRlU3RhdHVzEicuZmxlZXRkLnYxLkdldERldmljZVVwZGF0ZVN0YXR1c1JlcXVlc3QaKC5mbGVldGQudjEuR2V0RGV2aWNlVXBkYXRlU3RhdHVzUmVzcG9uc2USYQoSUmVwb3J0VXBkYXRlU3RhdHVzEiQuZmxlZXRkLnYxLlJlcG9ydFVwZGF0ZVN0YXR1c1JlcXVlc3QaJS5mbGVldGQudjEuUmVwb3J0VXBkYXRlU3RhdHVzUmVzcG9uc2VCggEKDWNvbS5mbGVldGQudjFCC1VwZGF0ZVByb3RvUAFaH2ZsZWV0ZC5zaC9nZW4vZmxlZXRkL3YxO2ZsZWV0cGKiAgNGWFiqAglGbGVldGQuVjHKAglGbGVldGRcVjHiAhVGbGVldGRcVjFcR1BCTWV0YWRhdGHqAgpGbGVldGQ6OlYxYgZwcm90bzM",
     [file_google_protobuf_timestamp],
-  )
+  );
 
 /**
  * @generated from message fleetd.v1.UpdateCampaign
  */
-export type UpdateCampaign = Message<'fleetd.v1.UpdateCampaign'> & {
+export type UpdateCampaign = Message<"fleetd.v1.UpdateCampaign"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string description = 3;
    */
-  description: string
+  description: string;
 
   /**
    * @generated from field: string binary_id = 4;
    */
-  binaryId: string
+  binaryId: string;
 
   /**
    * @generated from field: string target_version = 5;
    */
-  targetVersion: string
+  targetVersion: string;
 
   /**
    * @generated from field: repeated string target_platforms = 6;
    */
-  targetPlatforms: string[]
+  targetPlatforms: string[];
 
   /**
    * @generated from field: repeated string target_architectures = 7;
    */
-  targetArchitectures: string[]
+  targetArchitectures: string[];
 
   /**
    * @generated from field: map<string, string> target_metadata = 8;
    */
-  targetMetadata: { [key: string]: string }
+  targetMetadata: { [key: string]: string };
 
   /**
    * @generated from field: fleetd.v1.UpdateStrategy strategy = 9;
    */
-  strategy: UpdateStrategy
+  strategy: UpdateStrategy;
 
   /**
    * @generated from field: fleetd.v1.UpdateCampaignStatus status = 10;
    */
-  status: UpdateCampaignStatus
+  status: UpdateCampaignStatus;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 11;
    */
-  createdAt?: Timestamp
+  createdAt?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp updated_at = 12;
    */
-  updatedAt?: Timestamp
+  updatedAt?: Timestamp;
 
   /**
    * @generated from field: int32 total_devices = 13;
    */
-  totalDevices: number
+  totalDevices: number;
 
   /**
    * @generated from field: int32 updated_devices = 14;
    */
-  updatedDevices: number
+  updatedDevices: number;
 
   /**
    * @generated from field: int32 failed_devices = 15;
    */
-  failedDevices: number
-}
+  failedDevices: number;
+};
 
 /**
  * Describes the message fleetd.v1.UpdateCampaign.
@@ -104,52 +104,52 @@ export type UpdateCampaign = Message<'fleetd.v1.UpdateCampaign'> & {
  */
 export const UpdateCampaignSchema: GenMessage<UpdateCampaign> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 0)
+  messageDesc(file_fleetd_v1_update, 0);
 
 /**
  * @generated from message fleetd.v1.CreateUpdateCampaignRequest
  */
-export type CreateUpdateCampaignRequest = Message<'fleetd.v1.CreateUpdateCampaignRequest'> & {
+export type CreateUpdateCampaignRequest = Message<"fleetd.v1.CreateUpdateCampaignRequest"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string description = 2;
    */
-  description: string
+  description: string;
 
   /**
    * @generated from field: string binary_id = 3;
    */
-  binaryId: string
+  binaryId: string;
 
   /**
    * @generated from field: string target_version = 4;
    */
-  targetVersion: string
+  targetVersion: string;
 
   /**
    * @generated from field: repeated string target_platforms = 5;
    */
-  targetPlatforms: string[]
+  targetPlatforms: string[];
 
   /**
    * @generated from field: repeated string target_architectures = 6;
    */
-  targetArchitectures: string[]
+  targetArchitectures: string[];
 
   /**
    * @generated from field: map<string, string> target_metadata = 7;
    */
-  targetMetadata: { [key: string]: string }
+  targetMetadata: { [key: string]: string };
 
   /**
    * @generated from field: fleetd.v1.UpdateStrategy strategy = 8;
    */
-  strategy: UpdateStrategy
-}
+  strategy: UpdateStrategy;
+};
 
 /**
  * Describes the message fleetd.v1.CreateUpdateCampaignRequest.
@@ -157,17 +157,17 @@ export type CreateUpdateCampaignRequest = Message<'fleetd.v1.CreateUpdateCampaig
  */
 export const CreateUpdateCampaignRequestSchema: GenMessage<CreateUpdateCampaignRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 1)
+  messageDesc(file_fleetd_v1_update, 1);
 
 /**
  * @generated from message fleetd.v1.CreateUpdateCampaignResponse
  */
-export type CreateUpdateCampaignResponse = Message<'fleetd.v1.CreateUpdateCampaignResponse'> & {
+export type CreateUpdateCampaignResponse = Message<"fleetd.v1.CreateUpdateCampaignResponse"> & {
   /**
    * @generated from field: string campaign_id = 1;
    */
-  campaignId: string
-}
+  campaignId: string;
+};
 
 /**
  * Describes the message fleetd.v1.CreateUpdateCampaignResponse.
@@ -175,17 +175,17 @@ export type CreateUpdateCampaignResponse = Message<'fleetd.v1.CreateUpdateCampai
  */
 export const CreateUpdateCampaignResponseSchema: GenMessage<CreateUpdateCampaignResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 2)
+  messageDesc(file_fleetd_v1_update, 2);
 
 /**
  * @generated from message fleetd.v1.GetUpdateCampaignRequest
  */
-export type GetUpdateCampaignRequest = Message<'fleetd.v1.GetUpdateCampaignRequest'> & {
+export type GetUpdateCampaignRequest = Message<"fleetd.v1.GetUpdateCampaignRequest"> & {
   /**
    * @generated from field: string campaign_id = 1;
    */
-  campaignId: string
-}
+  campaignId: string;
+};
 
 /**
  * Describes the message fleetd.v1.GetUpdateCampaignRequest.
@@ -193,17 +193,17 @@ export type GetUpdateCampaignRequest = Message<'fleetd.v1.GetUpdateCampaignReque
  */
 export const GetUpdateCampaignRequestSchema: GenMessage<GetUpdateCampaignRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 3)
+  messageDesc(file_fleetd_v1_update, 3);
 
 /**
  * @generated from message fleetd.v1.GetUpdateCampaignResponse
  */
-export type GetUpdateCampaignResponse = Message<'fleetd.v1.GetUpdateCampaignResponse'> & {
+export type GetUpdateCampaignResponse = Message<"fleetd.v1.GetUpdateCampaignResponse"> & {
   /**
    * @generated from field: fleetd.v1.UpdateCampaign campaign = 1;
    */
-  campaign?: UpdateCampaign
-}
+  campaign?: UpdateCampaign;
+};
 
 /**
  * Describes the message fleetd.v1.GetUpdateCampaignResponse.
@@ -211,27 +211,27 @@ export type GetUpdateCampaignResponse = Message<'fleetd.v1.GetUpdateCampaignResp
  */
 export const GetUpdateCampaignResponseSchema: GenMessage<GetUpdateCampaignResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 4)
+  messageDesc(file_fleetd_v1_update, 4);
 
 /**
  * @generated from message fleetd.v1.ListUpdateCampaignsRequest
  */
-export type ListUpdateCampaignsRequest = Message<'fleetd.v1.ListUpdateCampaignsRequest'> & {
+export type ListUpdateCampaignsRequest = Message<"fleetd.v1.ListUpdateCampaignsRequest"> & {
   /**
    * @generated from field: fleetd.v1.UpdateCampaignStatus status = 1;
    */
-  status: UpdateCampaignStatus
+  status: UpdateCampaignStatus;
 
   /**
    * @generated from field: int32 page_size = 2;
    */
-  pageSize: number
+  pageSize: number;
 
   /**
    * @generated from field: string page_token = 3;
    */
-  pageToken: string
-}
+  pageToken: string;
+};
 
 /**
  * Describes the message fleetd.v1.ListUpdateCampaignsRequest.
@@ -239,22 +239,22 @@ export type ListUpdateCampaignsRequest = Message<'fleetd.v1.ListUpdateCampaignsR
  */
 export const ListUpdateCampaignsRequestSchema: GenMessage<ListUpdateCampaignsRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 5)
+  messageDesc(file_fleetd_v1_update, 5);
 
 /**
  * @generated from message fleetd.v1.ListUpdateCampaignsResponse
  */
-export type ListUpdateCampaignsResponse = Message<'fleetd.v1.ListUpdateCampaignsResponse'> & {
+export type ListUpdateCampaignsResponse = Message<"fleetd.v1.ListUpdateCampaignsResponse"> & {
   /**
    * @generated from field: repeated fleetd.v1.UpdateCampaign campaigns = 1;
    */
-  campaigns: UpdateCampaign[]
+  campaigns: UpdateCampaign[];
 
   /**
    * @generated from field: string next_page_token = 2;
    */
-  nextPageToken: string
-}
+  nextPageToken: string;
+};
 
 /**
  * Describes the message fleetd.v1.ListUpdateCampaignsResponse.
@@ -262,22 +262,22 @@ export type ListUpdateCampaignsResponse = Message<'fleetd.v1.ListUpdateCampaigns
  */
 export const ListUpdateCampaignsResponseSchema: GenMessage<ListUpdateCampaignsResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 6)
+  messageDesc(file_fleetd_v1_update, 6);
 
 /**
  * @generated from message fleetd.v1.GetDeviceUpdateStatusRequest
  */
-export type GetDeviceUpdateStatusRequest = Message<'fleetd.v1.GetDeviceUpdateStatusRequest'> & {
+export type GetDeviceUpdateStatusRequest = Message<"fleetd.v1.GetDeviceUpdateStatusRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string campaign_id = 2;
    */
-  campaignId: string
-}
+  campaignId: string;
+};
 
 /**
  * Describes the message fleetd.v1.GetDeviceUpdateStatusRequest.
@@ -285,37 +285,37 @@ export type GetDeviceUpdateStatusRequest = Message<'fleetd.v1.GetDeviceUpdateSta
  */
 export const GetDeviceUpdateStatusRequestSchema: GenMessage<GetDeviceUpdateStatusRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 7)
+  messageDesc(file_fleetd_v1_update, 7);
 
 /**
  * @generated from message fleetd.v1.GetDeviceUpdateStatusResponse
  */
-export type GetDeviceUpdateStatusResponse = Message<'fleetd.v1.GetDeviceUpdateStatusResponse'> & {
+export type GetDeviceUpdateStatusResponse = Message<"fleetd.v1.GetDeviceUpdateStatusResponse"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string campaign_id = 2;
    */
-  campaignId: string
+  campaignId: string;
 
   /**
    * @generated from field: fleetd.v1.DeviceUpdateStatus status = 3;
    */
-  status: DeviceUpdateStatus
+  status: DeviceUpdateStatus;
 
   /**
    * @generated from field: string error_message = 4;
    */
-  errorMessage: string
+  errorMessage: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp last_updated = 5;
    */
-  lastUpdated?: Timestamp
-}
+  lastUpdated?: Timestamp;
+};
 
 /**
  * Describes the message fleetd.v1.GetDeviceUpdateStatusResponse.
@@ -323,32 +323,32 @@ export type GetDeviceUpdateStatusResponse = Message<'fleetd.v1.GetDeviceUpdateSt
  */
 export const GetDeviceUpdateStatusResponseSchema: GenMessage<GetDeviceUpdateStatusResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 8)
+  messageDesc(file_fleetd_v1_update, 8);
 
 /**
  * @generated from message fleetd.v1.ReportUpdateStatusRequest
  */
-export type ReportUpdateStatusRequest = Message<'fleetd.v1.ReportUpdateStatusRequest'> & {
+export type ReportUpdateStatusRequest = Message<"fleetd.v1.ReportUpdateStatusRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string campaign_id = 2;
    */
-  campaignId: string
+  campaignId: string;
 
   /**
    * @generated from field: fleetd.v1.DeviceUpdateStatus status = 3;
    */
-  status: DeviceUpdateStatus
+  status: DeviceUpdateStatus;
 
   /**
    * @generated from field: string error_message = 4;
    */
-  errorMessage: string
-}
+  errorMessage: string;
+};
 
 /**
  * Describes the message fleetd.v1.ReportUpdateStatusRequest.
@@ -356,17 +356,17 @@ export type ReportUpdateStatusRequest = Message<'fleetd.v1.ReportUpdateStatusReq
  */
 export const ReportUpdateStatusRequestSchema: GenMessage<ReportUpdateStatusRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 9)
+  messageDesc(file_fleetd_v1_update, 9);
 
 /**
  * @generated from message fleetd.v1.ReportUpdateStatusResponse
  */
-export type ReportUpdateStatusResponse = Message<'fleetd.v1.ReportUpdateStatusResponse'> & {
+export type ReportUpdateStatusResponse = Message<"fleetd.v1.ReportUpdateStatusResponse"> & {
   /**
    * @generated from field: bool success = 1;
    */
-  success: boolean
-}
+  success: boolean;
+};
 
 /**
  * Describes the message fleetd.v1.ReportUpdateStatusResponse.
@@ -374,7 +374,7 @@ export type ReportUpdateStatusResponse = Message<'fleetd.v1.ReportUpdateStatusRe
  */
 export const ReportUpdateStatusResponseSchema: GenMessage<ReportUpdateStatusResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_update, 10)
+  messageDesc(file_fleetd_v1_update, 10);
 
 /**
  * @generated from enum fleetd.v1.UpdateStrategy
@@ -406,7 +406,7 @@ export enum UpdateStrategy {
  */
 export const UpdateStrategySchema: GenEnum<UpdateStrategy> =
   /*@__PURE__*/
-  enumDesc(file_fleetd_v1_update, 0)
+  enumDesc(file_fleetd_v1_update, 0);
 
 /**
  * @generated from enum fleetd.v1.UpdateCampaignStatus
@@ -448,7 +448,7 @@ export enum UpdateCampaignStatus {
  */
 export const UpdateCampaignStatusSchema: GenEnum<UpdateCampaignStatus> =
   /*@__PURE__*/
-  enumDesc(file_fleetd_v1_update, 1)
+  enumDesc(file_fleetd_v1_update, 1);
 
 /**
  * @generated from enum fleetd.v1.DeviceUpdateStatus
@@ -500,7 +500,7 @@ export enum DeviceUpdateStatus {
  */
 export const DeviceUpdateStatusSchema: GenEnum<DeviceUpdateStatus> =
   /*@__PURE__*/
-  enumDesc(file_fleetd_v1_update, 2)
+  enumDesc(file_fleetd_v1_update, 2);
 
 /**
  * @generated from service fleetd.v1.UpdateService
@@ -512,48 +512,48 @@ export const UpdateService: GenService<{
    * @generated from rpc fleetd.v1.UpdateService.CreateUpdateCampaign
    */
   createUpdateCampaign: {
-    methodKind: 'unary'
-    input: typeof CreateUpdateCampaignRequestSchema
-    output: typeof CreateUpdateCampaignResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof CreateUpdateCampaignRequestSchema;
+    output: typeof CreateUpdateCampaignResponseSchema;
+  };
   /**
    * Get update campaign status
    *
    * @generated from rpc fleetd.v1.UpdateService.GetUpdateCampaign
    */
   getUpdateCampaign: {
-    methodKind: 'unary'
-    input: typeof GetUpdateCampaignRequestSchema
-    output: typeof GetUpdateCampaignResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetUpdateCampaignRequestSchema;
+    output: typeof GetUpdateCampaignResponseSchema;
+  };
   /**
    * List update campaigns
    *
    * @generated from rpc fleetd.v1.UpdateService.ListUpdateCampaigns
    */
   listUpdateCampaigns: {
-    methodKind: 'unary'
-    input: typeof ListUpdateCampaignsRequestSchema
-    output: typeof ListUpdateCampaignsResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof ListUpdateCampaignsRequestSchema;
+    output: typeof ListUpdateCampaignsResponseSchema;
+  };
   /**
    * Get device update status
    *
    * @generated from rpc fleetd.v1.UpdateService.GetDeviceUpdateStatus
    */
   getDeviceUpdateStatus: {
-    methodKind: 'unary'
-    input: typeof GetDeviceUpdateStatusRequestSchema
-    output: typeof GetDeviceUpdateStatusResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetDeviceUpdateStatusRequestSchema;
+    output: typeof GetDeviceUpdateStatusResponseSchema;
+  };
   /**
    * Report update status from device
    *
    * @generated from rpc fleetd.v1.UpdateService.ReportUpdateStatus
    */
   reportUpdateStatus: {
-    methodKind: 'unary'
-    input: typeof ReportUpdateStatusRequestSchema
-    output: typeof ReportUpdateStatusResponseSchema
-  }
-}> = /*@__PURE__*/ serviceDesc(file_fleetd_v1_update, 0)
+    methodKind: "unary";
+    input: typeof ReportUpdateStatusRequestSchema;
+    output: typeof ReportUpdateStatusResponseSchema;
+  };
+}> = /*@__PURE__*/ serviceDesc(file_fleetd_v1_update, 0);

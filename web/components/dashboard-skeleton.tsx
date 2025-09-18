@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function DashboardSkeleton() {
   return (
@@ -52,5 +52,5 @@ export function DashboardSkeleton() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

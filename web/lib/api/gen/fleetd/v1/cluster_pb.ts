@@ -2,11 +2,11 @@
 // @generated from file fleetd/v1/cluster.proto (package fleetd.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
-import type { Timestamp } from '@bufbuild/protobuf/wkt'
-import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt'
-import type { Message } from '@bufbuild/protobuf'
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file fleetd/v1/cluster.proto.
@@ -14,37 +14,37 @@ import type { Message } from '@bufbuild/protobuf'
 export const file_fleetd_v1_cluster: GenFile =
   /*@__PURE__*/
   fileDesc(
-    'ChdmbGVldGQvdjEvY2x1c3Rlci5wcm90bxIJZmxlZXRkLnYxIj0KEERldmljZUNhcGFiaWxpdHkSDAoEbmFtZRgBIAEoCRINCgV2YWx1ZRgCIAEoCRIMCgR1bml0GAMgASgJIuQECg5FeHRlbmRlZERldmljZRIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEiMKBHR5cGUYAyABKA4yFS5mbGVldGQudjEuRGV2aWNlVHlwZRIPCgd2ZXJzaW9uGAQgASgJEjkKCG1ldGFkYXRhGAUgAygLMicuZmxlZXRkLnYxLkV4dGVuZGVkRGV2aWNlLk1ldGFkYXRhRW50cnkSLQoJbGFzdF9zZWVuGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIxCgxjYXBhYmlsaXRpZXMYByADKAsyGy5mbGVldGQudjEuRGV2aWNlQ2FwYWJpbGl0eRIUCgxhcmNoaXRlY3R1cmUYCCABKAkSDwoHb3NfbmFtZRgJIAEoCRISCgpvc192ZXJzaW9uGAogASgJEiQKCGszc19yb2xlGAsgASgOMhIuZmxlZXRkLnYxLkszc1JvbGUSEwoLazNzX3ZlcnNpb24YDCABKAkSEgoKY2x1c3Rlcl9pZBgNIAEoCRIUCgx0b3RhbF9tZW1vcnkYDiABKAMSEQoJY3B1X2NvcmVzGA8gASgFEhEKCWRpc2tfc2l6ZRgQIAEoAxIPCgdoYXNfZ3B1GBEgASgIEhQKDGlwX2FkZHJlc3NlcxgSIAMoCRITCgtwcmltYXJ5X21hYxgTIAEoCRISCgpjb25maWd1cmVkGBQgASgIEg4KBm9ubGluZRgVIAEoCBIOCgZzdGF0dXMYFiABKAkaLwoNTWV0YWRhdGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIpoDCgdDbHVzdGVyEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSLgoKY3JlYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHdmVyc2lvbhgFIAEoCRIUCgxuZXR3b3JrX2NpZHIYBiABKAkSFAoMc2VydmljZV9jaWRyGAcgASgJEiUKBW5vZGVzGAggAygLMhYuZmxlZXRkLnYxLkNsdXN0ZXJOb2RlEhQKDGFwaV9lbmRwb2ludBgJIAEoCRISCgprdWJlY29uZmlnGAogASgMEigKBnN0YXR1cxgLIAEoDjIYLmZsZWV0ZC52MS5DbHVzdGVyU3RhdHVzEi4KBmxhYmVscxgMIAMoCzIeLmZsZWV0ZC52MS5DbHVzdGVyLkxhYmVsc0VudHJ5Gi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEisQIKC0NsdXN0ZXJOb2RlEhEKCWRldmljZV9pZBgBIAEoCRIQCghob3N0bmFtZRgCIAEoCRIgCgRyb2xlGAMgASgOMhIuZmxlZXRkLnYxLkszc1JvbGUSEgoKaXBfYWRkcmVzcxgEIAEoCRItCglqb2luZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiUKBnN0YXR1cxgGIAEoCzIVLmZsZWV0ZC52MS5Ob2RlU3RhdHVzEjIKBmxhYmVscxgHIAMoCzIiLmZsZWV0ZC52MS5DbHVzdGVyTm9kZS5MYWJlbHNFbnRyeRIOCgZ0YWludHMYCCADKAkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASKfAgoKTm9kZVN0YXR1cxINCgVyZWFkeRgBIAEoCBITCgtzY2hlZHVsYWJsZRgCIAEoCBIUCgxtZW1vcnlfdXNhZ2UYAyABKAMSFwoPbWVtb3J5X2NhcGFjaXR5GAQgASgDEhEKCWNwdV91c2FnZRgFIAEoBRIUCgxjcHVfY2FwYWNpdHkYBiABKAUSEQoJcG9kX2NvdW50GAcgASgFEhQKDHBvZF9jYXBhY2l0eRgIIAEoBRI5Cgpjb25kaXRpb25zGAkgAygLMiUuZmxlZXRkLnYxLk5vZGVTdGF0dXMuQ29uZGl0aW9uc0VudHJ5GjEKD0NvbmRpdGlvbnNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIqsCChRDcmVhdGVDbHVzdGVyUmVxdWVzdBIMCgRuYW1lGAEgASgJEhgKEHNlcnZlcl9kZXZpY2VfaWQYAiABKAkSEwoLazNzX3ZlcnNpb24YAyABKAkSOwoGY29uZmlnGAQgAygLMisuZmxlZXRkLnYxLkNyZWF0ZUNsdXN0ZXJSZXF1ZXN0LkNvbmZpZ0VudHJ5EjsKBmxhYmVscxgFIAMoCzIrLmZsZWV0ZC52MS5DcmVhdGVDbHVzdGVyUmVxdWVzdC5MYWJlbHNFbnRyeRotCgtDb25maWdFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBGi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEiUAoVQ3JlYXRlQ2x1c3RlclJlc3BvbnNlEiMKB2NsdXN0ZXIYASABKAsyEi5mbGVldGQudjEuQ2x1c3RlchISCgpqb2luX3Rva2VuGAIgASgJIscBChJKb2luQ2x1c3RlclJlcXVlc3QSEgoKY2x1c3Rlcl9pZBgBIAEoCRIRCglkZXZpY2VfaWQYAiABKAkSIAoEcm9sZRgDIAEoDjISLmZsZWV0ZC52MS5LM3NSb2xlEjkKBmxhYmVscxgEIAMoCzIpLmZsZWV0ZC52MS5Kb2luQ2x1c3RlclJlcXVlc3QuTGFiZWxzRW50cnkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJMChNKb2luQ2x1c3RlclJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJAoEbm9kZRgCIAEoCzIWLmZsZWV0ZC52MS5DbHVzdGVyTm9kZSInChFHZXRDbHVzdGVyUmVxdWVzdBISCgpjbHVzdGVyX2lkGAEgASgJIjkKEkdldENsdXN0ZXJSZXNwb25zZRIjCgdjbHVzdGVyGAEgASgLMhIuZmxlZXRkLnYxLkNsdXN0ZXIi0QEKE0xpc3RDbHVzdGVyc1JlcXVlc3QSKAoGc3RhdHVzGAEgASgOMhguZmxlZXRkLnYxLkNsdXN0ZXJTdGF0dXMSOgoGbGFiZWxzGAIgAygLMiouZmxlZXRkLnYxLkxpc3RDbHVzdGVyc1JlcXVlc3QuTGFiZWxzRW50cnkSEQoJcGFnZV9zaXplGAMgASgFEhIKCnBhZ2VfdG9rZW4YBCABKAkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJVChRMaXN0Q2x1c3RlcnNSZXNwb25zZRIkCghjbHVzdGVycxgBIAMoCzISLmZsZWV0ZC52MS5DbHVzdGVyEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSL3AQoUQXBwbHlXb3JrbG9hZFJlcXVlc3QSEgoKY2x1c3Rlcl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEhcKDXlhbWxfbWFuaWZlc3QYAyABKAlIABIUCgpoZWxtX2NoYXJ0GAQgASgJSAASGgoQa3VzdG9taXplX2J1bmRsZRgFIAEoDEgAEjsKBnZhbHVlcxgGIAMoCzIrLmZsZWV0ZC52MS5BcHBseVdvcmtsb2FkUmVxdWVzdC5WYWx1ZXNFbnRyeRotCgtWYWx1ZXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBQgYKBHNwZWMiTAoVQXBwbHlXb3JrbG9hZFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCRIRCglyZXNvdXJjZXMYAyADKAkiPQoUR2V0Tm9kZVN0YXR1c1JlcXVlc3QSEgoKY2x1c3Rlcl9pZBgBIAEoCRIRCglkZXZpY2VfaWQYAiABKAkicgoVR2V0Tm9kZVN0YXR1c1Jlc3BvbnNlEiQKBG5vZGUYASABKAsyFi5mbGVldGQudjEuQ2x1c3Rlck5vZGUSJQoGc3RhdHVzGAIgASgLMhUuZmxlZXRkLnYxLk5vZGVTdGF0dXMSDAoEcG9kcxgDIAMoCSJJChFSZW1vdmVOb2RlUmVxdWVzdBISCgpjbHVzdGVyX2lkGAEgASgJEhEKCWRldmljZV9pZBgCIAEoCRINCgVkcmFpbhgDIAEoCCI2ChJSZW1vdmVOb2RlUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIPCgdtZXNzYWdlGAIgASgJKqEBCgpEZXZpY2VUeXBlEhsKF0RFVklDRV9UWVBFX1VOU1BFQ0lGSUVEEAASFQoRREVWSUNFX1RZUEVfRVNQMzIQARIUChBERVZJQ0VfVFlQRV9SUEk0EAISFAoQREVWSUNFX1RZUEVfUlBJNRADEhsKF0RFVklDRV9UWVBFX0pFVFNPTl9OQU5PEAQSFgoSREVWSUNFX1RZUEVfWDg2XzY0EAUqZgoHSzNzUm9sZRIYChRLM1NfUk9MRV9VTlNQRUNJRklFRBAAEhMKD0szU19ST0xFX1NFUlZFUhABEhIKDkszU19ST0xFX0FHRU5UEAISGAoUSzNTX1JPTEVfU0VSVkVSX0lOSVQQAyq6AQoNQ2x1c3RlclN0YXR1cxIeChpDTFVTVEVSX1NUQVRVU19VTlNQRUNJRklFRBAAEhsKF0NMVVNURVJfU1RBVFVTX0NSRUFUSU5HEAESGAoUQ0xVU1RFUl9TVEFUVVNfUkVBRFkQAhIbChdDTFVTVEVSX1NUQVRVU19VUERBVElORxADEhsKF0NMVVNURVJfU1RBVFVTX0RFR1JBREVEEAQSGAoUQ0xVU1RFUl9TVEFUVVNfRVJST1IQBTLBBAoOQ2x1c3RlclNlcnZpY2USUgoNQ3JlYXRlQ2x1c3RlchIfLmZsZWV0ZC52MS5DcmVhdGVDbHVzdGVyUmVxdWVzdBogLmZsZWV0ZC52MS5DcmVhdGVDbHVzdGVyUmVzcG9uc2USTAoLSm9pbkNsdXN0ZXISHS5mbGVldGQudjEuSm9pbkNsdXN0ZXJSZXF1ZXN0Gh4uZmxlZXRkLnYxLkpvaW5DbHVzdGVyUmVzcG9uc2USSQoKR2V0Q2x1c3RlchIcLmZsZWV0ZC52MS5HZXRDbHVzdGVyUmVxdWVzdBodLmZsZWV0ZC52MS5HZXRDbHVzdGVyUmVzcG9uc2USTwoMTGlzdENsdXN0ZXJzEh4uZmxlZXRkLnYxLkxpc3RDbHVzdGVyc1JlcXVlc3QaHy5mbGVldGQudjEuTGlzdENsdXN0ZXJzUmVzcG9uc2USUgoNQXBwbHlXb3JrbG9hZBIfLmZsZWV0ZC52MS5BcHBseVdvcmtsb2FkUmVxdWVzdBogLmZsZWV0ZC52MS5BcHBseVdvcmtsb2FkUmVzcG9uc2USUgoNR2V0Tm9kZVN0YXR1cxIfLmZsZWV0ZC52MS5HZXROb2RlU3RhdHVzUmVxdWVzdBogLmZsZWV0ZC52MS5HZXROb2RlU3RhdHVzUmVzcG9uc2USSQoKUmVtb3ZlTm9kZRIcLmZsZWV0ZC52MS5SZW1vdmVOb2RlUmVxdWVzdBodLmZsZWV0ZC52MS5SZW1vdmVOb2RlUmVzcG9uc2VCgwEKDWNvbS5mbGVldGQudjFCDENsdXN0ZXJQcm90b1ABWh9mbGVldGQuc2gvZ2VuL2ZsZWV0ZC92MTtmbGVldHBiogIDRlhYqgIJRmxlZXRkLlYxygIJRmxlZXRkXFYx4gIVRmxlZXRkXFYxXEdQQk1ldGFkYXRh6gIKRmxlZXRkOjpWMWIGcHJvdG8z',
+    "ChdmbGVldGQvdjEvY2x1c3Rlci5wcm90bxIJZmxlZXRkLnYxIj0KEERldmljZUNhcGFiaWxpdHkSDAoEbmFtZRgBIAEoCRINCgV2YWx1ZRgCIAEoCRIMCgR1bml0GAMgASgJIuQECg5FeHRlbmRlZERldmljZRIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEiMKBHR5cGUYAyABKA4yFS5mbGVldGQudjEuRGV2aWNlVHlwZRIPCgd2ZXJzaW9uGAQgASgJEjkKCG1ldGFkYXRhGAUgAygLMicuZmxlZXRkLnYxLkV4dGVuZGVkRGV2aWNlLk1ldGFkYXRhRW50cnkSLQoJbGFzdF9zZWVuGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIxCgxjYXBhYmlsaXRpZXMYByADKAsyGy5mbGVldGQudjEuRGV2aWNlQ2FwYWJpbGl0eRIUCgxhcmNoaXRlY3R1cmUYCCABKAkSDwoHb3NfbmFtZRgJIAEoCRISCgpvc192ZXJzaW9uGAogASgJEiQKCGszc19yb2xlGAsgASgOMhIuZmxlZXRkLnYxLkszc1JvbGUSEwoLazNzX3ZlcnNpb24YDCABKAkSEgoKY2x1c3Rlcl9pZBgNIAEoCRIUCgx0b3RhbF9tZW1vcnkYDiABKAMSEQoJY3B1X2NvcmVzGA8gASgFEhEKCWRpc2tfc2l6ZRgQIAEoAxIPCgdoYXNfZ3B1GBEgASgIEhQKDGlwX2FkZHJlc3NlcxgSIAMoCRITCgtwcmltYXJ5X21hYxgTIAEoCRISCgpjb25maWd1cmVkGBQgASgIEg4KBm9ubGluZRgVIAEoCBIOCgZzdGF0dXMYFiABKAkaLwoNTWV0YWRhdGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIpoDCgdDbHVzdGVyEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSLgoKY3JlYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDwoHdmVyc2lvbhgFIAEoCRIUCgxuZXR3b3JrX2NpZHIYBiABKAkSFAoMc2VydmljZV9jaWRyGAcgASgJEiUKBW5vZGVzGAggAygLMhYuZmxlZXRkLnYxLkNsdXN0ZXJOb2RlEhQKDGFwaV9lbmRwb2ludBgJIAEoCRISCgprdWJlY29uZmlnGAogASgMEigKBnN0YXR1cxgLIAEoDjIYLmZsZWV0ZC52MS5DbHVzdGVyU3RhdHVzEi4KBmxhYmVscxgMIAMoCzIeLmZsZWV0ZC52MS5DbHVzdGVyLkxhYmVsc0VudHJ5Gi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEisQIKC0NsdXN0ZXJOb2RlEhEKCWRldmljZV9pZBgBIAEoCRIQCghob3N0bmFtZRgCIAEoCRIgCgRyb2xlGAMgASgOMhIuZmxlZXRkLnYxLkszc1JvbGUSEgoKaXBfYWRkcmVzcxgEIAEoCRItCglqb2luZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiUKBnN0YXR1cxgGIAEoCzIVLmZsZWV0ZC52MS5Ob2RlU3RhdHVzEjIKBmxhYmVscxgHIAMoCzIiLmZsZWV0ZC52MS5DbHVzdGVyTm9kZS5MYWJlbHNFbnRyeRIOCgZ0YWludHMYCCADKAkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASKfAgoKTm9kZVN0YXR1cxINCgVyZWFkeRgBIAEoCBITCgtzY2hlZHVsYWJsZRgCIAEoCBIUCgxtZW1vcnlfdXNhZ2UYAyABKAMSFwoPbWVtb3J5X2NhcGFjaXR5GAQgASgDEhEKCWNwdV91c2FnZRgFIAEoBRIUCgxjcHVfY2FwYWNpdHkYBiABKAUSEQoJcG9kX2NvdW50GAcgASgFEhQKDHBvZF9jYXBhY2l0eRgIIAEoBRI5Cgpjb25kaXRpb25zGAkgAygLMiUuZmxlZXRkLnYxLk5vZGVTdGF0dXMuQ29uZGl0aW9uc0VudHJ5GjEKD0NvbmRpdGlvbnNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIqsCChRDcmVhdGVDbHVzdGVyUmVxdWVzdBIMCgRuYW1lGAEgASgJEhgKEHNlcnZlcl9kZXZpY2VfaWQYAiABKAkSEwoLazNzX3ZlcnNpb24YAyABKAkSOwoGY29uZmlnGAQgAygLMisuZmxlZXRkLnYxLkNyZWF0ZUNsdXN0ZXJSZXF1ZXN0LkNvbmZpZ0VudHJ5EjsKBmxhYmVscxgFIAMoCzIrLmZsZWV0ZC52MS5DcmVhdGVDbHVzdGVyUmVxdWVzdC5MYWJlbHNFbnRyeRotCgtDb25maWdFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBGi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEiUAoVQ3JlYXRlQ2x1c3RlclJlc3BvbnNlEiMKB2NsdXN0ZXIYASABKAsyEi5mbGVldGQudjEuQ2x1c3RlchISCgpqb2luX3Rva2VuGAIgASgJIscBChJKb2luQ2x1c3RlclJlcXVlc3QSEgoKY2x1c3Rlcl9pZBgBIAEoCRIRCglkZXZpY2VfaWQYAiABKAkSIAoEcm9sZRgDIAEoDjISLmZsZWV0ZC52MS5LM3NSb2xlEjkKBmxhYmVscxgEIAMoCzIpLmZsZWV0ZC52MS5Kb2luQ2x1c3RlclJlcXVlc3QuTGFiZWxzRW50cnkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJMChNKb2luQ2x1c3RlclJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJAoEbm9kZRgCIAEoCzIWLmZsZWV0ZC52MS5DbHVzdGVyTm9kZSInChFHZXRDbHVzdGVyUmVxdWVzdBISCgpjbHVzdGVyX2lkGAEgASgJIjkKEkdldENsdXN0ZXJSZXNwb25zZRIjCgdjbHVzdGVyGAEgASgLMhIuZmxlZXRkLnYxLkNsdXN0ZXIi0QEKE0xpc3RDbHVzdGVyc1JlcXVlc3QSKAoGc3RhdHVzGAEgASgOMhguZmxlZXRkLnYxLkNsdXN0ZXJTdGF0dXMSOgoGbGFiZWxzGAIgAygLMiouZmxlZXRkLnYxLkxpc3RDbHVzdGVyc1JlcXVlc3QuTGFiZWxzRW50cnkSEQoJcGFnZV9zaXplGAMgASgFEhIKCnBhZ2VfdG9rZW4YBCABKAkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJVChRMaXN0Q2x1c3RlcnNSZXNwb25zZRIkCghjbHVzdGVycxgBIAMoCzISLmZsZWV0ZC52MS5DbHVzdGVyEhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSL3AQoUQXBwbHlXb3JrbG9hZFJlcXVlc3QSEgoKY2x1c3Rlcl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEhcKDXlhbWxfbWFuaWZlc3QYAyABKAlIABIUCgpoZWxtX2NoYXJ0GAQgASgJSAASGgoQa3VzdG9taXplX2J1bmRsZRgFIAEoDEgAEjsKBnZhbHVlcxgGIAMoCzIrLmZsZWV0ZC52MS5BcHBseVdvcmtsb2FkUmVxdWVzdC5WYWx1ZXNFbnRyeRotCgtWYWx1ZXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBQgYKBHNwZWMiTAoVQXBwbHlXb3JrbG9hZFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCRIRCglyZXNvdXJjZXMYAyADKAkiPQoUR2V0Tm9kZVN0YXR1c1JlcXVlc3QSEgoKY2x1c3Rlcl9pZBgBIAEoCRIRCglkZXZpY2VfaWQYAiABKAkicgoVR2V0Tm9kZVN0YXR1c1Jlc3BvbnNlEiQKBG5vZGUYASABKAsyFi5mbGVldGQudjEuQ2x1c3Rlck5vZGUSJQoGc3RhdHVzGAIgASgLMhUuZmxlZXRkLnYxLk5vZGVTdGF0dXMSDAoEcG9kcxgDIAMoCSJJChFSZW1vdmVOb2RlUmVxdWVzdBISCgpjbHVzdGVyX2lkGAEgASgJEhEKCWRldmljZV9pZBgCIAEoCRINCgVkcmFpbhgDIAEoCCI2ChJSZW1vdmVOb2RlUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIPCgdtZXNzYWdlGAIgASgJKqEBCgpEZXZpY2VUeXBlEhsKF0RFVklDRV9UWVBFX1VOU1BFQ0lGSUVEEAASFQoRREVWSUNFX1RZUEVfRVNQMzIQARIUChBERVZJQ0VfVFlQRV9SUEk0EAISFAoQREVWSUNFX1RZUEVfUlBJNRADEhsKF0RFVklDRV9UWVBFX0pFVFNPTl9OQU5PEAQSFgoSREVWSUNFX1RZUEVfWDg2XzY0EAUqZgoHSzNzUm9sZRIYChRLM1NfUk9MRV9VTlNQRUNJRklFRBAAEhMKD0szU19ST0xFX1NFUlZFUhABEhIKDkszU19ST0xFX0FHRU5UEAISGAoUSzNTX1JPTEVfU0VSVkVSX0lOSVQQAyq6AQoNQ2x1c3RlclN0YXR1cxIeChpDTFVTVEVSX1NUQVRVU19VTlNQRUNJRklFRBAAEhsKF0NMVVNURVJfU1RBVFVTX0NSRUFUSU5HEAESGAoUQ0xVU1RFUl9TVEFUVVNfUkVBRFkQAhIbChdDTFVTVEVSX1NUQVRVU19VUERBVElORxADEhsKF0NMVVNURVJfU1RBVFVTX0RFR1JBREVEEAQSGAoUQ0xVU1RFUl9TVEFUVVNfRVJST1IQBTLBBAoOQ2x1c3RlclNlcnZpY2USUgoNQ3JlYXRlQ2x1c3RlchIfLmZsZWV0ZC52MS5DcmVhdGVDbHVzdGVyUmVxdWVzdBogLmZsZWV0ZC52MS5DcmVhdGVDbHVzdGVyUmVzcG9uc2USTAoLSm9pbkNsdXN0ZXISHS5mbGVldGQudjEuSm9pbkNsdXN0ZXJSZXF1ZXN0Gh4uZmxlZXRkLnYxLkpvaW5DbHVzdGVyUmVzcG9uc2USSQoKR2V0Q2x1c3RlchIcLmZsZWV0ZC52MS5HZXRDbHVzdGVyUmVxdWVzdBodLmZsZWV0ZC52MS5HZXRDbHVzdGVyUmVzcG9uc2USTwoMTGlzdENsdXN0ZXJzEh4uZmxlZXRkLnYxLkxpc3RDbHVzdGVyc1JlcXVlc3QaHy5mbGVldGQudjEuTGlzdENsdXN0ZXJzUmVzcG9uc2USUgoNQXBwbHlXb3JrbG9hZBIfLmZsZWV0ZC52MS5BcHBseVdvcmtsb2FkUmVxdWVzdBogLmZsZWV0ZC52MS5BcHBseVdvcmtsb2FkUmVzcG9uc2USUgoNR2V0Tm9kZVN0YXR1cxIfLmZsZWV0ZC52MS5HZXROb2RlU3RhdHVzUmVxdWVzdBogLmZsZWV0ZC52MS5HZXROb2RlU3RhdHVzUmVzcG9uc2USSQoKUmVtb3ZlTm9kZRIcLmZsZWV0ZC52MS5SZW1vdmVOb2RlUmVxdWVzdBodLmZsZWV0ZC52MS5SZW1vdmVOb2RlUmVzcG9uc2VCgwEKDWNvbS5mbGVldGQudjFCDENsdXN0ZXJQcm90b1ABWh9mbGVldGQuc2gvZ2VuL2ZsZWV0ZC92MTtmbGVldHBiogIDRlhYqgIJRmxlZXRkLlYxygIJRmxlZXRkXFYx4gIVRmxlZXRkXFYxXEdQQk1ldGFkYXRh6gIKRmxlZXRkOjpWMWIGcHJvdG8z",
     [file_google_protobuf_timestamp],
-  )
+  );
 
 /**
  * DeviceCapability describes hardware and software capabilities
  *
  * @generated from message fleetd.v1.DeviceCapability
  */
-export type DeviceCapability = Message<'fleetd.v1.DeviceCapability'> & {
+export type DeviceCapability = Message<"fleetd.v1.DeviceCapability"> & {
   /**
    * e.g., "cpu", "memory", "storage", "gpu", "k3s"
    *
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * e.g., "4", "8GB", "64GB", "nvidia-tegra", "v1.28.3"
    *
    * @generated from field: string value = 2;
    */
-  value: string
+  value: string;
 
   /**
    * e.g., "cores", "bytes", "version"
    *
    * @generated from field: string unit = 3;
    */
-  unit: string
-}
+  unit: string;
+};
 
 /**
  * Describes the message fleetd.v1.DeviceCapability.
@@ -52,50 +52,50 @@ export type DeviceCapability = Message<'fleetd.v1.DeviceCapability'> & {
  */
 export const DeviceCapabilitySchema: GenMessage<DeviceCapability> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 0)
+  messageDesc(file_fleetd_v1_cluster, 0);
 
 /**
  * ExtendedDevice includes RPi-specific fields
  *
  * @generated from message fleetd.v1.ExtendedDevice
  */
-export type ExtendedDevice = Message<'fleetd.v1.ExtendedDevice'> & {
+export type ExtendedDevice = Message<"fleetd.v1.ExtendedDevice"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: fleetd.v1.DeviceType type = 3;
    */
-  type: DeviceType
+  type: DeviceType;
 
   /**
    * @generated from field: string version = 4;
    */
-  version: string
+  version: string;
 
   /**
    * @generated from field: map<string, string> metadata = 5;
    */
-  metadata: { [key: string]: string }
+  metadata: { [key: string]: string };
 
   /**
    * @generated from field: google.protobuf.Timestamp last_seen = 6;
    */
-  lastSeen?: Timestamp
+  lastSeen?: Timestamp;
 
   /**
    * Extended capabilities
    *
    * @generated from field: repeated fleetd.v1.DeviceCapability capabilities = 7;
    */
-  capabilities: DeviceCapability[]
+  capabilities: DeviceCapability[];
 
   /**
    * Raspberry Pi specific
@@ -104,38 +104,38 @@ export type ExtendedDevice = Message<'fleetd.v1.ExtendedDevice'> & {
    *
    * @generated from field: string architecture = 8;
    */
-  architecture: string
+  architecture: string;
 
   /**
    * DietPi, Raspbian, Ubuntu
    *
    * @generated from field: string os_name = 9;
    */
-  osName: string
+  osName: string;
 
   /**
    * OS version
    *
    * @generated from field: string os_version = 10;
    */
-  osVersion: string
+  osVersion: string;
 
   /**
    * K3s specific
    *
    * @generated from field: fleetd.v1.K3sRole k3s_role = 11;
    */
-  k3sRole: K3sRole
+  k3sRole: K3sRole;
 
   /**
    * @generated from field: string k3s_version = 12;
    */
-  k3sVersion: string
+  k3sVersion: string;
 
   /**
    * @generated from field: string cluster_id = 13;
    */
-  clusterId: string
+  clusterId: string;
 
   /**
    * Hardware info
@@ -144,56 +144,56 @@ export type ExtendedDevice = Message<'fleetd.v1.ExtendedDevice'> & {
    *
    * @generated from field: int64 total_memory = 14;
    */
-  totalMemory: bigint
+  totalMemory: bigint;
 
   /**
    * @generated from field: int32 cpu_cores = 15;
    */
-  cpuCores: number
+  cpuCores: number;
 
   /**
    * bytes
    *
    * @generated from field: int64 disk_size = 16;
    */
-  diskSize: bigint
+  diskSize: bigint;
 
   /**
    * @generated from field: bool has_gpu = 17;
    */
-  hasGpu: boolean
+  hasGpu: boolean;
 
   /**
    * Network info
    *
    * @generated from field: repeated string ip_addresses = 18;
    */
-  ipAddresses: string[]
+  ipAddresses: string[];
 
   /**
    * @generated from field: string primary_mac = 19;
    */
-  primaryMac: string
+  primaryMac: string;
 
   /**
    * Status
    *
    * @generated from field: bool configured = 20;
    */
-  configured: boolean
+  configured: boolean;
 
   /**
    * @generated from field: bool online = 21;
    */
-  online: boolean
+  online: boolean;
 
   /**
    * running, stopped, error
    *
    * @generated from field: string status = 22;
    */
-  status: string
-}
+  status: string;
+};
 
 /**
  * Describes the message fleetd.v1.ExtendedDevice.
@@ -201,33 +201,33 @@ export type ExtendedDevice = Message<'fleetd.v1.ExtendedDevice'> & {
  */
 export const ExtendedDeviceSchema: GenMessage<ExtendedDevice> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 1)
+  messageDesc(file_fleetd_v1_cluster, 1);
 
 /**
  * Cluster represents a k3s cluster
  *
  * @generated from message fleetd.v1.Cluster
  */
-export type Cluster = Message<'fleetd.v1.Cluster'> & {
+export type Cluster = Message<"fleetd.v1.Cluster"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 3;
    */
-  createdAt?: Timestamp
+  createdAt?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp updated_at = 4;
    */
-  updatedAt?: Timestamp
+  updatedAt?: Timestamp;
 
   /**
    * Cluster configuration
@@ -236,55 +236,55 @@ export type Cluster = Message<'fleetd.v1.Cluster'> & {
    *
    * @generated from field: string version = 5;
    */
-  version: string
+  version: string;
 
   /**
    * Pod network CIDR
    *
    * @generated from field: string network_cidr = 6;
    */
-  networkCidr: string
+  networkCidr: string;
 
   /**
    * Service network CIDR
    *
    * @generated from field: string service_cidr = 7;
    */
-  serviceCidr: string
+  serviceCidr: string;
 
   /**
    * Nodes
    *
    * @generated from field: repeated fleetd.v1.ClusterNode nodes = 8;
    */
-  nodes: ClusterNode[]
+  nodes: ClusterNode[];
 
   /**
    * Access
    *
    * @generated from field: string api_endpoint = 9;
    */
-  apiEndpoint: string
+  apiEndpoint: string;
 
   /**
    * Encrypted kubeconfig
    *
    * @generated from field: bytes kubeconfig = 10;
    */
-  kubeconfig: Uint8Array
+  kubeconfig: Uint8Array;
 
   /**
    * Status
    *
    * @generated from field: fleetd.v1.ClusterStatus status = 11;
    */
-  status: ClusterStatus
+  status: ClusterStatus;
 
   /**
    * @generated from field: map<string, string> labels = 12;
    */
-  labels: { [key: string]: string }
-}
+  labels: { [key: string]: string };
+};
 
 /**
  * Describes the message fleetd.v1.Cluster.
@@ -292,54 +292,54 @@ export type Cluster = Message<'fleetd.v1.Cluster'> & {
  */
 export const ClusterSchema: GenMessage<Cluster> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 2)
+  messageDesc(file_fleetd_v1_cluster, 2);
 
 /**
  * ClusterNode represents a node in the cluster
  *
  * @generated from message fleetd.v1.ClusterNode
  */
-export type ClusterNode = Message<'fleetd.v1.ClusterNode'> & {
+export type ClusterNode = Message<"fleetd.v1.ClusterNode"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string hostname = 2;
    */
-  hostname: string
+  hostname: string;
 
   /**
    * @generated from field: fleetd.v1.K3sRole role = 3;
    */
-  role: K3sRole
+  role: K3sRole;
 
   /**
    * @generated from field: string ip_address = 4;
    */
-  ipAddress: string
+  ipAddress: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp joined_at = 5;
    */
-  joinedAt?: Timestamp
+  joinedAt?: Timestamp;
 
   /**
    * @generated from field: fleetd.v1.NodeStatus status = 6;
    */
-  status?: NodeStatus
+  status?: NodeStatus;
 
   /**
    * @generated from field: map<string, string> labels = 7;
    */
-  labels: { [key: string]: string }
+  labels: { [key: string]: string };
 
   /**
    * @generated from field: repeated string taints = 8;
    */
-  taints: string[]
-}
+  taints: string[];
+};
 
 /**
  * Describes the message fleetd.v1.ClusterNode.
@@ -347,67 +347,67 @@ export type ClusterNode = Message<'fleetd.v1.ClusterNode'> & {
  */
 export const ClusterNodeSchema: GenMessage<ClusterNode> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 3)
+  messageDesc(file_fleetd_v1_cluster, 3);
 
 /**
  * NodeStatus represents the status of a cluster node
  *
  * @generated from message fleetd.v1.NodeStatus
  */
-export type NodeStatus = Message<'fleetd.v1.NodeStatus'> & {
+export type NodeStatus = Message<"fleetd.v1.NodeStatus"> & {
   /**
    * @generated from field: bool ready = 1;
    */
-  ready: boolean
+  ready: boolean;
 
   /**
    * @generated from field: bool schedulable = 2;
    */
-  schedulable: boolean
+  schedulable: boolean;
 
   /**
    * bytes
    *
    * @generated from field: int64 memory_usage = 3;
    */
-  memoryUsage: bigint
+  memoryUsage: bigint;
 
   /**
    * bytes
    *
    * @generated from field: int64 memory_capacity = 4;
    */
-  memoryCapacity: bigint
+  memoryCapacity: bigint;
 
   /**
    * millicores
    *
    * @generated from field: int32 cpu_usage = 5;
    */
-  cpuUsage: number
+  cpuUsage: number;
 
   /**
    * millicores
    *
    * @generated from field: int32 cpu_capacity = 6;
    */
-  cpuCapacity: number
+  cpuCapacity: number;
 
   /**
    * @generated from field: int32 pod_count = 7;
    */
-  podCount: number
+  podCount: number;
 
   /**
    * @generated from field: int32 pod_capacity = 8;
    */
-  podCapacity: number
+  podCapacity: number;
 
   /**
    * @generated from field: map<string, string> conditions = 9;
    */
-  conditions: { [key: string]: string }
-}
+  conditions: { [key: string]: string };
+};
 
 /**
  * Describes the message fleetd.v1.NodeStatus.
@@ -415,43 +415,43 @@ export type NodeStatus = Message<'fleetd.v1.NodeStatus'> & {
  */
 export const NodeStatusSchema: GenMessage<NodeStatus> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 4)
+  messageDesc(file_fleetd_v1_cluster, 4);
 
 /**
  * CreateClusterRequest creates a new cluster
  *
  * @generated from message fleetd.v1.CreateClusterRequest
  */
-export type CreateClusterRequest = Message<'fleetd.v1.CreateClusterRequest'> & {
+export type CreateClusterRequest = Message<"fleetd.v1.CreateClusterRequest"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * Initial server node
    *
    * @generated from field: string server_device_id = 2;
    */
-  serverDeviceId: string
+  serverDeviceId: string;
 
   /**
    * @generated from field: string k3s_version = 3;
    */
-  k3sVersion: string
+  k3sVersion: string;
 
   /**
    * Additional k3s config
    *
    * @generated from field: map<string, string> config = 4;
    */
-  config: { [key: string]: string }
+  config: { [key: string]: string };
 
   /**
    * @generated from field: map<string, string> labels = 5;
    */
-  labels: { [key: string]: string }
-}
+  labels: { [key: string]: string };
+};
 
 /**
  * Describes the message fleetd.v1.CreateClusterRequest.
@@ -459,22 +459,22 @@ export type CreateClusterRequest = Message<'fleetd.v1.CreateClusterRequest'> & {
  */
 export const CreateClusterRequestSchema: GenMessage<CreateClusterRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 5)
+  messageDesc(file_fleetd_v1_cluster, 5);
 
 /**
  * @generated from message fleetd.v1.CreateClusterResponse
  */
-export type CreateClusterResponse = Message<'fleetd.v1.CreateClusterResponse'> & {
+export type CreateClusterResponse = Message<"fleetd.v1.CreateClusterResponse"> & {
   /**
    * @generated from field: fleetd.v1.Cluster cluster = 1;
    */
-  cluster?: Cluster
+  cluster?: Cluster;
 
   /**
    * @generated from field: string join_token = 2;
    */
-  joinToken: string
-}
+  joinToken: string;
+};
 
 /**
  * Describes the message fleetd.v1.CreateClusterResponse.
@@ -482,34 +482,34 @@ export type CreateClusterResponse = Message<'fleetd.v1.CreateClusterResponse'> &
  */
 export const CreateClusterResponseSchema: GenMessage<CreateClusterResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 6)
+  messageDesc(file_fleetd_v1_cluster, 6);
 
 /**
  * JoinClusterRequest adds a device to a cluster
  *
  * @generated from message fleetd.v1.JoinClusterRequest
  */
-export type JoinClusterRequest = Message<'fleetd.v1.JoinClusterRequest'> & {
+export type JoinClusterRequest = Message<"fleetd.v1.JoinClusterRequest"> & {
   /**
    * @generated from field: string cluster_id = 1;
    */
-  clusterId: string
+  clusterId: string;
 
   /**
    * @generated from field: string device_id = 2;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: fleetd.v1.K3sRole role = 3;
    */
-  role: K3sRole
+  role: K3sRole;
 
   /**
    * @generated from field: map<string, string> labels = 4;
    */
-  labels: { [key: string]: string }
-}
+  labels: { [key: string]: string };
+};
 
 /**
  * Describes the message fleetd.v1.JoinClusterRequest.
@@ -517,22 +517,22 @@ export type JoinClusterRequest = Message<'fleetd.v1.JoinClusterRequest'> & {
  */
 export const JoinClusterRequestSchema: GenMessage<JoinClusterRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 7)
+  messageDesc(file_fleetd_v1_cluster, 7);
 
 /**
  * @generated from message fleetd.v1.JoinClusterResponse
  */
-export type JoinClusterResponse = Message<'fleetd.v1.JoinClusterResponse'> & {
+export type JoinClusterResponse = Message<"fleetd.v1.JoinClusterResponse"> & {
   /**
    * @generated from field: bool success = 1;
    */
-  success: boolean
+  success: boolean;
 
   /**
    * @generated from field: fleetd.v1.ClusterNode node = 2;
    */
-  node?: ClusterNode
-}
+  node?: ClusterNode;
+};
 
 /**
  * Describes the message fleetd.v1.JoinClusterResponse.
@@ -540,19 +540,19 @@ export type JoinClusterResponse = Message<'fleetd.v1.JoinClusterResponse'> & {
  */
 export const JoinClusterResponseSchema: GenMessage<JoinClusterResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 8)
+  messageDesc(file_fleetd_v1_cluster, 8);
 
 /**
  * GetClusterRequest retrieves cluster details
  *
  * @generated from message fleetd.v1.GetClusterRequest
  */
-export type GetClusterRequest = Message<'fleetd.v1.GetClusterRequest'> & {
+export type GetClusterRequest = Message<"fleetd.v1.GetClusterRequest"> & {
   /**
    * @generated from field: string cluster_id = 1;
    */
-  clusterId: string
-}
+  clusterId: string;
+};
 
 /**
  * Describes the message fleetd.v1.GetClusterRequest.
@@ -560,17 +560,17 @@ export type GetClusterRequest = Message<'fleetd.v1.GetClusterRequest'> & {
  */
 export const GetClusterRequestSchema: GenMessage<GetClusterRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 9)
+  messageDesc(file_fleetd_v1_cluster, 9);
 
 /**
  * @generated from message fleetd.v1.GetClusterResponse
  */
-export type GetClusterResponse = Message<'fleetd.v1.GetClusterResponse'> & {
+export type GetClusterResponse = Message<"fleetd.v1.GetClusterResponse"> & {
   /**
    * @generated from field: fleetd.v1.Cluster cluster = 1;
    */
-  cluster?: Cluster
-}
+  cluster?: Cluster;
+};
 
 /**
  * Describes the message fleetd.v1.GetClusterResponse.
@@ -578,34 +578,34 @@ export type GetClusterResponse = Message<'fleetd.v1.GetClusterResponse'> & {
  */
 export const GetClusterResponseSchema: GenMessage<GetClusterResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 10)
+  messageDesc(file_fleetd_v1_cluster, 10);
 
 /**
  * ListClustersRequest lists all clusters
  *
  * @generated from message fleetd.v1.ListClustersRequest
  */
-export type ListClustersRequest = Message<'fleetd.v1.ListClustersRequest'> & {
+export type ListClustersRequest = Message<"fleetd.v1.ListClustersRequest"> & {
   /**
    * @generated from field: fleetd.v1.ClusterStatus status = 1;
    */
-  status: ClusterStatus
+  status: ClusterStatus;
 
   /**
    * @generated from field: map<string, string> labels = 2;
    */
-  labels: { [key: string]: string }
+  labels: { [key: string]: string };
 
   /**
    * @generated from field: int32 page_size = 3;
    */
-  pageSize: number
+  pageSize: number;
 
   /**
    * @generated from field: string page_token = 4;
    */
-  pageToken: string
-}
+  pageToken: string;
+};
 
 /**
  * Describes the message fleetd.v1.ListClustersRequest.
@@ -613,22 +613,22 @@ export type ListClustersRequest = Message<'fleetd.v1.ListClustersRequest'> & {
  */
 export const ListClustersRequestSchema: GenMessage<ListClustersRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 11)
+  messageDesc(file_fleetd_v1_cluster, 11);
 
 /**
  * @generated from message fleetd.v1.ListClustersResponse
  */
-export type ListClustersResponse = Message<'fleetd.v1.ListClustersResponse'> & {
+export type ListClustersResponse = Message<"fleetd.v1.ListClustersResponse"> & {
   /**
    * @generated from field: repeated fleetd.v1.Cluster clusters = 1;
    */
-  clusters: Cluster[]
+  clusters: Cluster[];
 
   /**
    * @generated from field: string next_page_token = 2;
    */
-  nextPageToken: string
-}
+  nextPageToken: string;
+};
 
 /**
  * Describes the message fleetd.v1.ListClustersResponse.
@@ -636,23 +636,23 @@ export type ListClustersResponse = Message<'fleetd.v1.ListClustersResponse'> & {
  */
 export const ListClustersResponseSchema: GenMessage<ListClustersResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 12)
+  messageDesc(file_fleetd_v1_cluster, 12);
 
 /**
  * ApplyWorkloadRequest deploys a workload to a cluster
  *
  * @generated from message fleetd.v1.ApplyWorkloadRequest
  */
-export type ApplyWorkloadRequest = Message<'fleetd.v1.ApplyWorkloadRequest'> & {
+export type ApplyWorkloadRequest = Message<"fleetd.v1.ApplyWorkloadRequest"> & {
   /**
    * @generated from field: string cluster_id = 1;
    */
-  clusterId: string
+  clusterId: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from oneof fleetd.v1.ApplyWorkloadRequest.spec
@@ -664,8 +664,8 @@ export type ApplyWorkloadRequest = Message<'fleetd.v1.ApplyWorkloadRequest'> & {
          *
          * @generated from field: string yaml_manifest = 3;
          */
-        value: string
-        case: 'yamlManifest'
+        value: string;
+        case: "yamlManifest";
       }
     | {
         /**
@@ -673,8 +673,8 @@ export type ApplyWorkloadRequest = Message<'fleetd.v1.ApplyWorkloadRequest'> & {
          *
          * @generated from field: string helm_chart = 4;
          */
-        value: string
-        case: 'helmChart'
+        value: string;
+        case: "helmChart";
       }
     | {
         /**
@@ -682,18 +682,18 @@ export type ApplyWorkloadRequest = Message<'fleetd.v1.ApplyWorkloadRequest'> & {
          *
          * @generated from field: bytes kustomize_bundle = 5;
          */
-        value: Uint8Array
-        case: 'kustomizeBundle'
+        value: Uint8Array;
+        case: "kustomizeBundle";
       }
-    | { case: undefined; value?: undefined }
+    | { case: undefined; value?: undefined };
 
   /**
    * Template values
    *
    * @generated from field: map<string, string> values = 6;
    */
-  values: { [key: string]: string }
-}
+  values: { [key: string]: string };
+};
 
 /**
  * Describes the message fleetd.v1.ApplyWorkloadRequest.
@@ -701,29 +701,29 @@ export type ApplyWorkloadRequest = Message<'fleetd.v1.ApplyWorkloadRequest'> & {
  */
 export const ApplyWorkloadRequestSchema: GenMessage<ApplyWorkloadRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 13)
+  messageDesc(file_fleetd_v1_cluster, 13);
 
 /**
  * @generated from message fleetd.v1.ApplyWorkloadResponse
  */
-export type ApplyWorkloadResponse = Message<'fleetd.v1.ApplyWorkloadResponse'> & {
+export type ApplyWorkloadResponse = Message<"fleetd.v1.ApplyWorkloadResponse"> & {
   /**
    * @generated from field: bool success = 1;
    */
-  success: boolean
+  success: boolean;
 
   /**
    * @generated from field: string message = 2;
    */
-  message: string
+  message: string;
 
   /**
    * Created resource names
    *
    * @generated from field: repeated string resources = 3;
    */
-  resources: string[]
-}
+  resources: string[];
+};
 
 /**
  * Describes the message fleetd.v1.ApplyWorkloadResponse.
@@ -731,24 +731,24 @@ export type ApplyWorkloadResponse = Message<'fleetd.v1.ApplyWorkloadResponse'> &
  */
 export const ApplyWorkloadResponseSchema: GenMessage<ApplyWorkloadResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 14)
+  messageDesc(file_fleetd_v1_cluster, 14);
 
 /**
  * GetNodeStatusRequest gets detailed node status
  *
  * @generated from message fleetd.v1.GetNodeStatusRequest
  */
-export type GetNodeStatusRequest = Message<'fleetd.v1.GetNodeStatusRequest'> & {
+export type GetNodeStatusRequest = Message<"fleetd.v1.GetNodeStatusRequest"> & {
   /**
    * @generated from field: string cluster_id = 1;
    */
-  clusterId: string
+  clusterId: string;
 
   /**
    * @generated from field: string device_id = 2;
    */
-  deviceId: string
-}
+  deviceId: string;
+};
 
 /**
  * Describes the message fleetd.v1.GetNodeStatusRequest.
@@ -756,29 +756,29 @@ export type GetNodeStatusRequest = Message<'fleetd.v1.GetNodeStatusRequest'> & {
  */
 export const GetNodeStatusRequestSchema: GenMessage<GetNodeStatusRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 15)
+  messageDesc(file_fleetd_v1_cluster, 15);
 
 /**
  * @generated from message fleetd.v1.GetNodeStatusResponse
  */
-export type GetNodeStatusResponse = Message<'fleetd.v1.GetNodeStatusResponse'> & {
+export type GetNodeStatusResponse = Message<"fleetd.v1.GetNodeStatusResponse"> & {
   /**
    * @generated from field: fleetd.v1.ClusterNode node = 1;
    */
-  node?: ClusterNode
+  node?: ClusterNode;
 
   /**
    * @generated from field: fleetd.v1.NodeStatus status = 2;
    */
-  status?: NodeStatus
+  status?: NodeStatus;
 
   /**
    * Running pod names
    *
    * @generated from field: repeated string pods = 3;
    */
-  pods: string[]
-}
+  pods: string[];
+};
 
 /**
  * Describes the message fleetd.v1.GetNodeStatusResponse.
@@ -786,31 +786,31 @@ export type GetNodeStatusResponse = Message<'fleetd.v1.GetNodeStatusResponse'> &
  */
 export const GetNodeStatusResponseSchema: GenMessage<GetNodeStatusResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 16)
+  messageDesc(file_fleetd_v1_cluster, 16);
 
 /**
  * RemoveNodeRequest removes a node from cluster
  *
  * @generated from message fleetd.v1.RemoveNodeRequest
  */
-export type RemoveNodeRequest = Message<'fleetd.v1.RemoveNodeRequest'> & {
+export type RemoveNodeRequest = Message<"fleetd.v1.RemoveNodeRequest"> & {
   /**
    * @generated from field: string cluster_id = 1;
    */
-  clusterId: string
+  clusterId: string;
 
   /**
    * @generated from field: string device_id = 2;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * Drain node before removal
    *
    * @generated from field: bool drain = 3;
    */
-  drain: boolean
-}
+  drain: boolean;
+};
 
 /**
  * Describes the message fleetd.v1.RemoveNodeRequest.
@@ -818,22 +818,22 @@ export type RemoveNodeRequest = Message<'fleetd.v1.RemoveNodeRequest'> & {
  */
 export const RemoveNodeRequestSchema: GenMessage<RemoveNodeRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 17)
+  messageDesc(file_fleetd_v1_cluster, 17);
 
 /**
  * @generated from message fleetd.v1.RemoveNodeResponse
  */
-export type RemoveNodeResponse = Message<'fleetd.v1.RemoveNodeResponse'> & {
+export type RemoveNodeResponse = Message<"fleetd.v1.RemoveNodeResponse"> & {
   /**
    * @generated from field: bool success = 1;
    */
-  success: boolean
+  success: boolean;
 
   /**
    * @generated from field: string message = 2;
    */
-  message: string
-}
+  message: string;
+};
 
 /**
  * Describes the message fleetd.v1.RemoveNodeResponse.
@@ -841,7 +841,7 @@ export type RemoveNodeResponse = Message<'fleetd.v1.RemoveNodeResponse'> & {
  */
 export const RemoveNodeResponseSchema: GenMessage<RemoveNodeResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_cluster, 18)
+  messageDesc(file_fleetd_v1_cluster, 18);
 
 /**
  * DeviceType enumeration for different device types
@@ -885,7 +885,7 @@ export enum DeviceType {
  */
 export const DeviceTypeSchema: GenEnum<DeviceType> =
   /*@__PURE__*/
-  enumDesc(file_fleetd_v1_cluster, 0)
+  enumDesc(file_fleetd_v1_cluster, 0);
 
 /**
  * K3sRole defines the role in a k3s cluster
@@ -923,7 +923,7 @@ export enum K3sRole {
 /**
  * Describes the enum fleetd.v1.K3sRole.
  */
-export const K3sRoleSchema: GenEnum<K3sRole> = /*@__PURE__*/ enumDesc(file_fleetd_v1_cluster, 1)
+export const K3sRoleSchema: GenEnum<K3sRole> = /*@__PURE__*/ enumDesc(file_fleetd_v1_cluster, 1);
 
 /**
  * ClusterStatus enumeration
@@ -967,7 +967,7 @@ export enum ClusterStatus {
  */
 export const ClusterStatusSchema: GenEnum<ClusterStatus> =
   /*@__PURE__*/
-  enumDesc(file_fleetd_v1_cluster, 2)
+  enumDesc(file_fleetd_v1_cluster, 2);
 
 /**
  * ClusterService manages k3s clusters on linux-based devices
@@ -981,68 +981,68 @@ export const ClusterService: GenService<{
    * @generated from rpc fleetd.v1.ClusterService.CreateCluster
    */
   createCluster: {
-    methodKind: 'unary'
-    input: typeof CreateClusterRequestSchema
-    output: typeof CreateClusterResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof CreateClusterRequestSchema;
+    output: typeof CreateClusterResponseSchema;
+  };
   /**
    * Join a device to an existing cluster
    *
    * @generated from rpc fleetd.v1.ClusterService.JoinCluster
    */
   joinCluster: {
-    methodKind: 'unary'
-    input: typeof JoinClusterRequestSchema
-    output: typeof JoinClusterResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof JoinClusterRequestSchema;
+    output: typeof JoinClusterResponseSchema;
+  };
   /**
    * Get cluster information
    *
    * @generated from rpc fleetd.v1.ClusterService.GetCluster
    */
   getCluster: {
-    methodKind: 'unary'
-    input: typeof GetClusterRequestSchema
-    output: typeof GetClusterResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetClusterRequestSchema;
+    output: typeof GetClusterResponseSchema;
+  };
   /**
    * List all clusters
    *
    * @generated from rpc fleetd.v1.ClusterService.ListClusters
    */
   listClusters: {
-    methodKind: 'unary'
-    input: typeof ListClustersRequestSchema
-    output: typeof ListClustersResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof ListClustersRequestSchema;
+    output: typeof ListClustersResponseSchema;
+  };
   /**
    * Apply a workload to a cluster
    *
    * @generated from rpc fleetd.v1.ClusterService.ApplyWorkload
    */
   applyWorkload: {
-    methodKind: 'unary'
-    input: typeof ApplyWorkloadRequestSchema
-    output: typeof ApplyWorkloadResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof ApplyWorkloadRequestSchema;
+    output: typeof ApplyWorkloadResponseSchema;
+  };
   /**
    * Get cluster node status
    *
    * @generated from rpc fleetd.v1.ClusterService.GetNodeStatus
    */
   getNodeStatus: {
-    methodKind: 'unary'
-    input: typeof GetNodeStatusRequestSchema
-    output: typeof GetNodeStatusResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetNodeStatusRequestSchema;
+    output: typeof GetNodeStatusResponseSchema;
+  };
   /**
    * Remove a node from cluster
    *
    * @generated from rpc fleetd.v1.ClusterService.RemoveNode
    */
   removeNode: {
-    methodKind: 'unary'
-    input: typeof RemoveNodeRequestSchema
-    output: typeof RemoveNodeResponseSchema
-  }
-}> = /*@__PURE__*/ serviceDesc(file_fleetd_v1_cluster, 0)
+    methodKind: "unary";
+    input: typeof RemoveNodeRequestSchema;
+    output: typeof RemoveNodeResponseSchema;
+  };
+}> = /*@__PURE__*/ serviceDesc(file_fleetd_v1_cluster, 0);

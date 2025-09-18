@@ -2,9 +2,9 @@
 // @generated from file agent/v1/agent.proto (package agent.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
-import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
-import type { Message } from '@bufbuild/protobuf'
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file agent/v1/agent.proto.
@@ -12,49 +12,49 @@ import type { Message } from '@bufbuild/protobuf'
 export const file_agent_v1_agent: GenFile =
   /*@__PURE__*/
   fileDesc(
-    'ChRhZ2VudC92MS9hZ2VudC5wcm90bxIIYWdlbnQudjEiNwoGQmluYXJ5EgwKBG5hbWUYASABKAkSDwoHdmVyc2lvbhgCIAEoCRIOCgZzdGF0dXMYAyABKAkiMQoTRGVwbG95QmluYXJ5UmVxdWVzdBIMCgRuYW1lGAEgASgJEgwKBGRhdGEYAiABKAwiFgoURGVwbG95QmluYXJ5UmVzcG9uc2UiMAoSU3RhcnRCaW5hcnlSZXF1ZXN0EgwKBG5hbWUYASABKAkSDAoEYXJncxgCIAMoCSIVChNTdGFydEJpbmFyeVJlc3BvbnNlIiEKEVN0b3BCaW5hcnlSZXF1ZXN0EgwKBG5hbWUYASABKAkiFAoSU3RvcEJpbmFyeVJlc3BvbnNlIhUKE0xpc3RCaW5hcmllc1JlcXVlc3QiOgoUTGlzdEJpbmFyaWVzUmVzcG9uc2USIgoIYmluYXJpZXMYASADKAsyEC5hZ2VudC52MS5CaW5hcnkyygIKDURhZW1vblNlcnZpY2USTwoMRGVwbG95QmluYXJ5Eh0uYWdlbnQudjEuRGVwbG95QmluYXJ5UmVxdWVzdBoeLmFnZW50LnYxLkRlcGxveUJpbmFyeVJlc3BvbnNlIgASTAoLU3RhcnRCaW5hcnkSHC5hZ2VudC52MS5TdGFydEJpbmFyeVJlcXVlc3QaHS5hZ2VudC52MS5TdGFydEJpbmFyeVJlc3BvbnNlIgASSQoKU3RvcEJpbmFyeRIbLmFnZW50LnYxLlN0b3BCaW5hcnlSZXF1ZXN0GhwuYWdlbnQudjEuU3RvcEJpbmFyeVJlc3BvbnNlIgASTwoMTGlzdEJpbmFyaWVzEh0uYWdlbnQudjEuTGlzdEJpbmFyaWVzUmVxdWVzdBoeLmFnZW50LnYxLkxpc3RCaW5hcmllc1Jlc3BvbnNlIgBCewoMY29tLmFnZW50LnYxQgpBZ2VudFByb3RvUAFaHmZsZWV0ZC5zaC9nZW4vYWdlbnQvdjE7YWdlbnRwYqICA0FYWKoCCEFnZW50LlYxygIIQWdlbnRcVjHiAhRBZ2VudFxWMVxHUEJNZXRhZGF0YeoCCUFnZW50OjpWMWIGcHJvdG8z',
-  )
+    "ChRhZ2VudC92MS9hZ2VudC5wcm90bxIIYWdlbnQudjEiNwoGQmluYXJ5EgwKBG5hbWUYASABKAkSDwoHdmVyc2lvbhgCIAEoCRIOCgZzdGF0dXMYAyABKAkiMQoTRGVwbG95QmluYXJ5UmVxdWVzdBIMCgRuYW1lGAEgASgJEgwKBGRhdGEYAiABKAwiFgoURGVwbG95QmluYXJ5UmVzcG9uc2UiMAoSU3RhcnRCaW5hcnlSZXF1ZXN0EgwKBG5hbWUYASABKAkSDAoEYXJncxgCIAMoCSIVChNTdGFydEJpbmFyeVJlc3BvbnNlIiEKEVN0b3BCaW5hcnlSZXF1ZXN0EgwKBG5hbWUYASABKAkiFAoSU3RvcEJpbmFyeVJlc3BvbnNlIhUKE0xpc3RCaW5hcmllc1JlcXVlc3QiOgoUTGlzdEJpbmFyaWVzUmVzcG9uc2USIgoIYmluYXJpZXMYASADKAsyEC5hZ2VudC52MS5CaW5hcnkyygIKDURhZW1vblNlcnZpY2USTwoMRGVwbG95QmluYXJ5Eh0uYWdlbnQudjEuRGVwbG95QmluYXJ5UmVxdWVzdBoeLmFnZW50LnYxLkRlcGxveUJpbmFyeVJlc3BvbnNlIgASTAoLU3RhcnRCaW5hcnkSHC5hZ2VudC52MS5TdGFydEJpbmFyeVJlcXVlc3QaHS5hZ2VudC52MS5TdGFydEJpbmFyeVJlc3BvbnNlIgASSQoKU3RvcEJpbmFyeRIbLmFnZW50LnYxLlN0b3BCaW5hcnlSZXF1ZXN0GhwuYWdlbnQudjEuU3RvcEJpbmFyeVJlc3BvbnNlIgASTwoMTGlzdEJpbmFyaWVzEh0uYWdlbnQudjEuTGlzdEJpbmFyaWVzUmVxdWVzdBoeLmFnZW50LnYxLkxpc3RCaW5hcmllc1Jlc3BvbnNlIgBCewoMY29tLmFnZW50LnYxQgpBZ2VudFByb3RvUAFaHmZsZWV0ZC5zaC9nZW4vYWdlbnQvdjE7YWdlbnRwYqICA0FYWKoCCEFnZW50LlYxygIIQWdlbnRcVjHiAhRBZ2VudFxWMVxHUEJNZXRhZGF0YeoCCUFnZW50OjpWMWIGcHJvdG8z",
+  );
 
 /**
  * @generated from message agent.v1.Binary
  */
-export type Binary = Message<'agent.v1.Binary'> & {
+export type Binary = Message<"agent.v1.Binary"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string version = 2;
    */
-  version: string
+  version: string;
 
   /**
    * @generated from field: string status = 3;
    */
-  status: string
-}
+  status: string;
+};
 
 /**
  * Describes the message agent.v1.Binary.
  * Use `create(BinarySchema)` to create a new message.
  */
-export const BinarySchema: GenMessage<Binary> = /*@__PURE__*/ messageDesc(file_agent_v1_agent, 0)
+export const BinarySchema: GenMessage<Binary> = /*@__PURE__*/ messageDesc(file_agent_v1_agent, 0);
 
 /**
  * @generated from message agent.v1.DeployBinaryRequest
  */
-export type DeployBinaryRequest = Message<'agent.v1.DeployBinaryRequest'> & {
+export type DeployBinaryRequest = Message<"agent.v1.DeployBinaryRequest"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: bytes data = 2;
    */
-  data: Uint8Array
-}
+  data: Uint8Array;
+};
 
 /**
  * Describes the message agent.v1.DeployBinaryRequest.
@@ -62,12 +62,12 @@ export type DeployBinaryRequest = Message<'agent.v1.DeployBinaryRequest'> & {
  */
 export const DeployBinaryRequestSchema: GenMessage<DeployBinaryRequest> =
   /*@__PURE__*/
-  messageDesc(file_agent_v1_agent, 1)
+  messageDesc(file_agent_v1_agent, 1);
 
 /**
  * @generated from message agent.v1.DeployBinaryResponse
  */
-export type DeployBinaryResponse = Message<'agent.v1.DeployBinaryResponse'> & {}
+export type DeployBinaryResponse = Message<"agent.v1.DeployBinaryResponse"> & {};
 
 /**
  * Describes the message agent.v1.DeployBinaryResponse.
@@ -75,22 +75,22 @@ export type DeployBinaryResponse = Message<'agent.v1.DeployBinaryResponse'> & {}
  */
 export const DeployBinaryResponseSchema: GenMessage<DeployBinaryResponse> =
   /*@__PURE__*/
-  messageDesc(file_agent_v1_agent, 2)
+  messageDesc(file_agent_v1_agent, 2);
 
 /**
  * @generated from message agent.v1.StartBinaryRequest
  */
-export type StartBinaryRequest = Message<'agent.v1.StartBinaryRequest'> & {
+export type StartBinaryRequest = Message<"agent.v1.StartBinaryRequest"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: repeated string args = 2;
    */
-  args: string[]
-}
+  args: string[];
+};
 
 /**
  * Describes the message agent.v1.StartBinaryRequest.
@@ -98,12 +98,12 @@ export type StartBinaryRequest = Message<'agent.v1.StartBinaryRequest'> & {
  */
 export const StartBinaryRequestSchema: GenMessage<StartBinaryRequest> =
   /*@__PURE__*/
-  messageDesc(file_agent_v1_agent, 3)
+  messageDesc(file_agent_v1_agent, 3);
 
 /**
  * @generated from message agent.v1.StartBinaryResponse
  */
-export type StartBinaryResponse = Message<'agent.v1.StartBinaryResponse'> & {}
+export type StartBinaryResponse = Message<"agent.v1.StartBinaryResponse"> & {};
 
 /**
  * Describes the message agent.v1.StartBinaryResponse.
@@ -111,17 +111,17 @@ export type StartBinaryResponse = Message<'agent.v1.StartBinaryResponse'> & {}
  */
 export const StartBinaryResponseSchema: GenMessage<StartBinaryResponse> =
   /*@__PURE__*/
-  messageDesc(file_agent_v1_agent, 4)
+  messageDesc(file_agent_v1_agent, 4);
 
 /**
  * @generated from message agent.v1.StopBinaryRequest
  */
-export type StopBinaryRequest = Message<'agent.v1.StopBinaryRequest'> & {
+export type StopBinaryRequest = Message<"agent.v1.StopBinaryRequest"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
-}
+  name: string;
+};
 
 /**
  * Describes the message agent.v1.StopBinaryRequest.
@@ -129,12 +129,12 @@ export type StopBinaryRequest = Message<'agent.v1.StopBinaryRequest'> & {
  */
 export const StopBinaryRequestSchema: GenMessage<StopBinaryRequest> =
   /*@__PURE__*/
-  messageDesc(file_agent_v1_agent, 5)
+  messageDesc(file_agent_v1_agent, 5);
 
 /**
  * @generated from message agent.v1.StopBinaryResponse
  */
-export type StopBinaryResponse = Message<'agent.v1.StopBinaryResponse'> & {}
+export type StopBinaryResponse = Message<"agent.v1.StopBinaryResponse"> & {};
 
 /**
  * Describes the message agent.v1.StopBinaryResponse.
@@ -142,12 +142,12 @@ export type StopBinaryResponse = Message<'agent.v1.StopBinaryResponse'> & {}
  */
 export const StopBinaryResponseSchema: GenMessage<StopBinaryResponse> =
   /*@__PURE__*/
-  messageDesc(file_agent_v1_agent, 6)
+  messageDesc(file_agent_v1_agent, 6);
 
 /**
  * @generated from message agent.v1.ListBinariesRequest
  */
-export type ListBinariesRequest = Message<'agent.v1.ListBinariesRequest'> & {}
+export type ListBinariesRequest = Message<"agent.v1.ListBinariesRequest"> & {};
 
 /**
  * Describes the message agent.v1.ListBinariesRequest.
@@ -155,17 +155,17 @@ export type ListBinariesRequest = Message<'agent.v1.ListBinariesRequest'> & {}
  */
 export const ListBinariesRequestSchema: GenMessage<ListBinariesRequest> =
   /*@__PURE__*/
-  messageDesc(file_agent_v1_agent, 7)
+  messageDesc(file_agent_v1_agent, 7);
 
 /**
  * @generated from message agent.v1.ListBinariesResponse
  */
-export type ListBinariesResponse = Message<'agent.v1.ListBinariesResponse'> & {
+export type ListBinariesResponse = Message<"agent.v1.ListBinariesResponse"> & {
   /**
    * @generated from field: repeated agent.v1.Binary binaries = 1;
    */
-  binaries: Binary[]
-}
+  binaries: Binary[];
+};
 
 /**
  * Describes the message agent.v1.ListBinariesResponse.
@@ -173,7 +173,7 @@ export type ListBinariesResponse = Message<'agent.v1.ListBinariesResponse'> & {
  */
 export const ListBinariesResponseSchema: GenMessage<ListBinariesResponse> =
   /*@__PURE__*/
-  messageDesc(file_agent_v1_agent, 8)
+  messageDesc(file_agent_v1_agent, 8);
 
 /**
  * Daemon service definition
@@ -187,32 +187,32 @@ export const DaemonService: GenService<{
    * @generated from rpc agent.v1.DaemonService.DeployBinary
    */
   deployBinary: {
-    methodKind: 'unary'
-    input: typeof DeployBinaryRequestSchema
-    output: typeof DeployBinaryResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof DeployBinaryRequestSchema;
+    output: typeof DeployBinaryResponseSchema;
+  };
   /**
    * @generated from rpc agent.v1.DaemonService.StartBinary
    */
   startBinary: {
-    methodKind: 'unary'
-    input: typeof StartBinaryRequestSchema
-    output: typeof StartBinaryResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof StartBinaryRequestSchema;
+    output: typeof StartBinaryResponseSchema;
+  };
   /**
    * @generated from rpc agent.v1.DaemonService.StopBinary
    */
   stopBinary: {
-    methodKind: 'unary'
-    input: typeof StopBinaryRequestSchema
-    output: typeof StopBinaryResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof StopBinaryRequestSchema;
+    output: typeof StopBinaryResponseSchema;
+  };
   /**
    * @generated from rpc agent.v1.DaemonService.ListBinaries
    */
   listBinaries: {
-    methodKind: 'unary'
-    input: typeof ListBinariesRequestSchema
-    output: typeof ListBinariesResponseSchema
-  }
-}> = /*@__PURE__*/ serviceDesc(file_agent_v1_agent, 0)
+    methodKind: "unary";
+    input: typeof ListBinariesRequestSchema;
+    output: typeof ListBinariesResponseSchema;
+  };
+}> = /*@__PURE__*/ serviceDesc(file_agent_v1_agent, 0);

@@ -5,7 +5,10 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import {
+  file_google_protobuf_struct,
+  file_google_protobuf_timestamp,
+} from "@bufbuild/protobuf/wkt";
 import type { Device } from "./device_pb";
 import { file_fleetd_v1_device } from "./device_pb";
 import type { LogEntry } from "./sync_pb";
@@ -15,8 +18,17 @@ import type { JsonObject, Message } from "@bufbuild/protobuf";
 /**
  * Describes the file fleetd/v1/fleet.proto.
  */
-export const file_fleetd_v1_fleet: GenFile = /*@__PURE__*/
-  fileDesc("ChVmbGVldGQvdjEvZmxlZXQucHJvdG8SCWZsZWV0ZC52MSKrAgoFRmxlZXQSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIuCgpjcmVhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxkZXZpY2VfY291bnQYBiABKAUSKAoEdGFncxgHIAMoCzIaLmZsZWV0ZC52MS5GbGVldC5UYWdzRW50cnkSJgoGY29uZmlnGAggASgLMhYuZmxlZXRkLnYxLkZsZWV0Q29uZmlnGisKCVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIrkBCgtGbGVldENvbmZpZxIXCg91cGRhdGVfc3RyYXRlZ3kYASABKAkSHgoWbWF4X2NvbmN1cnJlbnRfdXBkYXRlcxgCIAEoBRIVCg1hdXRvX3JvbGxiYWNrGAMgASgIEi0KCXRlbGVtZXRyeRgEIAEoCzIaLmZsZWV0ZC52MS5UZWxlbWV0cnlDb25maWcSKwoIc2VjdXJpdHkYBSABKAsyGS5mbGVldGQudjEuU2VjdXJpdHlDb25maWcieQoPVGVsZW1ldHJ5Q29uZmlnEiAKGG1ldHJpY3NfaW50ZXJ2YWxfc2Vjb25kcxgBIAEoBRIUCgxsb2dzX2VuYWJsZWQYAiABKAgSFgoOdHJhY2VzX2VuYWJsZWQYAyABKAgSFgoOcmV0ZW50aW9uX2RheXMYBCABKAUiawoOU2VjdXJpdHlDb25maWcSFAoMdGxzX3JlcXVpcmVkGAEgASgIEhcKD21pbl90bHNfdmVyc2lvbhgCIAEoCRIVCg1hdWRpdF9sb2dnaW5nGAMgASgIEhMKC2FsbG93ZWRfaXBzGAQgAygJIp0BChFMaXN0RmxlZXRzUmVxdWVzdBI0CgR0YWdzGAEgAygLMiYuZmxlZXRkLnYxLkxpc3RGbGVldHNSZXF1ZXN0LlRhZ3NFbnRyeRIRCglwYWdlX3NpemUYAiABKAUSEgoKcGFnZV90b2tlbhgDIAEoCRorCglUYWdzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJPChJMaXN0RmxlZXRzUmVzcG9uc2USIAoGZmxlZXRzGAEgAygLMhAuZmxlZXRkLnYxLkZsZWV0EhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSIdCg9HZXRGbGVldFJlcXVlc3QSCgoCaWQYASABKAkiMwoQR2V0RmxlZXRSZXNwb25zZRIfCgVmbGVldBgBIAEoCzIQLmZsZWV0ZC52MS5GbGVldCLDAQoSQ3JlYXRlRmxlZXRSZXF1ZXN0EgwKBG5hbWUYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSNQoEdGFncxgDIAMoCzInLmZsZWV0ZC52MS5DcmVhdGVGbGVldFJlcXVlc3QuVGFnc0VudHJ5EiYKBmNvbmZpZxgEIAEoCzIWLmZsZWV0ZC52MS5GbGVldENvbmZpZxorCglUYWdzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASI2ChNDcmVhdGVGbGVldFJlc3BvbnNlEh8KBWZsZWV0GAEgASgLMhAuZmxlZXRkLnYxLkZsZWV0Is8BChJVcGRhdGVGbGVldFJlcXVlc3QSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRI1CgR0YWdzGAQgAygLMicuZmxlZXRkLnYxLlVwZGF0ZUZsZWV0UmVxdWVzdC5UYWdzRW50cnkSJgoGY29uZmlnGAUgASgLMhYuZmxlZXRkLnYxLkZsZWV0Q29uZmlnGisKCVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIjYKE1VwZGF0ZUZsZWV0UmVzcG9uc2USHwoFZmxlZXQYASABKAsyEC5mbGVldGQudjEuRmxlZXQiIAoSRGVsZXRlRmxlZXRSZXF1ZXN0EgoKAmlkGAEgASgJIiYKE0RlbGV0ZUZsZWV0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCKeAQoUR2V0RGV2aWNlTG9nc1JlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDgoGbGV2ZWxzGAUgAygJIjoKFUdldERldmljZUxvZ3NSZXNwb25zZRIhCgRsb2dzGAEgAygLMhMuZmxlZXRkLnYxLkxvZ0VudHJ5Is8BChNVcGRhdGVEZXZpY2VSZXF1ZXN0EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEAoIZmxlZXRfaWQYAyABKAkSJwoGY29uZmlnGAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBI2CgR0YWdzGAUgAygLMiguZmxlZXRkLnYxLlVwZGF0ZURldmljZVJlcXVlc3QuVGFnc0VudHJ5GisKCVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIjkKFFVwZGF0ZURldmljZVJlc3BvbnNlEiEKBmRldmljZRgBIAEoCzIRLmZsZWV0ZC52MS5EZXZpY2UiigEKEkRldmljZUNhcGFiaWxpdGllcxIRCgljcHVfY29yZXMYASABKAUSFAoMbWVtb3J5X2J5dGVzGAIgASgDEhUKDXN0b3JhZ2VfYnl0ZXMYAyABKAMSFAoMYXJjaGl0ZWN0dXJlGAQgASgJEgoKAm9zGAUgASgJEhIKCm9zX3ZlcnNpb24YBiABKAky3AMKDEZsZWV0U2VydmljZRJJCgpMaXN0RmxlZXRzEhwuZmxlZXRkLnYxLkxpc3RGbGVldHNSZXF1ZXN0Gh0uZmxlZXRkLnYxLkxpc3RGbGVldHNSZXNwb25zZRJDCghHZXRGbGVldBIaLmZsZWV0ZC52MS5HZXRGbGVldFJlcXVlc3QaGy5mbGVldGQudjEuR2V0RmxlZXRSZXNwb25zZRJMCgtDcmVhdGVGbGVldBIdLmZsZWV0ZC52MS5DcmVhdGVGbGVldFJlcXVlc3QaHi5mbGVldGQudjEuQ3JlYXRlRmxlZXRSZXNwb25zZRJMCgtVcGRhdGVGbGVldBIdLmZsZWV0ZC52MS5VcGRhdGVGbGVldFJlcXVlc3QaHi5mbGVldGQudjEuVXBkYXRlRmxlZXRSZXNwb25zZRJMCgtEZWxldGVGbGVldBIdLmZsZWV0ZC52MS5EZWxldGVGbGVldFJlcXVlc3QaHi5mbGVldGQudjEuRGVsZXRlRmxlZXRSZXNwb25zZRJSCg1HZXREZXZpY2VMb2dzEh8uZmxlZXRkLnYxLkdldERldmljZUxvZ3NSZXF1ZXN0GiAuZmxlZXRkLnYxLkdldERldmljZUxvZ3NSZXNwb25zZUKBAQoNY29tLmZsZWV0ZC52MUIKRmxlZXRQcm90b1ABWh9mbGVldGQuc2gvZ2VuL2ZsZWV0ZC92MTtmbGVldHBiogIDRlhYqgIJRmxlZXRkLlYxygIJRmxlZXRkXFYx4gIVRmxlZXRkXFYxXEdQQk1ldGFkYXRh6gIKRmxlZXRkOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp, file_google_protobuf_struct, file_fleetd_v1_device, file_fleetd_v1_sync]);
+export const file_fleetd_v1_fleet: GenFile =
+  /*@__PURE__*/
+  fileDesc(
+    "ChVmbGVldGQvdjEvZmxlZXQucHJvdG8SCWZsZWV0ZC52MSKrAgoFRmxlZXQSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIuCgpjcmVhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxkZXZpY2VfY291bnQYBiABKAUSKAoEdGFncxgHIAMoCzIaLmZsZWV0ZC52MS5GbGVldC5UYWdzRW50cnkSJgoGY29uZmlnGAggASgLMhYuZmxlZXRkLnYxLkZsZWV0Q29uZmlnGisKCVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIrkBCgtGbGVldENvbmZpZxIXCg91cGRhdGVfc3RyYXRlZ3kYASABKAkSHgoWbWF4X2NvbmN1cnJlbnRfdXBkYXRlcxgCIAEoBRIVCg1hdXRvX3JvbGxiYWNrGAMgASgIEi0KCXRlbGVtZXRyeRgEIAEoCzIaLmZsZWV0ZC52MS5UZWxlbWV0cnlDb25maWcSKwoIc2VjdXJpdHkYBSABKAsyGS5mbGVldGQudjEuU2VjdXJpdHlDb25maWcieQoPVGVsZW1ldHJ5Q29uZmlnEiAKGG1ldHJpY3NfaW50ZXJ2YWxfc2Vjb25kcxgBIAEoBRIUCgxsb2dzX2VuYWJsZWQYAiABKAgSFgoOdHJhY2VzX2VuYWJsZWQYAyABKAgSFgoOcmV0ZW50aW9uX2RheXMYBCABKAUiawoOU2VjdXJpdHlDb25maWcSFAoMdGxzX3JlcXVpcmVkGAEgASgIEhcKD21pbl90bHNfdmVyc2lvbhgCIAEoCRIVCg1hdWRpdF9sb2dnaW5nGAMgASgIEhMKC2FsbG93ZWRfaXBzGAQgAygJIp0BChFMaXN0RmxlZXRzUmVxdWVzdBI0CgR0YWdzGAEgAygLMiYuZmxlZXRkLnYxLkxpc3RGbGVldHNSZXF1ZXN0LlRhZ3NFbnRyeRIRCglwYWdlX3NpemUYAiABKAUSEgoKcGFnZV90b2tlbhgDIAEoCRorCglUYWdzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJPChJMaXN0RmxlZXRzUmVzcG9uc2USIAoGZmxlZXRzGAEgAygLMhAuZmxlZXRkLnYxLkZsZWV0EhcKD25leHRfcGFnZV90b2tlbhgCIAEoCSIdCg9HZXRGbGVldFJlcXVlc3QSCgoCaWQYASABKAkiMwoQR2V0RmxlZXRSZXNwb25zZRIfCgVmbGVldBgBIAEoCzIQLmZsZWV0ZC52MS5GbGVldCLDAQoSQ3JlYXRlRmxlZXRSZXF1ZXN0EgwKBG5hbWUYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSNQoEdGFncxgDIAMoCzInLmZsZWV0ZC52MS5DcmVhdGVGbGVldFJlcXVlc3QuVGFnc0VudHJ5EiYKBmNvbmZpZxgEIAEoCzIWLmZsZWV0ZC52MS5GbGVldENvbmZpZxorCglUYWdzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASI2ChNDcmVhdGVGbGVldFJlc3BvbnNlEh8KBWZsZWV0GAEgASgLMhAuZmxlZXRkLnYxLkZsZWV0Is8BChJVcGRhdGVGbGVldFJlcXVlc3QSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRI1CgR0YWdzGAQgAygLMicuZmxlZXRkLnYxLlVwZGF0ZUZsZWV0UmVxdWVzdC5UYWdzRW50cnkSJgoGY29uZmlnGAUgASgLMhYuZmxlZXRkLnYxLkZsZWV0Q29uZmlnGisKCVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIjYKE1VwZGF0ZUZsZWV0UmVzcG9uc2USHwoFZmxlZXQYASABKAsyEC5mbGVldGQudjEuRmxlZXQiIAoSRGVsZXRlRmxlZXRSZXF1ZXN0EgoKAmlkGAEgASgJIiYKE0RlbGV0ZUZsZWV0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCKeAQoUR2V0RGV2aWNlTG9nc1JlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJEg0KBWxpbWl0GAIgASgFEikKBXNpbmNlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCgV1bnRpbBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDgoGbGV2ZWxzGAUgAygJIjoKFUdldERldmljZUxvZ3NSZXNwb25zZRIhCgRsb2dzGAEgAygLMhMuZmxlZXRkLnYxLkxvZ0VudHJ5Is8BChNVcGRhdGVEZXZpY2VSZXF1ZXN0EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEAoIZmxlZXRfaWQYAyABKAkSJwoGY29uZmlnGAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBI2CgR0YWdzGAUgAygLMiguZmxlZXRkLnYxLlVwZGF0ZURldmljZVJlcXVlc3QuVGFnc0VudHJ5GisKCVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIjkKFFVwZGF0ZURldmljZVJlc3BvbnNlEiEKBmRldmljZRgBIAEoCzIRLmZsZWV0ZC52MS5EZXZpY2UiigEKEkRldmljZUNhcGFiaWxpdGllcxIRCgljcHVfY29yZXMYASABKAUSFAoMbWVtb3J5X2J5dGVzGAIgASgDEhUKDXN0b3JhZ2VfYnl0ZXMYAyABKAMSFAoMYXJjaGl0ZWN0dXJlGAQgASgJEgoKAm9zGAUgASgJEhIKCm9zX3ZlcnNpb24YBiABKAky3AMKDEZsZWV0U2VydmljZRJJCgpMaXN0RmxlZXRzEhwuZmxlZXRkLnYxLkxpc3RGbGVldHNSZXF1ZXN0Gh0uZmxlZXRkLnYxLkxpc3RGbGVldHNSZXNwb25zZRJDCghHZXRGbGVldBIaLmZsZWV0ZC52MS5HZXRGbGVldFJlcXVlc3QaGy5mbGVldGQudjEuR2V0RmxlZXRSZXNwb25zZRJMCgtDcmVhdGVGbGVldBIdLmZsZWV0ZC52MS5DcmVhdGVGbGVldFJlcXVlc3QaHi5mbGVldGQudjEuQ3JlYXRlRmxlZXRSZXNwb25zZRJMCgtVcGRhdGVGbGVldBIdLmZsZWV0ZC52MS5VcGRhdGVGbGVldFJlcXVlc3QaHi5mbGVldGQudjEuVXBkYXRlRmxlZXRSZXNwb25zZRJMCgtEZWxldGVGbGVldBIdLmZsZWV0ZC52MS5EZWxldGVGbGVldFJlcXVlc3QaHi5mbGVldGQudjEuRGVsZXRlRmxlZXRSZXNwb25zZRJSCg1HZXREZXZpY2VMb2dzEh8uZmxlZXRkLnYxLkdldERldmljZUxvZ3NSZXF1ZXN0GiAuZmxlZXRkLnYxLkdldERldmljZUxvZ3NSZXNwb25zZUKBAQoNY29tLmZsZWV0ZC52MUIKRmxlZXRQcm90b1ABWh9mbGVldGQuc2gvZ2VuL2ZsZWV0ZC92MTtmbGVldHBiogIDRlhYqgIJRmxlZXRkLlYxygIJRmxlZXRkXFYx4gIVRmxlZXRkXFYxXEdQQk1ldGFkYXRh6gIKRmxlZXRkOjpWMWIGcHJvdG8z",
+    [
+      file_google_protobuf_timestamp,
+      file_google_protobuf_struct,
+      file_fleetd_v1_device,
+      file_fleetd_v1_sync,
+    ],
+  );
 
 /**
  * Fleet represents a group of devices
@@ -69,8 +81,7 @@ export type Fleet = Message<"fleetd.v1.Fleet"> & {
  * Describes the message fleetd.v1.Fleet.
  * Use `create(FleetSchema)` to create a new message.
  */
-export const FleetSchema: GenMessage<Fleet> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_fleet, 0);
+export const FleetSchema: GenMessage<Fleet> = /*@__PURE__*/ messageDesc(file_fleetd_v1_fleet, 0);
 
 /**
  * FleetConfig contains fleet-wide configuration
@@ -118,7 +129,8 @@ export type FleetConfig = Message<"fleetd.v1.FleetConfig"> & {
  * Describes the message fleetd.v1.FleetConfig.
  * Use `create(FleetConfigSchema)` to create a new message.
  */
-export const FleetConfigSchema: GenMessage<FleetConfig> = /*@__PURE__*/
+export const FleetConfigSchema: GenMessage<FleetConfig> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 1);
 
 /**
@@ -150,7 +162,8 @@ export type TelemetryConfig = Message<"fleetd.v1.TelemetryConfig"> & {
  * Describes the message fleetd.v1.TelemetryConfig.
  * Use `create(TelemetryConfigSchema)` to create a new message.
  */
-export const TelemetryConfigSchema: GenMessage<TelemetryConfig> = /*@__PURE__*/
+export const TelemetryConfigSchema: GenMessage<TelemetryConfig> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 2);
 
 /**
@@ -182,7 +195,8 @@ export type SecurityConfig = Message<"fleetd.v1.SecurityConfig"> & {
  * Describes the message fleetd.v1.SecurityConfig.
  * Use `create(SecurityConfigSchema)` to create a new message.
  */
-export const SecurityConfigSchema: GenMessage<SecurityConfig> = /*@__PURE__*/
+export const SecurityConfigSchema: GenMessage<SecurityConfig> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 3);
 
 /**
@@ -213,7 +227,8 @@ export type ListFleetsRequest = Message<"fleetd.v1.ListFleetsRequest"> & {
  * Describes the message fleetd.v1.ListFleetsRequest.
  * Use `create(ListFleetsRequestSchema)` to create a new message.
  */
-export const ListFleetsRequestSchema: GenMessage<ListFleetsRequest> = /*@__PURE__*/
+export const ListFleetsRequestSchema: GenMessage<ListFleetsRequest> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 4);
 
 /**
@@ -235,7 +250,8 @@ export type ListFleetsResponse = Message<"fleetd.v1.ListFleetsResponse"> & {
  * Describes the message fleetd.v1.ListFleetsResponse.
  * Use `create(ListFleetsResponseSchema)` to create a new message.
  */
-export const ListFleetsResponseSchema: GenMessage<ListFleetsResponse> = /*@__PURE__*/
+export const ListFleetsResponseSchema: GenMessage<ListFleetsResponse> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 5);
 
 /**
@@ -252,7 +268,8 @@ export type GetFleetRequest = Message<"fleetd.v1.GetFleetRequest"> & {
  * Describes the message fleetd.v1.GetFleetRequest.
  * Use `create(GetFleetRequestSchema)` to create a new message.
  */
-export const GetFleetRequestSchema: GenMessage<GetFleetRequest> = /*@__PURE__*/
+export const GetFleetRequestSchema: GenMessage<GetFleetRequest> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 6);
 
 /**
@@ -269,7 +286,8 @@ export type GetFleetResponse = Message<"fleetd.v1.GetFleetResponse"> & {
  * Describes the message fleetd.v1.GetFleetResponse.
  * Use `create(GetFleetResponseSchema)` to create a new message.
  */
-export const GetFleetResponseSchema: GenMessage<GetFleetResponse> = /*@__PURE__*/
+export const GetFleetResponseSchema: GenMessage<GetFleetResponse> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 7);
 
 /**
@@ -301,7 +319,8 @@ export type CreateFleetRequest = Message<"fleetd.v1.CreateFleetRequest"> & {
  * Describes the message fleetd.v1.CreateFleetRequest.
  * Use `create(CreateFleetRequestSchema)` to create a new message.
  */
-export const CreateFleetRequestSchema: GenMessage<CreateFleetRequest> = /*@__PURE__*/
+export const CreateFleetRequestSchema: GenMessage<CreateFleetRequest> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 8);
 
 /**
@@ -318,7 +337,8 @@ export type CreateFleetResponse = Message<"fleetd.v1.CreateFleetResponse"> & {
  * Describes the message fleetd.v1.CreateFleetResponse.
  * Use `create(CreateFleetResponseSchema)` to create a new message.
  */
-export const CreateFleetResponseSchema: GenMessage<CreateFleetResponse> = /*@__PURE__*/
+export const CreateFleetResponseSchema: GenMessage<CreateFleetResponse> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 9);
 
 /**
@@ -355,7 +375,8 @@ export type UpdateFleetRequest = Message<"fleetd.v1.UpdateFleetRequest"> & {
  * Describes the message fleetd.v1.UpdateFleetRequest.
  * Use `create(UpdateFleetRequestSchema)` to create a new message.
  */
-export const UpdateFleetRequestSchema: GenMessage<UpdateFleetRequest> = /*@__PURE__*/
+export const UpdateFleetRequestSchema: GenMessage<UpdateFleetRequest> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 10);
 
 /**
@@ -372,7 +393,8 @@ export type UpdateFleetResponse = Message<"fleetd.v1.UpdateFleetResponse"> & {
  * Describes the message fleetd.v1.UpdateFleetResponse.
  * Use `create(UpdateFleetResponseSchema)` to create a new message.
  */
-export const UpdateFleetResponseSchema: GenMessage<UpdateFleetResponse> = /*@__PURE__*/
+export const UpdateFleetResponseSchema: GenMessage<UpdateFleetResponse> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 11);
 
 /**
@@ -389,7 +411,8 @@ export type DeleteFleetRequest = Message<"fleetd.v1.DeleteFleetRequest"> & {
  * Describes the message fleetd.v1.DeleteFleetRequest.
  * Use `create(DeleteFleetRequestSchema)` to create a new message.
  */
-export const DeleteFleetRequestSchema: GenMessage<DeleteFleetRequest> = /*@__PURE__*/
+export const DeleteFleetRequestSchema: GenMessage<DeleteFleetRequest> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 12);
 
 /**
@@ -406,7 +429,8 @@ export type DeleteFleetResponse = Message<"fleetd.v1.DeleteFleetResponse"> & {
  * Describes the message fleetd.v1.DeleteFleetResponse.
  * Use `create(DeleteFleetResponseSchema)` to create a new message.
  */
-export const DeleteFleetResponseSchema: GenMessage<DeleteFleetResponse> = /*@__PURE__*/
+export const DeleteFleetResponseSchema: GenMessage<DeleteFleetResponse> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 13);
 
 /**
@@ -447,7 +471,8 @@ export type GetDeviceLogsRequest = Message<"fleetd.v1.GetDeviceLogsRequest"> & {
  * Describes the message fleetd.v1.GetDeviceLogsRequest.
  * Use `create(GetDeviceLogsRequestSchema)` to create a new message.
  */
-export const GetDeviceLogsRequestSchema: GenMessage<GetDeviceLogsRequest> = /*@__PURE__*/
+export const GetDeviceLogsRequestSchema: GenMessage<GetDeviceLogsRequest> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 14);
 
 /**
@@ -466,7 +491,8 @@ export type GetDeviceLogsResponse = Message<"fleetd.v1.GetDeviceLogsResponse"> &
  * Describes the message fleetd.v1.GetDeviceLogsResponse.
  * Use `create(GetDeviceLogsResponseSchema)` to create a new message.
  */
-export const GetDeviceLogsResponseSchema: GenMessage<GetDeviceLogsResponse> = /*@__PURE__*/
+export const GetDeviceLogsResponseSchema: GenMessage<GetDeviceLogsResponse> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 15);
 
 /**
@@ -505,7 +531,8 @@ export type UpdateDeviceRequest = Message<"fleetd.v1.UpdateDeviceRequest"> & {
  * Describes the message fleetd.v1.UpdateDeviceRequest.
  * Use `create(UpdateDeviceRequestSchema)` to create a new message.
  */
-export const UpdateDeviceRequestSchema: GenMessage<UpdateDeviceRequest> = /*@__PURE__*/
+export const UpdateDeviceRequestSchema: GenMessage<UpdateDeviceRequest> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 16);
 
 /**
@@ -524,7 +551,8 @@ export type UpdateDeviceResponse = Message<"fleetd.v1.UpdateDeviceResponse"> & {
  * Describes the message fleetd.v1.UpdateDeviceResponse.
  * Use `create(UpdateDeviceResponseSchema)` to create a new message.
  */
-export const UpdateDeviceResponseSchema: GenMessage<UpdateDeviceResponse> = /*@__PURE__*/
+export const UpdateDeviceResponseSchema: GenMessage<UpdateDeviceResponse> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 17);
 
 /**
@@ -568,7 +596,8 @@ export type DeviceCapabilities = Message<"fleetd.v1.DeviceCapabilities"> & {
  * Describes the message fleetd.v1.DeviceCapabilities.
  * Use `create(DeviceCapabilitiesSchema)` to create a new message.
  */
-export const DeviceCapabilitiesSchema: GenMessage<DeviceCapabilities> = /*@__PURE__*/
+export const DeviceCapabilitiesSchema: GenMessage<DeviceCapabilities> =
+  /*@__PURE__*/
   messageDesc(file_fleetd_v1_fleet, 18);
 
 /**
@@ -586,7 +615,7 @@ export const FleetService: GenService<{
     methodKind: "unary";
     input: typeof ListFleetsRequestSchema;
     output: typeof ListFleetsResponseSchema;
-  },
+  };
   /**
    * Get a specific fleet
    *
@@ -596,7 +625,7 @@ export const FleetService: GenService<{
     methodKind: "unary";
     input: typeof GetFleetRequestSchema;
     output: typeof GetFleetResponseSchema;
-  },
+  };
   /**
    * Create a new fleet
    *
@@ -606,7 +635,7 @@ export const FleetService: GenService<{
     methodKind: "unary";
     input: typeof CreateFleetRequestSchema;
     output: typeof CreateFleetResponseSchema;
-  },
+  };
   /**
    * Update a fleet
    *
@@ -616,7 +645,7 @@ export const FleetService: GenService<{
     methodKind: "unary";
     input: typeof UpdateFleetRequestSchema;
     output: typeof UpdateFleetResponseSchema;
-  },
+  };
   /**
    * Delete a fleet
    *
@@ -626,7 +655,7 @@ export const FleetService: GenService<{
     methodKind: "unary";
     input: typeof DeleteFleetRequestSchema;
     output: typeof DeleteFleetResponseSchema;
-  },
+  };
   /**
    * Get logs for a specific device in the fleet
    *
@@ -636,7 +665,5 @@ export const FleetService: GenService<{
     methodKind: "unary";
     input: typeof GetDeviceLogsRequestSchema;
     output: typeof GetDeviceLogsResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_fleetd_v1_fleet, 0);
-
+  };
+}> = /*@__PURE__*/ serviceDesc(file_fleetd_v1_fleet, 0);

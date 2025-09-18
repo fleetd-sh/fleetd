@@ -1,11 +1,11 @@
-import type { NextConfig } from 'next'
-import './env' // Validate env vars at build time
+import type { NextConfig } from "next";
+import "./env"; // Validate env vars at build time
 
 const nextConfig: NextConfig = {
   experimental: {
     reactCompiler: false, // We'll enable this when React Compiler is stable
     serverActions: {
-      bodySizeLimit: '2mb',
+      bodySizeLimit: "2mb",
     },
   },
   logging: {
@@ -17,10 +17,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/v1/:path*',
-        destination: process.env.BACKEND_URL || 'http://localhost:8080/api/v1/:path*',
+        source: "/api/v1/:path*",
+        destination: process.env.BACKEND_URL || "http://localhost:8080/api/v1/:path*",
       },
-    ]
+    ];
   },
   images: {
     domains: [],
@@ -28,6 +28,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
-}
+};
 
-export default nextConfig
+export default nextConfig;
