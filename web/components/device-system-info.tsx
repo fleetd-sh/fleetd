@@ -1,14 +1,14 @@
-'use client'
+"use client";
 
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import type { Device } from '@/lib/api/gen/public/v1/fleet_pb'
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from 'lucide-react'
+import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Device } from "@/lib/api/gen/public/v1/fleet_pb";
 
-type SystemInfo = NonNullable<Device['systemInfo']>
+type SystemInfo = NonNullable<Device["systemInfo"]>;
 
 interface DeviceSystemInfoProps {
-  systemInfo?: SystemInfo
+  systemInfo?: SystemInfo;
 }
 
 export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
@@ -20,16 +20,16 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
           <CardDescription>No system information available</CardDescription>
         </CardHeader>
       </Card>
-    )
+    );
   }
 
   const formatBytes = (bytes: bigint | number): string => {
-    const b = typeof bytes === 'bigint' ? Number(bytes) : bytes
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-    if (b === 0) return '0 B'
-    const i = Math.floor(Math.log(b) / Math.log(1024))
-    return `${(b / 1024 ** i).toFixed(2)} ${sizes[i]}`
-  }
+    const b = typeof bytes === "bigint" ? Number(bytes) : bytes;
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    if (b === 0) return "0 B";
+    const i = Math.floor(Math.log(b) / Math.log(1024));
+    return `${(b / 1024 ** i).toFixed(2)} ${sizes[i]}`;
+  };
 
   return (
     <Card>
@@ -47,11 +47,11 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Hostname:</span>
-              <p className="font-mono">{systemInfo.hostname || 'Unknown'}</p>
+              <p className="font-mono">{systemInfo.hostname || "Unknown"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Platform:</span>
-              <p className="font-mono">{systemInfo.platform || 'Unknown'}</p>
+              <p className="font-mono">{systemInfo.platform || "Unknown"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">OS:</span>
@@ -61,7 +61,7 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
             </div>
             <div>
               <span className="text-muted-foreground">Kernel:</span>
-              <p className="font-mono text-xs">{systemInfo.kernelVersion || 'Unknown'}</p>
+              <p className="font-mono text-xs">{systemInfo.kernelVersion || "Unknown"}</p>
             </div>
           </div>
         </div>
@@ -75,11 +75,11 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Model:</span>
-              <p className="font-mono text-xs">{systemInfo.cpuModel || 'Unknown'}</p>
+              <p className="font-mono text-xs">{systemInfo.cpuModel || "Unknown"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Architecture:</span>
-              <p className="font-mono">{systemInfo.arch || 'Unknown'}</p>
+              <p className="font-mono">{systemInfo.arch || "Unknown"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Cores:</span>
@@ -134,8 +134,10 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
               )}
               {systemInfo.extra.boot_time && (
                 <Badge variant="secondary">
-                  Boot:{' '}
-                  {new Date(Number.parseInt(systemInfo.extra.boot_time) * 1000).toLocaleString()}
+                  Boot:{" "}
+                  {new Date(
+                    Number.parseInt(systemInfo.extra.boot_time, 10) * 1000,
+                  ).toLocaleString()}
                 </Badge>
               )}
             </div>
@@ -143,5 +145,5 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

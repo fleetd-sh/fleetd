@@ -2,15 +2,15 @@
 // @generated from file public/v1/fleet.proto (package public.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
-import type { EmptySchema, Timestamp } from '@bufbuild/protobuf/wkt'
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { EmptySchema, Timestamp } from "@bufbuild/protobuf/wkt";
 import {
   file_google_protobuf_empty,
   file_google_protobuf_struct,
   file_google_protobuf_timestamp,
-} from '@bufbuild/protobuf/wkt'
-import type { JsonObject, Message } from '@bufbuild/protobuf'
+} from "@bufbuild/protobuf/wkt";
+import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file public/v1/fleet.proto.
@@ -18,208 +18,208 @@ import type { JsonObject, Message } from '@bufbuild/protobuf'
 export const file_public_v1_fleet: GenFile =
   /*@__PURE__*/
   fileDesc(
-    'ChVwdWJsaWMvdjEvZmxlZXQucHJvdG8SCXB1YmxpYy52MSKlAwoGRGV2aWNlEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDAoEdHlwZRgDIAEoCRIPCgd2ZXJzaW9uGAQgASgJEicKBnN0YXR1cxgFIAEoDjIXLnB1YmxpYy52MS5EZXZpY2VTdGF0dXMSLQoJbGFzdF9zZWVuGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCghtZXRhZGF0YRgJIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSMwoMY2FwYWJpbGl0aWVzGAogASgLMh0ucHVibGljLnYxLkRldmljZUNhcGFiaWxpdGllcxIMCgR0YWdzGAsgAygJEhAKCGdyb3VwX2lkGAwgASgJEioKC3N5c3RlbV9pbmZvGA0gASgLMhUucHVibGljLnYxLlN5c3RlbUluZm8iugQKClN5c3RlbUluZm8SEAoIaG9zdG5hbWUYASABKAkSCgoCb3MYAiABKAkSEgoKb3NfdmVyc2lvbhgDIAEoCRIMCgRhcmNoGAQgASgJEhEKCWNwdV9tb2RlbBgFIAEoCRIRCgljcHVfY29yZXMYBiABKAUSFAoMbWVtb3J5X3RvdGFsGAcgASgEEhUKDXN0b3JhZ2VfdG90YWwYCCABKAQSFgoOa2VybmVsX3ZlcnNpb24YCSABKAkSEAoIcGxhdGZvcm0YCiABKAkSLwoFZXh0cmEYCyADKAsyIC5wdWJsaWMudjEuU3lzdGVtSW5mby5FeHRyYUVudHJ5EjcKEm5ldHdvcmtfaW50ZXJmYWNlcxgMIAMoCzIbLnB1YmxpYy52MS5OZXR3b3JrSW50ZXJmYWNlEhAKCHRpbWV6b25lGA0gASgJEhUKDWFnZW50X3ZlcnNpb24YDiABKAkSFQoNc2VyaWFsX251bWJlchgPIAEoCRIUCgxwcm9kdWN0X25hbWUYECABKAkSFAoMbWFudWZhY3R1cmVyGBEgASgJEiwKDGxvYWRfYXZlcmFnZRgSIAEoCzIWLnB1YmxpYy52MS5Mb2FkQXZlcmFnZRIVCg1wcm9jZXNzX2NvdW50GBMgASgFEiYKCWJpb3NfaW5mbxgUIAEoCzITLnB1YmxpYy52MS5CaW9zSW5mbxosCgpFeHRyYUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEifAoQTmV0d29ya0ludGVyZmFjZRIMCgRuYW1lGAEgASgJEhMKC21hY19hZGRyZXNzGAIgASgJEhQKDGlwX2FkZHJlc3NlcxgDIAMoCRINCgVpc191cBgEIAEoCBITCgtpc19sb29wYmFjaxgFIAEoCBILCgNtdHUYBiABKAQiOwoLTG9hZEF2ZXJhZ2USDQoFbG9hZDEYASABKAESDQoFbG9hZDUYAiABKAESDgoGbG9hZDE1GAMgASgBIkEKCEJpb3NJbmZvEg4KBnZlbmRvchgBIAEoCRIPCgd2ZXJzaW9uGAIgASgJEhQKDHJlbGVhc2VfZGF0ZRgDIAEoCSKyAQoSRGV2aWNlQ2FwYWJpbGl0aWVzEh4KFnN1cHBvcnRzX3JlbW90ZV91cGRhdGUYASABKAgSHgoWc3VwcG9ydHNfcmVtb3RlX2NvbmZpZxgCIAEoCBIaChJzdXBwb3J0c190ZWxlbWV0cnkYAyABKAgSHQoVc3VwcG9ydHNfc2hlbGxfYWNjZXNzGAQgASgIEiEKGXN1cHBvcnRlZF91cGRhdGVfY2hhbm5lbHMYBSADKAkifQoSTGlzdERldmljZXNSZXF1ZXN0EhEKCXBhZ2Vfc2l6ZRgBIAEoBRISCgpwYWdlX3Rva2VuGAIgASgJEg4KBmZpbHRlchgDIAEoCRIQCghvcmRlcl9ieRgEIAEoCRIMCgR0YWdzGAUgAygJEhAKCGdyb3VwX2lkGAYgASgJImcKE0xpc3REZXZpY2VzUmVzcG9uc2USIgoHZGV2aWNlcxgBIAMoCzIRLnB1YmxpYy52MS5EZXZpY2USFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJEhMKC3RvdGFsX2NvdW50GAMgASgFIiUKEEdldERldmljZVJlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJIjYKEUdldERldmljZVJlc3BvbnNlEiEKBmRldmljZRgBIAEoCzIRLnB1YmxpYy52MS5EZXZpY2UigQEKE1VwZGF0ZURldmljZVJlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSKQoIbWV0YWRhdGEYAyABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EgwKBHRhZ3MYBCADKAkSEAoIZ3JvdXBfaWQYBSABKAkiOQoUVXBkYXRlRGV2aWNlUmVzcG9uc2USIQoGZGV2aWNlGAEgASgLMhEucHVibGljLnYxLkRldmljZSIoChNEZWxldGVEZXZpY2VSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCSI3ChVHZXREZXZpY2VTdGF0c1JlcXVlc3QSEAoIZ3JvdXBfaWQYASABKAkSDAoEdGFncxgCIAMoCSKkAwoWR2V0RGV2aWNlU3RhdHNSZXNwb25zZRIVCg10b3RhbF9kZXZpY2VzGAEgASgFEhYKDm9ubGluZV9kZXZpY2VzGAIgASgFEhcKD29mZmxpbmVfZGV2aWNlcxgDIAEoBRIYChB1cGRhdGluZ19kZXZpY2VzGAQgASgFEhUKDWVycm9yX2RldmljZXMYBSABKAUSTQoPZGV2aWNlc19ieV90eXBlGAYgAygLMjQucHVibGljLnYxLkdldERldmljZVN0YXRzUmVzcG9uc2UuRGV2aWNlc0J5VHlwZUVudHJ5ElMKEmRldmljZXNfYnlfdmVyc2lvbhgHIAMoCzI3LnB1YmxpYy52MS5HZXREZXZpY2VTdGF0c1Jlc3BvbnNlLkRldmljZXNCeVZlcnNpb25FbnRyeRo0ChJEZXZpY2VzQnlUeXBlRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgFOgI4ARo3ChVEZXZpY2VzQnlWZXJzaW9uRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgFOgI4ASJIChZEaXNjb3ZlckRldmljZXNSZXF1ZXN0EhcKD3RpbWVvdXRfc2Vjb25kcxgBIAEoBRIVCg1hdXRvX3JlZ2lzdGVyGAIgASgIIkcKF0Rpc2NvdmVyRGV2aWNlc1Jlc3BvbnNlEiwKB2RldmljZXMYASADKAsyGy5wdWJsaWMudjEuRGlzY292ZXJlZERldmljZSKBAQoQRGlzY292ZXJlZERldmljZRIPCgdhZGRyZXNzGAEgASgJEgwKBHBvcnQYAiABKAUSEQoJZGV2aWNlX2lkGAMgASgJEhMKC2RldmljZV9uYW1lGAQgASgJEg8KB3ZlcnNpb24YBSABKAkSFQoNaXNfcmVnaXN0ZXJlZBgGIAEoCCKmAQoTR2V0VGVsZW1ldHJ5UmVxdWVzdBIRCglkZXZpY2VfaWQYASABKAkSLgoKc3RhcnRfdGltZRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLAoIZW5kX3RpbWUYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg8KB21ldHJpY3MYBCADKAkSDQoFbGltaXQYBSABKAUiQQoUR2V0VGVsZW1ldHJ5UmVzcG9uc2USKQoGcG9pbnRzGAEgAygLMhkucHVibGljLnYxLlRlbGVtZXRyeVBvaW50Ip8BCg5UZWxlbWV0cnlQb2ludBIRCglkZXZpY2VfaWQYASABKAkSEwoLbWV0cmljX25hbWUYAiABKAkSDQoFdmFsdWUYAyABKAESLQoJdGltZXN0YW1wGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBInCgZsYWJlbHMYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Ij0KFlN0cmVhbVRlbGVtZXRyeVJlcXVlc3QSEgoKZGV2aWNlX2lkcxgBIAMoCRIPCgdtZXRyaWNzGAIgAygJIjoKDlRlbGVtZXRyeUV2ZW50EigKBXBvaW50GAEgASgLMhkucHVibGljLnYxLlRlbGVtZXRyeVBvaW50IukBCgZVcGRhdGUSCgoCaWQYASABKAkSDwoHdmVyc2lvbhgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRISCgpiaW5hcnlfdXJsGAQgASgJEhAKCGNoZWNrc3VtGAUgASgJEhIKCnNpemVfYnl0ZXMYBiABKAMSFQoNcmVsZWFzZV9ub3RlcxgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIbChN0YXJnZXRfZGV2aWNlX3R5cGVzGAkgAygJEg8KB2NoYW5uZWwYCiABKAkiTAoSTGlzdFVwZGF0ZXNSZXF1ZXN0EhEKCXBhZ2Vfc2l6ZRgBIAEoBRISCgpwYWdlX3Rva2VuGAIgASgJEg8KB2NoYW5uZWwYAyABKAkiUgoTTGlzdFVwZGF0ZXNSZXNwb25zZRIiCgd1cGRhdGVzGAEgAygLMhEucHVibGljLnYxLlVwZGF0ZRIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkiugEKE0NyZWF0ZVVwZGF0ZVJlcXVlc3QSDwoHdmVyc2lvbhgBIAEoCRITCgtkZXNjcmlwdGlvbhgCIAEoCRISCgpiaW5hcnlfdXJsGAMgASgJEhAKCGNoZWNrc3VtGAQgASgJEhIKCnNpemVfYnl0ZXMYBSABKAMSFQoNcmVsZWFzZV9ub3RlcxgGIAEoCRIbChN0YXJnZXRfZGV2aWNlX3R5cGVzGAcgAygJEg8KB2NoYW5uZWwYCCABKAkiOQoUQ3JlYXRlVXBkYXRlUmVzcG9uc2USIQoGdXBkYXRlGAEgASgLMhEucHVibGljLnYxLlVwZGF0ZSKNAQoTRGVwbG95VXBkYXRlUmVxdWVzdBIRCgl1cGRhdGVfaWQYASABKAkSEgoKZGV2aWNlX2lkcxgCIAMoCRIMCgR0YWdzGAMgAygJEhAKCGdyb3VwX2lkGAQgASgJEi8KCHN0cmF0ZWd5GAUgASgOMh0ucHVibGljLnYxLkRlcGxveW1lbnRTdHJhdGVneSJHChREZXBsb3lVcGRhdGVSZXNwb25zZRIVCg1kZXBsb3ltZW50X2lkGAEgASgJEhgKEHRhcmdldGVkX2RldmljZXMYAiABKAUiLwoWR2V0VXBkYXRlU3RhdHVzUmVxdWVzdBIVCg1kZXBsb3ltZW50X2lkGAEgASgJIqYCChdHZXRVcGRhdGVTdGF0dXNSZXNwb25zZRIVCg1kZXBsb3ltZW50X2lkGAEgASgJEjEKBnN0YXR1cxgCIAEoDjIhLnB1YmxpYy52MS5VcGRhdGVEZXBsb3ltZW50U3RhdHVzEhUKDXRvdGFsX2RldmljZXMYAyABKAUSFwoPdXBkYXRlZF9kZXZpY2VzGAQgASgFEhYKDmZhaWxlZF9kZXZpY2VzGAUgASgFEhcKD3BlbmRpbmdfZGV2aWNlcxgGIAEoBRIuCgpzdGFydGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIwCgxjb21wbGV0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIj4KF0dldENvbmZpZ3VyYXRpb25SZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRIQCghncm91cF9pZBgCIAEoCSKEAQoYR2V0Q29uZmlndXJhdGlvblJlc3BvbnNlEicKBmNvbmZpZxgBIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHdmVyc2lvbhgCIAEoBRIuCgp1cGRhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJ5ChpVcGRhdGVDb25maWd1cmF0aW9uUmVxdWVzdBIRCglkZXZpY2VfaWQYASABKAkSEAoIZ3JvdXBfaWQYAiABKAkSJwoGY29uZmlnGAMgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBINCgVtZXJnZRgEIAEoCCJXChtVcGRhdGVDb25maWd1cmF0aW9uUmVzcG9uc2USJwoGY29uZmlnGAEgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIPCgd2ZXJzaW9uGAIgASgFIlQKE1N0cmVhbUV2ZW50c1JlcXVlc3QSEgoKZGV2aWNlX2lkcxgBIAMoCRIpCgtldmVudF90eXBlcxgCIAMoDjIULnB1YmxpYy52MS5FdmVudFR5cGUisQEKBUV2ZW50EgoKAmlkGAEgASgJEiIKBHR5cGUYAiABKA4yFC5wdWJsaWMudjEuRXZlbnRUeXBlEhEKCWRldmljZV9pZBgDIAEoCRItCgl0aW1lc3RhbXAYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiUKBGRhdGEYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB21lc3NhZ2UYBiABKAkqtgEKDERldmljZVN0YXR1cxIdChlERVZJQ0VfU1RBVFVTX1VOU1BFQ0lGSUVEEAASGAoUREVWSUNFX1NUQVRVU19PTkxJTkUQARIZChVERVZJQ0VfU1RBVFVTX09GRkxJTkUQAhIaChZERVZJQ0VfU1RBVFVTX1VQREFUSU5HEAMSFwoTREVWSUNFX1NUQVRVU19FUlJPUhAEEh0KGURFVklDRV9TVEFUVVNfTUFJTlRFTkFOQ0UQBSqdAQoSRGVwbG95bWVudFN0cmF0ZWd5EiMKH0RFUExPWU1FTlRfU1RSQVRFR1lfVU5TUEVDSUZJRUQQABIhCh1ERVBMT1lNRU5UX1NUUkFURUdZX0lNTUVESUFURRABEh8KG0RFUExPWU1FTlRfU1RSQVRFR1lfUk9MTElORxACEh4KGkRFUExPWU1FTlRfU1RSQVRFR1lfQ0FOQVJZEAMq4QEKFlVwZGF0ZURlcGxveW1lbnRTdGF0dXMSKAokVVBEQVRFX0RFUExPWU1FTlRfU1RBVFVTX1VOU1BFQ0lGSUVEEAASKAokVVBEQVRFX0RFUExPWU1FTlRfU1RBVFVTX0lOX1BST0dSRVNTEAESJgoiVVBEQVRFX0RFUExPWU1FTlRfU1RBVFVTX0NPTVBMRVRFRBACEiMKH1VQREFURV9ERVBMT1lNRU5UX1NUQVRVU19GQUlMRUQQAxImCiJVUERBVEVfREVQTE9ZTUVOVF9TVEFUVVNfQ0FOQ0VMTEVEEAQquAIKCUV2ZW50VHlwZRIaChZFVkVOVF9UWVBFX1VOU1BFQ0lGSUVEEAASHwobRVZFTlRfVFlQRV9ERVZJQ0VfQ09OTkVDVEVEEAESIgoeRVZFTlRfVFlQRV9ERVZJQ0VfRElTQ09OTkVDVEVEEAISHQoZRVZFTlRfVFlQRV9ERVZJQ0VfVVBEQVRFRBADEhgKFEVWRU5UX1RZUEVfVEVMRU1FVFJZEAQSHQoZRVZFTlRfVFlQRV9VUERBVEVfU1RBUlRFRBAFEh8KG0VWRU5UX1RZUEVfVVBEQVRFX0NPTVBMRVRFRBAGEhwKGEVWRU5UX1RZUEVfVVBEQVRFX0ZBSUxFRBAHEh0KGUVWRU5UX1RZUEVfQ09ORklHX0NIQU5HRUQQCBIUChBFVkVOVF9UWVBFX0FMRVJUEAky4wkKDEZsZWV0U2VydmljZRJMCgtMaXN0RGV2aWNlcxIdLnB1YmxpYy52MS5MaXN0RGV2aWNlc1JlcXVlc3QaHi5wdWJsaWMudjEuTGlzdERldmljZXNSZXNwb25zZRJGCglHZXREZXZpY2USGy5wdWJsaWMudjEuR2V0RGV2aWNlUmVxdWVzdBocLnB1YmxpYy52MS5HZXREZXZpY2VSZXNwb25zZRJPCgxVcGRhdGVEZXZpY2USHi5wdWJsaWMudjEuVXBkYXRlRGV2aWNlUmVxdWVzdBofLnB1YmxpYy52MS5VcGRhdGVEZXZpY2VSZXNwb25zZRJGCgxEZWxldGVEZXZpY2USHi5wdWJsaWMudjEuRGVsZXRlRGV2aWNlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJVCg5HZXREZXZpY2VTdGF0cxIgLnB1YmxpYy52MS5HZXREZXZpY2VTdGF0c1JlcXVlc3QaIS5wdWJsaWMudjEuR2V0RGV2aWNlU3RhdHNSZXNwb25zZRJYCg9EaXNjb3ZlckRldmljZXMSIS5wdWJsaWMudjEuRGlzY292ZXJEZXZpY2VzUmVxdWVzdBoiLnB1YmxpYy52MS5EaXNjb3ZlckRldmljZXNSZXNwb25zZRJPCgxHZXRUZWxlbWV0cnkSHi5wdWJsaWMudjEuR2V0VGVsZW1ldHJ5UmVxdWVzdBofLnB1YmxpYy52MS5HZXRUZWxlbWV0cnlSZXNwb25zZRJRCg9TdHJlYW1UZWxlbWV0cnkSIS5wdWJsaWMudjEuU3RyZWFtVGVsZW1ldHJ5UmVxdWVzdBoZLnB1YmxpYy52MS5UZWxlbWV0cnlFdmVudDABEkwKC0xpc3RVcGRhdGVzEh0ucHVibGljLnYxLkxpc3RVcGRhdGVzUmVxdWVzdBoeLnB1YmxpYy52MS5MaXN0VXBkYXRlc1Jlc3BvbnNlEk8KDENyZWF0ZVVwZGF0ZRIeLnB1YmxpYy52MS5DcmVhdGVVcGRhdGVSZXF1ZXN0Gh8ucHVibGljLnYxLkNyZWF0ZVVwZGF0ZVJlc3BvbnNlEk8KDERlcGxveVVwZGF0ZRIeLnB1YmxpYy52MS5EZXBsb3lVcGRhdGVSZXF1ZXN0Gh8ucHVibGljLnYxLkRlcGxveVVwZGF0ZVJlc3BvbnNlElgKD0dldFVwZGF0ZVN0YXR1cxIhLnB1YmxpYy52MS5HZXRVcGRhdGVTdGF0dXNSZXF1ZXN0GiIucHVibGljLnYxLkdldFVwZGF0ZVN0YXR1c1Jlc3BvbnNlElsKEEdldENvbmZpZ3VyYXRpb24SIi5wdWJsaWMudjEuR2V0Q29uZmlndXJhdGlvblJlcXVlc3QaIy5wdWJsaWMudjEuR2V0Q29uZmlndXJhdGlvblJlc3BvbnNlEmQKE1VwZGF0ZUNvbmZpZ3VyYXRpb24SJS5wdWJsaWMudjEuVXBkYXRlQ29uZmlndXJhdGlvblJlcXVlc3QaJi5wdWJsaWMudjEuVXBkYXRlQ29uZmlndXJhdGlvblJlc3BvbnNlEkIKDFN0cmVhbUV2ZW50cxIeLnB1YmxpYy52MS5TdHJlYW1FdmVudHNSZXF1ZXN0GhAucHVibGljLnYxLkV2ZW50MAFChAEKDWNvbS5wdWJsaWMudjFCCkZsZWV0UHJvdG9QAVogZmxlZXRkLnNoL2dlbi9wdWJsaWMvdjE7cHVibGljdjGiAgNQWFiqAglQdWJsaWMuVjHKAgpQdWJsaWNfXFYx4gIWUHVibGljX1xWMVxHUEJNZXRhZGF0YeoCClB1YmxpYzo6VjFiBnByb3RvMw',
+    "ChVwdWJsaWMvdjEvZmxlZXQucHJvdG8SCXB1YmxpYy52MSKlAwoGRGV2aWNlEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDAoEdHlwZRgDIAEoCRIPCgd2ZXJzaW9uGAQgASgJEicKBnN0YXR1cxgFIAEoDjIXLnB1YmxpYy52MS5EZXZpY2VTdGF0dXMSLQoJbGFzdF9zZWVuGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIpCghtZXRhZGF0YRgJIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSMwoMY2FwYWJpbGl0aWVzGAogASgLMh0ucHVibGljLnYxLkRldmljZUNhcGFiaWxpdGllcxIMCgR0YWdzGAsgAygJEhAKCGdyb3VwX2lkGAwgASgJEioKC3N5c3RlbV9pbmZvGA0gASgLMhUucHVibGljLnYxLlN5c3RlbUluZm8iugQKClN5c3RlbUluZm8SEAoIaG9zdG5hbWUYASABKAkSCgoCb3MYAiABKAkSEgoKb3NfdmVyc2lvbhgDIAEoCRIMCgRhcmNoGAQgASgJEhEKCWNwdV9tb2RlbBgFIAEoCRIRCgljcHVfY29yZXMYBiABKAUSFAoMbWVtb3J5X3RvdGFsGAcgASgEEhUKDXN0b3JhZ2VfdG90YWwYCCABKAQSFgoOa2VybmVsX3ZlcnNpb24YCSABKAkSEAoIcGxhdGZvcm0YCiABKAkSLwoFZXh0cmEYCyADKAsyIC5wdWJsaWMudjEuU3lzdGVtSW5mby5FeHRyYUVudHJ5EjcKEm5ldHdvcmtfaW50ZXJmYWNlcxgMIAMoCzIbLnB1YmxpYy52MS5OZXR3b3JrSW50ZXJmYWNlEhAKCHRpbWV6b25lGA0gASgJEhUKDWFnZW50X3ZlcnNpb24YDiABKAkSFQoNc2VyaWFsX251bWJlchgPIAEoCRIUCgxwcm9kdWN0X25hbWUYECABKAkSFAoMbWFudWZhY3R1cmVyGBEgASgJEiwKDGxvYWRfYXZlcmFnZRgSIAEoCzIWLnB1YmxpYy52MS5Mb2FkQXZlcmFnZRIVCg1wcm9jZXNzX2NvdW50GBMgASgFEiYKCWJpb3NfaW5mbxgUIAEoCzITLnB1YmxpYy52MS5CaW9zSW5mbxosCgpFeHRyYUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEifAoQTmV0d29ya0ludGVyZmFjZRIMCgRuYW1lGAEgASgJEhMKC21hY19hZGRyZXNzGAIgASgJEhQKDGlwX2FkZHJlc3NlcxgDIAMoCRINCgVpc191cBgEIAEoCBITCgtpc19sb29wYmFjaxgFIAEoCBILCgNtdHUYBiABKAQiOwoLTG9hZEF2ZXJhZ2USDQoFbG9hZDEYASABKAESDQoFbG9hZDUYAiABKAESDgoGbG9hZDE1GAMgASgBIkEKCEJpb3NJbmZvEg4KBnZlbmRvchgBIAEoCRIPCgd2ZXJzaW9uGAIgASgJEhQKDHJlbGVhc2VfZGF0ZRgDIAEoCSKyAQoSRGV2aWNlQ2FwYWJpbGl0aWVzEh4KFnN1cHBvcnRzX3JlbW90ZV91cGRhdGUYASABKAgSHgoWc3VwcG9ydHNfcmVtb3RlX2NvbmZpZxgCIAEoCBIaChJzdXBwb3J0c190ZWxlbWV0cnkYAyABKAgSHQoVc3VwcG9ydHNfc2hlbGxfYWNjZXNzGAQgASgIEiEKGXN1cHBvcnRlZF91cGRhdGVfY2hhbm5lbHMYBSADKAkifQoSTGlzdERldmljZXNSZXF1ZXN0EhEKCXBhZ2Vfc2l6ZRgBIAEoBRISCgpwYWdlX3Rva2VuGAIgASgJEg4KBmZpbHRlchgDIAEoCRIQCghvcmRlcl9ieRgEIAEoCRIMCgR0YWdzGAUgAygJEhAKCGdyb3VwX2lkGAYgASgJImcKE0xpc3REZXZpY2VzUmVzcG9uc2USIgoHZGV2aWNlcxgBIAMoCzIRLnB1YmxpYy52MS5EZXZpY2USFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJEhMKC3RvdGFsX2NvdW50GAMgASgFIiUKEEdldERldmljZVJlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJIjYKEUdldERldmljZVJlc3BvbnNlEiEKBmRldmljZRgBIAEoCzIRLnB1YmxpYy52MS5EZXZpY2UigQEKE1VwZGF0ZURldmljZVJlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSKQoIbWV0YWRhdGEYAyABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EgwKBHRhZ3MYBCADKAkSEAoIZ3JvdXBfaWQYBSABKAkiOQoUVXBkYXRlRGV2aWNlUmVzcG9uc2USIQoGZGV2aWNlGAEgASgLMhEucHVibGljLnYxLkRldmljZSIoChNEZWxldGVEZXZpY2VSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCSI3ChVHZXREZXZpY2VTdGF0c1JlcXVlc3QSEAoIZ3JvdXBfaWQYASABKAkSDAoEdGFncxgCIAMoCSKkAwoWR2V0RGV2aWNlU3RhdHNSZXNwb25zZRIVCg10b3RhbF9kZXZpY2VzGAEgASgFEhYKDm9ubGluZV9kZXZpY2VzGAIgASgFEhcKD29mZmxpbmVfZGV2aWNlcxgDIAEoBRIYChB1cGRhdGluZ19kZXZpY2VzGAQgASgFEhUKDWVycm9yX2RldmljZXMYBSABKAUSTQoPZGV2aWNlc19ieV90eXBlGAYgAygLMjQucHVibGljLnYxLkdldERldmljZVN0YXRzUmVzcG9uc2UuRGV2aWNlc0J5VHlwZUVudHJ5ElMKEmRldmljZXNfYnlfdmVyc2lvbhgHIAMoCzI3LnB1YmxpYy52MS5HZXREZXZpY2VTdGF0c1Jlc3BvbnNlLkRldmljZXNCeVZlcnNpb25FbnRyeRo0ChJEZXZpY2VzQnlUeXBlRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgFOgI4ARo3ChVEZXZpY2VzQnlWZXJzaW9uRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgFOgI4ASJIChZEaXNjb3ZlckRldmljZXNSZXF1ZXN0EhcKD3RpbWVvdXRfc2Vjb25kcxgBIAEoBRIVCg1hdXRvX3JlZ2lzdGVyGAIgASgIIkcKF0Rpc2NvdmVyRGV2aWNlc1Jlc3BvbnNlEiwKB2RldmljZXMYASADKAsyGy5wdWJsaWMudjEuRGlzY292ZXJlZERldmljZSKBAQoQRGlzY292ZXJlZERldmljZRIPCgdhZGRyZXNzGAEgASgJEgwKBHBvcnQYAiABKAUSEQoJZGV2aWNlX2lkGAMgASgJEhMKC2RldmljZV9uYW1lGAQgASgJEg8KB3ZlcnNpb24YBSABKAkSFQoNaXNfcmVnaXN0ZXJlZBgGIAEoCCKmAQoTR2V0VGVsZW1ldHJ5UmVxdWVzdBIRCglkZXZpY2VfaWQYASABKAkSLgoKc3RhcnRfdGltZRgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLAoIZW5kX3RpbWUYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg8KB21ldHJpY3MYBCADKAkSDQoFbGltaXQYBSABKAUiQQoUR2V0VGVsZW1ldHJ5UmVzcG9uc2USKQoGcG9pbnRzGAEgAygLMhkucHVibGljLnYxLlRlbGVtZXRyeVBvaW50Ip8BCg5UZWxlbWV0cnlQb2ludBIRCglkZXZpY2VfaWQYASABKAkSEwoLbWV0cmljX25hbWUYAiABKAkSDQoFdmFsdWUYAyABKAESLQoJdGltZXN0YW1wGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBInCgZsYWJlbHMYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Ij0KFlN0cmVhbVRlbGVtZXRyeVJlcXVlc3QSEgoKZGV2aWNlX2lkcxgBIAMoCRIPCgdtZXRyaWNzGAIgAygJIjoKDlRlbGVtZXRyeUV2ZW50EigKBXBvaW50GAEgASgLMhkucHVibGljLnYxLlRlbGVtZXRyeVBvaW50IukBCgZVcGRhdGUSCgoCaWQYASABKAkSDwoHdmVyc2lvbhgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRISCgpiaW5hcnlfdXJsGAQgASgJEhAKCGNoZWNrc3VtGAUgASgJEhIKCnNpemVfYnl0ZXMYBiABKAMSFQoNcmVsZWFzZV9ub3RlcxgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIbChN0YXJnZXRfZGV2aWNlX3R5cGVzGAkgAygJEg8KB2NoYW5uZWwYCiABKAkiTAoSTGlzdFVwZGF0ZXNSZXF1ZXN0EhEKCXBhZ2Vfc2l6ZRgBIAEoBRISCgpwYWdlX3Rva2VuGAIgASgJEg8KB2NoYW5uZWwYAyABKAkiUgoTTGlzdFVwZGF0ZXNSZXNwb25zZRIiCgd1cGRhdGVzGAEgAygLMhEucHVibGljLnYxLlVwZGF0ZRIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkiugEKE0NyZWF0ZVVwZGF0ZVJlcXVlc3QSDwoHdmVyc2lvbhgBIAEoCRITCgtkZXNjcmlwdGlvbhgCIAEoCRISCgpiaW5hcnlfdXJsGAMgASgJEhAKCGNoZWNrc3VtGAQgASgJEhIKCnNpemVfYnl0ZXMYBSABKAMSFQoNcmVsZWFzZV9ub3RlcxgGIAEoCRIbChN0YXJnZXRfZGV2aWNlX3R5cGVzGAcgAygJEg8KB2NoYW5uZWwYCCABKAkiOQoUQ3JlYXRlVXBkYXRlUmVzcG9uc2USIQoGdXBkYXRlGAEgASgLMhEucHVibGljLnYxLlVwZGF0ZSKNAQoTRGVwbG95VXBkYXRlUmVxdWVzdBIRCgl1cGRhdGVfaWQYASABKAkSEgoKZGV2aWNlX2lkcxgCIAMoCRIMCgR0YWdzGAMgAygJEhAKCGdyb3VwX2lkGAQgASgJEi8KCHN0cmF0ZWd5GAUgASgOMh0ucHVibGljLnYxLkRlcGxveW1lbnRTdHJhdGVneSJHChREZXBsb3lVcGRhdGVSZXNwb25zZRIVCg1kZXBsb3ltZW50X2lkGAEgASgJEhgKEHRhcmdldGVkX2RldmljZXMYAiABKAUiLwoWR2V0VXBkYXRlU3RhdHVzUmVxdWVzdBIVCg1kZXBsb3ltZW50X2lkGAEgASgJIqYCChdHZXRVcGRhdGVTdGF0dXNSZXNwb25zZRIVCg1kZXBsb3ltZW50X2lkGAEgASgJEjEKBnN0YXR1cxgCIAEoDjIhLnB1YmxpYy52MS5VcGRhdGVEZXBsb3ltZW50U3RhdHVzEhUKDXRvdGFsX2RldmljZXMYAyABKAUSFwoPdXBkYXRlZF9kZXZpY2VzGAQgASgFEhYKDmZhaWxlZF9kZXZpY2VzGAUgASgFEhcKD3BlbmRpbmdfZGV2aWNlcxgGIAEoBRIuCgpzdGFydGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIwCgxjb21wbGV0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIj4KF0dldENvbmZpZ3VyYXRpb25SZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRIQCghncm91cF9pZBgCIAEoCSKEAQoYR2V0Q29uZmlndXJhdGlvblJlc3BvbnNlEicKBmNvbmZpZxgBIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHdmVyc2lvbhgCIAEoBRIuCgp1cGRhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJ5ChpVcGRhdGVDb25maWd1cmF0aW9uUmVxdWVzdBIRCglkZXZpY2VfaWQYASABKAkSEAoIZ3JvdXBfaWQYAiABKAkSJwoGY29uZmlnGAMgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBINCgVtZXJnZRgEIAEoCCJXChtVcGRhdGVDb25maWd1cmF0aW9uUmVzcG9uc2USJwoGY29uZmlnGAEgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIPCgd2ZXJzaW9uGAIgASgFIlQKE1N0cmVhbUV2ZW50c1JlcXVlc3QSEgoKZGV2aWNlX2lkcxgBIAMoCRIpCgtldmVudF90eXBlcxgCIAMoDjIULnB1YmxpYy52MS5FdmVudFR5cGUisQEKBUV2ZW50EgoKAmlkGAEgASgJEiIKBHR5cGUYAiABKA4yFC5wdWJsaWMudjEuRXZlbnRUeXBlEhEKCWRldmljZV9pZBgDIAEoCRItCgl0aW1lc3RhbXAYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiUKBGRhdGEYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB21lc3NhZ2UYBiABKAkqtgEKDERldmljZVN0YXR1cxIdChlERVZJQ0VfU1RBVFVTX1VOU1BFQ0lGSUVEEAASGAoUREVWSUNFX1NUQVRVU19PTkxJTkUQARIZChVERVZJQ0VfU1RBVFVTX09GRkxJTkUQAhIaChZERVZJQ0VfU1RBVFVTX1VQREFUSU5HEAMSFwoTREVWSUNFX1NUQVRVU19FUlJPUhAEEh0KGURFVklDRV9TVEFUVVNfTUFJTlRFTkFOQ0UQBSqdAQoSRGVwbG95bWVudFN0cmF0ZWd5EiMKH0RFUExPWU1FTlRfU1RSQVRFR1lfVU5TUEVDSUZJRUQQABIhCh1ERVBMT1lNRU5UX1NUUkFURUdZX0lNTUVESUFURRABEh8KG0RFUExPWU1FTlRfU1RSQVRFR1lfUk9MTElORxACEh4KGkRFUExPWU1FTlRfU1RSQVRFR1lfQ0FOQVJZEAMq4QEKFlVwZGF0ZURlcGxveW1lbnRTdGF0dXMSKAokVVBEQVRFX0RFUExPWU1FTlRfU1RBVFVTX1VOU1BFQ0lGSUVEEAASKAokVVBEQVRFX0RFUExPWU1FTlRfU1RBVFVTX0lOX1BST0dSRVNTEAESJgoiVVBEQVRFX0RFUExPWU1FTlRfU1RBVFVTX0NPTVBMRVRFRBACEiMKH1VQREFURV9ERVBMT1lNRU5UX1NUQVRVU19GQUlMRUQQAxImCiJVUERBVEVfREVQTE9ZTUVOVF9TVEFUVVNfQ0FOQ0VMTEVEEAQquAIKCUV2ZW50VHlwZRIaChZFVkVOVF9UWVBFX1VOU1BFQ0lGSUVEEAASHwobRVZFTlRfVFlQRV9ERVZJQ0VfQ09OTkVDVEVEEAESIgoeRVZFTlRfVFlQRV9ERVZJQ0VfRElTQ09OTkVDVEVEEAISHQoZRVZFTlRfVFlQRV9ERVZJQ0VfVVBEQVRFRBADEhgKFEVWRU5UX1RZUEVfVEVMRU1FVFJZEAQSHQoZRVZFTlRfVFlQRV9VUERBVEVfU1RBUlRFRBAFEh8KG0VWRU5UX1RZUEVfVVBEQVRFX0NPTVBMRVRFRBAGEhwKGEVWRU5UX1RZUEVfVVBEQVRFX0ZBSUxFRBAHEh0KGUVWRU5UX1RZUEVfQ09ORklHX0NIQU5HRUQQCBIUChBFVkVOVF9UWVBFX0FMRVJUEAky4wkKDEZsZWV0U2VydmljZRJMCgtMaXN0RGV2aWNlcxIdLnB1YmxpYy52MS5MaXN0RGV2aWNlc1JlcXVlc3QaHi5wdWJsaWMudjEuTGlzdERldmljZXNSZXNwb25zZRJGCglHZXREZXZpY2USGy5wdWJsaWMudjEuR2V0RGV2aWNlUmVxdWVzdBocLnB1YmxpYy52MS5HZXREZXZpY2VSZXNwb25zZRJPCgxVcGRhdGVEZXZpY2USHi5wdWJsaWMudjEuVXBkYXRlRGV2aWNlUmVxdWVzdBofLnB1YmxpYy52MS5VcGRhdGVEZXZpY2VSZXNwb25zZRJGCgxEZWxldGVEZXZpY2USHi5wdWJsaWMudjEuRGVsZXRlRGV2aWNlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJVCg5HZXREZXZpY2VTdGF0cxIgLnB1YmxpYy52MS5HZXREZXZpY2VTdGF0c1JlcXVlc3QaIS5wdWJsaWMudjEuR2V0RGV2aWNlU3RhdHNSZXNwb25zZRJYCg9EaXNjb3ZlckRldmljZXMSIS5wdWJsaWMudjEuRGlzY292ZXJEZXZpY2VzUmVxdWVzdBoiLnB1YmxpYy52MS5EaXNjb3ZlckRldmljZXNSZXNwb25zZRJPCgxHZXRUZWxlbWV0cnkSHi5wdWJsaWMudjEuR2V0VGVsZW1ldHJ5UmVxdWVzdBofLnB1YmxpYy52MS5HZXRUZWxlbWV0cnlSZXNwb25zZRJRCg9TdHJlYW1UZWxlbWV0cnkSIS5wdWJsaWMudjEuU3RyZWFtVGVsZW1ldHJ5UmVxdWVzdBoZLnB1YmxpYy52MS5UZWxlbWV0cnlFdmVudDABEkwKC0xpc3RVcGRhdGVzEh0ucHVibGljLnYxLkxpc3RVcGRhdGVzUmVxdWVzdBoeLnB1YmxpYy52MS5MaXN0VXBkYXRlc1Jlc3BvbnNlEk8KDENyZWF0ZVVwZGF0ZRIeLnB1YmxpYy52MS5DcmVhdGVVcGRhdGVSZXF1ZXN0Gh8ucHVibGljLnYxLkNyZWF0ZVVwZGF0ZVJlc3BvbnNlEk8KDERlcGxveVVwZGF0ZRIeLnB1YmxpYy52MS5EZXBsb3lVcGRhdGVSZXF1ZXN0Gh8ucHVibGljLnYxLkRlcGxveVVwZGF0ZVJlc3BvbnNlElgKD0dldFVwZGF0ZVN0YXR1cxIhLnB1YmxpYy52MS5HZXRVcGRhdGVTdGF0dXNSZXF1ZXN0GiIucHVibGljLnYxLkdldFVwZGF0ZVN0YXR1c1Jlc3BvbnNlElsKEEdldENvbmZpZ3VyYXRpb24SIi5wdWJsaWMudjEuR2V0Q29uZmlndXJhdGlvblJlcXVlc3QaIy5wdWJsaWMudjEuR2V0Q29uZmlndXJhdGlvblJlc3BvbnNlEmQKE1VwZGF0ZUNvbmZpZ3VyYXRpb24SJS5wdWJsaWMudjEuVXBkYXRlQ29uZmlndXJhdGlvblJlcXVlc3QaJi5wdWJsaWMudjEuVXBkYXRlQ29uZmlndXJhdGlvblJlc3BvbnNlEkIKDFN0cmVhbUV2ZW50cxIeLnB1YmxpYy52MS5TdHJlYW1FdmVudHNSZXF1ZXN0GhAucHVibGljLnYxLkV2ZW50MAFChAEKDWNvbS5wdWJsaWMudjFCCkZsZWV0UHJvdG9QAVogZmxlZXRkLnNoL2dlbi9wdWJsaWMvdjE7cHVibGljdjGiAgNQWFiqAglQdWJsaWMuVjHKAgpQdWJsaWNfXFYx4gIWUHVibGljX1xWMVxHUEJNZXRhZGF0YeoCClB1YmxpYzo6VjFiBnByb3RvMw",
     [file_google_protobuf_timestamp, file_google_protobuf_empty, file_google_protobuf_struct],
-  )
+  );
 
 /**
  * Device represents a managed device
  *
  * @generated from message public.v1.Device
  */
-export type Device = Message<'public.v1.Device'> & {
+export type Device = Message<"public.v1.Device"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string type = 3;
    */
-  type: string
+  type: string;
 
   /**
    * @generated from field: string version = 4;
    */
-  version: string
+  version: string;
 
   /**
    * @generated from field: public.v1.DeviceStatus status = 5;
    */
-  status: DeviceStatus
+  status: DeviceStatus;
 
   /**
    * @generated from field: google.protobuf.Timestamp last_seen = 6;
    */
-  lastSeen?: Timestamp
+  lastSeen?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 7;
    */
-  createdAt?: Timestamp
+  createdAt?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp updated_at = 8;
    */
-  updatedAt?: Timestamp
+  updatedAt?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Struct metadata = 9;
    */
-  metadata?: JsonObject
+  metadata?: JsonObject;
 
   /**
    * @generated from field: public.v1.DeviceCapabilities capabilities = 10;
    */
-  capabilities?: DeviceCapabilities
+  capabilities?: DeviceCapabilities;
 
   /**
    * @generated from field: repeated string tags = 11;
    */
-  tags: string[]
+  tags: string[];
 
   /**
    * @generated from field: string group_id = 12;
    */
-  groupId: string
+  groupId: string;
 
   /**
    * @generated from field: public.v1.SystemInfo system_info = 13;
    */
-  systemInfo?: SystemInfo
-}
+  systemInfo?: SystemInfo;
+};
 
 /**
  * Describes the message public.v1.Device.
  * Use `create(DeviceSchema)` to create a new message.
  */
-export const DeviceSchema: GenMessage<Device> = /*@__PURE__*/ messageDesc(file_public_v1_fleet, 0)
+export const DeviceSchema: GenMessage<Device> = /*@__PURE__*/ messageDesc(file_public_v1_fleet, 0);
 
 /**
  * SystemInfo contains comprehensive system information about a device
  *
  * @generated from message public.v1.SystemInfo
  */
-export type SystemInfo = Message<'public.v1.SystemInfo'> & {
+export type SystemInfo = Message<"public.v1.SystemInfo"> & {
   /**
    * @generated from field: string hostname = 1;
    */
-  hostname: string
+  hostname: string;
 
   /**
    * @generated from field: string os = 2;
    */
-  os: string
+  os: string;
 
   /**
    * @generated from field: string os_version = 3;
    */
-  osVersion: string
+  osVersion: string;
 
   /**
    * @generated from field: string arch = 4;
    */
-  arch: string
+  arch: string;
 
   /**
    * @generated from field: string cpu_model = 5;
    */
-  cpuModel: string
+  cpuModel: string;
 
   /**
    * @generated from field: int32 cpu_cores = 6;
    */
-  cpuCores: number
+  cpuCores: number;
 
   /**
    * in bytes
    *
    * @generated from field: uint64 memory_total = 7;
    */
-  memoryTotal: bigint
+  memoryTotal: bigint;
 
   /**
    * in bytes
    *
    * @generated from field: uint64 storage_total = 8;
    */
-  storageTotal: bigint
+  storageTotal: bigint;
 
   /**
    * @generated from field: string kernel_version = 9;
    */
-  kernelVersion: string
+  kernelVersion: string;
 
   /**
    * @generated from field: string platform = 10;
    */
-  platform: string
+  platform: string;
 
   /**
    * for additional system info
    *
    * @generated from field: map<string, string> extra = 11;
    */
-  extra: { [key: string]: string }
+  extra: { [key: string]: string };
 
   /**
    * Network information
    *
    * @generated from field: repeated public.v1.NetworkInterface network_interfaces = 12;
    */
-  networkInterfaces: NetworkInterface[]
+  networkInterfaces: NetworkInterface[];
 
   /**
    * System identification
    *
    * @generated from field: string timezone = 13;
    */
-  timezone: string
+  timezone: string;
 
   /**
    * @generated from field: string agent_version = 14;
    */
-  agentVersion: string
+  agentVersion: string;
 
   /**
    * @generated from field: string serial_number = 15;
    */
-  serialNumber: string
+  serialNumber: string;
 
   /**
    * @generated from field: string product_name = 16;
    */
-  productName: string
+  productName: string;
 
   /**
    * @generated from field: string manufacturer = 17;
    */
-  manufacturer: string
+  manufacturer: string;
 
   /**
    * Runtime metrics
    *
    * @generated from field: public.v1.LoadAverage load_average = 18;
    */
-  loadAverage?: LoadAverage
+  loadAverage?: LoadAverage;
 
   /**
    * @generated from field: int32 process_count = 19;
    */
-  processCount: number
+  processCount: number;
 
   /**
    * BIOS/Firmware
    *
    * @generated from field: public.v1.BiosInfo bios_info = 20;
    */
-  biosInfo?: BiosInfo
-}
+  biosInfo?: BiosInfo;
+};
 
 /**
  * Describes the message public.v1.SystemInfo.
@@ -227,44 +227,44 @@ export type SystemInfo = Message<'public.v1.SystemInfo'> & {
  */
 export const SystemInfoSchema: GenMessage<SystemInfo> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 1)
+  messageDesc(file_public_v1_fleet, 1);
 
 /**
  * @generated from message public.v1.NetworkInterface
  */
-export type NetworkInterface = Message<'public.v1.NetworkInterface'> & {
+export type NetworkInterface = Message<"public.v1.NetworkInterface"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: string mac_address = 2;
    */
-  macAddress: string
+  macAddress: string;
 
   /**
    * IPv4 and IPv6
    *
    * @generated from field: repeated string ip_addresses = 3;
    */
-  ipAddresses: string[]
+  ipAddresses: string[];
 
   /**
    * @generated from field: bool is_up = 4;
    */
-  isUp: boolean
+  isUp: boolean;
 
   /**
    * @generated from field: bool is_loopback = 5;
    */
-  isLoopback: boolean
+  isLoopback: boolean;
 
   /**
    * @generated from field: uint64 mtu = 6;
    */
-  mtu: bigint
-}
+  mtu: bigint;
+};
 
 /**
  * Describes the message public.v1.NetworkInterface.
@@ -272,33 +272,33 @@ export type NetworkInterface = Message<'public.v1.NetworkInterface'> & {
  */
 export const NetworkInterfaceSchema: GenMessage<NetworkInterface> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 2)
+  messageDesc(file_public_v1_fleet, 2);
 
 /**
  * @generated from message public.v1.LoadAverage
  */
-export type LoadAverage = Message<'public.v1.LoadAverage'> & {
+export type LoadAverage = Message<"public.v1.LoadAverage"> & {
   /**
    * 1 minute average
    *
    * @generated from field: double load1 = 1;
    */
-  load1: number
+  load1: number;
 
   /**
    * 5 minute average
    *
    * @generated from field: double load5 = 2;
    */
-  load5: number
+  load5: number;
 
   /**
    * 15 minute average
    *
    * @generated from field: double load15 = 3;
    */
-  load15: number
-}
+  load15: number;
+};
 
 /**
  * Describes the message public.v1.LoadAverage.
@@ -306,27 +306,27 @@ export type LoadAverage = Message<'public.v1.LoadAverage'> & {
  */
 export const LoadAverageSchema: GenMessage<LoadAverage> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 3)
+  messageDesc(file_public_v1_fleet, 3);
 
 /**
  * @generated from message public.v1.BiosInfo
  */
-export type BiosInfo = Message<'public.v1.BiosInfo'> & {
+export type BiosInfo = Message<"public.v1.BiosInfo"> & {
   /**
    * @generated from field: string vendor = 1;
    */
-  vendor: string
+  vendor: string;
 
   /**
    * @generated from field: string version = 2;
    */
-  version: string
+  version: string;
 
   /**
    * @generated from field: string release_date = 3;
    */
-  releaseDate: string
-}
+  releaseDate: string;
+};
 
 /**
  * Describes the message public.v1.BiosInfo.
@@ -334,37 +334,37 @@ export type BiosInfo = Message<'public.v1.BiosInfo'> & {
  */
 export const BiosInfoSchema: GenMessage<BiosInfo> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 4)
+  messageDesc(file_public_v1_fleet, 4);
 
 /**
  * @generated from message public.v1.DeviceCapabilities
  */
-export type DeviceCapabilities = Message<'public.v1.DeviceCapabilities'> & {
+export type DeviceCapabilities = Message<"public.v1.DeviceCapabilities"> & {
   /**
    * @generated from field: bool supports_remote_update = 1;
    */
-  supportsRemoteUpdate: boolean
+  supportsRemoteUpdate: boolean;
 
   /**
    * @generated from field: bool supports_remote_config = 2;
    */
-  supportsRemoteConfig: boolean
+  supportsRemoteConfig: boolean;
 
   /**
    * @generated from field: bool supports_telemetry = 3;
    */
-  supportsTelemetry: boolean
+  supportsTelemetry: boolean;
 
   /**
    * @generated from field: bool supports_shell_access = 4;
    */
-  supportsShellAccess: boolean
+  supportsShellAccess: boolean;
 
   /**
    * @generated from field: repeated string supported_update_channels = 5;
    */
-  supportedUpdateChannels: string[]
-}
+  supportedUpdateChannels: string[];
+};
 
 /**
  * Describes the message public.v1.DeviceCapabilities.
@@ -372,48 +372,48 @@ export type DeviceCapabilities = Message<'public.v1.DeviceCapabilities'> & {
  */
 export const DeviceCapabilitiesSchema: GenMessage<DeviceCapabilities> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 5)
+  messageDesc(file_public_v1_fleet, 5);
 
 /**
  * Device management messages
  *
  * @generated from message public.v1.ListDevicesRequest
  */
-export type ListDevicesRequest = Message<'public.v1.ListDevicesRequest'> & {
+export type ListDevicesRequest = Message<"public.v1.ListDevicesRequest"> & {
   /**
    * @generated from field: int32 page_size = 1;
    */
-  pageSize: number
+  pageSize: number;
 
   /**
    * @generated from field: string page_token = 2;
    */
-  pageToken: string
+  pageToken: string;
 
   /**
    * e.g., "status:online", "type:raspberry-pi"
    *
    * @generated from field: string filter = 3;
    */
-  filter: string
+  filter: string;
 
   /**
    * e.g., "last_seen desc"
    *
    * @generated from field: string order_by = 4;
    */
-  orderBy: string
+  orderBy: string;
 
   /**
    * @generated from field: repeated string tags = 5;
    */
-  tags: string[]
+  tags: string[];
 
   /**
    * @generated from field: string group_id = 6;
    */
-  groupId: string
-}
+  groupId: string;
+};
 
 /**
  * Describes the message public.v1.ListDevicesRequest.
@@ -421,27 +421,27 @@ export type ListDevicesRequest = Message<'public.v1.ListDevicesRequest'> & {
  */
 export const ListDevicesRequestSchema: GenMessage<ListDevicesRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 6)
+  messageDesc(file_public_v1_fleet, 6);
 
 /**
  * @generated from message public.v1.ListDevicesResponse
  */
-export type ListDevicesResponse = Message<'public.v1.ListDevicesResponse'> & {
+export type ListDevicesResponse = Message<"public.v1.ListDevicesResponse"> & {
   /**
    * @generated from field: repeated public.v1.Device devices = 1;
    */
-  devices: Device[]
+  devices: Device[];
 
   /**
    * @generated from field: string next_page_token = 2;
    */
-  nextPageToken: string
+  nextPageToken: string;
 
   /**
    * @generated from field: int32 total_count = 3;
    */
-  totalCount: number
-}
+  totalCount: number;
+};
 
 /**
  * Describes the message public.v1.ListDevicesResponse.
@@ -449,17 +449,17 @@ export type ListDevicesResponse = Message<'public.v1.ListDevicesResponse'> & {
  */
 export const ListDevicesResponseSchema: GenMessage<ListDevicesResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 7)
+  messageDesc(file_public_v1_fleet, 7);
 
 /**
  * @generated from message public.v1.GetDeviceRequest
  */
-export type GetDeviceRequest = Message<'public.v1.GetDeviceRequest'> & {
+export type GetDeviceRequest = Message<"public.v1.GetDeviceRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
-}
+  deviceId: string;
+};
 
 /**
  * Describes the message public.v1.GetDeviceRequest.
@@ -467,17 +467,17 @@ export type GetDeviceRequest = Message<'public.v1.GetDeviceRequest'> & {
  */
 export const GetDeviceRequestSchema: GenMessage<GetDeviceRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 8)
+  messageDesc(file_public_v1_fleet, 8);
 
 /**
  * @generated from message public.v1.GetDeviceResponse
  */
-export type GetDeviceResponse = Message<'public.v1.GetDeviceResponse'> & {
+export type GetDeviceResponse = Message<"public.v1.GetDeviceResponse"> & {
   /**
    * @generated from field: public.v1.Device device = 1;
    */
-  device?: Device
-}
+  device?: Device;
+};
 
 /**
  * Describes the message public.v1.GetDeviceResponse.
@@ -485,37 +485,37 @@ export type GetDeviceResponse = Message<'public.v1.GetDeviceResponse'> & {
  */
 export const GetDeviceResponseSchema: GenMessage<GetDeviceResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 9)
+  messageDesc(file_public_v1_fleet, 9);
 
 /**
  * @generated from message public.v1.UpdateDeviceRequest
  */
-export type UpdateDeviceRequest = Message<'public.v1.UpdateDeviceRequest'> & {
+export type UpdateDeviceRequest = Message<"public.v1.UpdateDeviceRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: google.protobuf.Struct metadata = 3;
    */
-  metadata?: JsonObject
+  metadata?: JsonObject;
 
   /**
    * @generated from field: repeated string tags = 4;
    */
-  tags: string[]
+  tags: string[];
 
   /**
    * @generated from field: string group_id = 5;
    */
-  groupId: string
-}
+  groupId: string;
+};
 
 /**
  * Describes the message public.v1.UpdateDeviceRequest.
@@ -523,17 +523,17 @@ export type UpdateDeviceRequest = Message<'public.v1.UpdateDeviceRequest'> & {
  */
 export const UpdateDeviceRequestSchema: GenMessage<UpdateDeviceRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 10)
+  messageDesc(file_public_v1_fleet, 10);
 
 /**
  * @generated from message public.v1.UpdateDeviceResponse
  */
-export type UpdateDeviceResponse = Message<'public.v1.UpdateDeviceResponse'> & {
+export type UpdateDeviceResponse = Message<"public.v1.UpdateDeviceResponse"> & {
   /**
    * @generated from field: public.v1.Device device = 1;
    */
-  device?: Device
-}
+  device?: Device;
+};
 
 /**
  * Describes the message public.v1.UpdateDeviceResponse.
@@ -541,17 +541,17 @@ export type UpdateDeviceResponse = Message<'public.v1.UpdateDeviceResponse'> & {
  */
 export const UpdateDeviceResponseSchema: GenMessage<UpdateDeviceResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 11)
+  messageDesc(file_public_v1_fleet, 11);
 
 /**
  * @generated from message public.v1.DeleteDeviceRequest
  */
-export type DeleteDeviceRequest = Message<'public.v1.DeleteDeviceRequest'> & {
+export type DeleteDeviceRequest = Message<"public.v1.DeleteDeviceRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
-}
+  deviceId: string;
+};
 
 /**
  * Describes the message public.v1.DeleteDeviceRequest.
@@ -559,22 +559,22 @@ export type DeleteDeviceRequest = Message<'public.v1.DeleteDeviceRequest'> & {
  */
 export const DeleteDeviceRequestSchema: GenMessage<DeleteDeviceRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 12)
+  messageDesc(file_public_v1_fleet, 12);
 
 /**
  * @generated from message public.v1.GetDeviceStatsRequest
  */
-export type GetDeviceStatsRequest = Message<'public.v1.GetDeviceStatsRequest'> & {
+export type GetDeviceStatsRequest = Message<"public.v1.GetDeviceStatsRequest"> & {
   /**
    * @generated from field: string group_id = 1;
    */
-  groupId: string
+  groupId: string;
 
   /**
    * @generated from field: repeated string tags = 2;
    */
-  tags: string[]
-}
+  tags: string[];
+};
 
 /**
  * Describes the message public.v1.GetDeviceStatsRequest.
@@ -582,47 +582,47 @@ export type GetDeviceStatsRequest = Message<'public.v1.GetDeviceStatsRequest'> &
  */
 export const GetDeviceStatsRequestSchema: GenMessage<GetDeviceStatsRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 13)
+  messageDesc(file_public_v1_fleet, 13);
 
 /**
  * @generated from message public.v1.GetDeviceStatsResponse
  */
-export type GetDeviceStatsResponse = Message<'public.v1.GetDeviceStatsResponse'> & {
+export type GetDeviceStatsResponse = Message<"public.v1.GetDeviceStatsResponse"> & {
   /**
    * @generated from field: int32 total_devices = 1;
    */
-  totalDevices: number
+  totalDevices: number;
 
   /**
    * @generated from field: int32 online_devices = 2;
    */
-  onlineDevices: number
+  onlineDevices: number;
 
   /**
    * @generated from field: int32 offline_devices = 3;
    */
-  offlineDevices: number
+  offlineDevices: number;
 
   /**
    * @generated from field: int32 updating_devices = 4;
    */
-  updatingDevices: number
+  updatingDevices: number;
 
   /**
    * @generated from field: int32 error_devices = 5;
    */
-  errorDevices: number
+  errorDevices: number;
 
   /**
    * @generated from field: map<string, int32> devices_by_type = 6;
    */
-  devicesByType: { [key: string]: number }
+  devicesByType: { [key: string]: number };
 
   /**
    * @generated from field: map<string, int32> devices_by_version = 7;
    */
-  devicesByVersion: { [key: string]: number }
-}
+  devicesByVersion: { [key: string]: number };
+};
 
 /**
  * Describes the message public.v1.GetDeviceStatsResponse.
@@ -630,24 +630,24 @@ export type GetDeviceStatsResponse = Message<'public.v1.GetDeviceStatsResponse'>
  */
 export const GetDeviceStatsResponseSchema: GenMessage<GetDeviceStatsResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 14)
+  messageDesc(file_public_v1_fleet, 14);
 
 /**
  * Discovery messages
  *
  * @generated from message public.v1.DiscoverDevicesRequest
  */
-export type DiscoverDevicesRequest = Message<'public.v1.DiscoverDevicesRequest'> & {
+export type DiscoverDevicesRequest = Message<"public.v1.DiscoverDevicesRequest"> & {
   /**
    * @generated from field: int32 timeout_seconds = 1;
    */
-  timeoutSeconds: number
+  timeoutSeconds: number;
 
   /**
    * @generated from field: bool auto_register = 2;
    */
-  autoRegister: boolean
-}
+  autoRegister: boolean;
+};
 
 /**
  * Describes the message public.v1.DiscoverDevicesRequest.
@@ -655,17 +655,17 @@ export type DiscoverDevicesRequest = Message<'public.v1.DiscoverDevicesRequest'>
  */
 export const DiscoverDevicesRequestSchema: GenMessage<DiscoverDevicesRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 15)
+  messageDesc(file_public_v1_fleet, 15);
 
 /**
  * @generated from message public.v1.DiscoverDevicesResponse
  */
-export type DiscoverDevicesResponse = Message<'public.v1.DiscoverDevicesResponse'> & {
+export type DiscoverDevicesResponse = Message<"public.v1.DiscoverDevicesResponse"> & {
   /**
    * @generated from field: repeated public.v1.DiscoveredDevice devices = 1;
    */
-  devices: DiscoveredDevice[]
-}
+  devices: DiscoveredDevice[];
+};
 
 /**
  * Describes the message public.v1.DiscoverDevicesResponse.
@@ -673,42 +673,42 @@ export type DiscoverDevicesResponse = Message<'public.v1.DiscoverDevicesResponse
  */
 export const DiscoverDevicesResponseSchema: GenMessage<DiscoverDevicesResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 16)
+  messageDesc(file_public_v1_fleet, 16);
 
 /**
  * @generated from message public.v1.DiscoveredDevice
  */
-export type DiscoveredDevice = Message<'public.v1.DiscoveredDevice'> & {
+export type DiscoveredDevice = Message<"public.v1.DiscoveredDevice"> & {
   /**
    * @generated from field: string address = 1;
    */
-  address: string
+  address: string;
 
   /**
    * @generated from field: int32 port = 2;
    */
-  port: number
+  port: number;
 
   /**
    * @generated from field: string device_id = 3;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string device_name = 4;
    */
-  deviceName: string
+  deviceName: string;
 
   /**
    * @generated from field: string version = 5;
    */
-  version: string
+  version: string;
 
   /**
    * @generated from field: bool is_registered = 6;
    */
-  isRegistered: boolean
-}
+  isRegistered: boolean;
+};
 
 /**
  * Describes the message public.v1.DiscoveredDevice.
@@ -716,39 +716,39 @@ export type DiscoveredDevice = Message<'public.v1.DiscoveredDevice'> & {
  */
 export const DiscoveredDeviceSchema: GenMessage<DiscoveredDevice> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 17)
+  messageDesc(file_public_v1_fleet, 17);
 
 /**
  * Telemetry messages
  *
  * @generated from message public.v1.GetTelemetryRequest
  */
-export type GetTelemetryRequest = Message<'public.v1.GetTelemetryRequest'> & {
+export type GetTelemetryRequest = Message<"public.v1.GetTelemetryRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp start_time = 2;
    */
-  startTime?: Timestamp
+  startTime?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp end_time = 3;
    */
-  endTime?: Timestamp
+  endTime?: Timestamp;
 
   /**
    * @generated from field: repeated string metrics = 4;
    */
-  metrics: string[]
+  metrics: string[];
 
   /**
    * @generated from field: int32 limit = 5;
    */
-  limit: number
-}
+  limit: number;
+};
 
 /**
  * Describes the message public.v1.GetTelemetryRequest.
@@ -756,17 +756,17 @@ export type GetTelemetryRequest = Message<'public.v1.GetTelemetryRequest'> & {
  */
 export const GetTelemetryRequestSchema: GenMessage<GetTelemetryRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 18)
+  messageDesc(file_public_v1_fleet, 18);
 
 /**
  * @generated from message public.v1.GetTelemetryResponse
  */
-export type GetTelemetryResponse = Message<'public.v1.GetTelemetryResponse'> & {
+export type GetTelemetryResponse = Message<"public.v1.GetTelemetryResponse"> & {
   /**
    * @generated from field: repeated public.v1.TelemetryPoint points = 1;
    */
-  points: TelemetryPoint[]
-}
+  points: TelemetryPoint[];
+};
 
 /**
  * Describes the message public.v1.GetTelemetryResponse.
@@ -774,37 +774,37 @@ export type GetTelemetryResponse = Message<'public.v1.GetTelemetryResponse'> & {
  */
 export const GetTelemetryResponseSchema: GenMessage<GetTelemetryResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 19)
+  messageDesc(file_public_v1_fleet, 19);
 
 /**
  * @generated from message public.v1.TelemetryPoint
  */
-export type TelemetryPoint = Message<'public.v1.TelemetryPoint'> & {
+export type TelemetryPoint = Message<"public.v1.TelemetryPoint"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string metric_name = 2;
    */
-  metricName: string
+  metricName: string;
 
   /**
    * @generated from field: double value = 3;
    */
-  value: number
+  value: number;
 
   /**
    * @generated from field: google.protobuf.Timestamp timestamp = 4;
    */
-  timestamp?: Timestamp
+  timestamp?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Struct labels = 5;
    */
-  labels?: JsonObject
-}
+  labels?: JsonObject;
+};
 
 /**
  * Describes the message public.v1.TelemetryPoint.
@@ -812,22 +812,22 @@ export type TelemetryPoint = Message<'public.v1.TelemetryPoint'> & {
  */
 export const TelemetryPointSchema: GenMessage<TelemetryPoint> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 20)
+  messageDesc(file_public_v1_fleet, 20);
 
 /**
  * @generated from message public.v1.StreamTelemetryRequest
  */
-export type StreamTelemetryRequest = Message<'public.v1.StreamTelemetryRequest'> & {
+export type StreamTelemetryRequest = Message<"public.v1.StreamTelemetryRequest"> & {
   /**
    * @generated from field: repeated string device_ids = 1;
    */
-  deviceIds: string[]
+  deviceIds: string[];
 
   /**
    * @generated from field: repeated string metrics = 2;
    */
-  metrics: string[]
-}
+  metrics: string[];
+};
 
 /**
  * Describes the message public.v1.StreamTelemetryRequest.
@@ -835,17 +835,17 @@ export type StreamTelemetryRequest = Message<'public.v1.StreamTelemetryRequest'>
  */
 export const StreamTelemetryRequestSchema: GenMessage<StreamTelemetryRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 21)
+  messageDesc(file_public_v1_fleet, 21);
 
 /**
  * @generated from message public.v1.TelemetryEvent
  */
-export type TelemetryEvent = Message<'public.v1.TelemetryEvent'> & {
+export type TelemetryEvent = Message<"public.v1.TelemetryEvent"> & {
   /**
    * @generated from field: public.v1.TelemetryPoint point = 1;
    */
-  point?: TelemetryPoint
-}
+  point?: TelemetryPoint;
+};
 
 /**
  * Describes the message public.v1.TelemetryEvent.
@@ -853,92 +853,92 @@ export type TelemetryEvent = Message<'public.v1.TelemetryEvent'> & {
  */
 export const TelemetryEventSchema: GenMessage<TelemetryEvent> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 22)
+  messageDesc(file_public_v1_fleet, 22);
 
 /**
  * Update management messages
  *
  * @generated from message public.v1.Update
  */
-export type Update = Message<'public.v1.Update'> & {
+export type Update = Message<"public.v1.Update"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: string version = 2;
    */
-  version: string
+  version: string;
 
   /**
    * @generated from field: string description = 3;
    */
-  description: string
+  description: string;
 
   /**
    * @generated from field: string binary_url = 4;
    */
-  binaryUrl: string
+  binaryUrl: string;
 
   /**
    * @generated from field: string checksum = 5;
    */
-  checksum: string
+  checksum: string;
 
   /**
    * @generated from field: int64 size_bytes = 6;
    */
-  sizeBytes: bigint
+  sizeBytes: bigint;
 
   /**
    * @generated from field: string release_notes = 7;
    */
-  releaseNotes: string
+  releaseNotes: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 8;
    */
-  createdAt?: Timestamp
+  createdAt?: Timestamp;
 
   /**
    * @generated from field: repeated string target_device_types = 9;
    */
-  targetDeviceTypes: string[]
+  targetDeviceTypes: string[];
 
   /**
    * stable, beta, nightly
    *
    * @generated from field: string channel = 10;
    */
-  channel: string
-}
+  channel: string;
+};
 
 /**
  * Describes the message public.v1.Update.
  * Use `create(UpdateSchema)` to create a new message.
  */
-export const UpdateSchema: GenMessage<Update> = /*@__PURE__*/ messageDesc(file_public_v1_fleet, 23)
+export const UpdateSchema: GenMessage<Update> = /*@__PURE__*/ messageDesc(file_public_v1_fleet, 23);
 
 /**
  * @generated from message public.v1.ListUpdatesRequest
  */
-export type ListUpdatesRequest = Message<'public.v1.ListUpdatesRequest'> & {
+export type ListUpdatesRequest = Message<"public.v1.ListUpdatesRequest"> & {
   /**
    * @generated from field: int32 page_size = 1;
    */
-  pageSize: number
+  pageSize: number;
 
   /**
    * @generated from field: string page_token = 2;
    */
-  pageToken: string
+  pageToken: string;
 
   /**
    * @generated from field: string channel = 3;
    */
-  channel: string
-}
+  channel: string;
+};
 
 /**
  * Describes the message public.v1.ListUpdatesRequest.
@@ -946,22 +946,22 @@ export type ListUpdatesRequest = Message<'public.v1.ListUpdatesRequest'> & {
  */
 export const ListUpdatesRequestSchema: GenMessage<ListUpdatesRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 24)
+  messageDesc(file_public_v1_fleet, 24);
 
 /**
  * @generated from message public.v1.ListUpdatesResponse
  */
-export type ListUpdatesResponse = Message<'public.v1.ListUpdatesResponse'> & {
+export type ListUpdatesResponse = Message<"public.v1.ListUpdatesResponse"> & {
   /**
    * @generated from field: repeated public.v1.Update updates = 1;
    */
-  updates: Update[]
+  updates: Update[];
 
   /**
    * @generated from field: string next_page_token = 2;
    */
-  nextPageToken: string
-}
+  nextPageToken: string;
+};
 
 /**
  * Describes the message public.v1.ListUpdatesResponse.
@@ -969,52 +969,52 @@ export type ListUpdatesResponse = Message<'public.v1.ListUpdatesResponse'> & {
  */
 export const ListUpdatesResponseSchema: GenMessage<ListUpdatesResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 25)
+  messageDesc(file_public_v1_fleet, 25);
 
 /**
  * @generated from message public.v1.CreateUpdateRequest
  */
-export type CreateUpdateRequest = Message<'public.v1.CreateUpdateRequest'> & {
+export type CreateUpdateRequest = Message<"public.v1.CreateUpdateRequest"> & {
   /**
    * @generated from field: string version = 1;
    */
-  version: string
+  version: string;
 
   /**
    * @generated from field: string description = 2;
    */
-  description: string
+  description: string;
 
   /**
    * @generated from field: string binary_url = 3;
    */
-  binaryUrl: string
+  binaryUrl: string;
 
   /**
    * @generated from field: string checksum = 4;
    */
-  checksum: string
+  checksum: string;
 
   /**
    * @generated from field: int64 size_bytes = 5;
    */
-  sizeBytes: bigint
+  sizeBytes: bigint;
 
   /**
    * @generated from field: string release_notes = 6;
    */
-  releaseNotes: string
+  releaseNotes: string;
 
   /**
    * @generated from field: repeated string target_device_types = 7;
    */
-  targetDeviceTypes: string[]
+  targetDeviceTypes: string[];
 
   /**
    * @generated from field: string channel = 8;
    */
-  channel: string
-}
+  channel: string;
+};
 
 /**
  * Describes the message public.v1.CreateUpdateRequest.
@@ -1022,17 +1022,17 @@ export type CreateUpdateRequest = Message<'public.v1.CreateUpdateRequest'> & {
  */
 export const CreateUpdateRequestSchema: GenMessage<CreateUpdateRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 26)
+  messageDesc(file_public_v1_fleet, 26);
 
 /**
  * @generated from message public.v1.CreateUpdateResponse
  */
-export type CreateUpdateResponse = Message<'public.v1.CreateUpdateResponse'> & {
+export type CreateUpdateResponse = Message<"public.v1.CreateUpdateResponse"> & {
   /**
    * @generated from field: public.v1.Update update = 1;
    */
-  update?: Update
-}
+  update?: Update;
+};
 
 /**
  * Describes the message public.v1.CreateUpdateResponse.
@@ -1040,37 +1040,37 @@ export type CreateUpdateResponse = Message<'public.v1.CreateUpdateResponse'> & {
  */
 export const CreateUpdateResponseSchema: GenMessage<CreateUpdateResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 27)
+  messageDesc(file_public_v1_fleet, 27);
 
 /**
  * @generated from message public.v1.DeployUpdateRequest
  */
-export type DeployUpdateRequest = Message<'public.v1.DeployUpdateRequest'> & {
+export type DeployUpdateRequest = Message<"public.v1.DeployUpdateRequest"> & {
   /**
    * @generated from field: string update_id = 1;
    */
-  updateId: string
+  updateId: string;
 
   /**
    * @generated from field: repeated string device_ids = 2;
    */
-  deviceIds: string[]
+  deviceIds: string[];
 
   /**
    * @generated from field: repeated string tags = 3;
    */
-  tags: string[]
+  tags: string[];
 
   /**
    * @generated from field: string group_id = 4;
    */
-  groupId: string
+  groupId: string;
 
   /**
    * @generated from field: public.v1.DeploymentStrategy strategy = 5;
    */
-  strategy: DeploymentStrategy
-}
+  strategy: DeploymentStrategy;
+};
 
 /**
  * Describes the message public.v1.DeployUpdateRequest.
@@ -1078,22 +1078,22 @@ export type DeployUpdateRequest = Message<'public.v1.DeployUpdateRequest'> & {
  */
 export const DeployUpdateRequestSchema: GenMessage<DeployUpdateRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 28)
+  messageDesc(file_public_v1_fleet, 28);
 
 /**
  * @generated from message public.v1.DeployUpdateResponse
  */
-export type DeployUpdateResponse = Message<'public.v1.DeployUpdateResponse'> & {
+export type DeployUpdateResponse = Message<"public.v1.DeployUpdateResponse"> & {
   /**
    * @generated from field: string deployment_id = 1;
    */
-  deploymentId: string
+  deploymentId: string;
 
   /**
    * @generated from field: int32 targeted_devices = 2;
    */
-  targetedDevices: number
-}
+  targetedDevices: number;
+};
 
 /**
  * Describes the message public.v1.DeployUpdateResponse.
@@ -1101,17 +1101,17 @@ export type DeployUpdateResponse = Message<'public.v1.DeployUpdateResponse'> & {
  */
 export const DeployUpdateResponseSchema: GenMessage<DeployUpdateResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 29)
+  messageDesc(file_public_v1_fleet, 29);
 
 /**
  * @generated from message public.v1.GetUpdateStatusRequest
  */
-export type GetUpdateStatusRequest = Message<'public.v1.GetUpdateStatusRequest'> & {
+export type GetUpdateStatusRequest = Message<"public.v1.GetUpdateStatusRequest"> & {
   /**
    * @generated from field: string deployment_id = 1;
    */
-  deploymentId: string
-}
+  deploymentId: string;
+};
 
 /**
  * Describes the message public.v1.GetUpdateStatusRequest.
@@ -1119,52 +1119,52 @@ export type GetUpdateStatusRequest = Message<'public.v1.GetUpdateStatusRequest'>
  */
 export const GetUpdateStatusRequestSchema: GenMessage<GetUpdateStatusRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 30)
+  messageDesc(file_public_v1_fleet, 30);
 
 /**
  * @generated from message public.v1.GetUpdateStatusResponse
  */
-export type GetUpdateStatusResponse = Message<'public.v1.GetUpdateStatusResponse'> & {
+export type GetUpdateStatusResponse = Message<"public.v1.GetUpdateStatusResponse"> & {
   /**
    * @generated from field: string deployment_id = 1;
    */
-  deploymentId: string
+  deploymentId: string;
 
   /**
    * @generated from field: public.v1.UpdateDeploymentStatus status = 2;
    */
-  status: UpdateDeploymentStatus
+  status: UpdateDeploymentStatus;
 
   /**
    * @generated from field: int32 total_devices = 3;
    */
-  totalDevices: number
+  totalDevices: number;
 
   /**
    * @generated from field: int32 updated_devices = 4;
    */
-  updatedDevices: number
+  updatedDevices: number;
 
   /**
    * @generated from field: int32 failed_devices = 5;
    */
-  failedDevices: number
+  failedDevices: number;
 
   /**
    * @generated from field: int32 pending_devices = 6;
    */
-  pendingDevices: number
+  pendingDevices: number;
 
   /**
    * @generated from field: google.protobuf.Timestamp started_at = 7;
    */
-  startedAt?: Timestamp
+  startedAt?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp completed_at = 8;
    */
-  completedAt?: Timestamp
-}
+  completedAt?: Timestamp;
+};
 
 /**
  * Describes the message public.v1.GetUpdateStatusResponse.
@@ -1172,24 +1172,24 @@ export type GetUpdateStatusResponse = Message<'public.v1.GetUpdateStatusResponse
  */
 export const GetUpdateStatusResponseSchema: GenMessage<GetUpdateStatusResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 31)
+  messageDesc(file_public_v1_fleet, 31);
 
 /**
  * Configuration messages
  *
  * @generated from message public.v1.GetConfigurationRequest
  */
-export type GetConfigurationRequest = Message<'public.v1.GetConfigurationRequest'> & {
+export type GetConfigurationRequest = Message<"public.v1.GetConfigurationRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string group_id = 2;
    */
-  groupId: string
-}
+  groupId: string;
+};
 
 /**
  * Describes the message public.v1.GetConfigurationRequest.
@@ -1197,27 +1197,27 @@ export type GetConfigurationRequest = Message<'public.v1.GetConfigurationRequest
  */
 export const GetConfigurationRequestSchema: GenMessage<GetConfigurationRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 32)
+  messageDesc(file_public_v1_fleet, 32);
 
 /**
  * @generated from message public.v1.GetConfigurationResponse
  */
-export type GetConfigurationResponse = Message<'public.v1.GetConfigurationResponse'> & {
+export type GetConfigurationResponse = Message<"public.v1.GetConfigurationResponse"> & {
   /**
    * @generated from field: google.protobuf.Struct config = 1;
    */
-  config?: JsonObject
+  config?: JsonObject;
 
   /**
    * @generated from field: int32 version = 2;
    */
-  version: number
+  version: number;
 
   /**
    * @generated from field: google.protobuf.Timestamp updated_at = 3;
    */
-  updatedAt?: Timestamp
-}
+  updatedAt?: Timestamp;
+};
 
 /**
  * Describes the message public.v1.GetConfigurationResponse.
@@ -1225,34 +1225,34 @@ export type GetConfigurationResponse = Message<'public.v1.GetConfigurationRespon
  */
 export const GetConfigurationResponseSchema: GenMessage<GetConfigurationResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 33)
+  messageDesc(file_public_v1_fleet, 33);
 
 /**
  * @generated from message public.v1.UpdateConfigurationRequest
  */
-export type UpdateConfigurationRequest = Message<'public.v1.UpdateConfigurationRequest'> & {
+export type UpdateConfigurationRequest = Message<"public.v1.UpdateConfigurationRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: string group_id = 2;
    */
-  groupId: string
+  groupId: string;
 
   /**
    * @generated from field: google.protobuf.Struct config = 3;
    */
-  config?: JsonObject
+  config?: JsonObject;
 
   /**
    * if true, merge with existing config
    *
    * @generated from field: bool merge = 4;
    */
-  merge: boolean
-}
+  merge: boolean;
+};
 
 /**
  * Describes the message public.v1.UpdateConfigurationRequest.
@@ -1260,22 +1260,22 @@ export type UpdateConfigurationRequest = Message<'public.v1.UpdateConfigurationR
  */
 export const UpdateConfigurationRequestSchema: GenMessage<UpdateConfigurationRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 34)
+  messageDesc(file_public_v1_fleet, 34);
 
 /**
  * @generated from message public.v1.UpdateConfigurationResponse
  */
-export type UpdateConfigurationResponse = Message<'public.v1.UpdateConfigurationResponse'> & {
+export type UpdateConfigurationResponse = Message<"public.v1.UpdateConfigurationResponse"> & {
   /**
    * @generated from field: google.protobuf.Struct config = 1;
    */
-  config?: JsonObject
+  config?: JsonObject;
 
   /**
    * @generated from field: int32 version = 2;
    */
-  version: number
-}
+  version: number;
+};
 
 /**
  * Describes the message public.v1.UpdateConfigurationResponse.
@@ -1283,24 +1283,24 @@ export type UpdateConfigurationResponse = Message<'public.v1.UpdateConfiguration
  */
 export const UpdateConfigurationResponseSchema: GenMessage<UpdateConfigurationResponse> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 35)
+  messageDesc(file_public_v1_fleet, 35);
 
 /**
  * Event streaming messages
  *
  * @generated from message public.v1.StreamEventsRequest
  */
-export type StreamEventsRequest = Message<'public.v1.StreamEventsRequest'> & {
+export type StreamEventsRequest = Message<"public.v1.StreamEventsRequest"> & {
   /**
    * @generated from field: repeated string device_ids = 1;
    */
-  deviceIds: string[]
+  deviceIds: string[];
 
   /**
    * @generated from field: repeated public.v1.EventType event_types = 2;
    */
-  eventTypes: EventType[]
-}
+  eventTypes: EventType[];
+};
 
 /**
  * Describes the message public.v1.StreamEventsRequest.
@@ -1308,48 +1308,48 @@ export type StreamEventsRequest = Message<'public.v1.StreamEventsRequest'> & {
  */
 export const StreamEventsRequestSchema: GenMessage<StreamEventsRequest> =
   /*@__PURE__*/
-  messageDesc(file_public_v1_fleet, 36)
+  messageDesc(file_public_v1_fleet, 36);
 
 /**
  * @generated from message public.v1.Event
  */
-export type Event = Message<'public.v1.Event'> & {
+export type Event = Message<"public.v1.Event"> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string
+  id: string;
 
   /**
    * @generated from field: public.v1.EventType type = 2;
    */
-  type: EventType
+  type: EventType;
 
   /**
    * @generated from field: string device_id = 3;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp timestamp = 4;
    */
-  timestamp?: Timestamp
+  timestamp?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Struct data = 5;
    */
-  data?: JsonObject
+  data?: JsonObject;
 
   /**
    * @generated from field: string message = 6;
    */
-  message: string
-}
+  message: string;
+};
 
 /**
  * Describes the message public.v1.Event.
  * Use `create(EventSchema)` to create a new message.
  */
-export const EventSchema: GenMessage<Event> = /*@__PURE__*/ messageDesc(file_public_v1_fleet, 37)
+export const EventSchema: GenMessage<Event> = /*@__PURE__*/ messageDesc(file_public_v1_fleet, 37);
 
 /**
  * @generated from enum public.v1.DeviceStatus
@@ -1391,7 +1391,7 @@ export enum DeviceStatus {
  */
 export const DeviceStatusSchema: GenEnum<DeviceStatus> =
   /*@__PURE__*/
-  enumDesc(file_public_v1_fleet, 0)
+  enumDesc(file_public_v1_fleet, 0);
 
 /**
  * @generated from enum public.v1.DeploymentStrategy
@@ -1423,7 +1423,7 @@ export enum DeploymentStrategy {
  */
 export const DeploymentStrategySchema: GenEnum<DeploymentStrategy> =
   /*@__PURE__*/
-  enumDesc(file_public_v1_fleet, 1)
+  enumDesc(file_public_v1_fleet, 1);
 
 /**
  * @generated from enum public.v1.UpdateDeploymentStatus
@@ -1460,7 +1460,7 @@ export enum UpdateDeploymentStatus {
  */
 export const UpdateDeploymentStatusSchema: GenEnum<UpdateDeploymentStatus> =
   /*@__PURE__*/
-  enumDesc(file_public_v1_fleet, 2)
+  enumDesc(file_public_v1_fleet, 2);
 
 /**
  * @generated from enum public.v1.EventType
@@ -1520,7 +1520,7 @@ export enum EventType {
 /**
  * Describes the enum public.v1.EventType.
  */
-export const EventTypeSchema: GenEnum<EventType> = /*@__PURE__*/ enumDesc(file_public_v1_fleet, 3)
+export const EventTypeSchema: GenEnum<EventType> = /*@__PURE__*/ enumDesc(file_public_v1_fleet, 3);
 
 /**
  * FleetService provides the public API for fleet management
@@ -1535,130 +1535,130 @@ export const FleetService: GenService<{
    * @generated from rpc public.v1.FleetService.ListDevices
    */
   listDevices: {
-    methodKind: 'unary'
-    input: typeof ListDevicesRequestSchema
-    output: typeof ListDevicesResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof ListDevicesRequestSchema;
+    output: typeof ListDevicesResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.GetDevice
    */
   getDevice: {
-    methodKind: 'unary'
-    input: typeof GetDeviceRequestSchema
-    output: typeof GetDeviceResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetDeviceRequestSchema;
+    output: typeof GetDeviceResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.UpdateDevice
    */
   updateDevice: {
-    methodKind: 'unary'
-    input: typeof UpdateDeviceRequestSchema
-    output: typeof UpdateDeviceResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof UpdateDeviceRequestSchema;
+    output: typeof UpdateDeviceResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.DeleteDevice
    */
   deleteDevice: {
-    methodKind: 'unary'
-    input: typeof DeleteDeviceRequestSchema
-    output: typeof EmptySchema
-  }
+    methodKind: "unary";
+    input: typeof DeleteDeviceRequestSchema;
+    output: typeof EmptySchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.GetDeviceStats
    */
   getDeviceStats: {
-    methodKind: 'unary'
-    input: typeof GetDeviceStatsRequestSchema
-    output: typeof GetDeviceStatsResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetDeviceStatsRequestSchema;
+    output: typeof GetDeviceStatsResponseSchema;
+  };
   /**
    * Device discovery
    *
    * @generated from rpc public.v1.FleetService.DiscoverDevices
    */
   discoverDevices: {
-    methodKind: 'unary'
-    input: typeof DiscoverDevicesRequestSchema
-    output: typeof DiscoverDevicesResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof DiscoverDevicesRequestSchema;
+    output: typeof DiscoverDevicesResponseSchema;
+  };
   /**
    * Telemetry
    *
    * @generated from rpc public.v1.FleetService.GetTelemetry
    */
   getTelemetry: {
-    methodKind: 'unary'
-    input: typeof GetTelemetryRequestSchema
-    output: typeof GetTelemetryResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetTelemetryRequestSchema;
+    output: typeof GetTelemetryResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.StreamTelemetry
    */
   streamTelemetry: {
-    methodKind: 'server_streaming'
-    input: typeof StreamTelemetryRequestSchema
-    output: typeof TelemetryEventSchema
-  }
+    methodKind: "server_streaming";
+    input: typeof StreamTelemetryRequestSchema;
+    output: typeof TelemetryEventSchema;
+  };
   /**
    * Updates management
    *
    * @generated from rpc public.v1.FleetService.ListUpdates
    */
   listUpdates: {
-    methodKind: 'unary'
-    input: typeof ListUpdatesRequestSchema
-    output: typeof ListUpdatesResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof ListUpdatesRequestSchema;
+    output: typeof ListUpdatesResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.CreateUpdate
    */
   createUpdate: {
-    methodKind: 'unary'
-    input: typeof CreateUpdateRequestSchema
-    output: typeof CreateUpdateResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof CreateUpdateRequestSchema;
+    output: typeof CreateUpdateResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.DeployUpdate
    */
   deployUpdate: {
-    methodKind: 'unary'
-    input: typeof DeployUpdateRequestSchema
-    output: typeof DeployUpdateResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof DeployUpdateRequestSchema;
+    output: typeof DeployUpdateResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.GetUpdateStatus
    */
   getUpdateStatus: {
-    methodKind: 'unary'
-    input: typeof GetUpdateStatusRequestSchema
-    output: typeof GetUpdateStatusResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetUpdateStatusRequestSchema;
+    output: typeof GetUpdateStatusResponseSchema;
+  };
   /**
    * Configuration
    *
    * @generated from rpc public.v1.FleetService.GetConfiguration
    */
   getConfiguration: {
-    methodKind: 'unary'
-    input: typeof GetConfigurationRequestSchema
-    output: typeof GetConfigurationResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetConfigurationRequestSchema;
+    output: typeof GetConfigurationResponseSchema;
+  };
   /**
    * @generated from rpc public.v1.FleetService.UpdateConfiguration
    */
   updateConfiguration: {
-    methodKind: 'unary'
-    input: typeof UpdateConfigurationRequestSchema
-    output: typeof UpdateConfigurationResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof UpdateConfigurationRequestSchema;
+    output: typeof UpdateConfigurationResponseSchema;
+  };
   /**
    * Events streaming (SSE replacement)
    *
    * @generated from rpc public.v1.FleetService.StreamEvents
    */
   streamEvents: {
-    methodKind: 'server_streaming'
-    input: typeof StreamEventsRequestSchema
-    output: typeof EventSchema
-  }
-}> = /*@__PURE__*/ serviceDesc(file_public_v1_fleet, 0)
+    methodKind: "server_streaming";
+    input: typeof StreamEventsRequestSchema;
+    output: typeof EventSchema;
+  };
+}> = /*@__PURE__*/ serviceDesc(file_public_v1_fleet, 0);

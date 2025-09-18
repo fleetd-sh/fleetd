@@ -1,36 +1,34 @@
-'use client'
+"use client";
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Progress } from '@/components/ui/progress'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { Device } from '@/lib/api/gen/public/v1/fleet_pb'
 import {
   ActivityIcon,
-  BatteryIcon,
   CpuIcon,
   FilterIcon,
-  HardDriveIcon,
   NetworkIcon,
   RefreshCwIcon,
   SearchIcon,
   ServerIcon,
   ThermometerIcon,
   WifiIcon,
-} from 'lucide-react'
-import { useMemo, useState } from 'react'
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Device } from "@/lib/api/gen/public/v1/fleet_pb";
 
 interface FleetOverviewProps {
-  devices: Device[]
-  onDeviceSelect: (deviceId: string) => void
+  devices: Device[];
+  onDeviceSelect: (deviceId: string) => void;
 }
 
 export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedType, setSelectedType] = useState<string>('all')
-  const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, _setSelectedType] = useState<string>("all");
+  const [selectedStatus, _setSelectedStatus] = useState<string>("all");
 
   // Group devices by type and status
   const deviceStats = useMemo(() => {
@@ -43,37 +41,37 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
       byOS: new Map<string, number>(),
       criticalAlerts: 0,
       warnings: 0,
-    }
+    };
 
     for (const device of devices) {
       // Status counts
-      if (device.status === 1) stats.online++
-      else if (device.status === 2) stats.offline++
-      else if (device.status === 3) stats.updating++
+      if (device.status === 1) stats.online++;
+      else if (device.status === 2) stats.offline++;
+      else if (device.status === 3) stats.updating++;
 
       // Type counts
-      const type = device.systemInfo?.os || device.type || 'unknown'
-      stats.byType.set(type, (stats.byType.get(type) || 0) + 1)
+      const type = device.systemInfo?.os || device.type || "unknown";
+      stats.byType.set(type, (stats.byType.get(type) || 0) + 1);
 
       // OS distribution
-      const os = device.systemInfo?.os || 'unknown'
-      stats.byOS.set(os, (stats.byOS.get(os) || 0) + 1)
+      const os = device.systemInfo?.os || "unknown";
+      stats.byOS.set(os, (stats.byOS.get(os) || 0) + 1);
 
       // Check for alerts (high load, low memory, etc.)
       if (device.systemInfo?.loadAverage?.load1 && device.systemInfo.loadAverage.load1 > 5) {
-        stats.criticalAlerts++
+        stats.criticalAlerts++;
       }
       if (
         device.systemInfo?.memoryTotal &&
         device.systemInfo?.processCount &&
         device.systemInfo.processCount > 500
       ) {
-        stats.warnings++
+        stats.warnings++;
       }
     }
 
-    return stats
-  }, [devices])
+    return stats;
+  }, [devices]);
 
   // Filter devices
   const filteredDevices = useMemo(() => {
@@ -85,44 +83,44 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
         !device.id.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !device.systemInfo?.hostname?.toLowerCase().includes(searchQuery.toLowerCase())
       ) {
-        return false
+        return false;
       }
 
       // Type filter
-      if (selectedType !== 'all' && device.type !== selectedType) {
-        return false
+      if (selectedType !== "all" && device.type !== selectedType) {
+        return false;
       }
 
       // Status filter
-      if (selectedStatus !== 'all') {
-        if (selectedStatus === 'online' && device.status !== 1) return false
-        if (selectedStatus === 'offline' && device.status !== 2) return false
-        if (selectedStatus === 'updating' && device.status !== 3) return false
+      if (selectedStatus !== "all") {
+        if (selectedStatus === "online" && device.status !== 1) return false;
+        if (selectedStatus === "offline" && device.status !== 2) return false;
+        if (selectedStatus === "updating" && device.status !== 3) return false;
       }
 
-      return true
-    })
-  }, [devices, searchQuery, selectedType, selectedStatus])
+      return true;
+    });
+  }, [devices, searchQuery, selectedType, selectedStatus]);
 
   // Get device health color
   const getHealthColor = (device: Device) => {
-    if (device.status !== 1) return 'text-gray-400'
+    if (device.status !== 1) return "text-gray-400";
     if (device.systemInfo?.loadAverage?.load1 && device.systemInfo.loadAverage.load1 > 5)
-      return 'text-red-500'
+      return "text-red-500";
     if (device.systemInfo?.loadAverage?.load1 && device.systemInfo.loadAverage.load1 > 2)
-      return 'text-yellow-500'
-    return 'text-green-500'
-  }
+      return "text-yellow-500";
+    return "text-green-500";
+  };
 
   // Get device icon based on type
   const getDeviceIcon = (device: Device) => {
-    const type = device.type?.toLowerCase() || ''
-    if (type.includes('server')) return <ServerIcon className="h-4 w-4" />
-    if (type.includes('raspberry') || type.includes('rpi')) return <CpuIcon className="h-4 w-4" />
-    if (type.includes('esp')) return <WifiIcon className="h-4 w-4" />
-    if (type.includes('sensor')) return <ThermometerIcon className="h-4 w-4" />
-    return <ServerIcon className="h-4 w-4" />
-  }
+    const type = device.type?.toLowerCase() || "";
+    if (type.includes("server")) return <ServerIcon className="h-4 w-4" />;
+    if (type.includes("raspberry") || type.includes("rpi")) return <CpuIcon className="h-4 w-4" />;
+    if (type.includes("esp")) return <WifiIcon className="h-4 w-4" />;
+    if (type.includes("sensor")) return <ThermometerIcon className="h-4 w-4" />;
+    return <ServerIcon className="h-4 w-4" />;
+  };
 
   return (
     <div className="space-y-6">
@@ -272,7 +270,7 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                               device.systemInfo.networkInterfaces.filter(
                                 (i) => i.isUp && !i.isLoopback,
                               ).length
-                            }{' '}
+                            }{" "}
                             active
                           </span>
                         </div>
@@ -281,18 +279,18 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                       {/* Tags/Status */}
                       <div className="flex flex-wrap gap-1">
                         <Badge
-                          variant={device.status === 1 ? 'default' : 'secondary'}
+                          variant={device.status === 1 ? "default" : "secondary"}
                           className="text-xs"
                         >
                           {device.status === 1
-                            ? 'Online'
+                            ? "Online"
                             : device.status === 2
-                              ? 'Offline'
-                              : 'Updating'}
+                              ? "Offline"
+                              : "Updating"}
                         </Badge>
                         {device.systemInfo?.timezone && (
                           <Badge variant="outline" className="text-xs">
-                            {device.systemInfo.timezone.split('/').pop()}
+                            {device.systemInfo.timezone.split("/").pop()}
                           </Badge>
                         )}
                         {device.systemInfo?.manufacturer && (
@@ -310,13 +308,14 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
             <TabsContent value="list">
               <div className="space-y-2">
                 {filteredDevices.map((device) => (
+                  // biome-ignore lint/a11y/noStaticElementInteractions: not needed
                   <div
                     key={device.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent cursor-pointer"
                     onClick={() => onDeviceSelect(device.id)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        onDeviceSelect(device.id)
+                      if (e.key === "Enter") {
+                        onDeviceSelect(device.id);
                       }
                     }}
                   >
@@ -325,7 +324,7 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                       <div>
                         <div className="font-medium">{device.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {device.systemInfo?.os} • {device.systemInfo?.arch} •{' '}
+                          {device.systemInfo?.os} • {device.systemInfo?.arch} •{" "}
                           {device.systemInfo?.cpuModel}
                         </div>
                       </div>
@@ -334,11 +333,11 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                       <div className="text-right text-sm">
                         <div>{formatBytes(device.systemInfo?.memoryTotal || 0)} RAM</div>
                         <div className="text-muted-foreground">
-                          Load: {device.systemInfo?.loadAverage?.load1?.toFixed(2) || 'N/A'}
+                          Load: {device.systemInfo?.loadAverage?.load1?.toFixed(2) || "N/A"}
                         </div>
                       </div>
-                      <Badge variant={device.status === 1 ? 'default' : 'secondary'}>
-                        {device.status === 1 ? 'Online' : 'Offline'}
+                      <Badge variant={device.status === 1 ? "default" : "secondary"}>
+                        {device.status === 1 ? "Online" : "Offline"}
                       </Badge>
                     </div>
                   </div>
@@ -427,13 +426,13 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 function formatBytes(bytes: bigint | number): string {
-  const b = typeof bytes === 'bigint' ? Number(bytes) : bytes
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  if (b === 0) return '0 B'
-  const i = Math.floor(Math.log(b) / Math.log(1024))
-  return `${(b / 1024 ** i).toFixed(1)} ${sizes[i]}`
+  const b = typeof bytes === "bigint" ? Number(bytes) : bytes;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  if (b === 0) return "0 B";
+  const i = Math.floor(Math.log(b) / Math.log(1024));
+  return `${(b / 1024 ** i).toFixed(1)} ${sizes[i]}`;
 }

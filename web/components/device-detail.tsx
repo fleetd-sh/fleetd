@@ -1,21 +1,21 @@
-'use client'
+"use client";
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useDevice } from '@/lib/api/hooks'
-import { format } from 'date-fns'
-import { RefreshCwIcon, SettingsIcon, TrashIcon } from 'lucide-react'
-import { DeviceSystemInfo } from './device-system-info'
+import { format } from "date-fns";
+import { RefreshCwIcon, SettingsIcon, TrashIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDevice } from "@/lib/api/hooks";
+import { DeviceSystemInfo } from "./device-system-info";
 
 interface DeviceDetailProps {
-  deviceId: string
+  deviceId: string;
 }
 
 export function DeviceDetail({ deviceId }: DeviceDetailProps) {
-  const { data: device, isLoading, error, refetch } = useDevice(deviceId)
+  const { data: device, isLoading, error, refetch } = useDevice(deviceId);
 
   if (isLoading) {
     return (
@@ -23,7 +23,7 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
         <Skeleton className="h-32 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
-    )
+    );
   }
 
   if (error || !device) {
@@ -34,7 +34,7 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
           <CardDescription>Unable to load device details</CardDescription>
         </CardHeader>
       </Card>
-    )
+    );
   }
 
   return (
@@ -46,10 +46,10 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
             <div>
               <CardTitle className="text-2xl">{device.name}</CardTitle>
               <CardDescription>
-                {device.id} • Last seen{' '}
+                {device.id} • Last seen{" "}
                 {device.lastSeen
-                  ? format(new Date(Number(device.lastSeen.seconds) * 1000), 'PPpp')
-                  : 'Never'}
+                  ? format(new Date(Number(device.lastSeen.seconds) * 1000), "PPpp")
+                  : "Never"}
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -70,8 +70,8 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            <Badge variant={device.status === 1 ? 'default' : 'secondary'}>
-              {device.status === 1 ? 'Online' : 'Offline'}
+            <Badge variant={device.status === 1 ? "default" : "secondary"}>
+              {device.status === 1 ? "Online" : "Offline"}
             </Badge>
             <Badge variant="outline">Type: {device.type}</Badge>
             <Badge variant="outline">Version: {device.version}</Badge>
@@ -155,5 +155,5 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

@@ -12,14 +12,14 @@ import {
   ListBinariesResponse,
   UploadBinaryRequest,
   UploadBinaryResponse,
-} from './binary_pb.js'
-import { MethodKind } from '@bufbuild/protobuf'
+} from "./binary_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service fleetd.v1.BinaryService
  */
 export const BinaryService = {
-  typeName: 'fleetd.v1.BinaryService',
+  typeName: "fleetd.v1.BinaryService",
   methods: {
     /**
      * Upload a new binary to the fleet
@@ -27,7 +27,7 @@ export const BinaryService = {
      * @generated from rpc fleetd.v1.BinaryService.UploadBinary
      */
     uploadBinary: {
-      name: 'UploadBinary',
+      name: "UploadBinary",
       I: UploadBinaryRequest,
       O: UploadBinaryResponse,
       kind: MethodKind.ClientStreaming,
@@ -38,7 +38,7 @@ export const BinaryService = {
      * @generated from rpc fleetd.v1.BinaryService.GetBinary
      */
     getBinary: {
-      name: 'GetBinary',
+      name: "GetBinary",
       I: GetBinaryRequest,
       O: GetBinaryResponse,
       kind: MethodKind.Unary,
@@ -49,7 +49,7 @@ export const BinaryService = {
      * @generated from rpc fleetd.v1.BinaryService.DownloadBinary
      */
     downloadBinary: {
-      name: 'DownloadBinary',
+      name: "DownloadBinary",
       I: DownloadBinaryRequest,
       O: DownloadBinaryResponse,
       kind: MethodKind.ServerStreaming,
@@ -60,10 +60,10 @@ export const BinaryService = {
      * @generated from rpc fleetd.v1.BinaryService.ListBinaries
      */
     listBinaries: {
-      name: 'ListBinaries',
+      name: "ListBinaries",
       I: ListBinariesRequest,
       O: ListBinariesResponse,
       kind: MethodKind.Unary,
     },
   },
-} as const
+} as const;

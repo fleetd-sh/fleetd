@@ -1,33 +1,33 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useToast } from '@/hooks/use-toast'
-import { CheckCircledIcon, CopyIcon, DesktopIcon, RocketIcon } from '@radix-ui/react-icons'
-import { useState } from 'react'
+import { CheckCircledIcon, CopyIcon, DesktopIcon, RocketIcon } from "@radix-ui/react-icons";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 export function QuickProvision() {
-  const { toast } = useToast()
-  const [selectedTab, setSelectedTab] = useState('raspberrypi')
+  const { toast } = useToast();
+  const [selectedTab, setSelectedTab] = useState("raspberrypi");
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+    navigator.clipboard.writeText(text);
     toast({
-      title: 'Copied!',
-      description: 'Command copied to clipboard',
-    })
-  }
+      title: "Copied!",
+      description: "Command copied to clipboard",
+    });
+  };
 
-  const fleetServerUrl = `http://${window.location.hostname}:8080`
+  const fleetServerUrl = `http://${window.location.hostname}:8080`;
 
   const templates = {
     raspberrypi: {
-      title: 'Raspberry Pi',
-      description: 'Quick setup for Raspberry Pi devices',
+      title: "Raspberry Pi",
+      description: "Quick setup for Raspberry Pi devices",
       scenarios: [
         {
-          name: 'k3s Server (Control Plane)',
+          name: "k3s Server (Control Plane)",
           icon: <DesktopIcon className="h-4 w-4" />,
           command: `fleet provision \\
   --device /dev/disk2 \\
@@ -39,7 +39,7 @@ export function QuickProvision() {
   --fleet-server ${fleetServerUrl}`,
         },
         {
-          name: 'k3s Worker Node',
+          name: "k3s Worker Node",
           icon: <DesktopIcon className="h-4 w-4" />,
           command: `fleet provision \\
   --device /dev/disk2 \\
@@ -53,7 +53,7 @@ export function QuickProvision() {
   --fleet-server ${fleetServerUrl}`,
         },
         {
-          name: 'Standalone Device',
+          name: "Standalone Device",
           icon: <CheckCircledIcon className="h-4 w-4" />,
           command: `fleet provision \\
   --device /dev/disk2 \\
@@ -65,11 +65,11 @@ export function QuickProvision() {
       ],
     },
     jetson: {
-      title: 'NVIDIA Jetson',
-      description: 'AI-enabled edge devices',
+      title: "NVIDIA Jetson",
+      description: "AI-enabled edge devices",
       scenarios: [
         {
-          name: 'Jetson with Docker & NVIDIA Runtime',
+          name: "Jetson with Docker & NVIDIA Runtime",
           icon: <RocketIcon className="h-4 w-4" />,
           command: `fleet provision \\
   --device /dev/disk2 \\
@@ -79,7 +79,7 @@ export function QuickProvision() {
   --fleet-server ${fleetServerUrl}`,
         },
         {
-          name: 'Jetson k3s with GPU Support',
+          name: "Jetson k3s with GPU Support",
           icon: <RocketIcon className="h-4 w-4" />,
           command: `fleet provision \\
   --device /dev/disk2 \\
@@ -93,11 +93,11 @@ export function QuickProvision() {
       ],
     },
     x86: {
-      title: 'x86/x64 Devices',
-      description: 'Intel NUC, Mini PCs, and standard computers',
+      title: "x86/x64 Devices",
+      description: "Intel NUC, Mini PCs, and standard computers",
       scenarios: [
         {
-          name: 'Ubuntu Server',
+          name: "Ubuntu Server",
           icon: <DesktopIcon className="h-4 w-4" />,
           command: `fleet provision \\
   --device /dev/sdb \\
@@ -106,7 +106,7 @@ export function QuickProvision() {
   --fleet-server ${fleetServerUrl}`,
         },
         {
-          name: 'Docker Host',
+          name: "Docker Host",
           icon: <DesktopIcon className="h-4 w-4" />,
           command: `fleet provision \\
   --device /dev/sdb \\
@@ -117,7 +117,7 @@ export function QuickProvision() {
         },
       ],
     },
-  }
+  };
 
   return (
     <Card>
@@ -169,16 +169,16 @@ export function QuickProvision() {
                 <h4 className="font-medium text-sm mb-2">Before Running:</h4>
                 <ul className="text-xs space-y-1 text-muted-foreground">
                   <li>
-                    • Replace device path (check with <code>diskutil list</code> on macOS or{' '}
+                    • Replace device path (check with <code>diskutil list</code> on macOS or{" "}
                     <code>lsblk</code> on Linux)
                   </li>
                   <li>• Update WiFi credentials if using wireless</li>
                   <li>
-                    • For k3s workers, get token from server:{' '}
+                    • For k3s workers, get token from server:{" "}
                     <code>sudo cat /var/lib/rancher/k3s/server/node-token</code>
                   </li>
                   <li>
-                    • Ensure Fleet CLI is installed:{' '}
+                    • Ensure Fleet CLI is installed:{" "}
                     <code>go install fleetd.sh/cmd/fleet@latest</code>
                   </li>
                 </ul>
@@ -188,5 +188,5 @@ export function QuickProvision() {
         </Tabs>
       </CardContent>
     </Card>
-  )
+  );
 }

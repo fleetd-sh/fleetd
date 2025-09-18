@@ -1,9 +1,5 @@
-'use client'
+"use client";
 
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import type { Device } from '@/lib/api/gen/public/v1/fleet_pb'
 import {
   CpuIcon,
   HardDriveIcon,
@@ -11,8 +7,8 @@ import {
   NetworkIcon,
   ThermometerIcon,
   ZapIcon,
-} from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -23,36 +19,40 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts'
+} from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import type { Device } from "@/lib/api/gen/public/v1/fleet_pb";
 
 interface TelemetryData {
-  timestamp: number
-  cpuUsage: number
-  memoryUsed: number
-  memoryTotal: number
-  diskUsed: number
-  diskTotal: number
-  networkRx: number
-  networkTx: number
-  temperature?: number
-  processCount?: number
-  loadAvg1?: number
-  loadAvg5?: number
-  loadAvg15?: number
+  timestamp: number;
+  cpuUsage: number;
+  memoryUsed: number;
+  memoryTotal: number;
+  diskUsed: number;
+  diskTotal: number;
+  networkRx: number;
+  networkTx: number;
+  temperature?: number;
+  processCount?: number;
+  loadAvg1?: number;
+  loadAvg5?: number;
+  loadAvg15?: number;
 }
 
 interface DeviceTelemetryProps {
-  device: Device
-  realtime?: boolean
+  device: Device;
+  realtime?: boolean;
 }
 
 export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryProps) {
-  const [telemetryHistory, setTelemetryHistory] = useState<TelemetryData[]>([])
-  const [currentMetrics, setCurrentMetrics] = useState<TelemetryData | null>(null)
+  const [telemetryHistory, setTelemetryHistory] = useState<TelemetryData[]>([]);
+  const [currentMetrics, setCurrentMetrics] = useState<TelemetryData | null>(null);
 
   // Simulate real-time data (in production, this would be WebSocket/SSE)
   useEffect(() => {
-    if (!realtime) return
+    if (!realtime) return;
 
     const interval = setInterval(() => {
       const newData: TelemetryData = {
@@ -73,19 +73,19 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
         loadAvg1: (device.systemInfo?.loadAverage?.load1 || 0) + (Math.random() - 0.5),
         loadAvg5: device.systemInfo?.loadAverage?.load5 || 0,
         loadAvg15: device.systemInfo?.loadAverage?.load15 || 0,
-      }
+      };
 
-      setCurrentMetrics(newData)
+      setCurrentMetrics(newData);
       setTelemetryHistory((prev) =>
         [...prev.slice(-59), newData].map((d, i) => ({
           ...d,
           time: `${60 - i}s`,
         })),
-      )
-    }, 1000)
+      );
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [device, realtime])
+    return () => clearInterval(interval);
+  }, [device, realtime]);
 
   // Calculate percentages and format values
   const metrics = useMemo(() => {
@@ -94,11 +94,11 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
         cpuPercent: 0,
         memoryPercent: 0,
         diskPercent: 0,
-        memoryUsedGB: '0',
-        memoryTotalGB: '0',
-        diskUsedGB: '0',
-        diskTotalGB: '0',
-      }
+        memoryUsedGB: "0",
+        memoryTotalGB: "0",
+        diskUsedGB: "0",
+        diskTotalGB: "0",
+      };
     }
 
     return {
@@ -113,18 +113,18 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
       memoryTotalGB: formatBytes(currentMetrics.memoryTotal),
       diskUsedGB: formatBytes(currentMetrics.diskUsed),
       diskTotalGB: formatBytes(currentMetrics.diskTotal),
-    }
-  }, [currentMetrics])
+    };
+  }, [currentMetrics]);
 
   // Determine health status
   const getHealthStatus = () => {
-    if (!currentMetrics) return 'unknown'
-    if (metrics.cpuPercent > 90 || metrics.memoryPercent > 90) return 'critical'
-    if (metrics.cpuPercent > 70 || metrics.memoryPercent > 70) return 'warning'
-    return 'healthy'
-  }
+    if (!currentMetrics) return "unknown";
+    if (metrics.cpuPercent > 90 || metrics.memoryPercent > 90) return "critical";
+    if (metrics.cpuPercent > 70 || metrics.memoryPercent > 70) return "warning";
+    return "healthy";
+  };
 
-  const healthStatus = getHealthStatus()
+  const healthStatus = getHealthStatus();
 
   return (
     <div className="space-y-6">
@@ -187,7 +187,7 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {currentMetrics?.temperature?.toFixed(1) || '--'}°C
+              {currentMetrics?.temperature?.toFixed(1) || "--"}°C
             </div>
             <div className="text-xs text-muted-foreground mt-1">
               {currentMetrics?.temperature && currentMetrics.temperature > 60 ? (
@@ -215,25 +215,25 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
             <div>
               <div className="text-sm text-muted-foreground">1 min avg</div>
               <div className="text-xl font-semibold">
-                {currentMetrics?.loadAvg1?.toFixed(2) || '--'}
+                {currentMetrics?.loadAvg1?.toFixed(2) || "--"}
               </div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground">5 min avg</div>
               <div className="text-xl font-semibold">
-                {currentMetrics?.loadAvg5?.toFixed(2) || '--'}
+                {currentMetrics?.loadAvg5?.toFixed(2) || "--"}
               </div>
             </div>
             <div>
               <div className="text-sm text-muted-foreground">15 min avg</div>
               <div className="text-xl font-semibold">
-                {currentMetrics?.loadAvg15?.toFixed(2) || '--'}
+                {currentMetrics?.loadAvg15?.toFixed(2) || "--"}
               </div>
             </div>
           </div>
           <div className="flex items-center justify-between pt-2 border-t">
             <span className="text-sm text-muted-foreground">Running Processes</span>
-            <span className="font-semibold">{currentMetrics?.processCount || '--'}</span>
+            <span className="font-semibold">{currentMetrics?.processCount || "--"}</span>
           </div>
         </CardContent>
       </Card>
@@ -330,11 +330,11 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
                   <div>
                     <div className="font-medium text-sm">{iface.name}</div>
                     <div className="text-xs text-muted-foreground">{iface.macAddress}</div>
-                    <div className="text-xs mt-1">{iface.ipAddresses?.join(', ') || 'No IP'}</div>
+                    <div className="text-xs mt-1">{iface.ipAddresses?.join(", ") || "No IP"}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={iface.isUp ? 'default' : 'secondary'} className="text-xs">
-                      {iface.isUp ? 'UP' : 'DOWN'}
+                    <Badge variant={iface.isUp ? "default" : "secondary"} className="text-xs">
+                      {iface.isUp ? "UP" : "DOWN"}
                     </Badge>
                     {iface.isLoopback && (
                       <Badge variant="outline" className="text-xs">
@@ -352,11 +352,11 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
       {/* Health Status Summary */}
       <Card
         className={
-          healthStatus === 'critical'
-            ? 'border-red-500'
-            : healthStatus === 'warning'
-              ? 'border-yellow-500'
-              : 'border-green-500'
+          healthStatus === "critical"
+            ? "border-red-500"
+            : healthStatus === "warning"
+              ? "border-yellow-500"
+              : "border-green-500"
         }
       >
         <CardHeader>
@@ -370,11 +370,11 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
             <span className="text-sm">Overall Status</span>
             <Badge
               variant={
-                healthStatus === 'critical'
-                  ? 'destructive'
-                  : healthStatus === 'warning'
-                    ? 'secondary'
-                    : 'default'
+                healthStatus === "critical"
+                  ? "destructive"
+                  : healthStatus === "warning"
+                    ? "secondary"
+                    : "default"
               }
             >
               {healthStatus.toUpperCase()}
@@ -383,12 +383,12 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 function formatBytes(bytes: number): string {
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  if (bytes === 0) return '0 B'
-  const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 B";
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`;
 }

@@ -1,63 +1,63 @@
-'use client'
+"use client";
 
-import { useToast } from '@/hooks/use-toast'
-import { useSSE } from '@/lib/sse'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { useSSE } from "@/lib/sse";
 
 export function useRealtime() {
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  useSSE('/api/v1/events', {
+  useSSE("/api/v1/events", {
     onMessage: (data) => {
       switch (data.type) {
-        case 'device_update':
+        case "device_update":
           // Invalidate device queries to refetch latest data
-          queryClient.invalidateQueries({ queryKey: ['devices'] })
+          queryClient.invalidateQueries({ queryKey: ["devices"] });
           if (data.device_id) {
-            queryClient.invalidateQueries({ queryKey: ['device', data.device_id] })
+            queryClient.invalidateQueries({ queryKey: ["device", data.device_id] });
           }
-          break
+          break;
 
-        case 'telemetry_update':
+        case "telemetry_update":
           // Invalidate telemetry queries
-          queryClient.invalidateQueries({ queryKey: ['telemetry'] })
-          break
+          queryClient.invalidateQueries({ queryKey: ["telemetry"] });
+          break;
 
-        case 'device_connected':
+        case "device_connected":
           toast({
-            title: 'Device Connected',
+            title: "Device Connected",
             description: `${data.device_name || data.device_id} is now online`,
-          })
-          queryClient.invalidateQueries({ queryKey: ['devices'] })
-          break
+          });
+          queryClient.invalidateQueries({ queryKey: ["devices"] });
+          break;
 
-        case 'device_disconnected':
+        case "device_disconnected":
           toast({
-            title: 'Device Disconnected',
+            title: "Device Disconnected",
             description: `${data.device_name || data.device_id} is now offline`,
-            variant: 'destructive',
-          })
-          queryClient.invalidateQueries({ queryKey: ['devices'] })
-          break
+            variant: "destructive",
+          });
+          queryClient.invalidateQueries({ queryKey: ["devices"] });
+          break;
 
-        case 'update_available':
+        case "update_available":
           toast({
-            title: 'Update Available',
+            title: "Update Available",
             description: `New update ${data.version} is available for deployment`,
-          })
-          queryClient.invalidateQueries({ queryKey: ['updates'] })
-          break
+          });
+          queryClient.invalidateQueries({ queryKey: ["updates"] });
+          break;
 
         default:
-          console.log('Unknown SSE event type:', data.type)
+          console.log("Unknown SSE event type:", data.type);
       }
     },
     onError: () => {
-      console.error('Lost connection to server, attempting to reconnect...')
+      console.error("Lost connection to server, attempting to reconnect...");
     },
     onOpen: () => {
-      console.log('Connected to real-time events')
+      console.log("Connected to real-time events");
     },
-  })
+  });
 }

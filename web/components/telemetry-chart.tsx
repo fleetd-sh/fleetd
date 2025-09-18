@@ -1,9 +1,8 @@
-'use client'
+"use client";
 
-import type { TelemetryData } from '@/lib/types'
-import { format } from 'date-fns'
-import { motion } from 'framer-motion'
-import { useMemo } from 'react'
+import { format } from "date-fns";
+import { motion } from "framer-motion";
+import { useMemo } from "react";
 import {
   CartesianGrid,
   Legend,
@@ -13,10 +12,11 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts'
+} from "recharts";
+import type { TelemetryData } from "@/lib/types";
 
 interface TelemetryChartProps {
-  data: TelemetryData[]
+  data: TelemetryData[];
 }
 
 export function TelemetryChart({ data }: TelemetryChartProps) {
@@ -24,32 +24,32 @@ export function TelemetryChart({ data }: TelemetryChartProps) {
     // Group data by timestamp and metric name
     const grouped = data.reduce(
       (acc, item) => {
-        const time = format(new Date(item.timestamp), 'HH:mm:ss')
+        const time = format(new Date(item.timestamp), "HH:mm:ss");
         if (!acc[time]) {
-          acc[time] = { time }
+          acc[time] = { time };
         }
-        acc[time][item.metric_name] = item.value
-        return acc
+        acc[time][item.metric_name] = item.value;
+        return acc;
       },
       {} as Record<string, Record<string, string | number>>,
-    )
+    );
 
-    return Object.values(grouped).slice(-20) // Show last 20 data points
-  }, [data])
+    return Object.values(grouped).slice(-20); // Show last 20 data points
+  }, [data]);
 
   const metrics = useMemo(() => {
-    const metricSet = new Set(data.map((d) => d.metric_name))
-    return Array.from(metricSet)
-  }, [data])
+    const metricSet = new Set(data.map((d) => d.metric_name));
+    return Array.from(metricSet);
+  }, [data]);
 
-  const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+  const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground">
         No telemetry data available
       </div>
-    )
+    );
   }
 
   return (
@@ -66,9 +66,9 @@ export function TelemetryChart({ data }: TelemetryChartProps) {
           <YAxis className="text-xs" />
           <Tooltip
             contentStyle={{
-              backgroundColor: 'hsl(var(--background))',
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '6px',
+              backgroundColor: "hsl(var(--background))",
+              border: "1px solid hsl(var(--border))",
+              borderRadius: "6px",
             }}
           />
           <Legend />
@@ -86,5 +86,5 @@ export function TelemetryChart({ data }: TelemetryChartProps) {
         </LineChart>
       </ResponsiveContainer>
     </motion.div>
-  )
+  );
 }

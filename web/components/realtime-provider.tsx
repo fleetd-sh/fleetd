@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useRealtime } from '@/hooks/use-realtime'
+import { useRealtime } from "@/hooks/use-realtime";
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
-  useRealtime()
-  return <>{children}</>
+  useRealtime();
+  return <>{children}</>;
 }

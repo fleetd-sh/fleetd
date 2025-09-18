@@ -1,70 +1,68 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true
   },
+  "files": {
+    "includes": [
+      "**",
+      "!node_modules",
+      "!.next",
+      "!out",
+      "!dist",
+      "!build",
+      "!.turbo",
+      "!coverage",
+      "!*.min.js",
+      "!*.min.css",
+      "!**/*.css"
+    ]
+  },
   "formatter": {
     "enabled": true,
-    "formatWithErrors": false,
     "indentStyle": "space",
-    "indentWidth": 2,
-    "lineEnding": "lf",
     "lineWidth": 100,
-    "attributePosition": "auto"
-  },
-  "organizeImports": {
-    "enabled": true
+    "formatWithErrors": true
   },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
+      "correctness": {
+        "useUniqueElementIds": "warn"
+      },
       "suspicious": {
         "noExplicitAny": "warn",
         "noArrayIndexKey": "warn"
       },
-      "correctness": {
-        "useExhaustiveDependencies": "warn"
-      },
-      "a11y": {
-        "useKeyWithClickEvents": "warn"
+      "style": {
+        "useConst": "error"
       }
     }
   },
   "javascript": {
     "formatter": {
-      "jsxQuoteStyle": "double",
-      "quoteProperties": "asNeeded",
-      "trailingCommas": "all",
-      "semicolons": "asNeeded",
-      "arrowParentheses": "always",
-      "bracketSpacing": true,
-      "bracketSameLine": false,
-      "quoteStyle": "single",
-      "attributePosition": "auto"
+      "quoteStyle": "double",
+      "semicolons": "always"
+    },
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
     }
   },
-  "css": {
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "json": {
     "formatter": {
       "enabled": true,
-      "indentStyle": "space",
-      "indentWidth": 2,
-      "lineWidth": 100
+      "indentStyle": "space"
     }
-  },
-  "files": {
-    "ignore": [
-      "node_modules",
-      ".next",
-      "out",
-      "dist",
-      "build",
-      ".turbo",
-      "coverage",
-      "*.min.js",
-      "*.min.css"
-    ]
   }
 }

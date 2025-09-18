@@ -1,25 +1,25 @@
-import { DashboardContent } from '@/components/dashboard-content'
-import { DashboardSkeleton } from '@/components/dashboard-skeleton'
-import { ErrorBoundary } from '@/components/error-boundary'
-import { api } from '@/lib/api'
-import { Suspense } from 'react'
+import { Suspense } from "react";
+import { DashboardContent } from "@/components/dashboard-content";
+import { DashboardSkeleton } from "@/components/dashboard-skeleton";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { api } from "@/lib/api";
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 10
+export const dynamic = "force-dynamic";
+export const revalidate = 10;
 
 async function getInitialData() {
   try {
-    const [devices, telemetry] = await Promise.all([api.getDevices(), api.getMetrics(10)])
+    const [devices, telemetry] = await Promise.all([api.getDevices(), api.getMetrics(10)]);
 
-    return { devices, telemetry }
+    return { devices, telemetry };
   } catch (error) {
-    console.error('Failed to fetch initial data:', error)
-    return { devices: [], telemetry: [] }
+    console.error("Failed to fetch initial data:", error);
+    return { devices: [], telemetry: [] };
   }
 }
 
 export default async function DashboardPage() {
-  const initialData = await getInitialData()
+  const initialData = await getInitialData();
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,5 +40,5 @@ export default async function DashboardPage() {
         </ErrorBoundary>
       </main>
     </div>
-  )
+  );
 }

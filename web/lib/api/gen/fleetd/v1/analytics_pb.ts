@@ -2,11 +2,11 @@
 // @generated from file fleetd/v1/analytics.proto (package fleetd.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2'
-import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2'
-import type { Timestamp } from '@bufbuild/protobuf/wkt'
-import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt'
-import type { Message } from '@bufbuild/protobuf'
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file fleetd/v1/analytics.proto.
@@ -14,24 +14,24 @@ import type { Message } from '@bufbuild/protobuf'
 export const file_fleetd_v1_analytics: GenFile =
   /*@__PURE__*/
   fileDesc(
-    'ChlmbGVldGQvdjEvYW5hbHl0aWNzLnByb3RvEglmbGVldGQudjEiaQoJVGltZVJhbmdlEi4KCnN0YXJ0X3RpbWUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKCGVuZF90aW1lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJoCgtNZXRyaWNWYWx1ZRIRCgdudW1lcmljGAEgASgBSAASDgoEdGV4dBgCIAEoCUgAEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCBwoFdmFsdWUiRAoMTWV0cmljU2VyaWVzEgwKBG5hbWUYASABKAkSJgoGdmFsdWVzGAIgAygLMhYuZmxlZXRkLnYxLk1ldHJpY1ZhbHVlImwKF0dldERldmljZU1ldHJpY3NSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRIUCgxtZXRyaWNfbmFtZXMYAiADKAkSKAoKdGltZV9yYW5nZRgDIAEoCzIULmZsZWV0ZC52MS5UaW1lUmFuZ2UiRAoYR2V0RGV2aWNlTWV0cmljc1Jlc3BvbnNlEigKB21ldHJpY3MYASADKAsyFy5mbGVldGQudjEuTWV0cmljU2VyaWVzItUBCg1VcGRhdGVNZXRyaWNzEhMKC2NhbXBhaWduX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSFQoNdG90YWxfZGV2aWNlcxgDIAEoBRIaChJzdWNjZXNzZnVsX3VwZGF0ZXMYBCABKAUSFgoOZmFpbGVkX3VwZGF0ZXMYBSABKAUSFAoMc3VjY2Vzc19yYXRlGAYgASgBEiAKGGF2ZXJhZ2VfZHVyYXRpb25fc2Vjb25kcxgHIAEoARIeChZjb21tb25fZmFpbHVyZV9yZWFzb25zGAggAygJIloKGUdldFVwZGF0ZUFuYWx5dGljc1JlcXVlc3QSKAoKdGltZV9yYW5nZRgBIAEoCzIULmZsZWV0ZC52MS5UaW1lUmFuZ2USEwoLY2FtcGFpZ25faWQYAiABKAkimgIKGkdldFVwZGF0ZUFuYWx5dGljc1Jlc3BvbnNlEisKCWNhbXBhaWducxgBIAMoCzIYLmZsZWV0ZC52MS5VcGRhdGVNZXRyaWNzEhwKFG92ZXJhbGxfc3VjY2Vzc19yYXRlGAIgASgBEh8KF2F2ZXJhZ2VfY29tcGxldGlvbl90aW1lGAMgASgBElcKEmZhaWx1cmVzX2J5X3JlYXNvbhgEIAMoCzI7LmZsZWV0ZC52MS5HZXRVcGRhdGVBbmFseXRpY3NSZXNwb25zZS5GYWlsdXJlc0J5UmVhc29uRW50cnkaNwoVRmFpbHVyZXNCeVJlYXNvbkVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoBToCOAEijwIKEkRldmljZUhlYWx0aFN0YXR1cxIRCglkZXZpY2VfaWQYASABKAkSDgoGc3RhdHVzGAIgASgJEhQKDGhlYWx0aF9zY29yZRgDIAEoARJICg5oZWFsdGhfbWV0cmljcxgEIAMoCzIwLmZsZWV0ZC52MS5EZXZpY2VIZWFsdGhTdGF0dXMuSGVhbHRoTWV0cmljc0VudHJ5EhAKCHdhcm5pbmdzGAUgAygJEi4KCmxhc3RfY2hlY2sYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGjQKEkhlYWx0aE1ldHJpY3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIlUKFkdldERldmljZUhlYWx0aFJlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJEigKCnRpbWVfcmFuZ2UYAiABKAsyFC5mbGVldGQudjEuVGltZVJhbmdlIooBChdHZXREZXZpY2VIZWFsdGhSZXNwb25zZRI1Cg5jdXJyZW50X3N0YXR1cxgBIAEoCzIdLmZsZWV0ZC52MS5EZXZpY2VIZWFsdGhTdGF0dXMSOAoRaGlzdG9yaWNhbF9zdGF0dXMYAiADKAsyHS5mbGVldGQudjEuRGV2aWNlSGVhbHRoU3RhdHVzIm0KEVBlcmZvcm1hbmNlTWV0cmljEgwKBG5hbWUYASABKAkSDQoFdmFsdWUYAiABKAESDAoEdW5pdBgDIAEoCRItCgl0aW1lc3RhbXAYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIl4KHEdldFBlcmZvcm1hbmNlTWV0cmljc1JlcXVlc3QSFAoMbWV0cmljX25hbWVzGAEgAygJEigKCnRpbWVfcmFuZ2UYAiABKAsyFC5mbGVldGQudjEuVGltZVJhbmdlIuUBCh1HZXRQZXJmb3JtYW5jZU1ldHJpY3NSZXNwb25zZRItCgdtZXRyaWNzGAEgAygLMhwuZmxlZXRkLnYxLlBlcmZvcm1hbmNlTWV0cmljElsKEmFnZ3JlZ2F0ZWRfbWV0cmljcxgCIAMoCzI/LmZsZWV0ZC52MS5HZXRQZXJmb3JtYW5jZU1ldHJpY3NSZXNwb25zZS5BZ2dyZWdhdGVkTWV0cmljc0VudHJ5GjgKFkFnZ3JlZ2F0ZWRNZXRyaWNzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgBOgI4ATKYAwoQQW5hbHl0aWNzU2VydmljZRJbChBHZXREZXZpY2VNZXRyaWNzEiIuZmxlZXRkLnYxLkdldERldmljZU1ldHJpY3NSZXF1ZXN0GiMuZmxlZXRkLnYxLkdldERldmljZU1ldHJpY3NSZXNwb25zZRJhChJHZXRVcGRhdGVBbmFseXRpY3MSJC5mbGVldGQudjEuR2V0VXBkYXRlQW5hbHl0aWNzUmVxdWVzdBolLmZsZWV0ZC52MS5HZXRVcGRhdGVBbmFseXRpY3NSZXNwb25zZRJYCg9HZXREZXZpY2VIZWFsdGgSIS5mbGVldGQudjEuR2V0RGV2aWNlSGVhbHRoUmVxdWVzdBoiLmZsZWV0ZC52MS5HZXREZXZpY2VIZWFsdGhSZXNwb25zZRJqChVHZXRQZXJmb3JtYW5jZU1ldHJpY3MSJy5mbGVldGQudjEuR2V0UGVyZm9ybWFuY2VNZXRyaWNzUmVxdWVzdBooLmZsZWV0ZC52MS5HZXRQZXJmb3JtYW5jZU1ldHJpY3NSZXNwb25zZUKFAQoNY29tLmZsZWV0ZC52MUIOQW5hbHl0aWNzUHJvdG9QAVofZmxlZXRkLnNoL2dlbi9mbGVldGQvdjE7ZmxlZXRwYqICA0ZYWKoCCUZsZWV0ZC5WMcoCCUZsZWV0ZFxWMeICFUZsZWV0ZFxWMVxHUEJNZXRhZGF0YeoCCkZsZWV0ZDo6VjFiBnByb3RvMw',
+    "ChlmbGVldGQvdjEvYW5hbHl0aWNzLnByb3RvEglmbGVldGQudjEiaQoJVGltZVJhbmdlEi4KCnN0YXJ0X3RpbWUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKCGVuZF90aW1lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJoCgtNZXRyaWNWYWx1ZRIRCgdudW1lcmljGAEgASgBSAASDgoEdGV4dBgCIAEoCUgAEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCBwoFdmFsdWUiRAoMTWV0cmljU2VyaWVzEgwKBG5hbWUYASABKAkSJgoGdmFsdWVzGAIgAygLMhYuZmxlZXRkLnYxLk1ldHJpY1ZhbHVlImwKF0dldERldmljZU1ldHJpY3NSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRIUCgxtZXRyaWNfbmFtZXMYAiADKAkSKAoKdGltZV9yYW5nZRgDIAEoCzIULmZsZWV0ZC52MS5UaW1lUmFuZ2UiRAoYR2V0RGV2aWNlTWV0cmljc1Jlc3BvbnNlEigKB21ldHJpY3MYASADKAsyFy5mbGVldGQudjEuTWV0cmljU2VyaWVzItUBCg1VcGRhdGVNZXRyaWNzEhMKC2NhbXBhaWduX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSFQoNdG90YWxfZGV2aWNlcxgDIAEoBRIaChJzdWNjZXNzZnVsX3VwZGF0ZXMYBCABKAUSFgoOZmFpbGVkX3VwZGF0ZXMYBSABKAUSFAoMc3VjY2Vzc19yYXRlGAYgASgBEiAKGGF2ZXJhZ2VfZHVyYXRpb25fc2Vjb25kcxgHIAEoARIeChZjb21tb25fZmFpbHVyZV9yZWFzb25zGAggAygJIloKGUdldFVwZGF0ZUFuYWx5dGljc1JlcXVlc3QSKAoKdGltZV9yYW5nZRgBIAEoCzIULmZsZWV0ZC52MS5UaW1lUmFuZ2USEwoLY2FtcGFpZ25faWQYAiABKAkimgIKGkdldFVwZGF0ZUFuYWx5dGljc1Jlc3BvbnNlEisKCWNhbXBhaWducxgBIAMoCzIYLmZsZWV0ZC52MS5VcGRhdGVNZXRyaWNzEhwKFG92ZXJhbGxfc3VjY2Vzc19yYXRlGAIgASgBEh8KF2F2ZXJhZ2VfY29tcGxldGlvbl90aW1lGAMgASgBElcKEmZhaWx1cmVzX2J5X3JlYXNvbhgEIAMoCzI7LmZsZWV0ZC52MS5HZXRVcGRhdGVBbmFseXRpY3NSZXNwb25zZS5GYWlsdXJlc0J5UmVhc29uRW50cnkaNwoVRmFpbHVyZXNCeVJlYXNvbkVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoBToCOAEijwIKEkRldmljZUhlYWx0aFN0YXR1cxIRCglkZXZpY2VfaWQYASABKAkSDgoGc3RhdHVzGAIgASgJEhQKDGhlYWx0aF9zY29yZRgDIAEoARJICg5oZWFsdGhfbWV0cmljcxgEIAMoCzIwLmZsZWV0ZC52MS5EZXZpY2VIZWFsdGhTdGF0dXMuSGVhbHRoTWV0cmljc0VudHJ5EhAKCHdhcm5pbmdzGAUgAygJEi4KCmxhc3RfY2hlY2sYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGjQKEkhlYWx0aE1ldHJpY3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIlUKFkdldERldmljZUhlYWx0aFJlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJEigKCnRpbWVfcmFuZ2UYAiABKAsyFC5mbGVldGQudjEuVGltZVJhbmdlIooBChdHZXREZXZpY2VIZWFsdGhSZXNwb25zZRI1Cg5jdXJyZW50X3N0YXR1cxgBIAEoCzIdLmZsZWV0ZC52MS5EZXZpY2VIZWFsdGhTdGF0dXMSOAoRaGlzdG9yaWNhbF9zdGF0dXMYAiADKAsyHS5mbGVldGQudjEuRGV2aWNlSGVhbHRoU3RhdHVzIm0KEVBlcmZvcm1hbmNlTWV0cmljEgwKBG5hbWUYASABKAkSDQoFdmFsdWUYAiABKAESDAoEdW5pdBgDIAEoCRItCgl0aW1lc3RhbXAYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIl4KHEdldFBlcmZvcm1hbmNlTWV0cmljc1JlcXVlc3QSFAoMbWV0cmljX25hbWVzGAEgAygJEigKCnRpbWVfcmFuZ2UYAiABKAsyFC5mbGVldGQudjEuVGltZVJhbmdlIuUBCh1HZXRQZXJmb3JtYW5jZU1ldHJpY3NSZXNwb25zZRItCgdtZXRyaWNzGAEgAygLMhwuZmxlZXRkLnYxLlBlcmZvcm1hbmNlTWV0cmljElsKEmFnZ3JlZ2F0ZWRfbWV0cmljcxgCIAMoCzI/LmZsZWV0ZC52MS5HZXRQZXJmb3JtYW5jZU1ldHJpY3NSZXNwb25zZS5BZ2dyZWdhdGVkTWV0cmljc0VudHJ5GjgKFkFnZ3JlZ2F0ZWRNZXRyaWNzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgBOgI4ATKYAwoQQW5hbHl0aWNzU2VydmljZRJbChBHZXREZXZpY2VNZXRyaWNzEiIuZmxlZXRkLnYxLkdldERldmljZU1ldHJpY3NSZXF1ZXN0GiMuZmxlZXRkLnYxLkdldERldmljZU1ldHJpY3NSZXNwb25zZRJhChJHZXRVcGRhdGVBbmFseXRpY3MSJC5mbGVldGQudjEuR2V0VXBkYXRlQW5hbHl0aWNzUmVxdWVzdBolLmZsZWV0ZC52MS5HZXRVcGRhdGVBbmFseXRpY3NSZXNwb25zZRJYCg9HZXREZXZpY2VIZWFsdGgSIS5mbGVldGQudjEuR2V0RGV2aWNlSGVhbHRoUmVxdWVzdBoiLmZsZWV0ZC52MS5HZXREZXZpY2VIZWFsdGhSZXNwb25zZRJqChVHZXRQZXJmb3JtYW5jZU1ldHJpY3MSJy5mbGVldGQudjEuR2V0UGVyZm9ybWFuY2VNZXRyaWNzUmVxdWVzdBooLmZsZWV0ZC52MS5HZXRQZXJmb3JtYW5jZU1ldHJpY3NSZXNwb25zZUKFAQoNY29tLmZsZWV0ZC52MUIOQW5hbHl0aWNzUHJvdG9QAVofZmxlZXRkLnNoL2dlbi9mbGVldGQvdjE7ZmxlZXRwYqICA0ZYWKoCCUZsZWV0ZC5WMcoCCUZsZWV0ZFxWMeICFUZsZWV0ZFxWMVxHUEJNZXRhZGF0YeoCCkZsZWV0ZDo6VjFiBnByb3RvMw",
     [file_google_protobuf_timestamp],
-  )
+  );
 
 /**
  * @generated from message fleetd.v1.TimeRange
  */
-export type TimeRange = Message<'fleetd.v1.TimeRange'> & {
+export type TimeRange = Message<"fleetd.v1.TimeRange"> & {
   /**
    * @generated from field: google.protobuf.Timestamp start_time = 1;
    */
-  startTime?: Timestamp
+  startTime?: Timestamp;
 
   /**
    * @generated from field: google.protobuf.Timestamp end_time = 2;
    */
-  endTime?: Timestamp
-}
+  endTime?: Timestamp;
+};
 
 /**
  * Describes the message fleetd.v1.TimeRange.
@@ -39,12 +39,12 @@ export type TimeRange = Message<'fleetd.v1.TimeRange'> & {
  */
 export const TimeRangeSchema: GenMessage<TimeRange> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 0)
+  messageDesc(file_fleetd_v1_analytics, 0);
 
 /**
  * @generated from message fleetd.v1.MetricValue
  */
-export type MetricValue = Message<'fleetd.v1.MetricValue'> & {
+export type MetricValue = Message<"fleetd.v1.MetricValue"> & {
   /**
    * @generated from oneof fleetd.v1.MetricValue.value
    */
@@ -53,23 +53,23 @@ export type MetricValue = Message<'fleetd.v1.MetricValue'> & {
         /**
          * @generated from field: double numeric = 1;
          */
-        value: number
-        case: 'numeric'
+        value: number;
+        case: "numeric";
       }
     | {
         /**
          * @generated from field: string text = 2;
          */
-        value: string
-        case: 'text'
+        value: string;
+        case: "text";
       }
-    | { case: undefined; value?: undefined }
+    | { case: undefined; value?: undefined };
 
   /**
    * @generated from field: google.protobuf.Timestamp timestamp = 3;
    */
-  timestamp?: Timestamp
-}
+  timestamp?: Timestamp;
+};
 
 /**
  * Describes the message fleetd.v1.MetricValue.
@@ -77,22 +77,22 @@ export type MetricValue = Message<'fleetd.v1.MetricValue'> & {
  */
 export const MetricValueSchema: GenMessage<MetricValue> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 1)
+  messageDesc(file_fleetd_v1_analytics, 1);
 
 /**
  * @generated from message fleetd.v1.MetricSeries
  */
-export type MetricSeries = Message<'fleetd.v1.MetricSeries'> & {
+export type MetricSeries = Message<"fleetd.v1.MetricSeries"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: repeated fleetd.v1.MetricValue values = 2;
    */
-  values: MetricValue[]
-}
+  values: MetricValue[];
+};
 
 /**
  * Describes the message fleetd.v1.MetricSeries.
@@ -100,27 +100,27 @@ export type MetricSeries = Message<'fleetd.v1.MetricSeries'> & {
  */
 export const MetricSeriesSchema: GenMessage<MetricSeries> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 2)
+  messageDesc(file_fleetd_v1_analytics, 2);
 
 /**
  * @generated from message fleetd.v1.GetDeviceMetricsRequest
  */
-export type GetDeviceMetricsRequest = Message<'fleetd.v1.GetDeviceMetricsRequest'> & {
+export type GetDeviceMetricsRequest = Message<"fleetd.v1.GetDeviceMetricsRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: repeated string metric_names = 2;
    */
-  metricNames: string[]
+  metricNames: string[];
 
   /**
    * @generated from field: fleetd.v1.TimeRange time_range = 3;
    */
-  timeRange?: TimeRange
-}
+  timeRange?: TimeRange;
+};
 
 /**
  * Describes the message fleetd.v1.GetDeviceMetricsRequest.
@@ -128,17 +128,17 @@ export type GetDeviceMetricsRequest = Message<'fleetd.v1.GetDeviceMetricsRequest
  */
 export const GetDeviceMetricsRequestSchema: GenMessage<GetDeviceMetricsRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 3)
+  messageDesc(file_fleetd_v1_analytics, 3);
 
 /**
  * @generated from message fleetd.v1.GetDeviceMetricsResponse
  */
-export type GetDeviceMetricsResponse = Message<'fleetd.v1.GetDeviceMetricsResponse'> & {
+export type GetDeviceMetricsResponse = Message<"fleetd.v1.GetDeviceMetricsResponse"> & {
   /**
    * @generated from field: repeated fleetd.v1.MetricSeries metrics = 1;
    */
-  metrics: MetricSeries[]
-}
+  metrics: MetricSeries[];
+};
 
 /**
  * Describes the message fleetd.v1.GetDeviceMetricsResponse.
@@ -146,52 +146,52 @@ export type GetDeviceMetricsResponse = Message<'fleetd.v1.GetDeviceMetricsRespon
  */
 export const GetDeviceMetricsResponseSchema: GenMessage<GetDeviceMetricsResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 4)
+  messageDesc(file_fleetd_v1_analytics, 4);
 
 /**
  * @generated from message fleetd.v1.UpdateMetrics
  */
-export type UpdateMetrics = Message<'fleetd.v1.UpdateMetrics'> & {
+export type UpdateMetrics = Message<"fleetd.v1.UpdateMetrics"> & {
   /**
    * @generated from field: string campaign_id = 1;
    */
-  campaignId: string
+  campaignId: string;
 
   /**
    * @generated from field: string name = 2;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: int32 total_devices = 3;
    */
-  totalDevices: number
+  totalDevices: number;
 
   /**
    * @generated from field: int32 successful_updates = 4;
    */
-  successfulUpdates: number
+  successfulUpdates: number;
 
   /**
    * @generated from field: int32 failed_updates = 5;
    */
-  failedUpdates: number
+  failedUpdates: number;
 
   /**
    * @generated from field: double success_rate = 6;
    */
-  successRate: number
+  successRate: number;
 
   /**
    * @generated from field: double average_duration_seconds = 7;
    */
-  averageDurationSeconds: number
+  averageDurationSeconds: number;
 
   /**
    * @generated from field: repeated string common_failure_reasons = 8;
    */
-  commonFailureReasons: string[]
-}
+  commonFailureReasons: string[];
+};
 
 /**
  * Describes the message fleetd.v1.UpdateMetrics.
@@ -199,22 +199,22 @@ export type UpdateMetrics = Message<'fleetd.v1.UpdateMetrics'> & {
  */
 export const UpdateMetricsSchema: GenMessage<UpdateMetrics> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 5)
+  messageDesc(file_fleetd_v1_analytics, 5);
 
 /**
  * @generated from message fleetd.v1.GetUpdateAnalyticsRequest
  */
-export type GetUpdateAnalyticsRequest = Message<'fleetd.v1.GetUpdateAnalyticsRequest'> & {
+export type GetUpdateAnalyticsRequest = Message<"fleetd.v1.GetUpdateAnalyticsRequest"> & {
   /**
    * @generated from field: fleetd.v1.TimeRange time_range = 1;
    */
-  timeRange?: TimeRange
+  timeRange?: TimeRange;
 
   /**
    * @generated from field: string campaign_id = 2;
    */
-  campaignId: string
-}
+  campaignId: string;
+};
 
 /**
  * Describes the message fleetd.v1.GetUpdateAnalyticsRequest.
@@ -222,32 +222,32 @@ export type GetUpdateAnalyticsRequest = Message<'fleetd.v1.GetUpdateAnalyticsReq
  */
 export const GetUpdateAnalyticsRequestSchema: GenMessage<GetUpdateAnalyticsRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 6)
+  messageDesc(file_fleetd_v1_analytics, 6);
 
 /**
  * @generated from message fleetd.v1.GetUpdateAnalyticsResponse
  */
-export type GetUpdateAnalyticsResponse = Message<'fleetd.v1.GetUpdateAnalyticsResponse'> & {
+export type GetUpdateAnalyticsResponse = Message<"fleetd.v1.GetUpdateAnalyticsResponse"> & {
   /**
    * @generated from field: repeated fleetd.v1.UpdateMetrics campaigns = 1;
    */
-  campaigns: UpdateMetrics[]
+  campaigns: UpdateMetrics[];
 
   /**
    * @generated from field: double overall_success_rate = 2;
    */
-  overallSuccessRate: number
+  overallSuccessRate: number;
 
   /**
    * @generated from field: double average_completion_time = 3;
    */
-  averageCompletionTime: number
+  averageCompletionTime: number;
 
   /**
    * @generated from field: map<string, int32> failures_by_reason = 4;
    */
-  failuresByReason: { [key: string]: number }
-}
+  failuresByReason: { [key: string]: number };
+};
 
 /**
  * Describes the message fleetd.v1.GetUpdateAnalyticsResponse.
@@ -255,44 +255,44 @@ export type GetUpdateAnalyticsResponse = Message<'fleetd.v1.GetUpdateAnalyticsRe
  */
 export const GetUpdateAnalyticsResponseSchema: GenMessage<GetUpdateAnalyticsResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 7)
+  messageDesc(file_fleetd_v1_analytics, 7);
 
 /**
  * @generated from message fleetd.v1.DeviceHealthStatus
  */
-export type DeviceHealthStatus = Message<'fleetd.v1.DeviceHealthStatus'> & {
+export type DeviceHealthStatus = Message<"fleetd.v1.DeviceHealthStatus"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * healthy, warning, critical
    *
    * @generated from field: string status = 2;
    */
-  status: string
+  status: string;
 
   /**
    * @generated from field: double health_score = 3;
    */
-  healthScore: number
+  healthScore: number;
 
   /**
    * @generated from field: map<string, string> health_metrics = 4;
    */
-  healthMetrics: { [key: string]: string }
+  healthMetrics: { [key: string]: string };
 
   /**
    * @generated from field: repeated string warnings = 5;
    */
-  warnings: string[]
+  warnings: string[];
 
   /**
    * @generated from field: google.protobuf.Timestamp last_check = 6;
    */
-  lastCheck?: Timestamp
-}
+  lastCheck?: Timestamp;
+};
 
 /**
  * Describes the message fleetd.v1.DeviceHealthStatus.
@@ -300,22 +300,22 @@ export type DeviceHealthStatus = Message<'fleetd.v1.DeviceHealthStatus'> & {
  */
 export const DeviceHealthStatusSchema: GenMessage<DeviceHealthStatus> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 8)
+  messageDesc(file_fleetd_v1_analytics, 8);
 
 /**
  * @generated from message fleetd.v1.GetDeviceHealthRequest
  */
-export type GetDeviceHealthRequest = Message<'fleetd.v1.GetDeviceHealthRequest'> & {
+export type GetDeviceHealthRequest = Message<"fleetd.v1.GetDeviceHealthRequest"> & {
   /**
    * @generated from field: string device_id = 1;
    */
-  deviceId: string
+  deviceId: string;
 
   /**
    * @generated from field: fleetd.v1.TimeRange time_range = 2;
    */
-  timeRange?: TimeRange
-}
+  timeRange?: TimeRange;
+};
 
 /**
  * Describes the message fleetd.v1.GetDeviceHealthRequest.
@@ -323,22 +323,22 @@ export type GetDeviceHealthRequest = Message<'fleetd.v1.GetDeviceHealthRequest'>
  */
 export const GetDeviceHealthRequestSchema: GenMessage<GetDeviceHealthRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 9)
+  messageDesc(file_fleetd_v1_analytics, 9);
 
 /**
  * @generated from message fleetd.v1.GetDeviceHealthResponse
  */
-export type GetDeviceHealthResponse = Message<'fleetd.v1.GetDeviceHealthResponse'> & {
+export type GetDeviceHealthResponse = Message<"fleetd.v1.GetDeviceHealthResponse"> & {
   /**
    * @generated from field: fleetd.v1.DeviceHealthStatus current_status = 1;
    */
-  currentStatus?: DeviceHealthStatus
+  currentStatus?: DeviceHealthStatus;
 
   /**
    * @generated from field: repeated fleetd.v1.DeviceHealthStatus historical_status = 2;
    */
-  historicalStatus: DeviceHealthStatus[]
-}
+  historicalStatus: DeviceHealthStatus[];
+};
 
 /**
  * Describes the message fleetd.v1.GetDeviceHealthResponse.
@@ -346,32 +346,32 @@ export type GetDeviceHealthResponse = Message<'fleetd.v1.GetDeviceHealthResponse
  */
 export const GetDeviceHealthResponseSchema: GenMessage<GetDeviceHealthResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 10)
+  messageDesc(file_fleetd_v1_analytics, 10);
 
 /**
  * @generated from message fleetd.v1.PerformanceMetric
  */
-export type PerformanceMetric = Message<'fleetd.v1.PerformanceMetric'> & {
+export type PerformanceMetric = Message<"fleetd.v1.PerformanceMetric"> & {
   /**
    * @generated from field: string name = 1;
    */
-  name: string
+  name: string;
 
   /**
    * @generated from field: double value = 2;
    */
-  value: number
+  value: number;
 
   /**
    * @generated from field: string unit = 3;
    */
-  unit: string
+  unit: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp timestamp = 4;
    */
-  timestamp?: Timestamp
-}
+  timestamp?: Timestamp;
+};
 
 /**
  * Describes the message fleetd.v1.PerformanceMetric.
@@ -379,22 +379,22 @@ export type PerformanceMetric = Message<'fleetd.v1.PerformanceMetric'> & {
  */
 export const PerformanceMetricSchema: GenMessage<PerformanceMetric> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 11)
+  messageDesc(file_fleetd_v1_analytics, 11);
 
 /**
  * @generated from message fleetd.v1.GetPerformanceMetricsRequest
  */
-export type GetPerformanceMetricsRequest = Message<'fleetd.v1.GetPerformanceMetricsRequest'> & {
+export type GetPerformanceMetricsRequest = Message<"fleetd.v1.GetPerformanceMetricsRequest"> & {
   /**
    * @generated from field: repeated string metric_names = 1;
    */
-  metricNames: string[]
+  metricNames: string[];
 
   /**
    * @generated from field: fleetd.v1.TimeRange time_range = 2;
    */
-  timeRange?: TimeRange
-}
+  timeRange?: TimeRange;
+};
 
 /**
  * Describes the message fleetd.v1.GetPerformanceMetricsRequest.
@@ -402,22 +402,22 @@ export type GetPerformanceMetricsRequest = Message<'fleetd.v1.GetPerformanceMetr
  */
 export const GetPerformanceMetricsRequestSchema: GenMessage<GetPerformanceMetricsRequest> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 12)
+  messageDesc(file_fleetd_v1_analytics, 12);
 
 /**
  * @generated from message fleetd.v1.GetPerformanceMetricsResponse
  */
-export type GetPerformanceMetricsResponse = Message<'fleetd.v1.GetPerformanceMetricsResponse'> & {
+export type GetPerformanceMetricsResponse = Message<"fleetd.v1.GetPerformanceMetricsResponse"> & {
   /**
    * @generated from field: repeated fleetd.v1.PerformanceMetric metrics = 1;
    */
-  metrics: PerformanceMetric[]
+  metrics: PerformanceMetric[];
 
   /**
    * @generated from field: map<string, double> aggregated_metrics = 2;
    */
-  aggregatedMetrics: { [key: string]: number }
-}
+  aggregatedMetrics: { [key: string]: number };
+};
 
 /**
  * Describes the message fleetd.v1.GetPerformanceMetricsResponse.
@@ -425,7 +425,7 @@ export type GetPerformanceMetricsResponse = Message<'fleetd.v1.GetPerformanceMet
  */
 export const GetPerformanceMetricsResponseSchema: GenMessage<GetPerformanceMetricsResponse> =
   /*@__PURE__*/
-  messageDesc(file_fleetd_v1_analytics, 13)
+  messageDesc(file_fleetd_v1_analytics, 13);
 
 /**
  * @generated from service fleetd.v1.AnalyticsService
@@ -437,38 +437,38 @@ export const AnalyticsService: GenService<{
    * @generated from rpc fleetd.v1.AnalyticsService.GetDeviceMetrics
    */
   getDeviceMetrics: {
-    methodKind: 'unary'
-    input: typeof GetDeviceMetricsRequestSchema
-    output: typeof GetDeviceMetricsResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetDeviceMetricsRequestSchema;
+    output: typeof GetDeviceMetricsResponseSchema;
+  };
   /**
    * Get update campaign analytics
    *
    * @generated from rpc fleetd.v1.AnalyticsService.GetUpdateAnalytics
    */
   getUpdateAnalytics: {
-    methodKind: 'unary'
-    input: typeof GetUpdateAnalyticsRequestSchema
-    output: typeof GetUpdateAnalyticsResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetUpdateAnalyticsRequestSchema;
+    output: typeof GetUpdateAnalyticsResponseSchema;
+  };
   /**
    * Get device health metrics
    *
    * @generated from rpc fleetd.v1.AnalyticsService.GetDeviceHealth
    */
   getDeviceHealth: {
-    methodKind: 'unary'
-    input: typeof GetDeviceHealthRequestSchema
-    output: typeof GetDeviceHealthResponseSchema
-  }
+    methodKind: "unary";
+    input: typeof GetDeviceHealthRequestSchema;
+    output: typeof GetDeviceHealthResponseSchema;
+  };
   /**
    * Get performance metrics
    *
    * @generated from rpc fleetd.v1.AnalyticsService.GetPerformanceMetrics
    */
   getPerformanceMetrics: {
-    methodKind: 'unary'
-    input: typeof GetPerformanceMetricsRequestSchema
-    output: typeof GetPerformanceMetricsResponseSchema
-  }
-}> = /*@__PURE__*/ serviceDesc(file_fleetd_v1_analytics, 0)
+    methodKind: "unary";
+    input: typeof GetPerformanceMetricsRequestSchema;
+    output: typeof GetPerformanceMetricsResponseSchema;
+  };
+}> = /*@__PURE__*/ serviceDesc(file_fleetd_v1_analytics, 0);
