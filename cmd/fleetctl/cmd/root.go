@@ -74,6 +74,7 @@ func init() {
 		newConfigureCmd(),
 		newMigrateCmd(),
 		newVersionCmd(),
+		newSecurityCmd(),
 	)
 
 	// Disable color if requested
@@ -174,19 +175,19 @@ func setDefaults() {
 // Helper functions for consistent output
 
 func printSuccess(format string, a ...any) {
-	fmt.Printf("%s %s\n", green("✓"), fmt.Sprintf(format, a...))
+	fmt.Printf("%s %s\n", green("[OK]"), fmt.Sprintf(format, a...))
 }
 
 func printError(format string, a ...any) {
-	fmt.Printf("%s %s\n", red("✗"), fmt.Sprintf(format, a...))
+	fmt.Printf("%s %s\n", red("[ERROR]"), fmt.Sprintf(format, a...))
 }
 
 func printWarning(format string, a ...any) {
-	fmt.Printf("%s %s\n", yellow("⚠"), fmt.Sprintf(format, a...))
+	fmt.Printf("%s %s\n", yellow("[WARN]"), fmt.Sprintf(format, a...))
 }
 
 func printInfo(format string, a ...any) {
-	fmt.Printf("%s %s\n", blue("ℹ"), fmt.Sprintf(format, a...))
+	fmt.Printf("%s %s\n", blue("[INFO]"), fmt.Sprintf(format, a...))
 }
 
 func printHeader(text string) {
@@ -197,17 +198,6 @@ func printHeader(text string) {
 func checkDocker() error {
 	if err := runCommand("docker", "version", "--format", "json"); err != nil {
 		return fmt.Errorf("Docker is not available. Please install Docker first")
-	}
-	return nil
-}
-
-// checkDockerCompose checks if Docker Compose is available
-func checkDockerCompose() error {
-	if err := runCommand("docker", "compose", "version"); err != nil {
-		// Try older docker-compose command
-		if err := runCommand("docker-compose", "version"); err != nil {
-			return fmt.Errorf("Docker Compose is not available. Please install Docker Compose first")
-		}
 	}
 	return nil
 }

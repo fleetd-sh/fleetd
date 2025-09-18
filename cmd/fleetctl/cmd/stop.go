@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -31,59 +29,63 @@ func runStop(cmd *cobra.Command, args []string, removeVolumes bool) error {
 		return err
 	}
 
-	if err := checkDockerCompose(); err != nil {
-		return err
-	}
-
 	printHeader("Stopping Fleet development stack...")
 
-	// Get project root
-	projectRoot := getProjectRoot()
-
-	// Build docker-compose command
-	composeFiles := []string{
-		filepath.Join(projectRoot, "docker-compose.yml"),
-		filepath.Join(projectRoot, "docker-compose.dev.yml"),
+	// List of services to stop
+	services := []string{
+		"platform-api",
+		"device-api",
+		"studio",
+		"postgres",
+		"valkey",
+		"victoriametrics",
+		"loki",
+		"traefik",
 	}
 
-	// Check if gateway compose file exists
-	gatewayFile := filepath.Join(projectRoot, "docker-compose.gateway.yml")
-	if _, err := os.Stat(gatewayFile); err == nil {
-		composeFiles = append(composeFiles, gatewayFile)
-	}
+	// Stop all fleetd containers
+	for _, service := range services {
+		containerName := "fleetd-" + service
 
-	// Build command
-	cmdArgs := []string{"compose"}
-	for _, file := range composeFiles {
-		if _, err := os.Stat(file); err == nil {
-			cmdArgs = append(cmdArgs, "-f", file)
+		// Check if container exists
+		checkCmd := exec.Command("docker", "ps", "-a", "--filter", "name="+containerName, "--format", "{{.Names}}")
+		output, _ := checkCmd.Output()
+
+		if output != nil && len(output) > 0 {
+			printInfo("Stopping %s...", service)
+			stopCmd := exec.Command("docker", "stop", containerName)
+			stopCmd.Run()
+
+			// Remove container
+			rmCmd := exec.Command("docker", "rm", containerName)
+			rmCmd.Run()
 		}
 	}
-	cmdArgs = append(cmdArgs, "down")
+
+	// Remove network
+	printInfo("Removing Docker network...")
+	exec.Command("docker", "network", "rm", "fleetd-network").Run()
 
 	if removeVolumes {
-		cmdArgs = append(cmdArgs, "-v")
 		printWarning("Removing volumes - all data will be lost!")
-	}
 
-	// Execute docker-compose down
-	dockerCmd := exec.Command("docker", cmdArgs...)
-	dockerCmd.Dir = projectRoot
-	dockerCmd.Stdout = os.Stdout
-	dockerCmd.Stderr = os.Stderr
+		volumes := []string{
+			"fleetd-postgres-data",
+			"fleetd-valkey-data",
+			"fleetd-metrics-data",
+			"fleetd-loki-data",
+		}
 
-	if err := dockerCmd.Run(); err != nil {
-		printError("Failed to stop services: %v", err)
-		return err
+		for _, volume := range volumes {
+			printInfo("Removing volume %s...", volume)
+			exec.Command("docker", "volume", "rm", volume).Run()
+		}
+
+		printInfo("All volumes have been removed")
+	} else {
+		printInfo("Data volumes preserved. Use 'fleetctl stop --volumes' to remove them")
 	}
 
 	printSuccess("Fleet development stack stopped")
-
-	if removeVolumes {
-		printInfo("All volumes have been removed")
-	} else {
-		printInfo("Data volumes preserved. Use 'fleet stop --volumes' to remove them")
-	}
-
 	return nil
 }

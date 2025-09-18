@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -25,12 +24,14 @@ Use --follow to tail logs in real-time.`,
 		RunE: runLogs,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return []string{
+				"platform-api",
+				"device-api",
 				"postgres",
+				"valkey",
 				"victoriametrics",
 				"loki",
-				"valkey",
 				"traefik",
-				"fleet-server",
+				"studio",
 			}, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
@@ -47,33 +48,21 @@ func runLogs(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := checkDockerCompose(); err != nil {
-		return err
+	var service string
+	if len(args) > 0 {
+		service = args[0]
+		printHeader(fmt.Sprintf("Logs for %s", service))
+	} else {
+		// Default to platform-api if no service specified
+		service = "platform-api"
+		printHeader("Logs for platform-api (use 'fleetctl logs <service>' to view other services)")
 	}
 
-	// Get project root
-	projectRoot := getProjectRoot()
+	// Build container name
+	containerName := fmt.Sprintf("fleetd-%s", service)
 
-	// Build docker-compose command
-	composeFiles := []string{
-		filepath.Join(projectRoot, "docker-compose.yml"),
-		filepath.Join(projectRoot, "docker-compose.dev.yml"),
-	}
-
-	// Check if gateway compose file exists
-	gatewayFile := filepath.Join(projectRoot, "docker-compose.gateway.yml")
-	if _, err := os.Stat(gatewayFile); err == nil {
-		composeFiles = append(composeFiles, gatewayFile)
-	}
-
-	// Build command
-	cmdArgs := []string{"compose"}
-	for _, file := range composeFiles {
-		if _, err := os.Stat(file); err == nil {
-			cmdArgs = append(cmdArgs, "-f", file)
-		}
-	}
-	cmdArgs = append(cmdArgs, "logs")
+	// Build docker logs command
+	cmdArgs := []string{"logs"}
 
 	// Add tail option
 	if tail > 0 {
@@ -85,17 +74,11 @@ func runLogs(cmd *cobra.Command, args []string) error {
 		cmdArgs = append(cmdArgs, "-f")
 	}
 
-	// Add service name if specified
-	if len(args) > 0 {
-		cmdArgs = append(cmdArgs, args[0])
-		printHeader(fmt.Sprintf("Logs for %s", args[0]))
-	} else {
-		printHeader("Logs for all services")
-	}
+	// Add container name
+	cmdArgs = append(cmdArgs, containerName)
 
-	// Execute docker-compose logs
+	// Execute docker logs
 	dockerCmd := exec.Command("docker", cmdArgs...)
-	dockerCmd.Dir = projectRoot
 	dockerCmd.Stdout = os.Stdout
 	dockerCmd.Stderr = os.Stderr
 
@@ -112,7 +95,8 @@ func runLogs(cmd *cobra.Command, args []string) error {
 			printInfo("Stopped following logs")
 			return nil
 		}
-		printError("Failed to get logs: %v", err)
+		printError("Failed to get logs for %s: %v", service, err)
+		printInfo("Available services: platform-api, device-api, postgres, valkey, victoriametrics, loki, traefik, studio")
 		return err
 	}
 

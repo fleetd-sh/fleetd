@@ -19,7 +19,6 @@ func newInitCmd() *cobra.Command {
 
 This command creates:
   - config.toml (project configuration)
-  - docker-compose.yml (service definitions)
   - .env (environment variables)
   - migrations/ (database migrations directory)`,
 		RunE: runInit,
@@ -58,14 +57,6 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	printSuccess("Created config.toml")
-
-	// Create docker-compose files
-	printInfo("Creating docker-compose.yml...")
-	if err := createDockerComposeFile(services); err != nil {
-		printError("Failed to create docker-compose.yml: %v", err)
-		return err
-	}
-	printSuccess("Created docker-compose.yml")
 
 	// Create .env file
 	printInfo("Creating .env file...")
@@ -106,8 +97,8 @@ func runInit(cmd *cobra.Command, args []string) error {
 	printHeader("Next steps:")
 	fmt.Println("  1. Review and edit config.toml")
 	fmt.Println("  2. Set up environment variables in .env")
-	fmt.Println("  3. Run 'fleet start' to start development stack")
-	fmt.Println("  4. Run 'fleet db migrate' to set up database")
+	fmt.Println("  3. Run 'fleetctl start' to start development stack")
+	fmt.Println("  4. Run 'fleetctl migrate up' to set up database")
 
 	return nil
 }
@@ -266,103 +257,6 @@ func formatServiceList(services []string) string {
 		return strings.Join(formatted, ",") + "\n"
 	}
 	return ""
-}
-
-func createDockerComposeFile(services []string) error {
-	compose := `version: '3.8'
-
-services:
-`
-
-	// Add services based on selection
-	if contains(services, "postgres") {
-		compose += `  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: fleetd
-      POSTGRES_USER: fleetd
-      POSTGRES_PASSWORD: fleetd_secret
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-`
-	}
-
-	if contains(services, "victoriametrics") {
-		compose += `  victoriametrics:
-    image: victoriametrics/victoria-metrics:latest
-    ports:
-      - "8428:8428"
-    volumes:
-      - victoriametrics_data:/victoria-metrics-data
-    command:
-      - "-storageDataPath=/victoria-metrics-data"
-      - "-retentionPeriod=12"
-
-`
-	}
-
-	if contains(services, "loki") {
-		compose += `  loki:
-    image: grafana/loki:latest
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./configs/loki-config.yaml:/etc/loki/local-config.yaml
-      - loki_data:/loki
-
-`
-	}
-
-	if contains(services, "valkey") {
-		compose += `  valkey:
-    image: valkey/valkey:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - valkey_data:/data
-
-`
-	}
-
-	if contains(services, "traefik") {
-		compose += `  traefik:
-    image: traefik:v3.0
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
-    volumes:
-      - ./configs/traefik.yml:/etc/traefik/traefik.yml
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-
-`
-	}
-
-	// Add volumes section
-	compose += `
-volumes:
-`
-	if contains(services, "postgres") {
-		compose += `  postgres_data:
-`
-	}
-	if contains(services, "victoriametrics") {
-		compose += `  victoriametrics_data:
-`
-	}
-	if contains(services, "loki") {
-		compose += `  loki_data:
-`
-	}
-	if contains(services, "valkey") {
-		compose += `  valkey_data:
-`
-	}
-
-	return os.WriteFile("docker-compose.yml", []byte(compose), 0o644)
 }
 
 func createEnvFile(projectName string) error {
