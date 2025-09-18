@@ -2,12 +2,26 @@
 
 [project]
 id = "fleetd-dev"
-name = "FleetD Development"
+name = "fleetd Development"
 
-[api]
+# Device API - High-volume device traffic (metrics, logs, telemetry, registration)
+[device_api]
 enabled = true
 port = 8080
 host = "localhost"
+# Device API receives all device communications and routes data to backends
+
+# Platform API - Management operations (CLI, Web UI, third-party integrations)
+[platform_api]
+enabled = true
+port = 8090
+host = "localhost"
+# For remote deployment, you can use:
+# host = "fleetd.molland.sh"  # Will use https:// automatically
+# port = 443                   # Optional, defaults to 443 for https
+# OR use a full URL:
+# url = "https://fleetd.molland.sh"
+# Platform API manages fleets, deployments, and analytics without being burdened by device traffic
 
 [db]
 port = 5432
@@ -45,9 +59,11 @@ default_user = "pi"
 
 # Environment-specific overrides
 [environments.staging]
-api.url = "https://staging.fleetd.sh"
+device_api.url = "https://device-staging.fleetd.sh"
+control_api.url = "https://api-staging.fleetd.sh"
 db.host = "staging-db.fleetd.sh"
 
 [environments.production]
-api.url = "https://api.fleetd.sh"
+device_api.url = "https://device.fleetd.sh"
+control_api.url = "https://api.fleetd.sh"
 db.host = "prod-db.fleetd.sh"

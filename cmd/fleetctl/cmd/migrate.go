@@ -128,10 +128,10 @@ func newMigrateStatusCmd() *cobra.Command {
 
 			// TODO: Connect to database and check migration status
 			fmt.Printf("%s\n", bold("Applied Migrations:"))
-			fmt.Printf("  %s 001_initial_schema (2024-01-15 10:00:00)\n", green("✓"))
-			fmt.Printf("  %s 002_add_devices_table (2024-01-16 14:30:00)\n", green("✓"))
-			fmt.Printf("  %s 003_add_telemetry_tables (2024-01-18 09:15:00)\n", green("✓"))
-			fmt.Printf("  %s 004_add_update_tracking (2024-01-20 11:45:00)\n", green("✓"))
+			fmt.Printf("  %s 001_initial_schema (2024-01-15 10:00:00)\n", green("[OK]"))
+			fmt.Printf("  %s 002_add_devices_table (2024-01-16 14:30:00)\n", green("[OK]"))
+			fmt.Printf("  %s 003_add_telemetry_tables (2024-01-18 09:15:00)\n", green("[OK]"))
+			fmt.Printf("  %s 004_add_update_tracking (2024-01-20 11:45:00)\n", green("[OK]"))
 
 			fmt.Printf("\n%s\n", bold("Pending Migrations:"))
 			fmt.Printf("  %s 005_add_rbac_tables\n", yellow("○"))
@@ -200,7 +200,7 @@ func newMigrateResetCmd() *cobra.Command {
 			}
 
 			printInfo("Resetting database...")
-			fmt.Printf("  %s Dropping all tables...\n", red("✗"))
+			fmt.Printf("  %s Dropping all tables...\n", red("[X]"))
 			fmt.Printf("  %s Creating fresh schema...\n", cyan("→"))
 			fmt.Printf("  %s Running initial migrations...\n", cyan("→"))
 

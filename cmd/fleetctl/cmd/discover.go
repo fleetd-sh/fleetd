@@ -44,7 +44,7 @@ This uses mDNS/Bonjour to find devices advertising the fleetd service.`,
 			fmt.Fprintln(w, "iot-device-042\t192.168.1.152\taa:bb:cc:dd:ee:03\tv0.5.2\tUnregistered")
 			w.Flush()
 
-			fmt.Printf("\n%s Found 3 unregistered devices\n", green("✓"))
+			fmt.Printf("\n%s Found 3 unregistered devices\n", green("[OK]"))
 			fmt.Printf("\nTo register a device, use: %s\n", cyan("fleetctl provision <hostname>"))
 
 			return nil
