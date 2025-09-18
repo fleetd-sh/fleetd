@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255),
     full_name VARCHAR(255),
     avatar_url TEXT,
-    roles TEXT[], -- Array of roles
-    permissions TEXT[], -- Array of additional permissions
-    metadata JSONB,
+    roles TEXT, -- JSON array of roles
+    permissions TEXT, -- JSON array of additional permissions
+    metadata TEXT,
     status VARCHAR(50) DEFAULT 'active',
     last_login TIMESTAMP,
     email_verified BOOLEAN DEFAULT FALSE,
@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS sessions (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     refresh_token VARCHAR(500) UNIQUE NOT NULL,
-    device_info JSONB,
-    ip_address INET,
+    device_info TEXT,
+    ip_address TEXT,
     user_agent TEXT,
     expires_at TIMESTAMP NOT NULL,
     revoked_at TIMESTAMP,
@@ -43,8 +43,8 @@ CREATE TABLE IF NOT EXISTS api_keys (
     device_id VARCHAR(255) REFERENCES device(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     key_hash VARCHAR(255) UNIQUE NOT NULL,
-    permissions TEXT[],
-    metadata JSONB,
+    permissions TEXT,
+    metadata TEXT,
     last_used_at TIMESTAMP,
     expires_at TIMESTAMP,
     revoked_at TIMESTAMP,
@@ -58,14 +58,14 @@ CREATE TABLE IF NOT EXISTS api_keys (
 
 -- Create audit_logs table
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id BIGSERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id VARCHAR(255) REFERENCES users(id) ON DELETE SET NULL,
     device_id VARCHAR(255) REFERENCES device(id) ON DELETE SET NULL,
     action VARCHAR(100) NOT NULL,
     resource_type VARCHAR(100),
     resource_id VARCHAR(255),
-    details JSONB,
-    ip_address INET,
+    details TEXT,
+    ip_address TEXT,
     user_agent TEXT,
     success BOOLEAN DEFAULT TRUE,
     error_message TEXT,
@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS roles (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT,
-    permissions TEXT[] NOT NULL,
-    metadata JSONB,
+    permissions TEXT NOT NULL,
+    metadata TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -99,9 +99,9 @@ CREATE TABLE IF NOT EXISTS policies (
     name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT,
     resource VARCHAR(255) NOT NULL,
-    actions TEXT[] NOT NULL,
+    actions TEXT NOT NULL,
     effect VARCHAR(20) NOT NULL, -- allow, deny
-    conditions JSONB,
+    conditions TEXT,
     priority INT DEFAULT 0,
     enabled BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -139,36 +139,45 @@ CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
 CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
 CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
 
--- Triggers
+-- SQLite Triggers
 CREATE TRIGGER users_updated_at
-    BEFORE UPDATE ON users
+    AFTER UPDATE ON users
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER sessions_updated_at
-    BEFORE UPDATE ON sessions
+    AFTER UPDATE ON sessions
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER api_keys_updated_at
-    BEFORE UPDATE ON api_keys
+    AFTER UPDATE ON api_keys
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE api_keys SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER roles_updated_at
-    BEFORE UPDATE ON roles
+    AFTER UPDATE ON roles
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE roles SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 CREATE TRIGGER policies_updated_at
-    BEFORE UPDATE ON policies
+    AFTER UPDATE ON policies
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE policies SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
 
 -- Insert default roles
 INSERT INTO roles (id, name, description, permissions) VALUES
-    ('admin', 'Administrator', 'Full system access', ARRAY['*']),
-    ('operator', 'Operator', 'Device and update management', ARRAY['device:*', 'update:*', 'analytics:view']),
-    ('viewer', 'Viewer', 'Read-only access', ARRAY['device:list', 'device:view', 'update:list', 'update:view', 'analytics:view']),
-    ('device', 'Device', 'Device self-management', ARRAY['device:register', 'device:heartbeat', 'device:view', 'update:view'])
-ON CONFLICT (id) DO NOTHING;
+    ('admin', 'Administrator', 'Full system access', '["*"]'),
+    ('operator', 'Operator', 'Device and update management', '["device:*", "update:*", "analytics:view"]'),
+    ('viewer', 'Viewer', 'Read-only access', '["device:list", "device:view", "update:list", "update:view", "analytics:view"]'),
+    ('device', 'Device', 'Device self-management', '["device:register", "device:heartbeat", "device:view", "update:view"]');

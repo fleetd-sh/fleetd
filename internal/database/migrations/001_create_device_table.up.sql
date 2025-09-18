@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS device (
     certificate TEXT,
     last_seen TIMESTAMP,
     status VARCHAR(50) DEFAULT 'offline',
-    metadata JSONB,
-    system_info JSONB,
+    metadata TEXT,
+    system_info TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
@@ -22,16 +22,10 @@ CREATE INDEX idx_device_last_seen ON device(last_seen DESC);
 CREATE INDEX idx_device_created_at ON device(created_at DESC);
 CREATE INDEX idx_device_deleted_at ON device(deleted_at) WHERE deleted_at IS NOT NULL;
 
--- Trigger to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
+-- SQLite trigger to update updated_at timestamp
 CREATE TRIGGER device_updated_at
-    BEFORE UPDATE ON device
+    AFTER UPDATE ON device
     FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();
+BEGIN
+    UPDATE device SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
