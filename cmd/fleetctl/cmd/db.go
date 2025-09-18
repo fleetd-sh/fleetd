@@ -326,7 +326,7 @@ func runDbStatus(cmd *cobra.Command, args []string) error {
 	pending := 0
 	for _, migration := range migrations {
 		if timestamp, ok := applied[migration]; ok {
-			fmt.Printf("%s %s (applied: %s)\n", green("✓"), migration, timestamp.Format("2006-01-02 15:04:05"))
+			fmt.Printf("%s %s (applied: %s)\n", green("[OK]"), migration, timestamp.Format("2006-01-02 15:04:05"))
 		} else {
 			fmt.Printf("%s %s (pending)\n", yellow("○"), migration)
 			pending++

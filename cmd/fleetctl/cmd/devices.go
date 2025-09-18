@@ -1,12 +1,16 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 	"time"
 
+	"fleetd.sh/internal/client"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // newDevicesCmd creates the devices command
@@ -42,15 +46,69 @@ func newDevicesListCmd() *cobra.Command {
 		Short: "List all devices",
 		Long:  `Display a list of all registered devices in your fleet`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: Connect to fleet server API
-			printInfo("Fetching devices from fleet server...")
+			// Get auth token from config or environment
+			authToken := viper.GetString("auth.token")
+			if authToken == "" {
+				authToken = os.Getenv("FLEETCTL_AUTH_TOKEN")
+			}
 
-			// For now, show example output
+			// Create API client
+			apiClient, err := client.NewClient(&client.Config{
+				AuthToken: authToken,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create API client: %w", err)
+			}
+
+			// Check if control plane is running
+			ctx := context.Background()
+			if err := apiClient.HealthCheck(ctx); err != nil {
+				printWarning("Platform API is not available. Make sure platform-api is running.")
+				printInfo("You can start it with: just platform-api-dev")
+
+				// Show example output for demo purposes
+				fmt.Println("\nShowing example data:")
+				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				fmt.Fprintln(w, "ID\tNAME\tSTATUS\tIP\tLAST SEEN\tVERSION")
+				fmt.Fprintln(w, "device-001\tEdge Gateway 1\tOnline\t192.168.1.100\t2m ago\tv0.5.2")
+				fmt.Fprintln(w, "device-002\tEdge Gateway 2\tOnline\t192.168.1.101\t1m ago\tv0.5.2")
+				fmt.Fprintln(w, "device-003\tRaspberry Pi\tOffline\t192.168.1.102\t1h ago\tv0.5.1")
+				w.Flush()
+				return nil
+			}
+
+			printInfo("Fetching devices from control plane...")
+
+			// Fetch devices from API
+			devices, err := apiClient.ListDevices(ctx)
+			if err != nil {
+				printError("Failed to list devices")
+				if strings.Contains(err.Error(), "unauthorized") || strings.Contains(err.Error(), "401") {
+					printInfo("Authentication required. Please run: fleetctl login")
+				} else if strings.Contains(err.Error(), "connection refused") {
+					printInfo("Platform API is not running. Start it with: ./platform-api")
+				} else if strings.Contains(err.Error(), "protocol error") {
+					printInfo("Protocol mismatch. Check that platform-api is up to date.")
+				}
+				return fmt.Errorf("%w", err)
+			}
+
+			if len(devices) == 0 {
+				printInfo("No devices found")
+				return nil
+			}
+
+			// Display devices
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "ID\tNAME\tSTATUS\tIP\tLAST SEEN\tVERSION")
-			fmt.Fprintln(w, "device-001\tEdge Gateway 1\tOnline\t192.168.1.100\t2m ago\tv0.5.2")
-			fmt.Fprintln(w, "device-002\tEdge Gateway 2\tOnline\t192.168.1.101\t1m ago\tv0.5.2")
-			fmt.Fprintln(w, "device-003\tRaspberry Pi\tOffline\t192.168.1.102\t1h ago\tv0.5.1")
+			fmt.Fprintln(w, "ID\tNAME\tTYPE\tVERSION\tLAST SEEN")
+			for _, device := range devices {
+				lastSeen := ""
+				if device.LastSeen != nil {
+					lastSeen = device.LastSeen.AsTime().Format("2006-01-02 15:04")
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n",
+					device.Id, device.Name, device.Type, device.Version, lastSeen)
+			}
 			w.Flush()
 
 			return nil
@@ -76,24 +134,75 @@ func newDevicesGetCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			deviceID := args[0]
 
+			// Get auth token from config or environment
+			authToken := viper.GetString("auth.token")
+			if authToken == "" {
+				authToken = os.Getenv("FLEETCTL_AUTH_TOKEN")
+			}
+
+			// Create API client
+			apiClient, err := client.NewClient(&client.Config{
+				AuthToken: authToken,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create API client: %w", err)
+			}
+
+			ctx := context.Background()
+
+			// Check if platform API is running
+			if err := apiClient.HealthCheck(ctx); err != nil {
+				printWarning("Platform API is not available. Make sure platform-api is running.")
+
+				// Show example output for demo
+				fmt.Printf("\n%s\n", bold("Device Details (Example)"))
+				fmt.Printf("ID:          %s\n", deviceID)
+				fmt.Printf("Name:        Edge Gateway 1\n")
+				fmt.Printf("Status:      %s\n", green("Online"))
+				fmt.Printf("IP Address:  192.168.1.100\n")
+				fmt.Printf("MAC Address: aa:bb:cc:dd:ee:ff\n")
+				fmt.Printf("Version:     v0.5.2\n")
+				fmt.Printf("Last Seen:   %s\n", time.Now().Format(time.RFC3339))
+				return nil
+			}
+
 			printInfo("Fetching device %s...", deviceID)
 
-			// TODO: Connect to fleet server API
+			// Fetch device from API
+			device, err := apiClient.GetDevice(ctx, deviceID)
+			if err != nil {
+				return fmt.Errorf("failed to get device: %w", err)
+			}
+
+			// Display device details
 			fmt.Printf("\n%s\n", bold("Device Details"))
-			fmt.Printf("ID:          %s\n", deviceID)
-			fmt.Printf("Name:        Edge Gateway 1\n")
-			fmt.Printf("Status:      %s\n", green("Online"))
-			fmt.Printf("IP Address:  192.168.1.100\n")
-			fmt.Printf("MAC Address: aa:bb:cc:dd:ee:ff\n")
-			fmt.Printf("Version:     v0.5.2\n")
-			fmt.Printf("Last Seen:   %s\n", time.Now().Format(time.RFC3339))
-			fmt.Printf("\n%s\n", bold("Hardware"))
-			fmt.Printf("CPU:         ARM Cortex-A72\n")
-			fmt.Printf("Memory:      4GB\n")
-			fmt.Printf("Storage:     32GB\n")
-			fmt.Printf("\n%s\n", bold("Tags"))
-			fmt.Printf("Environment: production\n")
-			fmt.Printf("Location:    warehouse-1\n")
+			fmt.Printf("ID:          %s\n", device.Id)
+			fmt.Printf("Name:        %s\n", device.Name)
+			fmt.Printf("Type:        %s\n", device.Type)
+			fmt.Printf("Version:     %s\n", device.Version)
+			if device.LastSeen != nil {
+				fmt.Printf("Last Seen:   %s\n", device.LastSeen.AsTime().Format(time.RFC3339))
+			}
+
+			// Display system info if available
+			if device.SystemInfo != nil {
+				fmt.Printf("\n%s\n", bold("System Information"))
+				fmt.Printf("Hostname:    %s\n", device.SystemInfo.Hostname)
+				fmt.Printf("OS:          %s %s\n", device.SystemInfo.Os, device.SystemInfo.OsVersion)
+				fmt.Printf("Arch:        %s\n", device.SystemInfo.Arch)
+				fmt.Printf("CPU:         %s (%d cores)\n", device.SystemInfo.CpuModel, device.SystemInfo.CpuCores)
+				fmt.Printf("Memory:      %.2f GB\n", float64(device.SystemInfo.MemoryTotal)/(1024*1024*1024))
+				fmt.Printf("Storage:     %.2f GB\n", float64(device.SystemInfo.StorageTotal)/(1024*1024*1024))
+				fmt.Printf("Platform:    %s\n", device.SystemInfo.Platform)
+			}
+
+			// Display metadata if available
+			if len(device.Metadata) > 0 {
+				fmt.Printf("\n%s\n", bold("Metadata"))
+				for key, value := range device.Metadata {
+					fmt.Printf("%s: %s\n", key, value)
+				}
+			}
 
 			return nil
 		},
