@@ -1,7 +1,12 @@
 bin/
 .DS_Store
 
+# Temporary files
 tmp/
+*.log
+*.db
+*.db-wal
+*.db-shm
 
 # editor
 .idea/
@@ -22,7 +27,19 @@ platform/
 # Cloud/Proprietary features (to be extracted to separate repo later)
 /cloud/
 
-# Add this line if not already present
+# Certificates (never commit these)
+certs/
+*.pem
+*.key
+*.crt
+*.cer
+
+# Binary files
+*.so
+*.dylib
+*.dll
+
+# Test data
 test/e2e/testdata/fleetd
 
 # Wiki submodule (when added)

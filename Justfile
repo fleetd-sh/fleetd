@@ -62,6 +62,7 @@ clean:
 
 # Build a Go binary with optional architecture
 # Usage: just build fleetd [arch]
+# Supported binaries: fleetd, device-api, platform-api, fleetctl
 build target arch="":
     #!/usr/bin/env sh
     set -e
@@ -97,8 +98,17 @@ build target arch="":
 # Build all Go binaries
 build-go:
     just build fleetd
-    just build fleets
+    just build device-api
+    just build platform-api
     just build fleetctl
+
+# Build platform API only
+build-platform:
+    just build platform-api
+
+# Build device API only
+build-device:
+    just build device-api
 
 # Run Go unit tests
 test-go:
@@ -125,14 +135,34 @@ format-go:
 lint-go:
     go vet ./...
 
-# Run Go backend development server
-server-dev:
-    go run cmd/fleets/main.go --port 8080
+# Run Device API development server
+device-api-dev:
+    JWT_SECRET=dev-secret go run cmd/device-api/main.go --port 8080
 
-# Watch and run Go backend
-server-watch:
+# Run Platform API development server
+platform-api-dev:
+    JWT_SECRET=dev-secret go run cmd/platform-api/main.go --port 8090
+
+# Run both APIs in development
+server-dev:
+    #!/bin/bash
+    trap 'kill $(jobs -p)' INT TERM EXIT
+    echo "Starting Device API and Platform API..."
+    just device-api-dev &
+    just platform-api-dev &
+    wait
+
+# Watch and run Device API
+device-api-watch:
     VERSION={{version}} COMMIT_SHA={{commit_sha}} BUILD_TIME="{{build_time}}" \
-    gow -e=go,proto,sql -c run cmd/fleets/main.go --port 8080
+    JWT_SECRET=dev-secret \
+    gow -e=go,proto,sql -c run cmd/device-api/main.go --port 8080
+
+# Watch and run Platform API
+platform-api-watch:
+    VERSION={{version}} COMMIT_SHA={{commit_sha}} BUILD_TIME="{{build_time}}" \
+    JWT_SECRET=dev-secret \
+    gow -e=go,proto,sql -c run cmd/platform-api/main.go --port 8090
 
 # Web Frontend Commands
 
