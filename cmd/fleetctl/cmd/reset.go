@@ -50,40 +50,51 @@ func runReset(cmd *cobra.Command, args []string, removeVolumes bool) error {
 	// Get project root
 	projectRoot := getProjectRoot()
 
-	// Build docker-compose command
-	composeFiles := []string{
-		filepath.Join(projectRoot, "docker-compose.yml"),
-		filepath.Join(projectRoot, "docker-compose.dev.yml"),
-	}
-
-	// Check if gateway compose file exists
-	gatewayFile := filepath.Join(projectRoot, "docker-compose.gateway.yml")
-	if _, err := os.Stat(gatewayFile); err == nil {
-		composeFiles = append(composeFiles, gatewayFile)
-	}
-
 	// Stop all services
 	printInfo("Stopping all services...")
-	cmdArgs := []string{"compose"}
-	for _, file := range composeFiles {
-		if _, err := os.Stat(file); err == nil {
-			cmdArgs = append(cmdArgs, "-f", file)
+
+	// List of services to stop
+	services := []string{
+		"platform-api",
+		"device-api",
+		"studio",
+		"postgres",
+		"valkey",
+		"victoriametrics",
+		"loki",
+		"traefik",
+	}
+
+	// Stop and remove all fleetd containers
+	for _, service := range services {
+		containerName := "fleetd-" + service
+
+		// Check if container exists
+		checkCmd := exec.Command("docker", "ps", "-a", "--filter", "name="+containerName, "--format", "{{.Names}}")
+		output, _ := checkCmd.Output()
+
+		if output != nil && len(output) > 0 {
+			printInfo("Removing %s...", service)
+			exec.Command("docker", "stop", containerName).Run()
+			exec.Command("docker", "rm", containerName).Run()
 		}
 	}
-	cmdArgs = append(cmdArgs, "down")
+
+	// Remove network
+	printInfo("Removing Docker network...")
+	exec.Command("docker", "network", "rm", "fleetd-network").Run()
 
 	if removeVolumes {
-		cmdArgs = append(cmdArgs, "-v")
-	}
-
-	dockerCmd := exec.Command("docker", cmdArgs...)
-	dockerCmd.Dir = projectRoot
-	dockerCmd.Stdout = os.Stdout
-	dockerCmd.Stderr = os.Stderr
-
-	if err := dockerCmd.Run(); err != nil {
-		printError("Failed to stop services: %v", err)
-		return err
+		printInfo("Removing Docker volumes...")
+		volumes := []string{
+			"fleetd-postgres-data",
+			"fleetd-valkey-data",
+			"fleetd-metrics-data",
+			"fleetd-loki-data",
+		}
+		for _, volume := range volumes {
+			exec.Command("docker", "volume", "rm", volume).Run()
+		}
 	}
 
 	// Clean up dangling images
@@ -104,7 +115,7 @@ func runReset(cmd *cobra.Command, args []string, removeVolumes bool) error {
 
 	printSuccess("Fleet environment reset complete!")
 	fmt.Println()
-	printInfo("Run 'fleet start' to start fresh")
+	printInfo("Run 'fleetctl start' to start fresh")
 
 	return nil
 }

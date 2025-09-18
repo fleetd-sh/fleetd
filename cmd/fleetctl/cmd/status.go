@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -36,69 +33,40 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := checkDockerCompose(); err != nil {
-		return err
-	}
-
 	printHeader("Fleet Service Status")
 	fmt.Println()
 
-	// Get project root
-	projectRoot := getProjectRoot()
-
-	// Get list of expected services
-	services := viper.GetStringSlice("stack.services")
-	if len(services) == 0 {
-		services = []string{
-			"postgres",
-			"victoriametrics",
-			"loki",
-			"valkey",
-			"traefik",
-		}
+	// List of expected services
+	services := []string{
+		"platform-api",
+		"device-api",
+		"postgres",
+		"valkey",
+		"victoriametrics",
+		"loki",
+		"traefik",
+		"studio",
 	}
 
-	// Build docker-compose command
-	composeFiles := []string{
-		filepath.Join(projectRoot, "docker-compose.yml"),
-		filepath.Join(projectRoot, "docker-compose.dev.yml"),
-	}
-
-	// Check if gateway compose file exists
-	gatewayFile := filepath.Join(projectRoot, "docker-compose.gateway.yml")
-	if _, err := os.Stat(gatewayFile); err == nil {
-		composeFiles = append(composeFiles, gatewayFile)
-	}
-
-	// Build command to get container status
-	cmdArgs := []string{"compose"}
-	for _, file := range composeFiles {
-		if _, err := os.Stat(file); err == nil {
-			cmdArgs = append(cmdArgs, "-f", file)
-		}
-	}
-	cmdArgs = append(cmdArgs, "ps", "--format", "json")
-
-	// Execute docker-compose ps
-	dockerCmd := exec.Command("docker", cmdArgs...)
-	dockerCmd.Dir = projectRoot
-
-	output, err := dockerCmd.Output()
-	if err != nil {
-		printError("Failed to get service status: %v", err)
-		return err
-	}
-
-	// Parse JSON output
+	// Get status of each container
 	var containers []ContainerStatus
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
-		if line == "" {
-			continue
-		}
-		var container ContainerStatus
-		if err := json.Unmarshal([]byte(line), &container); err == nil {
-			containers = append(containers, container)
+	for _, service := range services {
+		containerName := fmt.Sprintf("fleetd-%s", service)
+
+		// Get container status using docker ps
+		cmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=%s", containerName), "--format", "{{.Names}}|{{.State}}|{{.Status}}")
+		output, err := cmd.Output()
+
+		if err == nil && len(output) > 0 {
+			parts := strings.Split(strings.TrimSpace(string(output)), "|")
+			if len(parts) >= 3 {
+				containers = append(containers, ContainerStatus{
+					Name:    parts[0],
+					State:   parts[1],
+					Status:  parts[2],
+					Service: service,
+				})
+			}
 		}
 	}
 
@@ -127,10 +95,10 @@ func runStatus(cmd *cobra.Command, args []string) error {
 
 	// Display quick actions
 	printHeader("Quick Actions")
-	fmt.Println("  • View logs:        fleet logs [service]")
-	fmt.Println("  • Restart service:  fleet restart [service]")
-	fmt.Println("  • Stop all:         fleet stop")
-	fmt.Println("  • Reset all:        fleet reset")
+	fmt.Println("  • View logs:        fleetctl logs [service]")
+	fmt.Println("  • Start services:   fleetctl start")
+	fmt.Println("  • Stop all:         fleetctl stop")
+	fmt.Println("  • Reset all:        fleetctl stop --volumes")
 
 	return nil
 }
@@ -140,13 +108,13 @@ func displayServiceStatus(name string, container ContainerStatus) {
 
 	switch strings.ToLower(container.State) {
 	case "running":
-		statusIcon = green("✓")
+		statusIcon = green("[OK]")
 		statusColor = green(container.State)
 	case "restarting":
 		statusIcon = yellow("↻")
 		statusColor = yellow(container.State)
 	case "exited", "dead":
-		statusIcon = red("✗")
+		statusIcon = red("[X]")
 		statusColor = red(container.State)
 	default:
 		statusIcon = yellow("?")
@@ -163,7 +131,7 @@ func displayServiceStatus(name string, container ContainerStatus) {
 }
 
 func displayServiceMissing(name string) {
-	fmt.Printf("%s %-20s %s\n", red("✗"), bold(name), red("not running"))
+	fmt.Printf("%s %-20s %s\n", red("[X]"), bold(name), red("not running"))
 }
 
 func checkPorts() {
@@ -198,9 +166,9 @@ func checkPorts() {
 
 	for service, port := range ports {
 		if isPortOpen(port) {
-			fmt.Printf("  %s %-15s %s %d\n", green("✓"), service, green("listening on"), port)
+			fmt.Printf("  %s %-15s %s %d\n", green("[OK]"), service, green("listening on"), port)
 		} else {
-			fmt.Printf("  %s %-15s %s %d\n", yellow("⚠"), service, yellow("not available on"), port)
+			fmt.Printf("  %s %-15s %s %d\n", yellow("[WARN]"), service, yellow("not available on"), port)
 		}
 	}
 }

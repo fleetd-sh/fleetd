@@ -54,10 +54,6 @@ func runStart(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := checkDockerCompose(); err != nil {
-		return err
-	}
-
 	printHeader("Starting Fleet Platform")
 	fmt.Println()
 
@@ -75,9 +71,9 @@ func runStart(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to load secrets: %w", err)
 	}
 
-	// Create docker-compose.fleet.yml for Fleet services
-	if err := createFleetComposeFile(projectRoot, secrets); err != nil {
-		return fmt.Errorf("failed to create Fleet compose file: %w", err)
+	// Create docker network
+	if err := createDockerNetwork(); err != nil {
+		return fmt.Errorf("failed to create network: %w", err)
 	}
 
 	// Load services from config
@@ -94,58 +90,22 @@ func runStart(cmd *cobra.Command, args []string) error {
 
 	// Add Fleet services unless excluded
 	if !noServer {
-		services = append(services, "fleet-server")
+		services = append(services, "platform-api", "device-api")
 	}
 	if !noWeb {
-		services = append(services, "fleet-web")
+		services = append(services, "studio")
 	}
 
 	// Filter excluded services
 	activeServices := filterServices(services, exclude)
 
-	// Build docker-compose command
-	composeFiles := []string{
-		filepath.Join(projectRoot, "docker-compose.yml"),
-	}
-
-	// Add development overrides if they exist
-	devFile := filepath.Join(projectRoot, "docker-compose.dev.yml")
-	if _, err := os.Stat(devFile); err == nil {
-		composeFiles = append(composeFiles, devFile)
-	}
-
-	// Add Fleet services compose file
-	fleetFile := filepath.Join(projectRoot, "docker-compose.fleet.yml")
-	composeFiles = append(composeFiles, fleetFile)
-
-	// Check if gateway compose file exists
-	gatewayFile := filepath.Join(projectRoot, "docker-compose.gateway.yml")
-	if _, err := os.Stat(gatewayFile); err == nil {
-		composeFiles = append(composeFiles, gatewayFile)
-	}
-
-	// Build command
-	cmdArgs := []string{"compose"}
-	for _, file := range composeFiles {
-		if _, err := os.Stat(file); err == nil {
-			cmdArgs = append(cmdArgs, "-f", file)
+	// Start services
+	for _, service := range activeServices {
+		printInfo("Starting %s...", service)
+		if err := startService(service, secrets, projectRoot); err != nil {
+			printError("Failed to start %s: %v", service, err)
+			return err
 		}
-	}
-	cmdArgs = append(cmdArgs, "up")
-	if detach {
-		cmdArgs = append(cmdArgs, "-d")
-	}
-	cmdArgs = append(cmdArgs, activeServices...)
-
-	// Execute docker-compose up
-	dockerCmd := exec.Command("docker", cmdArgs...)
-	dockerCmd.Dir = projectRoot
-	dockerCmd.Stdout = os.Stdout
-	dockerCmd.Stderr = os.Stderr
-
-	if err := dockerCmd.Run(); err != nil {
-		printError("Failed to start services: %v", err)
-		return err
 	}
 
 	// Wait for services to be ready
@@ -159,6 +119,14 @@ func runStart(cmd *cobra.Command, args []string) error {
 		printWarning("Some services may not be ready: %v", err)
 	}
 
+	// Run database migrations
+	if contains(activeServices, "postgres") && (contains(activeServices, "platform-api") || contains(activeServices, "device-api")) {
+		printInfo("Running database migrations...")
+		if err := runMigrations(projectRoot); err != nil {
+			printWarning("Failed to run migrations: %v", err)
+		}
+	}
+
 	// Display success message
 	printSuccess("Fleet Platform is running!")
 	fmt.Println()
@@ -168,10 +136,10 @@ func runStart(cmd *cobra.Command, args []string) error {
 
 	fmt.Println()
 	printHeader("Quick Commands:")
-	printInfo("View logs:        fleet logs")
-	printInfo("Check status:     fleet status")
-	printInfo("Stop platform:    fleet stop")
-	printInfo("Provision device: fleet provision --device /dev/diskX")
+	printInfo("View logs:        fleetctl logs")
+	printInfo("Check status:     fleetctl status")
+	printInfo("Stop platform:    fleetctl stop")
+	printInfo("Provision device: fleetctl provision --device /dev/diskX")
 
 	return nil
 }
@@ -199,18 +167,17 @@ func filterServices(services, exclude []string) []string {
 func checkServicesHealth(services []string) error {
 	// Basic health check for services
 	for _, service := range services {
-		printInfo("Checking %s...", service)
+		containerName := fmt.Sprintf("fleetd-%s", service)
 
 		// Check if container is running
-		cmd := exec.Command("docker", "compose", "ps", service, "--format", "json")
-		cmd.Dir = getProjectRoot()
-
+		cmd := exec.Command("docker", "ps", "--filter", fmt.Sprintf("name=%s", containerName), "--format", "{{.Status}}")
 		output, err := cmd.Output()
 		if err != nil {
-			return fmt.Errorf("%s health check failed: %v", service, err)
+			printWarning("%s health check failed: %v", service, err)
+			continue
 		}
 
-		if strings.Contains(string(output), "running") || strings.Contains(string(output), "Up") {
+		if strings.Contains(string(output), "Up") {
 			printSuccess("%s is running", service)
 		} else {
 			printWarning("%s may not be ready", service)
@@ -335,114 +302,250 @@ func loadOrCreateSecrets(projectRoot string) (map[string]string, error) {
 	return secrets, os.WriteFile(envPath, []byte(envContent.String()), 0o600)
 }
 
-func createFleetComposeFile(projectRoot string, secrets map[string]string) error {
-	compose := fmt.Sprintf(`# Fleet Platform Services
-# Auto-generated - do not edit directly
-version: '3.8'
+func createDockerNetwork() error {
+	// Check if network exists
+	cmd := exec.Command("docker", "network", "ls", "--filter", "name=fleetd-network", "--format", "{{.Name}}")
+	output, _ := cmd.Output()
 
-services:
-  fleet-server:
-    image: golang:1.21-alpine
-    container_name: fleet-server
-    working_dir: /app
-    volumes:
-      - %s:/app
-      - ./fleet.db:/app/fleet.db
-    environment:
-      - JWT_SECRET=${JWT_SECRET}
-      - FLEETD_SECRET_KEY=${FLEETD_SECRET_KEY}
-      - DATABASE_URL=postgres://fleetd:${POSTGRES_PASSWORD}@postgres:5432/fleetd?sslmode=disable
-      - VALKEY_ADDR=valkey:6379
-      - VICTORIA_METRICS_URL=http://victoriametrics:8428
-      - LOKI_URL=http://loki:3100
-    command: >
-      sh -c "
-        apk add --no-cache git build-base &&
-        go build -o /tmp/fleets ./cmd/fleets &&
-        /tmp/fleets server --port 8080 --db /app/fleet.db
-      "
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-      - valkey
-      - victoriametrics
-      - loki
-    networks:
-      - fleet-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+	if strings.TrimSpace(string(output)) == "fleetd-network" {
+		printInfo("Docker network 'fleetd-network' already exists")
+		return nil
+	}
 
-  fleet-web:
-    image: node:20-alpine
-    container_name: fleet-web
-    working_dir: /app
-    volumes:
-      - %s/web:/app
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - API_URL=http://fleet-server:8080
-    command: >
-      sh -c "
-        npm install &&
-        npm run dev
-      "
-    ports:
-      - "3000:3000"
-    depends_on:
-      - fleet-server
-    networks:
-      - fleet-network
-    restart: unless-stopped
+	// Create network
+	cmd = exec.Command("docker", "network", "create", "fleetd-network")
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to create docker network: %w", err)
+	}
+	printSuccess("Created Docker network 'fleetd-network'")
+	return nil
+}
 
-  # Optional: Fleet Agent for local testing
-  fleet-agent:
-    image: golang:1.21-alpine
-    container_name: fleet-agent
-    profiles: ["agent"]
-    working_dir: /app
-    volumes:
-      - %s:/app
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - SERVER_URL=http://fleet-server:8080
-    command: >
-      sh -c "
-        apk add --no-cache git build-base &&
-        go build -o /tmp/fleetd ./cmd/fleetd &&
-        /tmp/fleetd agent --server-url http://fleet-server:8080
-      "
-    depends_on:
-      - fleet-server
-    networks:
-      - fleet-network
-    restart: unless-stopped
+func startService(service string, secrets map[string]string, projectRoot string) error {
+	containerName := fmt.Sprintf("fleetd-%s", service)
 
-networks:
-  fleet-network:
-    external: true
-    name: fleet_default
-`, projectRoot, projectRoot, projectRoot)
+	// Check if container already exists
+	cmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=%s", containerName), "--format", "{{.Names}}")
+	output, _ := cmd.Output()
 
-	fleetComposePath := filepath.Join(projectRoot, "docker-compose.fleet.yml")
-	return os.WriteFile(fleetComposePath, []byte(compose), 0o644)
+	if strings.TrimSpace(string(output)) == containerName {
+		// Container exists, try to start it
+		cmd = exec.Command("docker", "start", containerName)
+		if err := cmd.Run(); err == nil {
+			printSuccess("Started existing %s container", service)
+			return nil
+		}
+		// Remove failed container
+		exec.Command("docker", "rm", "-f", containerName).Run()
+	}
+
+	// Start new container based on service type
+	switch service {
+	case "postgres":
+		return startPostgres(containerName, secrets)
+	case "valkey":
+		return startValkey(containerName)
+	case "victoriametrics":
+		return startVictoriaMetrics(containerName)
+	case "loki":
+		return startLoki(containerName)
+	case "traefik":
+		return startTraefik(containerName, projectRoot)
+	case "platform-api":
+		return startPlatformAPI(containerName, secrets, projectRoot)
+	case "device-api":
+		return startDeviceAPI(containerName, secrets, projectRoot)
+	case "studio":
+		return startFleetWeb(containerName, projectRoot)
+	default:
+		return fmt.Errorf("unknown service: %s", service)
+	}
+}
+
+func startPostgres(containerName string, secrets map[string]string) error {
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"--network", "fleetd-network",
+		"-p", "5432:5432",
+		"-e", fmt.Sprintf("POSTGRES_PASSWORD=%s", secrets["POSTGRES_PASSWORD"]),
+		"-e", "POSTGRES_USER=fleetd",
+		"-e", "POSTGRES_DB=fleetd",
+		"-v", "fleetd-postgres-data:/var/lib/postgresql/data",
+		"--restart", "unless-stopped",
+		"postgres:15-alpine",
+	)
+	return cmd.Run()
+}
+
+func startValkey(containerName string) error {
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"--network", "fleetd-network",
+		"-p", "6379:6379",
+		"-v", "fleetd-valkey-data:/data",
+		"--restart", "unless-stopped",
+		"valkey/valkey:7-alpine",
+		"valkey-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru",
+	)
+	return cmd.Run()
+}
+
+func startVictoriaMetrics(containerName string) error {
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"--network", "fleetd-network",
+		"-p", "8428:8428",
+		"-v", "fleetd-metrics-data:/storage",
+		"--restart", "unless-stopped",
+		"victoriametrics/victoria-metrics:latest",
+		"-storageDataPath=/storage",
+		"-retentionPeriod=30d",
+		"-httpListenAddr=:8428",
+	)
+	return cmd.Run()
+}
+
+func startLoki(containerName string) error {
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"--network", "fleetd-network",
+		"-p", "3100:3100",
+		"-v", "fleetd-loki-data:/loki",
+		"--restart", "unless-stopped",
+		"grafana/loki:2.9.0",
+		"-config.file=/etc/loki/local-config.yaml",
+	)
+	return cmd.Run()
+}
+
+func startTraefik(containerName, projectRoot string) error {
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"--network", "fleetd-network",
+		"-p", "80:80",
+		"-p", "443:443",
+		"-p", "8080:8080",
+		"-v", "/var/run/docker.sock:/var/run/docker.sock:ro",
+		"--restart", "unless-stopped",
+		"traefik:v3.0",
+		"--api.insecure=true",
+		"--providers.docker=true",
+		"--providers.docker.exposedbydefault=false",
+		"--entrypoints.web.address=:80",
+		"--entrypoints.websecure.address=:443",
+	)
+	return cmd.Run()
+}
+
+func startPlatformAPI(containerName string, secrets map[string]string, projectRoot string) error {
+	// Build the platform API first
+	printInfo("Building platform-api...")
+	buildCmd := exec.Command("just", "build-platform")
+	buildCmd.Dir = projectRoot
+	if err := buildCmd.Run(); err != nil {
+		return fmt.Errorf("failed to build platform-api: %w", err)
+	}
+
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"--network", "fleetd-network",
+		"-p", "8090:8090",
+		"-v", fmt.Sprintf("%s/bin/platform-api:/app/platform-api:ro", projectRoot),
+		"-v", fmt.Sprintf("%s/config.toml:/etc/fleetd/config.toml:ro", projectRoot),
+		"-v", fmt.Sprintf("%s/internal/database/migrations:/app/migrations:ro", projectRoot),
+		"-e", fmt.Sprintf("DB_PASSWORD=%s", secrets["POSTGRES_PASSWORD"]),
+		"-e", fmt.Sprintf("JWT_SECRET=%s", secrets["JWT_SECRET"]),
+		"-e", fmt.Sprintf("PLATFORM_API_SECRET_KEY=%s", secrets["JWT_SECRET"]),
+		"-e", "FLEETD_AUTH_MODE=development",
+		"-e", "DB_HOST=fleetd-postgres",
+		"-e", "DB_PORT=5432",
+		"-e", "DB_NAME=fleetd",
+		"-e", "DB_USER=fleetd",
+		"-e", "REDIS_ADDR=fleetd-valkey:6379",
+		"-e", "VICTORIA_METRICS_ENDPOINT=http://fleetd-victoriametrics:8428/api/v1/write",
+		"-e", "LOKI_ENDPOINT=http://fleetd-loki:3100/loki/api/v1/push",
+		"--restart", "unless-stopped",
+		"alpine:3.19",
+		"/app/platform-api", "--config", "/etc/fleetd/config.toml",
+	)
+	return cmd.Run()
+}
+
+func startDeviceAPI(containerName string, secrets map[string]string, projectRoot string) error {
+	// Build the device API first
+	printInfo("Building device-api...")
+	buildCmd := exec.Command("just", "build-device")
+	buildCmd.Dir = projectRoot
+	if err := buildCmd.Run(); err != nil {
+		return fmt.Errorf("failed to build device-api: %w", err)
+	}
+
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"--network", "fleetd-network",
+		"-p", "8081:8081",
+		"-v", fmt.Sprintf("%s/bin/device-api:/app/device-api:ro", projectRoot),
+		"-v", fmt.Sprintf("%s/config.toml:/etc/fleetd/config.toml:ro", projectRoot),
+		"-e", fmt.Sprintf("DB_PASSWORD=%s", secrets["POSTGRES_PASSWORD"]),
+		"-e", fmt.Sprintf("JWT_SECRET=%s", secrets["JWT_SECRET"]),
+		"-e", fmt.Sprintf("DEVICE_API_SECRET_KEY=%s", secrets["JWT_SECRET"]),
+		"-e", "FLEETD_AUTH_MODE=development",
+		"-e", "DB_HOST=fleetd-postgres",
+		"-e", "DB_PORT=5432",
+		"-e", "DB_NAME=fleetd",
+		"-e", "DB_USER=fleetd",
+		"-e", "REDIS_ADDR=fleetd-valkey:6379",
+		"-e", "VICTORIA_METRICS_ENDPOINT=http://fleetd-victoriametrics:8428/api/v1/write",
+		"-e", "LOKI_ENDPOINT=http://fleetd-loki:3100/loki/api/v1/push",
+		"--restart", "unless-stopped",
+		"alpine:3.19",
+		"/app/device-api", "--config", "/etc/fleetd/config.toml",
+	)
+	return cmd.Run()
+}
+
+func startFleetWeb(containerName, projectRoot string) error {
+	cmd := exec.Command("docker", "run", "-d",
+		"--name", containerName,
+		"--network", "fleetd-network",
+		"-p", "3000:3000",
+		"-v", fmt.Sprintf("%s/web:/app", projectRoot),
+		"-w", "/app",
+		"-e", "NEXT_PUBLIC_API_URL=http://localhost:8090",
+		"--restart", "unless-stopped",
+		"node:20-alpine",
+		"sh", "-c", "npm install && npm run dev",
+	)
+	return cmd.Run()
+}
+
+func runMigrations(projectRoot string) error {
+	cmd := exec.Command("docker", "run", "--rm",
+		"--network", "fleetd-network",
+		"-v", fmt.Sprintf("%s/bin/platform-api:/app/platform-api:ro", projectRoot),
+		"-v", fmt.Sprintf("%s/internal/database/migrations:/app/migrations:ro", projectRoot),
+		"-e", "DB_HOST=fleetd-postgres",
+		"-e", "DB_PORT=5432",
+		"-e", "DB_NAME=fleetd",
+		"-e", "DB_USER=fleetd",
+		"alpine:3.19",
+		"/app/platform-api", "--migrate-only",
+	)
+	return cmd.Run()
 }
 
 func displayStartupInfo(secrets map[string]string) {
-	printHeader("🚀 Service URLs")
-	fmt.Printf("  %s Dashboard:        %s\n", green("•"), cyan("http://localhost:3000"))
-	fmt.Printf("  %s API:              %s\n", green("•"), cyan("http://localhost:8080"))
+	printHeader("Service URLs")
+	fmt.Printf("  %s Web Dashboard:    %s\n", green("•"), cyan("http://localhost:3000"))
+	fmt.Printf("  %s Platform API:     %s\n", green("•"), cyan("http://localhost:8090"))
+	fmt.Printf("  %s Device API:       %s\n", green("•"), cyan("http://localhost:8081"))
 	fmt.Printf("  %s API Gateway:      %s\n", green("•"), cyan("http://localhost:80"))
 	fmt.Printf("  %s Metrics (Victoria): %s\n", green("•"), cyan("http://localhost:8428"))
 	fmt.Printf("  %s Logs (Loki):      %s\n", green("•"), cyan("http://localhost:3100"))
 	fmt.Printf("  %s Traefik Dashboard: %s\n", green("•"), cyan("http://localhost:8080"))
 
 	fmt.Println()
-	printHeader("🔐 Credentials")
+	printHeader("Credentials")
 	fmt.Printf("  %s JWT Secret:    %s...%s (first/last 4 chars)\n",
 		yellow("•"),
 		secrets["JWT_SECRET"][:4],
@@ -456,11 +559,10 @@ func displayStartupInfo(secrets map[string]string) {
 	}
 
 	fmt.Println()
-	printHeader("📝 Configuration")
+	printHeader("Configuration")
 	fmt.Printf("  %s Config:        ./config.toml\n", blue("•"))
 	fmt.Printf("  %s Secrets:       ./.env\n", blue("•"))
-	fmt.Printf("  %s Database:      ./fleet.db\n", blue("•"))
-	fmt.Printf("  %s Compose:       ./docker-compose.fleet.yml\n", blue("•"))
+	fmt.Printf("  %s Database:      PostgreSQL in Docker\n", blue("•"))
 }
 
 func displayServiceURLs() {
