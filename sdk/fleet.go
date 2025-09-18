@@ -4,182 +4,117 @@ import (
 	"context"
 	"fmt"
 	"time"
-
-	"connectrpc.com/connect"
-	commonpb "fleetd.sh/gen/proto/common/v1"
-	controlpb "fleetd.sh/gen/proto/control/v1"
-	"fleetd.sh/gen/proto/control/v1/controlv1connect"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // FleetClient provides fleet management operations
 type FleetClient struct {
-	client  controlv1connect.FleetServiceClient
+	// client  interface{} // TODO: Implement when proto types are available
 	timeout time.Duration
 }
 
-// GetStats retrieves fleet statistics
-func (c *FleetClient) GetStats(ctx context.Context, organizationID string) (*controlpb.GetFleetStatsResponse, error) {
-	req := connect.NewRequest(&controlpb.GetFleetStatsRequest{
-		OrganizationId: organizationID,
-	})
-
-	resp, err := c.client.GetFleetStats(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get fleet stats: %w", err)
-	}
-
-	return resp.Msg, nil
+// CreateFleet creates a new fleet
+func (c *FleetClient) CreateFleet(ctx context.Context, opts CreateFleetOptions) (interface{}, error) {
+	return nil, fmt.Errorf("fleet client not implemented")
 }
 
-// ListDevices retrieves a list of devices with filters
-func (c *FleetClient) ListDevices(ctx context.Context, opts ListDevicesOptions) (*controlpb.ListDevicesResponse, error) {
-	req := connect.NewRequest(&controlpb.ListDevicesRequest{
-		OrganizationId: opts.OrganizationID,
-		GroupIds:       opts.GroupIDs,
-		DeviceTypes:    opts.DeviceTypes,
-		Statuses:       opts.Statuses,
-		Labels:         opts.Labels,
-		SearchQuery:    opts.SearchQuery,
-		PageSize:       opts.PageSize,
-		PageToken:      opts.PageToken,
-		OrderBy:        opts.OrderBy,
-		Descending:     opts.Descending,
-	})
-
-	resp, err := c.client.ListDevices(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list devices: %w", err)
-	}
-
-	return resp.Msg, nil
+// GetFleet retrieves fleet details
+func (c *FleetClient) GetFleet(ctx context.Context, fleetID string) (interface{}, error) {
+	return nil, fmt.Errorf("fleet client not implemented")
 }
 
-// GetDevice retrieves a specific device
-func (c *FleetClient) GetDevice(ctx context.Context, deviceID string, includeMetrics bool) (*controlpb.GetDeviceResponse, error) {
-	req := connect.NewRequest(&controlpb.GetDeviceRequest{
-		DeviceId:       deviceID,
-		IncludeMetrics: includeMetrics,
-	})
-
-	resp, err := c.client.GetDevice(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get device: %w", err)
-	}
-
-	return resp.Msg, nil
+// ListFleets lists fleets
+func (c *FleetClient) ListFleets(ctx context.Context, opts ListFleetsOptions) (interface{}, error) {
+	return nil, fmt.Errorf("fleet client not implemented")
 }
 
-// UpdateDevice updates device configuration
-func (c *FleetClient) UpdateDevice(ctx context.Context, deviceID string, updates UpdateDeviceOptions) (*controlpb.UpdateDeviceResponse, error) {
-	req := connect.NewRequest(&controlpb.UpdateDeviceRequest{
-		DeviceId:         deviceID,
-		Labels:           updates.Labels,
-		Metadata:         updates.Metadata,
-		AddToGroups:      updates.AddToGroups,
-		RemoveFromGroups: updates.RemoveFromGroups,
-	})
-
-	resp, err := c.client.UpdateDevice(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update device: %w", err)
-	}
-
-	return resp.Msg, nil
+// UpdateFleet updates a fleet
+func (c *FleetClient) UpdateFleet(ctx context.Context, fleetID string, opts UpdateFleetOptions) (interface{}, error) {
+	return nil, fmt.Errorf("fleet client not implemented")
 }
 
-// DeleteDevice removes a device from the fleet
-func (c *FleetClient) DeleteDevice(ctx context.Context, deviceID string, force bool) error {
-	req := connect.NewRequest(&controlpb.DeleteDeviceRequest{
-		DeviceId: deviceID,
-		Force:    force,
-	})
-
-	_, err := c.client.DeleteDevice(ctx, req)
-	if err != nil {
-		return fmt.Errorf("failed to delete device: %w", err)
-	}
-
-	return nil
+// DeleteFleet deletes a fleet
+func (c *FleetClient) DeleteFleet(ctx context.Context, fleetID string) error {
+	return fmt.Errorf("fleet client not implemented")
 }
 
-// ExecuteCommand executes a command on devices
-func (c *FleetClient) ExecuteCommand(ctx context.Context, opts ExecuteCommandOptions) (*controlpb.ExecuteCommandResponse, error) {
-	var executeAt *timestamppb.Timestamp
-	if opts.ExecuteAt != nil {
-		executeAt = timestamppb.New(*opts.ExecuteAt)
-	}
-
-	req := connect.NewRequest(&controlpb.ExecuteCommandRequest{
-		DeviceIds:      opts.DeviceIDs,
-		GroupIds:       opts.GroupIDs,
-		Command:        opts.Command,
-		ExecuteAt:      executeAt,
-		TimeoutSeconds: opts.TimeoutSeconds,
-	})
-
-	resp, err := c.client.ExecuteCommand(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute command: %w", err)
-	}
-
-	return resp.Msg, nil
+// ListDevices lists devices in a fleet
+func (c *FleetClient) ListDevices(ctx context.Context, fleetID string, opts ListDevicesOptions) (interface{}, error) {
+	return nil, fmt.Errorf("fleet client not implemented")
 }
 
-// CreateGroup creates a device group
-func (c *FleetClient) CreateGroup(ctx context.Context, opts CreateGroupOptions) (*controlpb.CreateGroupResponse, error) {
-	req := connect.NewRequest(&controlpb.CreateGroupRequest{
-		Name:        opts.Name,
-		Description: opts.Description,
-		Labels:      opts.Labels,
-		DeviceIds:   opts.DeviceIDs,
-	})
-
-	resp, err := c.client.CreateGroup(ctx, req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create group: %w", err)
-	}
-
-	return resp.Msg, nil
+// GetDevice retrieves device details
+func (c *FleetClient) GetDevice(ctx context.Context, deviceID string) (interface{}, error) {
+	return nil, fmt.Errorf("fleet client not implemented")
 }
 
-// Options types
+// UpdateDevice updates device properties
+func (c *FleetClient) UpdateDevice(ctx context.Context, deviceID string, opts UpdateDeviceOptions) (interface{}, error) {
+	return nil, fmt.Errorf("fleet client not implemented")
+}
+
+// RemoveDevice removes a device from fleet
+func (c *FleetClient) RemoveDevice(ctx context.Context, deviceID string) error {
+	return fmt.Errorf("fleet client not implemented")
+}
+
+// RebootDevice reboots a device
+func (c *FleetClient) RebootDevice(ctx context.Context, deviceID string) error {
+	return fmt.Errorf("fleet client not implemented")
+}
+
+// ExecuteCommand executes a command on a device
+func (c *FleetClient) ExecuteCommand(ctx context.Context, deviceID string, opts ExecuteCommandOptions) (interface{}, error) {
+	return nil, fmt.Errorf("fleet client not implemented")
+}
+
+// CreateFleetOptions contains options for creating a fleet
+type CreateFleetOptions struct {
+	Name        string
+	Description string
+	Tags        map[string]string
+	Metadata    map[string]string
+	Config      map[string]interface{}
+}
+
+// UpdateFleetOptions contains options for updating a fleet
+type UpdateFleetOptions struct {
+	Name        string
+	Description string
+	Tags        map[string]string
+	Metadata    map[string]string
+	Config      map[string]interface{}
+}
+
+// ListFleetsOptions contains options for listing fleets
+type ListFleetsOptions struct {
+	OrganizationID string
+	Tags           map[string]string
+	PageSize       int32
+	PageToken      string
+}
 
 // ListDevicesOptions contains options for listing devices
 type ListDevicesOptions struct {
-	OrganizationID string
-	GroupIDs       []string
-	DeviceTypes    []string
-	Statuses       []commonpb.DeviceStatus
-	Labels         map[string]string
-	SearchQuery    string
-	PageSize       int32
-	PageToken      string
-	OrderBy        string
-	Descending     bool
+	GroupID     string
+	Status      []string
+	Tags        map[string]string
+	SearchQuery string
+	PageSize    int32
+	PageToken   string
 }
 
 // UpdateDeviceOptions contains options for updating a device
 type UpdateDeviceOptions struct {
-	Labels           map[string]string
-	Metadata         map[string]string
-	AddToGroups      []string
-	RemoveFromGroups []string
+	Name     string
+	Tags     map[string]string
+	Metadata map[string]string
+	Config   map[string]interface{}
 }
 
 // ExecuteCommandOptions contains options for executing commands
 type ExecuteCommandOptions struct {
-	DeviceIDs      []string
-	GroupIDs       []string
-	Command        *controlpb.Command
-	ExecuteAt      *time.Time
-	TimeoutSeconds int32
-}
-
-// CreateGroupOptions contains options for creating a group
-type CreateGroupOptions struct {
-	Name        string
-	Description string
-	Labels      map[string]string
-	DeviceIDs   []string
+	Command string
+	Args    []string
+	Env     map[string]string
+	Timeout time.Duration
 }
