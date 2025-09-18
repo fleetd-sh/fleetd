@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"connectrpc.com/connect"
-	controlpb "fleetd.sh/gen/proto/control/v1"
-	"fleetd.sh/gen/proto/control/v1/controlv1connect"
 )
 
 // Client is the main FleetD SDK client that provides access to control plane services
@@ -49,92 +45,44 @@ func NewClient(baseURL string, opts Options) (*Client, error) {
 		return nil, fmt.Errorf("API key is required")
 	}
 
-	if opts.HTTPClient == nil {
-		opts.HTTPClient = http.DefaultClient
+	if baseURL == "" {
+		baseURL = "https://api.fleetd.sh"
 	}
 
-	if opts.Timeout == 0 {
-		opts.Timeout = 30 * time.Second
+	httpClient := opts.HTTPClient
+	if httpClient == nil {
+		httpClient = http.DefaultClient
 	}
 
-	// Create interceptor for authentication
-	interceptor := connect.UnaryInterceptorFunc(func(next connect.UnaryFunc) connect.UnaryFunc {
-		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			req.Header().Set("Authorization", "Bearer "+opts.APIKey)
-			if opts.UserAgent != "" {
-				req.Header().Set("User-Agent", opts.UserAgent)
-			}
-			return next(ctx, req)
-		}
-	})
-
-	// Create Connect client options
-	connectOpts := []connect.ClientOption{
-		connect.WithInterceptors(interceptor),
+	timeout := opts.Timeout
+	if timeout == 0 {
+		timeout = 30 * time.Second
 	}
 
 	c := &Client{
-		httpClient: opts.HTTPClient,
+		httpClient: httpClient,
 		baseURL:    baseURL,
 		apiKey:     opts.APIKey,
-		timeout:    opts.Timeout,
+		timeout:    timeout,
 	}
 
 	// Initialize service clients
-	c.Fleet = &FleetClient{
-		client:  controlv1connect.NewFleetServiceClient(opts.HTTPClient, baseURL, connectOpts...),
-		timeout: opts.Timeout,
-	}
-
-	c.Deployment = &DeploymentClient{
-		client:  controlv1connect.NewDeploymentServiceClient(opts.HTTPClient, baseURL, connectOpts...),
-		timeout: opts.Timeout,
-	}
-
-	c.Analytics = &AnalyticsClient{
-		client:  controlv1connect.NewAnalyticsServiceClient(opts.HTTPClient, baseURL, connectOpts...),
-		timeout: opts.Timeout,
-	}
-
-	c.Organization = &OrganizationClient{
-		client:  controlv1connect.NewOrganizationServiceClient(opts.HTTPClient, baseURL, connectOpts...),
-		timeout: opts.Timeout,
-	}
+	c.Fleet = &FleetClient{timeout: timeout}
+	c.Deployment = &DeploymentClient{timeout: timeout}
+	c.Analytics = &AnalyticsClient{timeout: timeout}
+	c.Organization = &OrganizationClient{timeout: timeout}
 
 	return c, nil
 }
 
-// NewClientFromEnv creates a client from environment variables
-func NewClientFromEnv() (*Client, error) {
-	// This would read from FLEETD_API_URL and FLEETD_API_KEY
-	// Implementation left as an exercise
-	return nil, fmt.Errorf("not implemented")
+// WithContext returns a copy of the client with the provided context
+func (c *Client) WithContext(ctx context.Context) *Client {
+	// TODO: Implement when proto types are available
+	return c
 }
 
-// Context creates a context with the client's timeout
-func (c *Client) Context() (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), c.timeout)
-}
-
-// Ping checks if the server is reachable
-func (c *Client) Ping(ctx context.Context) error {
-	// Try to get fleet stats as a health check
-	req := connect.NewRequest(&controlpb.GetFleetStatsRequest{})
-
-	_, err := c.Fleet.client.GetFleetStats(ctx, req)
-	if err != nil {
-		// If we get a permission error, the server is still reachable
-		if connect.CodeOf(err) == connect.CodePermissionDenied {
-			return nil
-		}
-		return fmt.Errorf("failed to ping server: %w", err)
-	}
-
-	return nil
-}
-
-// Close closes the client connection
+// Close closes the client and releases resources
 func (c *Client) Close() error {
-	// Nothing to close for HTTP client
+	// TODO: Clean up resources if needed
 	return nil
 }
