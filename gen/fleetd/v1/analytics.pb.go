@@ -7,6 +7,7 @@
 package fleetpb
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -904,7 +905,7 @@ var File_fleetd_v1_analytics_proto protoreflect.FileDescriptor
 
 const file_fleetd_v1_analytics_proto_rawDesc = "" +
 	"\n" +
-	"\x19fleetd/v1/analytics.proto\x12\tfleetd.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"}\n" +
+	"\x19fleetd/v1/analytics.proto\x12\tfleetd.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\"}\n" +
 	"\tTimeRange\x129\n" +
 	"\n" +
 	"start_time\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
@@ -979,12 +980,12 @@ const file_fleetd_v1_analytics_proto_rawDesc = "" +
 	"\x12aggregated_metrics\x18\x02 \x03(\v2?.fleetd.v1.GetPerformanceMetricsResponse.AggregatedMetricsEntryR\x11aggregatedMetrics\x1aD\n" +
 	"\x16AggregatedMetricsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x012\x98\x03\n" +
-	"\x10AnalyticsService\x12[\n" +
-	"\x10GetDeviceMetrics\x12\".fleetd.v1.GetDeviceMetricsRequest\x1a#.fleetd.v1.GetDeviceMetricsResponse\x12a\n" +
-	"\x12GetUpdateAnalytics\x12$.fleetd.v1.GetUpdateAnalyticsRequest\x1a%.fleetd.v1.GetUpdateAnalyticsResponse\x12X\n" +
-	"\x0fGetDeviceHealth\x12!.fleetd.v1.GetDeviceHealthRequest\x1a\".fleetd.v1.GetDeviceHealthResponse\x12j\n" +
-	"\x15GetPerformanceMetrics\x12'.fleetd.v1.GetPerformanceMetricsRequest\x1a(.fleetd.v1.GetPerformanceMetricsResponseB\x85\x01\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x012\xe1\x04\n" +
+	"\x10AnalyticsService\x12\x92\x01\n" +
+	"\x10GetDeviceMetrics\x12\".fleetd.v1.GetDeviceMetricsRequest\x1a#.fleetd.v1.GetDeviceMetricsResponse\"5\x82\xd3\xe4\x93\x02/\x12-/api/v1/analytics/devices/{device_id}/metrics\x12\x92\x01\n" +
+	"\x12GetUpdateAnalytics\x12$.fleetd.v1.GetUpdateAnalyticsRequest\x1a%.fleetd.v1.GetUpdateAnalyticsResponse\"/\x82\xd3\xe4\x93\x02)\x12'/api/v1/analytics/updates/{campaign_id}\x12\x8e\x01\n" +
+	"\x0fGetDeviceHealth\x12!.fleetd.v1.GetDeviceHealthRequest\x1a\".fleetd.v1.GetDeviceHealthResponse\"4\x82\xd3\xe4\x93\x02.\x12,/api/v1/analytics/devices/{device_id}/health\x12\x91\x01\n" +
+	"\x15GetPerformanceMetrics\x12'.fleetd.v1.GetPerformanceMetricsRequest\x1a(.fleetd.v1.GetPerformanceMetricsResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/api/v1/analytics/performanceB\x85\x01\n" +
 	"\rcom.fleetd.v1B\x0eAnalyticsProtoP\x01Z\x1ffleetd.sh/gen/fleetd/v1;fleetpb\xa2\x02\x03FXX\xaa\x02\tFleetd.V1\xca\x02\tFleetd\\V1\xe2\x02\x15Fleetd\\V1\\GPBMetadata\xea\x02\n" +
 	"Fleetd::V1b\x06proto3"
 

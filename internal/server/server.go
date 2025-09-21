@@ -26,7 +26,6 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rs/cors"
 )
 
 //go:embed static/*
@@ -34,17 +33,18 @@ var staticFS embed.FS
 
 // Config holds the server configuration
 type Config struct {
-	Port         int
-	DatabasePath string
-	EnableMDNS   bool
-	MDNSPort     int
-	ServerURL    string
-	SecretKey    string
-	ValkeyAddr   string
-	RateLimitReq int
-	RateLimitWin int
-	TLS          *fleetdTLS.Config
-	Tracing      *tracing.Config
+	Port           int
+	DatabasePath   string
+	EnableMDNS     bool
+	MDNSPort       int
+	ServerURL      string
+	SecretKey      string
+	ValkeyAddr     string
+	RateLimitReq   int
+	RateLimitWin   int
+	TLS            *fleetdTLS.Config
+	Tracing        *tracing.Config
+	AllowedOrigins string // Comma-separated list of allowed origins
 }
 
 // SSEHub manages SSE client connections
@@ -99,11 +99,15 @@ func New(config *Config) (*Server, error) {
 			slog.Warn("Failed to initialize Valkey rate limiter", "error", err)
 			// Fall back to in-memory rate limiting
 			rate := float64(config.RateLimitReq) / float64(config.RateLimitWin)
-			inMemoryLimiter = middleware.NewRateLimiter(middleware.RateLimiterConfig{
+			rl, rlErr := middleware.NewRateLimiter(middleware.RateLimiterConfig{
 				Rate:       rate,
 				Burst:      config.RateLimitReq,
 				Expiration: 1 * time.Hour,
 			})
+			if rlErr != nil {
+				return nil, fmt.Errorf("failed to create in-memory rate limiter: %w", rlErr)
+			}
+			inMemoryLimiter = rl
 			slog.Info("Falling back to in-memory rate limiting",
 				"rate_per_second", rate,
 				"burst", config.RateLimitReq)
@@ -113,11 +117,15 @@ func New(config *Config) (*Server, error) {
 	} else {
 		// Use in-memory rate limiting when Valkey is not configured
 		rate := float64(config.RateLimitReq) / float64(config.RateLimitWin)
-		inMemoryLimiter = middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		rl, err := middleware.NewRateLimiter(middleware.RateLimiterConfig{
 			Rate:       rate,
 			Burst:      config.RateLimitReq,
 			Expiration: 1 * time.Hour,
 		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create in-memory rate limiter: %w", err)
+		}
+		inMemoryLimiter = rl
 		slog.Info("Using in-memory rate limiting",
 			"rate_per_second", rate,
 			"burst", config.RateLimitReq)
@@ -186,13 +194,26 @@ func (s *Server) Start(ctx context.Context) error {
 		httpHandler = middleware.RateLimitMiddleware(s.inMemoryLimiter)(httpHandler)
 	}
 
-	// Configure CORS - same origin by default
-	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{}, // Empty = same origin only
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: true,
-	}).Handler(httpHandler)
+	// Configure CORS based on environment
+	var corsConfig *middleware.CORSConfig
+	if os.Getenv("FLEET_ENV") == "development" {
+		corsConfig = middleware.DevelopmentCORSConfig()
+	} else {
+		// Parse allowed origins from environment
+		allowedOrigins := []string{}
+		if origins := os.Getenv("FLEET_ALLOWED_ORIGINS"); origins != "" {
+			allowedOrigins = strings.Split(origins, ",")
+		}
+		corsConfig = middleware.ProductionCORSConfig(allowedOrigins)
+	}
+
+	// Validate CORS configuration
+	if err := middleware.ValidateCORSConfig(corsConfig); err != nil {
+		slog.Error("Invalid CORS configuration", "error", err)
+		return fmt.Errorf("invalid CORS configuration: %w", err)
+	}
+
+	corsHandler := middleware.CORSMiddleware(corsConfig)(httpHandler)
 
 	// Start system metrics collector
 	go s.collectSystemMetrics(ctx)

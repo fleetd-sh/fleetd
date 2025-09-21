@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .swagger-ui .topbar {
+            display: none;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .info-banner {
+            background: #f7f8fa;
+            border-left: 4px solid #667eea;
+            padding: 1rem 2rem;
+            margin: 2rem;
+            border-radius: 4px;
+        }
+        .info-banner h3 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+        }
+        .info-banner p {
+            margin: 0.25rem 0;
+            color: #666;
+        }
+        .info-banner code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>FleetD API Documentation</h1>
+        <p>Modern fleet management platform for IoT and edge devices</p>
+    </div>
+
+    <div class="info-banner">
+        <h3>Quick Start</h3>
+        <p>Base URL: <code>https://api.fleetd.sh</code></p>
+        <p>Authentication: Include your API key in the <code>Authorization</code> header as <code>Bearer YOUR_API_KEY</code></p>
+        <p>Content-Type: <code>application/json</code> for all requests</p>
+    </div>
+
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function() {
+            window.ui = SwaggerUIBundle({
+                url: "{{.APIURL}}",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                defaultModelsExpandDepth: 1,
+                defaultModelExpandDepth: 1,
+                docExpansion: "list",
+                filter: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                persistAuthorization: true,
+                tryItOutEnabled: true
+            });
+        };
+    </script>
+</body>
+</html>

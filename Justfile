@@ -102,6 +102,19 @@ build-go:
     just build platform-api
     just build fleetctl
 
+# Build SDK
+build-sdk:
+    go build -v ./sdk/...
+    @echo "SDK built successfully"
+
+# Test SDK
+test-sdk:
+    go test -v ./sdk/...
+
+# Run SDK example
+sdk-example:
+    go run sdk/example/main.go
+
 # Build platform API only
 build-platform:
     just build platform-api
@@ -117,6 +130,13 @@ test-go:
 # Run Go integration tests
 test-go-integration:
     INTEGRATION=1 FLEETD_INTEGRATION_TESTS=1 go test -v ./test/integration/... ./test/e2e/...
+
+# Run performance and load tests
+test-performance:
+    go test -v ./test/performance/... -timeout 30m
+
+# Run all extended tests (unit + integration + performance)
+test-extended: test-go test-go-integration test-performance
 
 # Run specific Go test by name
 test-go-run target:
@@ -142,6 +162,10 @@ device-api-dev:
 # Run Platform API development server
 platform-api-dev:
     JWT_SECRET=dev-secret go run cmd/platform-api/main.go --port 8090
+
+# Run Platform API with REST support via Vanguard
+platform-api-rest:
+    JWT_SECRET=dev-secret FLEETD_ENABLE_REST=true go run cmd/platform-api/main.go --port 8090
 
 # Run both APIs in development
 server-dev:
@@ -209,6 +233,7 @@ proto:
     buf generate
     @echo "Generated Go code in gen/"
     @echo "Generated TypeScript code in web/lib/api/gen/"
+    @echo "Generated OpenAPI spec in docs/api/"
 
 # Format proto files
 proto-format:
@@ -309,6 +334,23 @@ audit:
 # Open wiki documentation
 docs:
     open https://github.com/fleetd-sh/fleetd/wiki
+
+# Generate OpenAPI documentation
+docs-generate:
+    buf generate
+    @echo "OpenAPI documentation generated at docs/api/fleetd.swagger.json"
+
+# Serve OpenAPI documentation with Swagger UI
+docs-serve port="8082":
+    @echo "Starting Swagger UI server on http://localhost:{{port}}"
+    @echo "OpenAPI spec: docs/api/fleetd.swagger.json"
+    go run cmd/swagger/main.go
+
+# Open API documentation in browser
+docs-api:
+    just docs-serve &
+    sleep 2
+    open http://localhost:8082
 
 # Run pre-commit checks
 pre-commit: format-all lint-all test-all

@@ -36,8 +36,29 @@ type RateLimiterConfig struct {
 	Expiration time.Duration // How long to keep limiters for inactive clients
 }
 
+// Validate checks if the configuration is valid
+func (c *RateLimiterConfig) Validate() error {
+	if c.Rate <= 0 {
+		return errors.New("rate must be positive")
+	}
+	if c.Burst <= 0 {
+		return errors.New("burst must be positive")
+	}
+	if c.Expiration <= 0 {
+		return errors.New("expiration must be positive")
+	}
+	if c.Burst < int(c.Rate) {
+		return errors.New("burst should not be less than rate")
+	}
+	return nil
+}
+
 // NewRateLimiter creates a new RateLimiter
-func NewRateLimiter(config RateLimiterConfig) *RateLimiter {
+func NewRateLimiter(config RateLimiterConfig) (*RateLimiter, error) {
+	if err := config.Validate(); err != nil {
+		return nil, err
+	}
+
 	rl := &RateLimiter{
 		limiters:      make(map[string]*limiterState),
 		rate:          rate.Limit(config.Rate),
@@ -48,7 +69,7 @@ func NewRateLimiter(config RateLimiterConfig) *RateLimiter {
 	}
 
 	go rl.cleanupLoop()
-	return rl
+	return rl, nil
 }
 
 // getLimiter gets or creates a rate limiter for a client
@@ -63,6 +84,8 @@ func (rl *RateLimiter) getLimiter(clientID string) *rate.Limiter {
 		return limiter
 	}
 
+	// Update last used time
+	state.lastUsed = time.Now()
 	return state.limiter
 }
 
@@ -146,16 +169,21 @@ func (s *rateLimitedServerStream) Receive(m any) error {
 // getClientID gets the client ID from the context
 // This should be customized based on your authentication mechanism
 func getClientID(ctx context.Context) string {
-	// Example: Get API key from metadata
+	// Priority 1: Check for authenticated user ID
+	if userID, ok := ctx.Value("user_id").(string); ok && userID != "" {
+		return "user:" + userID
+	}
+
+	// Priority 2: Get API key from metadata
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		if keys := md.Get("x-api-key"); len(keys) > 0 {
-			return keys[0]
+		if keys := md.Get("x-api-key"); len(keys) > 0 && keys[0] != "" {
+			return "api:" + keys[0]
 		}
 	}
 
-	// Example: Get IP address from peer info
-	if pr, ok := peer.FromContext(ctx); ok {
-		return pr.Addr.String()
+	// Priority 3: Get IP address from peer info
+	if pr, ok := peer.FromContext(ctx); ok && pr.Addr != nil {
+		return "ip:" + pr.Addr.String()
 	}
 
 	return ""
@@ -207,9 +235,21 @@ func (rl *RateLimiter) cleanupLoop() {
 	}
 }
 
+// Stop gracefully stops the rate limiter
 func (rl *RateLimiter) Stop() {
-	close(rl.done)
-	rl.cleanupTicker.Stop()
+	select {
+	case <-rl.done:
+		// Already stopped
+		return
+	default:
+		close(rl.done)
+		rl.cleanupTicker.Stop()
+
+		// Clear all limiters
+		rl.mu.Lock()
+		rl.limiters = make(map[string]*limiterState)
+		rl.mu.Unlock()
+	}
 }
 
 // UnaryInterceptor method for RateLimiter
@@ -232,12 +272,37 @@ func (rl *RateLimiter) allowRequest(header http.Header) bool {
 	// Extract client ID or other necessary information from the header
 	clientID := header.Get("X-API-Key")
 	if clientID == "" {
-		return false // or handle as needed
+		// Fall back to other identification methods
+		clientID = header.Get("X-Client-Id")
+		if clientID == "" {
+			return false // Require some form of identification
+		}
 	}
 
 	// Implement your rate limiting logic here using clientID
 	limiter := rl.getLimiter(clientID)
 	return limiter.Allow()
+}
+
+// GetStats returns current rate limiter statistics
+func (rl *RateLimiter) GetStats() map[string]interface{} {
+	rl.mu.RLock()
+	defer rl.mu.RUnlock()
+
+	active := 0
+	for _, state := range rl.limiters {
+		if time.Since(state.lastUsed) < rl.expiration {
+			active++
+		}
+	}
+
+	return map[string]interface{}{
+		"total_clients":  len(rl.limiters),
+		"active_clients": active,
+		"rate_limit":     float64(rl.rate),
+		"burst_limit":    rl.burst,
+		"expiration":     rl.expiration.String(),
+	}
 }
 
 // Define a custom type for streaming interceptors

@@ -5,25 +5,53 @@ package fleetd.v1;
 option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 service DeviceService {
   // Register a new device with the fleet
-  rpc Register(RegisterRequest) returns (RegisterResponse);
-  
+  rpc Register(RegisterRequest) returns (RegisterResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/register"
+      body: "*"
+    };
+  }
+
   // Send periodic heartbeat and receive pending actions
-  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
-  
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/{device_id}/heartbeat"
+      body: "*"
+    };
+  }
+
   // Update device status and metrics
-  rpc ReportStatus(ReportStatusRequest) returns (ReportStatusResponse);
+  rpc ReportStatus(ReportStatusRequest) returns (ReportStatusResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/{device_id}/status"
+      body: "*"
+    };
+  }
 
   // Get a device by ID
-  rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
+  rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/devices/{device_id}"
+    };
+  }
 
   // List devices
-  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/devices"
+    };
+  }
 
   // Delete a device
-  rpc DeleteDevice(DeleteDeviceRequest) returns (DeleteDeviceResponse); 
+  rpc DeleteDevice(DeleteDeviceRequest) returns (DeleteDeviceResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/devices/{device_id}"
+    };
+  }
 }
 
 message Device {

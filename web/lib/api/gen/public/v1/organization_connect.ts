@@ -3,30 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { CreateTeamRequest, CreateTeamResponse, DeleteTeamRequest, GetBillingInfoResponse, GetOrganizationRequest, GetOrganizationResponse, GetUsageRequest, GetUsageResponse, InviteMemberRequest, InviteMemberResponse, ListMembersRequest, ListMembersResponse, ListTeamsRequest, ListTeamsResponse, RemoveMemberRequest, UpdateMemberRoleRequest, UpdateMemberRoleResponse, UpdateOrganizationRequest, UpdateOrganizationResponse, UpdateTeamRequest, UpdateTeamResponse } from "./organization_pb.js";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import {
-  CreateTeamRequest,
-  CreateTeamResponse,
-  DeleteTeamRequest,
-  GetBillingInfoResponse,
-  GetOrganizationRequest,
-  GetOrganizationResponse,
-  GetUsageRequest,
-  GetUsageResponse,
-  InviteMemberRequest,
-  InviteMemberResponse,
-  ListMembersRequest,
-  ListMembersResponse,
-  ListTeamsRequest,
-  ListTeamsResponse,
-  RemoveMemberRequest,
-  UpdateMemberRoleRequest,
-  UpdateMemberRoleResponse,
-  UpdateOrganizationRequest,
-  UpdateOrganizationResponse,
-  UpdateTeamRequest,
-  UpdateTeamResponse,
-} from "./organization_pb.js";
 
 /**
  * OrganizationService manages organizations and teams
@@ -153,5 +131,6 @@ export const OrganizationService = {
       O: GetUsageResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

@@ -3,17 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { DeployBinaryRequest, DeployBinaryResponse, ListBinariesRequest, ListBinariesResponse, StartBinaryRequest, StartBinaryResponse, StopBinaryRequest, StopBinaryResponse } from "./agent_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  DeployBinaryRequest,
-  DeployBinaryResponse,
-  ListBinariesRequest,
-  ListBinariesResponse,
-  StartBinaryRequest,
-  StartBinaryResponse,
-  StopBinaryRequest,
-  StopBinaryResponse,
-} from "./agent_pb.js";
 
 /**
  * Daemon service definition
@@ -61,5 +52,6 @@ export const DaemonService = {
       O: ListBinariesResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

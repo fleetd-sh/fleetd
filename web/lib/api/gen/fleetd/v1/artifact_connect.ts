@@ -3,37 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { CancelDeploymentRequest, CancelDeploymentResponse, CreateApplicationRequest, CreateApplicationResponse, CreateDeploymentRequest, CreateDeploymentResponse, DeleteApplicationRequest, DeleteApplicationResponse, DeleteArtifactRequest, DeleteArtifactResponse, GetApplicationRequest, GetApplicationResponse, GetArtifactRequest, GetArtifactResponse, GetDeploymentMetricsRequest, GetDeploymentMetricsResponse, GetDeploymentRequest, GetDeploymentResponse, GetDownloadURLRequest, GetDownloadURLResponse, ListApplicationsRequest, ListApplicationsResponse, ListArtifactsRequest, ListArtifactsResponse, ListDeploymentsRequest, ListDeploymentsResponse, UploadArtifactRequest, UploadArtifactResponse } from "./artifact_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  CancelDeploymentRequest,
-  CancelDeploymentResponse,
-  CreateApplicationRequest,
-  CreateApplicationResponse,
-  CreateDeploymentRequest,
-  CreateDeploymentResponse,
-  DeleteApplicationRequest,
-  DeleteApplicationResponse,
-  DeleteArtifactRequest,
-  DeleteArtifactResponse,
-  GetApplicationRequest,
-  GetApplicationResponse,
-  GetArtifactRequest,
-  GetArtifactResponse,
-  GetDeploymentMetricsRequest,
-  GetDeploymentMetricsResponse,
-  GetDeploymentRequest,
-  GetDeploymentResponse,
-  GetDownloadURLRequest,
-  GetDownloadURLResponse,
-  ListApplicationsRequest,
-  ListApplicationsResponse,
-  ListArtifactsRequest,
-  ListArtifactsResponse,
-  ListDeploymentsRequest,
-  ListDeploymentsResponse,
-  UploadArtifactRequest,
-  UploadArtifactResponse,
-} from "./artifact_pb.js";
 
 /**
  * ArtifactService manages software artifacts for deployment
@@ -98,7 +69,7 @@ export const ArtifactService = {
       O: GetDownloadURLResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
 
 /**
@@ -153,7 +124,7 @@ export const ApplicationService = {
       O: DeleteApplicationResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
 
 /**
@@ -219,5 +190,6 @@ export const DeploymentService = {
       O: GetDeploymentMetricsResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

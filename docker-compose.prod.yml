@@ -1,0 +1,379 @@
+# Production Docker Compose Configuration
+#
+# Usage:
+#   1. Copy .env.example to .env and configure all values
+#   2. Run: docker-compose -f docker-compose.prod.yml up -d
+#   3. Run migrations: docker-compose -f docker-compose.prod.yml exec platform-api fleetctl migrate up
+#
+# Security Notes:
+#   - Always use strong passwords (min 32 chars)
+#   - Enable TLS/SSL in production
+#   - Use secrets management (Docker Secrets or external service)
+#   - Restrict network access with firewall rules
+#   - Enable authentication on all services
+
+version: '3.8'
+
+services:
+  # PostgreSQL database with replication support
+  postgres-primary:
+    image: postgres:16-alpine
+    container_name: fleetd-postgres-primary
+    environment:
+      POSTGRES_USER: ${DB_USER:-fleetd}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password required}
+      POSTGRES_DB: ${DB_NAME:-fleetd}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --data-checksums"
+      POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+      # Replication settings
+      POSTGRES_REPLICATION_MODE: master
+      POSTGRES_REPLICATION_USER: ${DB_REPLICATION_USER:-replicator}
+      POSTGRES_REPLICATION_PASSWORD: ${DB_REPLICATION_PASSWORD:?Replication password required}
+    volumes:
+      - postgres_primary_data:/var/lib/postgresql/data
+      - ./configs/postgresql/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./backups:/backups
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=128MB
+      -c checkpoint_completion_target=0.9
+      -c wal_level=replica
+      -c max_wal_senders=3
+      -c max_replication_slots=3
+      -c hot_standby=on
+      -c ssl=on
+      -c ssl_cert_file=/etc/ssl/certs/server.crt
+      -c ssl_key_file=/etc/ssl/private/server.key
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fleetd}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fleetd-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # VictoriaMetrics cluster for high availability
+  victoria-metrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: fleetd-metrics
+    command:
+      - "--storageDataPath=/victoria-metrics-data"
+      - "--httpListenAddr=:8428"
+      - "--retentionPeriod=${METRICS_RETENTION:-90d}"
+      - "--maxLabelsPerTimeseries=50"
+      - "--search.maxUniqueTimeseries=1000000"
+      - "--search.maxQueryDuration=120s"
+    volumes:
+      - victoria_data:/victoria-metrics-data
+    ports:
+      - "${METRICS_PORT:-8428}:8428"
+    networks:
+      - fleetd-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Loki with persistence
+  loki:
+    image: grafana/loki:latest
+    container_name: fleetd-loki
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./configs/loki-prod.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    networks:
+      - fleetd-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Valkey cluster for caching and sessions
+  valkey:
+    image: valkey/valkey:7-alpine
+    container_name: fleetd-valkey
+    command: >
+      valkey-server
+      --appendonly yes
+      --appendfsync everysec
+      --requirepass ${VALKEY_PASSWORD:?Valkey password required}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --tcp-backlog 511
+      --tcp-keepalive 60
+      --timeout 300
+    volumes:
+      - valkey_data:/data
+    ports:
+      - "${VALKEY_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "--pass", "${VALKEY_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fleetd-network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Device API with multiple replicas
+  device-api:
+    image: ${REGISTRY:-ghcr.io}/fleetd-sh/device-api:${VERSION:-latest}
+    container_name: fleetd-device-api
+    environment:
+      DATABASE_URL: "postgresql://${DB_USER:-fleetd}:${DB_PASSWORD}@postgres-primary:5432/${DB_NAME:-fleetd}?sslmode=require"
+      VICTORIA_METRICS_URL: "http://victoria-metrics:8428"
+      LOKI_URL: "http://loki:3100"
+      VALKEY_URL: "valkey:6379"
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT secret required}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      ENABLE_METRICS: "true"
+      ENABLE_TRACING: "true"
+      JAEGER_ENDPOINT: "http://jaeger:14268/api/traces"
+      PORT: "8080"
+      TLS_ENABLED: ${TLS_ENABLED:-false}
+      TLS_CERT_FILE: ${TLS_CERT_FILE:-}
+      TLS_KEY_FILE: ${TLS_KEY_FILE:-}
+      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-100}
+      RATE_LIMIT_DURATION: ${RATE_LIMIT_DURATION:-1m}
+    ports:
+      - "${DEVICE_API_PORT:-8080}:8080"
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - fleetd-network
+    restart: always
+    deploy:
+      replicas: ${DEVICE_API_REPLICAS:-2}
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Platform API with multiple replicas
+  platform-api:
+    image: ${REGISTRY:-ghcr.io}/fleetd-sh/platform-api:${VERSION:-latest}
+    container_name: fleetd-platform-api
+    environment:
+      DATABASE_URL: "postgresql://${DB_USER:-fleetd}:${DB_PASSWORD}@postgres-primary:5432/${DB_NAME:-fleetd}?sslmode=require"
+      DEVICE_API_URL: "http://device-api:8080"
+      VICTORIA_METRICS_URL: "http://victoria-metrics:8428"
+      LOKI_URL: "http://loki:3100"
+      VALKEY_URL: "valkey:6379"
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      ENABLE_METRICS: "true"
+      ENABLE_TRACING: "true"
+      JAEGER_ENDPOINT: "http://jaeger:14268/api/traces"
+      PORT: "8090"
+      TLS_ENABLED: ${TLS_ENABLED:-false}
+      TLS_CERT_FILE: ${TLS_CERT_FILE:-}
+      TLS_KEY_FILE: ${TLS_KEY_FILE:-}
+      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-100}
+      RATE_LIMIT_DURATION: ${RATE_LIMIT_DURATION:-1m}
+    ports:
+      - "${PLATFORM_API_PORT:-8090}:8090"
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+      device-api:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - fleetd-network
+    restart: always
+    deploy:
+      replicas: ${PLATFORM_API_REPLICAS:-2}
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Nginx load balancer and reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: fleetd-nginx
+    volumes:
+      - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./configs/nginx/sites:/etc/nginx/sites-enabled:ro
+      - ./certs:/etc/nginx/certs:ro
+      - nginx_cache:/var/cache/nginx
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    depends_on:
+      - platform-api
+      - device-api
+      - web
+    networks:
+      - fleetd-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Web Dashboard
+  web:
+    image: ${REGISTRY:-ghcr.io}/fleetd-sh/web:${VERSION:-latest}
+    container_name: fleetd-web
+    environment:
+      NEXT_PUBLIC_API_URL: "${PUBLIC_API_URL:-https://api.fleetd.local}"
+      NEXT_PUBLIC_DEVICE_API_URL: "${PUBLIC_DEVICE_API_URL:-https://device.fleetd.local}"
+    networks:
+      - fleetd-network
+    restart: always
+    deploy:
+      replicas: ${WEB_REPLICAS:-2}
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Backup service
+  backup:
+    image: postgres:16-alpine
+    container_name: fleetd-backup
+    environment:
+      PGHOST: postgres-primary
+      PGUSER: ${DB_USER:-fleetd}
+      PGPASSWORD: ${DB_PASSWORD}
+      PGDATABASE: ${DB_NAME:-fleetd}
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    command: /bin/sh -c "chmod +x /backup.sh && crond -f -d 8"
+    networks:
+      - fleetd-network
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  fleetd-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  postgres_primary_data:
+    driver: local
+  victoria_data:
+    driver: local
+  loki_data:
+    driver: local
+  valkey_data:
+    driver: local
+  nginx_cache:
+    driver: local

@@ -3,23 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { ApplyWorkloadRequest, ApplyWorkloadResponse, CreateClusterRequest, CreateClusterResponse, GetClusterRequest, GetClusterResponse, GetNodeStatusRequest, GetNodeStatusResponse, JoinClusterRequest, JoinClusterResponse, ListClustersRequest, ListClustersResponse, RemoveNodeRequest, RemoveNodeResponse } from "./cluster_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  ApplyWorkloadRequest,
-  ApplyWorkloadResponse,
-  CreateClusterRequest,
-  CreateClusterResponse,
-  GetClusterRequest,
-  GetClusterResponse,
-  GetNodeStatusRequest,
-  GetNodeStatusResponse,
-  JoinClusterRequest,
-  JoinClusterResponse,
-  ListClustersRequest,
-  ListClustersResponse,
-  RemoveNodeRequest,
-  RemoveNodeResponse,
-} from "./cluster_pb.js";
 
 /**
  * ClusterService manages k3s clusters on linux-based devices
@@ -106,5 +91,6 @@ export const ClusterService = {
       O: RemoveNodeResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

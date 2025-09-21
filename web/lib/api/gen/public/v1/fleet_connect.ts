@@ -3,38 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { CreateUpdateRequest, CreateUpdateResponse, DeleteDeviceRequest, DeployUpdateRequest, DeployUpdateResponse, DiscoverDevicesRequest, DiscoverDevicesResponse, Event, GetConfigurationRequest, GetConfigurationResponse, GetDeviceRequest, GetDeviceResponse, GetDeviceStatsRequest, GetDeviceStatsResponse, GetTelemetryRequest, GetTelemetryResponse, GetUpdateStatusRequest, GetUpdateStatusResponse, ListDevicesRequest, ListDevicesResponse, ListUpdatesRequest, ListUpdatesResponse, StreamEventsRequest, StreamTelemetryRequest, TelemetryEvent, UpdateConfigurationRequest, UpdateConfigurationResponse, UpdateDeviceRequest, UpdateDeviceResponse } from "./fleet_pb.js";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import {
-  CreateUpdateRequest,
-  CreateUpdateResponse,
-  DeleteDeviceRequest,
-  DeployUpdateRequest,
-  DeployUpdateResponse,
-  DiscoverDevicesRequest,
-  DiscoverDevicesResponse,
-  Event,
-  GetConfigurationRequest,
-  GetConfigurationResponse,
-  GetDeviceRequest,
-  GetDeviceResponse,
-  GetDeviceStatsRequest,
-  GetDeviceStatsResponse,
-  GetTelemetryRequest,
-  GetTelemetryResponse,
-  GetUpdateStatusRequest,
-  GetUpdateStatusResponse,
-  ListDevicesRequest,
-  ListDevicesResponse,
-  ListUpdatesRequest,
-  ListUpdatesResponse,
-  StreamEventsRequest,
-  StreamTelemetryRequest,
-  TelemetryEvent,
-  UpdateConfigurationRequest,
-  UpdateConfigurationResponse,
-  UpdateDeviceRequest,
-  UpdateDeviceResponse,
-} from "./fleet_pb.js";
 
 /**
  * FleetService provides the public API for fleet management
@@ -192,5 +162,6 @@ export const FleetService = {
       O: Event,
       kind: MethodKind.ServerStreaming,
     },
-  },
+  }
 } as const;
+

@@ -1,0 +1,225 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    container_name: fleetd-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fleetd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-fleetd}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fleetd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fleetd-network
+
+  # VictoriaMetrics for metrics
+  victoria-metrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: fleetd-metrics
+    command:
+      - "--storageDataPath=/victoria-metrics-data"
+      - "--httpListenAddr=:8428"
+      - "--retentionPeriod=90d"
+    volumes:
+      - victoria_data:/victoria-metrics-data
+    ports:
+      - "8428:8428"
+    networks:
+      - fleetd-network
+
+  # Loki for log aggregation
+  loki:
+    image: grafana/loki:latest
+    container_name: fleetd-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./configs/loki.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - fleetd-network
+
+  # Valkey (Redis alternative) for caching
+  valkey:
+    image: valkey/valkey:7-alpine
+    container_name: fleetd-valkey
+    command: valkey-server --appendonly yes
+    volumes:
+      - valkey_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fleetd-network
+
+  # Device API server
+  device-api:
+    build:
+      context: .
+      dockerfile: container/device.dockerfile
+    container_name: fleetd-device-api
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-fleetd}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}@postgres:5432/${POSTGRES_DB:-fleetd}?sslmode=disable"
+      VICTORIA_METRICS_URL: "http://victoria-metrics:8428"
+      LOKI_URL: "http://loki:3100"
+      VALKEY_URL: "valkey:6379"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      LOG_LEVEL: "info"
+      ENABLE_METRICS: "true"
+      ENABLE_TRACING: "true"
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - fleetd-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Platform API server
+  platform-api:
+    build:
+      context: .
+      dockerfile: container/platform.dockerfile
+    container_name: fleetd-platform-api
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-fleetd}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}@postgres:5432/${POSTGRES_DB:-fleetd}?sslmode=disable"
+      DEVICE_API_URL: "http://device-api:8080"
+      VICTORIA_METRICS_URL: "http://victoria-metrics:8428"
+      LOKI_URL: "http://loki:3100"
+      VALKEY_URL: "valkey:6379"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      LOG_LEVEL: "info"
+      ENABLE_METRICS: "true"
+      ENABLE_TRACING: "true"
+      PORT: "8090"
+    ports:
+      - "8090:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      device-api:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - fleetd-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Web Dashboard
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: "http://localhost:8090"
+    container_name: fleetd-web
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:8090"
+      NEXT_PUBLIC_DEVICE_API_URL: "http://localhost:8080"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - platform-api
+      - device-api
+    networks:
+      - fleetd-network
+    restart: unless-stopped
+
+  # Grafana for visualization (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fleetd-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - victoria-metrics
+      - loki
+    networks:
+      - fleetd-network
+    restart: unless-stopped
+
+  # Prometheus for additional metrics (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: fleetd-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - fleetd-network
+    restart: unless-stopped
+
+  # Jaeger for distributed tracing (optional)
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: fleetd-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "6831:6831/udp"  # Thrift compact protocol
+      - "6832:6832/udp"  # Thrift binary protocol
+      - "5778:5778"      # Config/sampling
+      - "16686:16686"    # Jaeger UI
+      - "4317:4317"      # OTLP gRPC
+      - "4318:4318"      # OTLP HTTP
+      - "14268:14268"    # Jaeger collector HTTP
+      - "14250:14250"    # Jaeger collector gRPC
+    networks:
+      - fleetd-network
+    restart: unless-stopped
+
+networks:
+  fleetd-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  victoria_data:
+  loki_data:
+  valkey_data:
+  grafana_data:
+  prometheus_data:

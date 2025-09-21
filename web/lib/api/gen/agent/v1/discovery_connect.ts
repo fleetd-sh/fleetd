@@ -4,13 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import {
-  ConfigureDeviceRequest,
-  ConfigureDeviceResponse,
-  GetDeviceInfoResponse,
-  UpdateConfigRequest,
-  UpdateConfigResponse,
-} from "./discovery_pb.js";
+import { ConfigureDeviceRequest, ConfigureDeviceResponse, GetDeviceInfoResponse, UpdateConfigRequest, UpdateConfigResponse } from "./discovery_pb.js";
 
 /**
  * Discovery service for initial device setup
@@ -53,5 +47,6 @@ export const DiscoveryService = {
       O: UpdateConfigResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

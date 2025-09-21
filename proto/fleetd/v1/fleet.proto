@@ -6,28 +6,55 @@ option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
+import "google/api/annotations.proto";
 import "fleetd/v1/device.proto";
 import "fleetd/v1/sync.proto";
 
 // FleetService manages fleet-level operations
 service FleetService {
   // List all fleets
-  rpc ListFleets(ListFleetsRequest) returns (ListFleetsResponse);
+  rpc ListFleets(ListFleetsRequest) returns (ListFleetsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/fleets"
+    };
+  }
 
   // Get a specific fleet
-  rpc GetFleet(GetFleetRequest) returns (GetFleetResponse);
+  rpc GetFleet(GetFleetRequest) returns (GetFleetResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/fleets/{id}"
+    };
+  }
 
   // Create a new fleet
-  rpc CreateFleet(CreateFleetRequest) returns (CreateFleetResponse);
+  rpc CreateFleet(CreateFleetRequest) returns (CreateFleetResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/fleets"
+      body: "*"
+    };
+  }
 
   // Update a fleet
-  rpc UpdateFleet(UpdateFleetRequest) returns (UpdateFleetResponse);
+  rpc UpdateFleet(UpdateFleetRequest) returns (UpdateFleetResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/fleets/{id}"
+      body: "*"
+    };
+  }
 
   // Delete a fleet
-  rpc DeleteFleet(DeleteFleetRequest) returns (DeleteFleetResponse);
+  rpc DeleteFleet(DeleteFleetRequest) returns (DeleteFleetResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/fleets/{id}"
+    };
+  }
 
   // Get logs for a specific device in the fleet
-  rpc GetDeviceLogs(GetDeviceLogsRequest) returns (GetDeviceLogsResponse);
+  rpc GetDeviceLogs(GetDeviceLogsRequest) returns (GetDeviceLogsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/devices/{device_id}/logs"
+    };
+  }
 }
 
 // Fleet represents a group of devices

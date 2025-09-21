@@ -1,0 +1,86 @@
+# FleetD Configuration Example
+# Copy this file to config.toml and customize for your environment
+# For production, use environment variables instead of hardcoded values
+
+[server]
+port = 8090
+device_api_port = 8080
+tls_enabled = false
+
+[device_api]
+port = 8080
+server_url = "http://localhost:8080"
+# Optional: mdns settings
+enable_mdns = false
+mdns_port = 5353
+
+[platform_api]
+port = 8090
+server_url = "http://localhost:8090"
+
+[web]
+port = 3000
+
+[database]
+port = 5432
+host = "localhost"
+name = "fleetd"
+user = "fleetd"
+# Use environment variable: POSTGRES_PASSWORD
+# password = "" # Set via environment variable
+
+[stack]
+# Services to start with 'fleet start'
+services = [
+  "postgres",
+  "victoriametrics",
+  "loki",
+  "valkey",
+  "traefik"
+]
+
+[gateway]
+port = 80
+dashboard_port = 8080
+
+[telemetry]
+victoria_metrics_port = 8428
+loki_port = 3100
+grafana_port = 3001
+
+[auth]
+# Use environment variable: JWT_SECRET
+# jwt_secret = "" # Set via environment variable (min 32 chars)
+api_keys = [] # API keys should be stored in database, not config
+
+[provisioning]
+default_image = "raspios-lite"
+ssh_user = "pi"
+
+[valkey]
+port = 6379
+host = "localhost"
+# Use environment variable: VALKEY_PASSWORD
+# password = "" # Set via environment variable
+
+[rate_limiting]
+requests_per_minute = 100
+requests_per_hour = 1000
+window_size = "1m"
+
+[logging]
+level = "info"
+format = "json"
+output = "stdout"
+
+[metrics]
+enabled = true
+path = "/metrics"
+
+# Production recommendations:
+# 1. Set all passwords via environment variables
+# 2. Use TLS for all connections (tls_enabled = true)
+# 3. Configure proper database connection pooling
+# 4. Set appropriate rate limits based on load
+# 5. Use structured logging with log aggregation
+# 6. Enable metrics and monitoring

@@ -7,6 +7,7 @@
 package fleetpb
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -1162,7 +1163,7 @@ var File_fleetd_v1_device_proto protoreflect.FileDescriptor
 
 const file_fleetd_v1_device_proto_rawDesc = "" +
 	"\n" +
-	"\x16fleetd/v1/device.proto\x12\tfleetd.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc5\x02\n" +
+	"\x16fleetd/v1/device.proto\x12\tfleetd.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\"\xc5\x02\n" +
 	"\x06Device\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -1269,14 +1270,14 @@ const file_fleetd_v1_device_proto_rawDesc = "" +
 	"\x13DeleteDeviceRequest\x12\x1b\n" +
 	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\"0\n" +
 	"\x14DeleteDeviceResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xd4\x03\n" +
-	"\rDeviceService\x12C\n" +
-	"\bRegister\x12\x1a.fleetd.v1.RegisterRequest\x1a\x1b.fleetd.v1.RegisterResponse\x12F\n" +
-	"\tHeartbeat\x12\x1b.fleetd.v1.HeartbeatRequest\x1a\x1c.fleetd.v1.HeartbeatResponse\x12O\n" +
-	"\fReportStatus\x12\x1e.fleetd.v1.ReportStatusRequest\x1a\x1f.fleetd.v1.ReportStatusResponse\x12F\n" +
-	"\tGetDevice\x12\x1b.fleetd.v1.GetDeviceRequest\x1a\x1c.fleetd.v1.GetDeviceResponse\x12L\n" +
-	"\vListDevices\x12\x1d.fleetd.v1.ListDevicesRequest\x1a\x1e.fleetd.v1.ListDevicesResponse\x12O\n" +
-	"\fDeleteDevice\x12\x1e.fleetd.v1.DeleteDeviceRequest\x1a\x1f.fleetd.v1.DeleteDeviceResponseB\x82\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xbd\x05\n" +
+	"\rDeviceService\x12h\n" +
+	"\bRegister\x12\x1a.fleetd.v1.RegisterRequest\x1a\x1b.fleetd.v1.RegisterResponse\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/api/v1/devices/register\x12x\n" +
+	"\tHeartbeat\x12\x1b.fleetd.v1.HeartbeatRequest\x1a\x1c.fleetd.v1.HeartbeatResponse\"0\x82\xd3\xe4\x93\x02*:\x01*\"%/api/v1/devices/{device_id}/heartbeat\x12~\n" +
+	"\fReportStatus\x12\x1e.fleetd.v1.ReportStatusRequest\x1a\x1f.fleetd.v1.ReportStatusResponse\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/api/v1/devices/{device_id}/status\x12k\n" +
+	"\tGetDevice\x12\x1b.fleetd.v1.GetDeviceRequest\x1a\x1c.fleetd.v1.GetDeviceResponse\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/api/v1/devices/{device_id}\x12e\n" +
+	"\vListDevices\x12\x1d.fleetd.v1.ListDevicesRequest\x1a\x1e.fleetd.v1.ListDevicesResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/v1/devices\x12t\n" +
+	"\fDeleteDevice\x12\x1e.fleetd.v1.DeleteDeviceRequest\x1a\x1f.fleetd.v1.DeleteDeviceResponse\"#\x82\xd3\xe4\x93\x02\x1d*\x1b/api/v1/devices/{device_id}B\x82\x01\n" +
 	"\rcom.fleetd.v1B\vDeviceProtoP\x01Z\x1ffleetd.sh/gen/fleetd/v1;fleetpb\xa2\x02\x03FXX\xaa\x02\tFleetd.V1\xca\x02\tFleetd\\V1\xe2\x02\x15Fleetd\\V1\\GPBMetadata\xea\x02\n" +
 	"Fleetd::V1b\x06proto3"
 

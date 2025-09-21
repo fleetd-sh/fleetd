@@ -7,6 +7,7 @@
 package fleetpb
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -1196,7 +1197,7 @@ var File_fleetd_v1_fleet_proto protoreflect.FileDescriptor
 
 const file_fleetd_v1_fleet_proto_rawDesc = "" +
 	"\n" +
-	"\x15fleetd/v1/fleet.proto\x12\tfleetd.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x16fleetd/v1/device.proto\x1a\x14fleetd/v1/sync.proto\"\xff\x02\n" +
+	"\x15fleetd/v1/fleet.proto\x12\tfleetd.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x16fleetd/v1/device.proto\x1a\x14fleetd/v1/sync.proto\"\xff\x02\n" +
 	"\x05Fleet\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -1294,15 +1295,15 @@ const file_fleetd_v1_fleet_proto_rawDesc = "" +
 	"\farchitecture\x18\x04 \x01(\tR\farchitecture\x12\x0e\n" +
 	"\x02os\x18\x05 \x01(\tR\x02os\x12\x1d\n" +
 	"\n" +
-	"os_version\x18\x06 \x01(\tR\tosVersion2\xdc\x03\n" +
-	"\fFleetService\x12I\n" +
+	"os_version\x18\x06 \x01(\tR\tosVersion2\x93\x05\n" +
+	"\fFleetService\x12a\n" +
 	"\n" +
-	"ListFleets\x12\x1c.fleetd.v1.ListFleetsRequest\x1a\x1d.fleetd.v1.ListFleetsResponse\x12C\n" +
-	"\bGetFleet\x12\x1a.fleetd.v1.GetFleetRequest\x1a\x1b.fleetd.v1.GetFleetResponse\x12L\n" +
-	"\vCreateFleet\x12\x1d.fleetd.v1.CreateFleetRequest\x1a\x1e.fleetd.v1.CreateFleetResponse\x12L\n" +
-	"\vUpdateFleet\x12\x1d.fleetd.v1.UpdateFleetRequest\x1a\x1e.fleetd.v1.UpdateFleetResponse\x12L\n" +
-	"\vDeleteFleet\x12\x1d.fleetd.v1.DeleteFleetRequest\x1a\x1e.fleetd.v1.DeleteFleetResponse\x12R\n" +
-	"\rGetDeviceLogs\x12\x1f.fleetd.v1.GetDeviceLogsRequest\x1a .fleetd.v1.GetDeviceLogsResponseB\x81\x01\n" +
+	"ListFleets\x12\x1c.fleetd.v1.ListFleetsRequest\x1a\x1d.fleetd.v1.ListFleetsResponse\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/api/v1/fleets\x12`\n" +
+	"\bGetFleet\x12\x1a.fleetd.v1.GetFleetRequest\x1a\x1b.fleetd.v1.GetFleetResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/fleets/{id}\x12g\n" +
+	"\vCreateFleet\x12\x1d.fleetd.v1.CreateFleetRequest\x1a\x1e.fleetd.v1.CreateFleetResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/api/v1/fleets\x12l\n" +
+	"\vUpdateFleet\x12\x1d.fleetd.v1.UpdateFleetRequest\x1a\x1e.fleetd.v1.UpdateFleetResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*2\x13/api/v1/fleets/{id}\x12i\n" +
+	"\vDeleteFleet\x12\x1d.fleetd.v1.DeleteFleetRequest\x1a\x1e.fleetd.v1.DeleteFleetResponse\"\x1b\x82\xd3\xe4\x93\x02\x15*\x13/api/v1/fleets/{id}\x12|\n" +
+	"\rGetDeviceLogs\x12\x1f.fleetd.v1.GetDeviceLogsRequest\x1a .fleetd.v1.GetDeviceLogsResponse\"(\x82\xd3\xe4\x93\x02\"\x12 /api/v1/devices/{device_id}/logsB\x81\x01\n" +
 	"\rcom.fleetd.v1B\n" +
 	"FleetProtoP\x01Z\x1ffleetd.sh/gen/fleetd/v1;fleetpb\xa2\x02\x03FXX\xaa\x02\tFleetd.V1\xca\x02\tFleetd\\V1\xe2\x02\x15Fleetd\\V1\\GPBMetadata\xea\x02\n" +
 	"Fleetd::V1b\x06proto3"

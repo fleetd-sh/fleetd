@@ -3,17 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { GetSyncConfigRequest, GetSyncConfigResponse, SyncCommand, SyncData, SyncLogsRequest, SyncLogsResponse, SyncMetricsRequest, SyncMetricsResponse } from "./sync_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  GetSyncConfigRequest,
-  GetSyncConfigResponse,
-  SyncCommand,
-  SyncData,
-  SyncLogsRequest,
-  SyncLogsResponse,
-  SyncMetricsRequest,
-  SyncMetricsResponse,
-} from "./sync_pb.js";
 
 /**
  * SyncService handles data synchronization between devices and server
@@ -67,5 +58,6 @@ export const SyncService = {
       O: SyncCommand,
       kind: MethodKind.BiDiStreaming,
     },
-  },
+  }
 } as const;
+

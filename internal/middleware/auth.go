@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -17,19 +16,50 @@ type contextKey string
 const (
 	// ClaimsContextKey is the context key for JWT claims
 	ClaimsContextKey contextKey = "claims"
+	// APIKeyContextKey is the context key for API key info
+	APIKeyContextKey contextKey = "api_key"
 )
+
+// AuthConfig contains authentication configuration
+type AuthConfig struct {
+	// JWTSecretKey is the secret key for JWT signing
+	JWTSecretKey string
+	// PublicPaths are paths that don't require authentication
+	PublicPaths []string
+	// EnableAPIKeys enables API key authentication
+	EnableAPIKeys bool
+	// APIKeyService is the service for validating API keys
+	APIKeyService APIKeyValidator
+	// RequireAuth forces authentication even in development
+	RequireAuth bool
+	// Logger for authentication events
+	Logger *slog.Logger
+}
 
 // AuthMiddleware provides JWT authentication middleware
 type AuthMiddleware struct {
-	jwtManager *security.JWTManager
-	logger     *slog.Logger
-	devMode    bool
+	jwtManager    *security.JWTManager
+	apiKeyService APIKeyValidator
+	logger        *slog.Logger
+	publicPaths   []string
+	enableAPIKeys bool
+	requireAuth   bool
+}
+
+// APIKeyValidator interface for validating API keys
+type APIKeyValidator interface {
+	ValidateAPIKeyWithClaims(ctx context.Context, apiKey string) (*security.Claims, error)
 }
 
 // NewAuthMiddleware creates a new auth middleware
-func NewAuthMiddleware(secretKey string) func(http.Handler) http.Handler {
+func NewAuthMiddleware(config AuthConfig) func(http.Handler) http.Handler {
+	if config.JWTSecretKey == "" {
+		// This should fail fast in production
+		panic("JWT secret key is required for authentication")
+	}
+
 	jwtConfig := &security.JWTConfig{
-		SigningKey:    []byte(secretKey),
+		SigningKey:    []byte(config.JWTSecretKey),
 		SigningMethod: security.DefaultJWTConfig().SigningMethod,
 		Issuer:        security.DefaultJWTConfig().Issuer,
 		Audience:      security.DefaultJWTConfig().Audience,
@@ -37,113 +67,131 @@ func NewAuthMiddleware(secretKey string) func(http.Handler) http.Handler {
 
 	jwtManager, err := security.NewJWTManager(jwtConfig)
 	if err != nil {
-		// Log error but continue with a basic auth check
-		slog.Error("Failed to create JWT manager", "error", err)
-		return func(next http.Handler) http.Handler {
-			return next
+		panic("Failed to create JWT manager: " + err.Error())
+	}
+
+	logger := config.Logger
+	if logger == nil {
+		logger = slog.Default().With("component", "auth-middleware")
+	}
+
+	// Default public paths if not specified
+	publicPaths := config.PublicPaths
+	if len(publicPaths) == 0 {
+		publicPaths = []string{
+			"/health",
+			"/health/live",
+			"/health/ready",
+			"/metrics",
+			"/api/v1/auth/login",
+			"/api/v1/auth/refresh",
+			"/api/v1/device/register", // Devices need to register without auth
 		}
 	}
 
-	// Check if we're in development/insecure mode
-	devMode := os.Getenv("FLEETD_AUTH_MODE") == "development" ||
-		os.Getenv("FLEETD_INSECURE") == "true" ||
-		os.Getenv("NODE_ENV") == "development"
-
-	logger := slog.Default().With("component", "auth-middleware")
-
-	if devMode {
-		logger.Warn("\n" +
-			"╔══════════════════════════════════════════════════════════════╗\n" +
-			"║                      SECURITY WARNING                       ║\n" +
-			"║                                                              ║\n" +
-			"║  Authentication is running in DEVELOPMENT/INSECURE mode!    ║\n" +
-			"║  Unauthenticated requests will be allowed.                  ║\n" +
-			"║                                                              ║\n" +
-			"║  DO NOT use this configuration in production!               ║\n" +
-			"║                                                              ║\n" +
-			"║  To enable authentication:                                  ║\n" +
-			"║  - Set FLEETD_AUTH_MODE=production                          ║\n" +
-			"║  - Or remove FLEETD_INSECURE=true                           ║\n" +
-			"╚══════════════════════════════════════════════════════════════╝")
-	}
-
 	am := &AuthMiddleware{
-		jwtManager: jwtManager,
-		logger:     logger,
-		devMode:    devMode,
+		jwtManager:    jwtManager,
+		apiKeyService: config.APIKeyService,
+		logger:        logger,
+		publicPaths:   publicPaths,
+		enableAPIKeys: config.EnableAPIKeys,
+		requireAuth:   config.RequireAuth,
 	}
+
 	return am.Middleware
 }
 
-// isDevelopmentMode checks if we're running in development/insecure mode
-func (am *AuthMiddleware) isDevelopmentMode() bool {
-	return am.devMode
+// isPublicPath checks if the path is public
+func (am *AuthMiddleware) isPublicPath(path string) bool {
+	for _, publicPath := range am.publicPaths {
+		if path == publicPath || strings.HasPrefix(path, publicPath) {
+			return true
+		}
+	}
+	return false
+}
+
+// validateAPIKey validates an API key
+func (am *AuthMiddleware) validateAPIKey(ctx context.Context, apiKey string) (*security.Claims, error) {
+	if am.apiKeyService == nil {
+		return nil, nil // API key service not configured
+	}
+
+	// Validate the API key and get claims
+	claims, err := am.apiKeyService.ValidateAPIKeyWithClaims(ctx, apiKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
 }
 
 // Middleware is the auth middleware function
 func (am *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Skip auth for health check
-		if r.URL.Path == "/health" {
+		// Skip auth for public endpoints
+		if am.isPublicPath(r.URL.Path) {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		// Skip auth for public endpoints
-		publicPaths := []string{"/health", "/metrics", "/api/v1/register"}
-		for _, path := range publicPaths {
-			if strings.HasPrefix(r.URL.Path, path) {
-				next.ServeHTTP(w, r)
+		// Try Bearer token authentication first
+		auth := r.Header.Get("Authorization")
+		if auth != "" && strings.HasPrefix(auth, "Bearer ") {
+			token := strings.TrimPrefix(auth, "Bearer ")
+			claims, err := am.jwtManager.ValidateToken(token)
+			if err != nil {
+				am.logger.Debug("Token validation failed",
+					"error", err,
+					"path", r.URL.Path,
+					"remote", r.RemoteAddr)
+				http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
 				return
 			}
+
+			// Token is valid, add claims to context
+			ctx := context.WithValue(r.Context(), ClaimsContextKey, claims)
+			next.ServeHTTP(w, r.WithContext(ctx))
+			return
 		}
 
-		// Check for Authorization header
-		auth := r.Header.Get("Authorization")
-		if auth == "" {
-			// Check for API key in header
+		// Try API key authentication if enabled
+		if am.enableAPIKeys {
 			apiKey := r.Header.Get("X-API-Key")
 			if apiKey != "" {
-				// TODO: Validate API key against database
-				am.logger.Debug("API key authentication not yet implemented")
-				next.ServeHTTP(w, r)
-				return
-			}
+				claims, err := am.validateAPIKey(r.Context(), apiKey)
+				if err != nil {
+					am.logger.Debug("API key validation failed",
+						"error", err,
+						"path", r.URL.Path,
+						"remote", r.RemoteAddr)
+					http.Error(w, "Invalid API key", http.StatusUnauthorized)
+					return
+				}
 
-			// Check if we're in development/insecure mode
-			if am.isDevelopmentMode() {
-				am.logger.Warn("SECURITY WARNING: Authentication bypassed - running in INSECURE development mode!",
+				if claims != nil {
+					// API key is valid
+					ctx := context.WithValue(r.Context(), ClaimsContextKey, claims)
+					ctx = context.WithValue(ctx, APIKeyContextKey, apiKey)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+
+				// API key validation not implemented yet
+				am.logger.Warn("API key authentication not yet implemented",
 					"path", r.URL.Path,
-					"method", r.Method,
 					"remote", r.RemoteAddr)
-				next.ServeHTTP(w, r)
-				return
 			}
-
-			// Production mode - require authentication
-			am.logger.Debug("No authentication provided", "path", r.URL.Path)
-			http.Error(w, "Authentication required", http.StatusUnauthorized)
-			return
 		}
 
-		// Validate Bearer token
-		if !strings.HasPrefix(auth, "Bearer ") {
-			http.Error(w, "Invalid authorization header format", http.StatusUnauthorized)
-			return
-		}
+		// No valid authentication provided
+		am.logger.Debug("No authentication provided",
+			"path", r.URL.Path,
+			"method", r.Method,
+			"remote", r.RemoteAddr)
 
-		// Extract and validate JWT token
-		token := strings.TrimPrefix(auth, "Bearer ")
-		claims, err := am.jwtManager.ValidateToken(token)
-		if err != nil {
-			am.logger.Debug("Token validation failed", "error", err)
-			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
-			return
-		}
-
-		// Add claims to context
-		ctx := context.WithValue(r.Context(), ClaimsContextKey, claims)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		w.Header().Set("WWW-Authenticate", `Bearer realm="fleetd"`)
+		http.Error(w, "Authentication required", http.StatusUnauthorized)
 	})
 }
 
@@ -153,15 +201,32 @@ func GetClaims(ctx context.Context) (*security.Claims, bool) {
 	return claims, ok
 }
 
+// GetAPIKey retrieves API key from the request context
+func GetAPIKey(ctx context.Context) (string, bool) {
+	apiKey, ok := ctx.Value(APIKeyContextKey).(string)
+	return apiKey, ok
+}
+
 // loggingResponseWriter wraps http.ResponseWriter to capture status code for logging
 type loggingResponseWriter struct {
 	http.ResponseWriter
 	statusCode int
+	written    bool
 }
 
 func (rw *loggingResponseWriter) WriteHeader(code int) {
-	rw.statusCode = code
-	rw.ResponseWriter.WriteHeader(code)
+	if !rw.written {
+		rw.statusCode = code
+		rw.ResponseWriter.WriteHeader(code)
+		rw.written = true
+	}
+}
+
+func (rw *loggingResponseWriter) Write(b []byte) (int, error) {
+	if !rw.written {
+		rw.WriteHeader(http.StatusOK)
+	}
+	return rw.ResponseWriter.Write(b)
 }
 
 // NewLoggingMiddleware creates logging middleware
@@ -173,14 +238,27 @@ func NewLoggingMiddleware() func(http.Handler) http.Handler {
 			start := time.Now()
 
 			// Wrap response writer to capture status code
-			rw := &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+			rw := &loggingResponseWriter{
+				ResponseWriter: w,
+				statusCode:     http.StatusOK,
+				written:        false,
+			}
 
 			// Process request
 			next.ServeHTTP(rw, r)
 
 			// Log request details
 			duration := time.Since(start)
-			logger.Info("HTTP request",
+
+			// Use appropriate log level based on status code
+			logLevel := slog.LevelInfo
+			if rw.statusCode >= 400 && rw.statusCode < 500 {
+				logLevel = slog.LevelWarn
+			} else if rw.statusCode >= 500 {
+				logLevel = slog.LevelError
+			}
+
+			logger.Log(r.Context(), logLevel, "HTTP request",
 				"method", r.Method,
 				"path", r.URL.Path,
 				"status", rw.statusCode,

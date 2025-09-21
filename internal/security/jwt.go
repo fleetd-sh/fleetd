@@ -38,14 +38,32 @@ func DefaultJWTConfig() *JWTConfig {
 
 // JWTManager manages JWT tokens
 type JWTManager struct {
-	config *JWTConfig
-	logger *slog.Logger
+	config         *JWTConfig
+	logger         *slog.Logger
+	tokenBlacklist TokenBlacklist
 }
 
 // NewJWTManager creates a new JWT manager
 func NewJWTManager(config *JWTConfig) (*JWTManager, error) {
 	if config == nil {
 		config = DefaultJWTConfig()
+	}
+
+	// Apply defaults for missing fields
+	if config.SigningMethod == nil {
+		config.SigningMethod = jwt.SigningMethodHS256
+	}
+	if config.Issuer == "" {
+		config.Issuer = "fleetd"
+	}
+	if config.Audience == "" {
+		config.Audience = "fleetd-api"
+	}
+	if config.AccessTokenTTL == 0 {
+		config.AccessTokenTTL = 15 * time.Minute
+	}
+	if config.RefreshTokenTTL == 0 {
+		config.RefreshTokenTTL = 7 * 24 * time.Hour
 	}
 
 	// Generate signing key if not provided
@@ -57,9 +75,13 @@ func NewJWTManager(config *JWTConfig) (*JWTManager, error) {
 		config.SigningKey = key
 	}
 
+	// Create in-memory blacklist by default
+	blacklist := NewMemoryTokenBlacklist()
+
 	return &JWTManager{
-		config: config,
-		logger: slog.Default().With("component", "jwt"),
+		config:         config,
+		logger:         slog.Default().With("component", "jwt"),
+		tokenBlacklist: blacklist,
 	}, nil
 }
 
@@ -229,6 +251,17 @@ func (m *JWTManager) ValidateToken(tokenString string) (*Claims, error) {
 		return nil, err
 	}
 
+	// Check if token is blacklisted
+	if claims.ID != "" && m.tokenBlacklist != nil {
+		isRevoked, err := m.IsTokenRevoked(claims.ID)
+		if err != nil {
+			m.logger.Error("Failed to check token blacklist", "error", err, "jti", claims.ID)
+			// Continue without failing - blacklist check is best-effort
+		} else if isRevoked {
+			return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "token has been revoked")
+		}
+	}
+
 	return claims, nil
 }
 
@@ -292,11 +325,51 @@ func (m *JWTManager) RefreshToken(refreshTokenString string) (*Token, error) {
 	return m.GenerateTokenPair(user)
 }
 
-// RevokeToken revokes a token (requires token blacklist implementation)
-func (m *JWTManager) RevokeToken(tokenID string) error {
-	// TODO: Implement token blacklist
-	m.logger.Info("Token revoked", "token_id", tokenID)
+// ParseUnverified parses a token without verifying the signature
+// This should only be used when you need to extract claims from an untrusted token
+func (m *JWTManager) ParseUnverified(tokenString string) (*Claims, error) {
+	// Parse without verification
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, &Claims{})
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*Claims)
+	if !ok {
+		return nil, ErrInvalidToken
+	}
+
+	return claims, nil
+}
+
+// RevokeToken revokes a token by adding it to the blacklist
+func (m *JWTManager) RevokeToken(tokenID string, expiresAt time.Time) error {
+	if m.tokenBlacklist == nil {
+		return ferrors.New(ferrors.ErrCodeInternal, "token blacklist not configured")
+	}
+
+	ctx := context.Background()
+	if err := m.tokenBlacklist.Add(ctx, tokenID, expiresAt); err != nil {
+		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to revoke token")
+	}
+
+	m.logger.Info("Token revoked", "token_id", tokenID, "expires_at", expiresAt)
 	return nil
+}
+
+// IsTokenRevoked checks if a token has been revoked
+func (m *JWTManager) IsTokenRevoked(tokenID string) (bool, error) {
+	if m.tokenBlacklist == nil {
+		return false, nil // No blacklist means no revocation
+	}
+
+	ctx := context.Background()
+	return m.tokenBlacklist.IsBlacklisted(ctx, tokenID)
+}
+
+// SetTokenBlacklist sets a custom token blacklist implementation
+func (m *JWTManager) SetTokenBlacklist(blacklist TokenBlacklist) {
+	m.tokenBlacklist = blacklist
 }
 
 // ExtractTokenFromHeader extracts token from Authorization header

@@ -1,0 +1,4724 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "agent/v1/agent.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "DaemonService"
+    },
+    {
+      "name": "DiscoveryService"
+    },
+    {
+      "name": "AnalyticsService"
+    },
+    {
+      "name": "ArtifactService"
+    },
+    {
+      "name": "ApplicationService"
+    },
+    {
+      "name": "DeploymentService"
+    },
+    {
+      "name": "BinaryService"
+    },
+    {
+      "name": "ClusterService"
+    },
+    {
+      "name": "DeviceService"
+    },
+    {
+      "name": "SyncService"
+    },
+    {
+      "name": "FleetService"
+    },
+    {
+      "name": "UpdateService"
+    },
+    {
+      "name": "Health"
+    },
+    {
+      "name": "AuthService"
+    },
+    {
+      "name": "OrganizationService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/analytics/devices/{deviceId}/health": {
+      "get": {
+        "summary": "Get device health metrics",
+        "operationId": "AnalyticsService_GetDeviceHealth",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDeviceHealthResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "timeRange.startTime",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "timeRange.endTime",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "AnalyticsService"
+        ]
+      }
+    },
+    "/api/v1/analytics/devices/{deviceId}/metrics": {
+      "get": {
+        "summary": "Get device metrics aggregation",
+        "operationId": "AnalyticsService_GetDeviceMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDeviceMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "metricNames",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "timeRange.startTime",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "timeRange.endTime",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "AnalyticsService"
+        ]
+      }
+    },
+    "/api/v1/analytics/performance": {
+      "get": {
+        "summary": "Get performance metrics",
+        "operationId": "AnalyticsService_GetPerformanceMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetPerformanceMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "metricNames",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "timeRange.startTime",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "timeRange.endTime",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "AnalyticsService"
+        ]
+      }
+    },
+    "/api/v1/analytics/updates/{campaignId}": {
+      "get": {
+        "summary": "Get update campaign analytics",
+        "operationId": "AnalyticsService_GetUpdateAnalytics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetUpdateAnalyticsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "timeRange.startTime",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "timeRange.endTime",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "AnalyticsService"
+        ]
+      }
+    },
+    "/api/v1/devices": {
+      "get": {
+        "summary": "List devices",
+        "operationId": "DeviceService_ListDevices",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fleetdv1ListDevicesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DeviceService"
+        ]
+      }
+    },
+    "/api/v1/devices/register": {
+      "post": {
+        "summary": "Register a new device with the fleet",
+        "operationId": "DeviceService_Register",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RegisterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DeviceService"
+        ]
+      }
+    },
+    "/api/v1/devices/{deviceId}": {
+      "get": {
+        "summary": "Get a device by ID",
+        "operationId": "DeviceService_GetDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/fleetdv1GetDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DeviceService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete a device",
+        "operationId": "DeviceService_DeleteDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DeviceService"
+        ]
+      }
+    },
+    "/api/v1/devices/{deviceId}/heartbeat": {
+      "post": {
+        "summary": "Send periodic heartbeat and receive pending actions",
+        "operationId": "DeviceService_Heartbeat",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HeartbeatResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeviceServiceHeartbeatBody"
+            }
+          }
+        ],
+        "tags": [
+          "DeviceService"
+        ]
+      }
+    },
+    "/api/v1/devices/{deviceId}/logs": {
+      "get": {
+        "summary": "Get logs for a specific device in the fleet",
+        "operationId": "FleetService_GetDeviceLogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDeviceLogsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "levels",
+            "description": "INFO, WARN, ERROR, etc.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "FleetService"
+        ]
+      }
+    },
+    "/api/v1/devices/{deviceId}/status": {
+      "post": {
+        "summary": "Update device status and metrics",
+        "operationId": "DeviceService_ReportStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReportStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeviceServiceReportStatusBody"
+            }
+          }
+        ],
+        "tags": [
+          "DeviceService"
+        ]
+      }
+    },
+    "/api/v1/fleets": {
+      "get": {
+        "summary": "List all fleets",
+        "operationId": "FleetService_ListFleets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListFleetsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tags",
+            "description": "Optional filters",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FleetService"
+        ]
+      },
+      "post": {
+        "summary": "Create a new fleet",
+        "operationId": "FleetService_CreateFleet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateFleetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateFleetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "FleetService"
+        ]
+      }
+    },
+    "/api/v1/fleets/{id}": {
+      "get": {
+        "summary": "Get a specific fleet",
+        "operationId": "FleetService_GetFleet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetFleetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FleetService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete a fleet",
+        "operationId": "FleetService_DeleteFleet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteFleetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "FleetService"
+        ]
+      },
+      "patch": {
+        "summary": "Update a fleet",
+        "operationId": "FleetService_UpdateFleet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateFleetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/FleetServiceUpdateFleetBody"
+            }
+          }
+        ],
+        "tags": [
+          "FleetService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "DeviceServiceHeartbeatBody": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "DeviceServiceReportStatusBody": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "FleetServiceUpdateFleetBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "config": {
+          "$ref": "#/definitions/v1FleetConfig"
+        }
+      }
+    },
+    "HealthCheckResponseServingStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "SERVING",
+        "NOT_SERVING",
+        "SERVICE_UNKNOWN"
+      ],
+      "default": "UNKNOWN"
+    },
+    "agentv1Binary": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "agentv1ListBinariesResponse": {
+      "type": "object",
+      "properties": {
+        "binaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/agentv1Binary"
+          }
+        }
+      }
+    },
+    "fleetdv1Binary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "architecture": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "int64"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "fleetdv1BiosInfo": {
+      "type": "object",
+      "properties": {
+        "vendor": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "releaseDate": {
+          "type": "string"
+        }
+      }
+    },
+    "fleetdv1DeploymentStrategy": {
+      "type": "object",
+      "properties": {
+        "canary": {
+          "$ref": "#/definitions/v1CanaryStrategy"
+        },
+        "rolling": {
+          "$ref": "#/definitions/v1RollingUpdateStrategy"
+        },
+        "blueGreen": {
+          "$ref": "#/definitions/v1BlueGreenStrategy"
+        },
+        "allAtOnce": {
+          "$ref": "#/definitions/v1AllAtOnceStrategy"
+        }
+      }
+    },
+    "fleetdv1Device": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "systemInfo": {
+          "$ref": "#/definitions/fleetdv1SystemInfo"
+        }
+      }
+    },
+    "fleetdv1GetDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "$ref": "#/definitions/fleetdv1Device"
+        }
+      }
+    },
+    "fleetdv1ListBinariesResponse": {
+      "type": "object",
+      "properties": {
+        "binaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/fleetdv1Binary"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "fleetdv1ListDevicesResponse": {
+      "type": "object",
+      "properties": {
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/fleetdv1Device"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "fleetdv1LoadAverage": {
+      "type": "object",
+      "properties": {
+        "load1": {
+          "type": "number",
+          "format": "double",
+          "title": "1 minute average"
+        },
+        "load5": {
+          "type": "number",
+          "format": "double",
+          "title": "5 minute average"
+        },
+        "load15": {
+          "type": "number",
+          "format": "double",
+          "title": "15 minute average"
+        }
+      }
+    },
+    "fleetdv1NetworkInterface": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "macAddress": {
+          "type": "string"
+        },
+        "ipAddresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "IPv4 and IPv6"
+        },
+        "isUp": {
+          "type": "boolean"
+        },
+        "isLoopback": {
+          "type": "boolean"
+        },
+        "mtu": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "fleetdv1SystemInfo": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "os": {
+          "type": "string"
+        },
+        "osVersion": {
+          "type": "string"
+        },
+        "arch": {
+          "type": "string"
+        },
+        "cpuModel": {
+          "type": "string"
+        },
+        "cpuCores": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "memoryTotal": {
+          "type": "string",
+          "format": "uint64",
+          "title": "in bytes"
+        },
+        "storageTotal": {
+          "type": "string",
+          "format": "uint64",
+          "title": "in bytes"
+        },
+        "kernelVersion": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "for additional system info"
+        },
+        "networkInterfaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/fleetdv1NetworkInterface"
+          },
+          "title": "Network information"
+        },
+        "timezone": {
+          "type": "string",
+          "title": "System identification"
+        },
+        "agentVersion": {
+          "type": "string"
+        },
+        "serialNumber": {
+          "type": "string"
+        },
+        "productName": {
+          "type": "string"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "loadAverage": {
+          "$ref": "#/definitions/fleetdv1LoadAverage",
+          "title": "Runtime metrics"
+        },
+        "processCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "biosInfo": {
+          "$ref": "#/definitions/fleetdv1BiosInfo",
+          "title": "BIOS/Firmware"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\nThe JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "publicv1BiosInfo": {
+      "type": "object",
+      "properties": {
+        "vendor": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "releaseDate": {
+          "type": "string"
+        }
+      }
+    },
+    "publicv1DeploymentStrategy": {
+      "type": "string",
+      "enum": [
+        "DEPLOYMENT_STRATEGY_UNSPECIFIED",
+        "DEPLOYMENT_STRATEGY_IMMEDIATE",
+        "DEPLOYMENT_STRATEGY_ROLLING",
+        "DEPLOYMENT_STRATEGY_CANARY"
+      ],
+      "default": "DEPLOYMENT_STRATEGY_UNSPECIFIED"
+    },
+    "publicv1Device": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1DeviceStatus"
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object"
+        },
+        "capabilities": {
+          "$ref": "#/definitions/publicv1DeviceCapabilities"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "systemInfo": {
+          "$ref": "#/definitions/publicv1SystemInfo"
+        }
+      },
+      "title": "Device represents a managed device"
+    },
+    "publicv1DeviceCapabilities": {
+      "type": "object",
+      "properties": {
+        "supportsRemoteUpdate": {
+          "type": "boolean"
+        },
+        "supportsRemoteConfig": {
+          "type": "boolean"
+        },
+        "supportsTelemetry": {
+          "type": "boolean"
+        },
+        "supportsShellAccess": {
+          "type": "boolean"
+        },
+        "supportedUpdateChannels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "publicv1GetDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "$ref": "#/definitions/publicv1Device"
+        }
+      }
+    },
+    "publicv1ListDevicesResponse": {
+      "type": "object",
+      "properties": {
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/publicv1Device"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "publicv1LoadAverage": {
+      "type": "object",
+      "properties": {
+        "load1": {
+          "type": "number",
+          "format": "double",
+          "title": "1 minute average"
+        },
+        "load5": {
+          "type": "number",
+          "format": "double",
+          "title": "5 minute average"
+        },
+        "load15": {
+          "type": "number",
+          "format": "double",
+          "title": "15 minute average"
+        }
+      }
+    },
+    "publicv1NetworkInterface": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "macAddress": {
+          "type": "string"
+        },
+        "ipAddresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "IPv4 and IPv6"
+        },
+        "isUp": {
+          "type": "boolean"
+        },
+        "isLoopback": {
+          "type": "boolean"
+        },
+        "mtu": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "publicv1SystemInfo": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string"
+        },
+        "os": {
+          "type": "string"
+        },
+        "osVersion": {
+          "type": "string"
+        },
+        "arch": {
+          "type": "string"
+        },
+        "cpuModel": {
+          "type": "string"
+        },
+        "cpuCores": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "memoryTotal": {
+          "type": "string",
+          "format": "uint64",
+          "title": "in bytes"
+        },
+        "storageTotal": {
+          "type": "string",
+          "format": "uint64",
+          "title": "in bytes"
+        },
+        "kernelVersion": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "for additional system info"
+        },
+        "networkInterfaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/publicv1NetworkInterface"
+          },
+          "title": "Network information"
+        },
+        "timezone": {
+          "type": "string",
+          "title": "System identification"
+        },
+        "agentVersion": {
+          "type": "string"
+        },
+        "serialNumber": {
+          "type": "string"
+        },
+        "productName": {
+          "type": "string"
+        },
+        "manufacturer": {
+          "type": "string"
+        },
+        "loadAverage": {
+          "$ref": "#/definitions/publicv1LoadAverage",
+          "title": "Runtime metrics"
+        },
+        "processCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "biosInfo": {
+          "$ref": "#/definitions/publicv1BiosInfo",
+          "title": "BIOS/Firmware"
+        }
+      },
+      "title": "SystemInfo contains comprehensive system information about a device"
+    },
+    "publicv1UpdateDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "device": {
+          "$ref": "#/definitions/publicv1Device"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1APIKey": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastUsed": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1APIKeyCredential": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AllAtOnceStrategy": {
+      "type": "object",
+      "properties": {
+        "timeoutSeconds": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1Application": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ArtifactRef"
+          },
+          "title": "Artifacts that compose this application"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Execution settings"
+        },
+        "environment": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "workingDir": {
+          "type": "string"
+        },
+        "restartPolicy": {
+          "$ref": "#/definitions/v1RestartPolicy"
+        },
+        "configuration": {
+          "$ref": "#/definitions/v1Configuration",
+          "title": "Configuration"
+        },
+        "runtime": {
+          "$ref": "#/definitions/v1RuntimeConfig",
+          "title": "Runtime settings"
+        },
+        "healthCheck": {
+          "$ref": "#/definitions/v1HealthCheck",
+          "title": "Health check"
+        },
+        "resources": {
+          "$ref": "#/definitions/v1Resources",
+          "title": "Resource limits"
+        },
+        "placement": {
+          "$ref": "#/definitions/v1PlacementConstraints",
+          "title": "Placement constraints"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Metadata"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Application represents a complete application definition"
+    },
+    "v1ApplyWorkloadResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Created resource names"
+        }
+      }
+    },
+    "v1Artifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1ArtifactType"
+        },
+        "buildInfo": {
+          "$ref": "#/definitions/v1BuildInfo",
+          "title": "Build information"
+        },
+        "requirements": {
+          "$ref": "#/definitions/v1Requirements",
+          "title": "Runtime requirements"
+        },
+        "signatures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Signature"
+          },
+          "title": "Security"
+        },
+        "checksums": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "size": {
+          "type": "string",
+          "format": "int64",
+          "title": "Storage"
+        },
+        "storageUrl": {
+          "type": "string"
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Platform"
+          },
+          "title": "Platform compatibility"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Metadata"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "title": "Artifact represents a deployable software package"
+    },
+    "v1ArtifactMetadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1ArtifactType"
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Platform"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "buildInfo": {
+          "$ref": "#/definitions/v1BuildInfo"
+        },
+        "requirements": {
+          "$ref": "#/definitions/v1Requirements"
+        }
+      }
+    },
+    "v1ArtifactRef": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1ArtifactType"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1ArtifactType": {
+      "type": "string",
+      "enum": [
+        "ARTIFACT_TYPE_UNSPECIFIED",
+        "ARTIFACT_TYPE_BINARY",
+        "ARTIFACT_TYPE_OCI_IMAGE",
+        "ARTIFACT_TYPE_ARCHIVE",
+        "ARTIFACT_TYPE_PACKAGE",
+        "ARTIFACT_TYPE_NIXPACK",
+        "ARTIFACT_TYPE_SCRIPT"
+      ],
+      "default": "ARTIFACT_TYPE_UNSPECIFIED",
+      "description": "- ARTIFACT_TYPE_BINARY: Standalone executable\n - ARTIFACT_TYPE_OCI_IMAGE: Docker/Podman container\n - ARTIFACT_TYPE_ARCHIVE: tar.gz, zip\n - ARTIFACT_TYPE_PACKAGE: deb, rpm, apk\n - ARTIFACT_TYPE_NIXPACK: Nix package\n - ARTIFACT_TYPE_SCRIPT: Shell/Python script",
+      "title": "Artifact types"
+    },
+    "v1BinaryMetadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "architecture": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1BlueGreenStrategy": {
+      "type": "object",
+      "properties": {
+        "trafficSwitchDelaySeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "validationPeriodSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "autoPromote": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1BuildInfo": {
+      "type": "object",
+      "properties": {
+        "commitSha": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "buildNumber": {
+          "type": "string"
+        },
+        "builder": {
+          "type": "string"
+        },
+        "buildTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "buildArgs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1CanaryStrategy": {
+      "type": "object",
+      "properties": {
+        "initialPercentage": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "incrementPercentage": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "incrementIntervalSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "successCriteria": {
+          "$ref": "#/definitions/v1SuccessCriteria"
+        }
+      }
+    },
+    "v1CancelDeploymentResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1Cluster": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "string",
+          "description": "k3s version",
+          "title": "Cluster configuration"
+        },
+        "networkCidr": {
+          "type": "string",
+          "title": "Pod network CIDR"
+        },
+        "serviceCidr": {
+          "type": "string",
+          "title": "Service network CIDR"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ClusterNode"
+          },
+          "title": "Nodes"
+        },
+        "apiEndpoint": {
+          "type": "string",
+          "title": "Access"
+        },
+        "kubeconfig": {
+          "type": "string",
+          "format": "byte",
+          "title": "Encrypted kubeconfig"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ClusterStatus",
+          "title": "Status"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Cluster represents a k3s cluster"
+    },
+    "v1ClusterNode": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/v1K3sRole"
+        },
+        "ipAddress": {
+          "type": "string"
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "$ref": "#/definitions/v1NodeStatus"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "taints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "ClusterNode represents a node in the cluster"
+    },
+    "v1ClusterStatus": {
+      "type": "string",
+      "enum": [
+        "CLUSTER_STATUS_UNSPECIFIED",
+        "CLUSTER_STATUS_CREATING",
+        "CLUSTER_STATUS_READY",
+        "CLUSTER_STATUS_UPDATING",
+        "CLUSTER_STATUS_DEGRADED",
+        "CLUSTER_STATUS_ERROR"
+      ],
+      "default": "CLUSTER_STATUS_UNSPECIFIED",
+      "title": "ClusterStatus enumeration"
+    },
+    "v1CompleteSSOLoginResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        },
+        "expiresIn": {
+          "type": "string",
+          "format": "int64"
+        },
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1ConfigFile": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string",
+          "title": "\"0644\""
+        }
+      }
+    },
+    "v1Configuration": {
+      "type": "object",
+      "properties": {
+        "environment": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ConfigFile"
+          }
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "workingDir": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ConfigureDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        },
+        "deviceId": {
+          "type": "string",
+          "title": "Server-assigned device ID"
+        },
+        "apiKey": {
+          "type": "string",
+          "title": "API key for future authentication"
+        }
+      }
+    },
+    "v1CreateAPIKeyResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string",
+          "title": "Only returned once at creation"
+        },
+        "name": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1CreateApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateClusterResponse": {
+      "type": "object",
+      "properties": {
+        "cluster": {
+          "$ref": "#/definitions/v1Cluster"
+        },
+        "joinToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateDeploymentResponse": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateFleetRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "config": {
+          "$ref": "#/definitions/v1FleetConfig"
+        }
+      }
+    },
+    "v1CreateFleetResponse": {
+      "type": "object",
+      "properties": {
+        "fleet": {
+          "$ref": "#/definitions/v1Fleet"
+        }
+      }
+    },
+    "v1CreateTeamResponse": {
+      "type": "object",
+      "properties": {
+        "team": {
+          "$ref": "#/definitions/v1Team"
+        }
+      }
+    },
+    "v1CreateUpdateCampaignResponse": {
+      "type": "object",
+      "properties": {
+        "campaignId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "update": {
+          "$ref": "#/definitions/v1Update"
+        }
+      }
+    },
+    "v1DeleteApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteDeviceResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteFleetResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeployBinaryResponse": {
+      "type": "object"
+    },
+    "v1DeployUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "targetedDevices": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1Deployment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "applicationId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/definitions/v1DeploymentTarget",
+          "title": "Target devices"
+        },
+        "strategy": {
+          "$ref": "#/definitions/fleetdv1DeploymentStrategy",
+          "title": "Deployment strategy"
+        },
+        "status": {
+          "$ref": "#/definitions/v1DeploymentStatus",
+          "title": "Current status"
+        },
+        "rollback": {
+          "$ref": "#/definitions/v1RollbackConfig",
+          "title": "Rollback configuration"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Timestamps"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "result": {
+          "$ref": "#/definitions/v1DeploymentResult",
+          "title": "Results"
+        }
+      },
+      "title": "Deployment represents a software rollout to devices"
+    },
+    "v1DeploymentMetric": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "successRate": {
+          "type": "number",
+          "format": "float"
+        },
+        "errorRate": {
+          "type": "number",
+          "format": "float"
+        },
+        "devicesUpdated": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "devicesFailed": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "avgDeploymentTime": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "v1DeploymentResult": {
+      "type": "object",
+      "properties": {
+        "totalDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "succeeded": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "failed": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "inProgress": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "deviceStatuses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DeviceDeploymentStatus"
+          }
+        }
+      }
+    },
+    "v1DeploymentStatus": {
+      "type": "string",
+      "enum": [
+        "DEPLOYMENT_STATUS_UNSPECIFIED",
+        "DEPLOYMENT_STATUS_PENDING",
+        "DEPLOYMENT_STATUS_IN_PROGRESS",
+        "DEPLOYMENT_STATUS_SUCCEEDED",
+        "DEPLOYMENT_STATUS_FAILED",
+        "DEPLOYMENT_STATUS_ROLLING_BACK",
+        "DEPLOYMENT_STATUS_ROLLED_BACK",
+        "DEPLOYMENT_STATUS_CANCELLED"
+      ],
+      "default": "DEPLOYMENT_STATUS_UNSPECIFIED"
+    },
+    "v1DeploymentTarget": {
+      "type": "object",
+      "properties": {
+        "deviceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "groupIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selector": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "maxDevices": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1DeviceDeploymentStatus": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1DeploymentStatus"
+        },
+        "message": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1DeviceHealthStatus": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "title": "healthy, warning, critical"
+        },
+        "healthScore": {
+          "type": "number",
+          "format": "double"
+        },
+        "healthMetrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lastCheck": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1DeviceInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "configured": {
+          "type": "boolean",
+          "title": "Whether device is registered with fleet server"
+        },
+        "deviceType": {
+          "type": "string",
+          "title": "Device hardware type"
+        },
+        "version": {
+          "type": "string",
+          "title": "Current software version"
+        },
+        "system": {
+          "$ref": "#/definitions/v1SystemStats",
+          "title": "System stats"
+        }
+      }
+    },
+    "v1DeviceStatus": {
+      "type": "string",
+      "enum": [
+        "DEVICE_STATUS_UNSPECIFIED",
+        "DEVICE_STATUS_ONLINE",
+        "DEVICE_STATUS_OFFLINE",
+        "DEVICE_STATUS_UPDATING",
+        "DEVICE_STATUS_ERROR",
+        "DEVICE_STATUS_MAINTENANCE"
+      ],
+      "default": "DEVICE_STATUS_UNSPECIFIED"
+    },
+    "v1DeviceUpdateStatus": {
+      "type": "string",
+      "enum": [
+        "DEVICE_UPDATE_STATUS_UNSPECIFIED",
+        "DEVICE_UPDATE_STATUS_PENDING",
+        "DEVICE_UPDATE_STATUS_DOWNLOADING",
+        "DEVICE_UPDATE_STATUS_DOWNLOADED",
+        "DEVICE_UPDATE_STATUS_INSTALLING",
+        "DEVICE_UPDATE_STATUS_INSTALLED",
+        "DEVICE_UPDATE_STATUS_FAILED",
+        "DEVICE_UPDATE_STATUS_ROLLED_BACK"
+      ],
+      "default": "DEVICE_UPDATE_STATUS_UNSPECIFIED"
+    },
+    "v1DiscoverDevicesResponse": {
+      "type": "object",
+      "properties": {
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DiscoveredDevice"
+          }
+        }
+      }
+    },
+    "v1DiscoveredDevice": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "deviceId": {
+          "type": "string"
+        },
+        "deviceName": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "isRegistered": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DownloadBinaryResponse": {
+      "type": "object",
+      "properties": {
+        "chunk": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "v1Event": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1EventType"
+        },
+        "deviceId": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "data": {
+          "type": "object"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "v1EventType": {
+      "type": "string",
+      "enum": [
+        "EVENT_TYPE_UNSPECIFIED",
+        "EVENT_TYPE_DEVICE_CONNECTED",
+        "EVENT_TYPE_DEVICE_DISCONNECTED",
+        "EVENT_TYPE_DEVICE_UPDATED",
+        "EVENT_TYPE_TELEMETRY",
+        "EVENT_TYPE_UPDATE_STARTED",
+        "EVENT_TYPE_UPDATE_COMPLETED",
+        "EVENT_TYPE_UPDATE_FAILED",
+        "EVENT_TYPE_CONFIG_CHANGED",
+        "EVENT_TYPE_ALERT"
+      ],
+      "default": "EVENT_TYPE_UNSPECIFIED"
+    },
+    "v1ExecHealthCheck": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1Fleet": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deviceCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "config": {
+          "$ref": "#/definitions/v1FleetConfig"
+        }
+      },
+      "title": "Fleet represents a group of devices"
+    },
+    "v1FleetConfig": {
+      "type": "object",
+      "properties": {
+        "updateStrategy": {
+          "type": "string",
+          "title": "Update strategy: \"rolling\", \"canary\", \"blue-green\""
+        },
+        "maxConcurrentUpdates": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Maximum concurrent updates"
+        },
+        "autoRollback": {
+          "type": "boolean",
+          "title": "Auto-rollback on failure"
+        },
+        "telemetry": {
+          "$ref": "#/definitions/v1TelemetryConfig",
+          "title": "Telemetry configuration"
+        },
+        "security": {
+          "$ref": "#/definitions/v1SecurityConfig",
+          "title": "Security configuration"
+        }
+      },
+      "title": "FleetConfig contains fleet-wide configuration"
+    },
+    "v1GetApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "application": {
+          "$ref": "#/definitions/v1Application"
+        }
+      }
+    },
+    "v1GetArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "artifact": {
+          "$ref": "#/definitions/v1Artifact"
+        }
+      }
+    },
+    "v1GetBillingInfoResponse": {
+      "type": "object",
+      "properties": {
+        "currentPlan": {
+          "$ref": "#/definitions/v1Plan"
+        },
+        "billingPeriodStart": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "billingPeriodEnd": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deviceLimit": {
+          "type": "string",
+          "format": "int64"
+        },
+        "telemetryRetentionDays": {
+          "type": "string",
+          "format": "int64"
+        },
+        "updateStorageGb": {
+          "type": "string",
+          "format": "int64"
+        },
+        "customDomainEnabled": {
+          "type": "boolean"
+        },
+        "ssoEnabled": {
+          "type": "boolean"
+        },
+        "prioritySupport": {
+          "type": "boolean"
+        }
+      },
+      "title": "Billing messages (cloud offering)"
+    },
+    "v1GetBinaryResponse": {
+      "type": "object",
+      "properties": {
+        "binary": {
+          "$ref": "#/definitions/fleetdv1Binary"
+        }
+      }
+    },
+    "v1GetClusterResponse": {
+      "type": "object",
+      "properties": {
+        "cluster": {
+          "$ref": "#/definitions/v1Cluster"
+        }
+      }
+    },
+    "v1GetConfigurationResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object"
+        },
+        "version": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1GetCurrentUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1GetDeploymentMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DeploymentMetric"
+          }
+        }
+      }
+    },
+    "v1GetDeploymentResponse": {
+      "type": "object",
+      "properties": {
+        "deployment": {
+          "$ref": "#/definitions/v1Deployment"
+        }
+      }
+    },
+    "v1GetDeviceHealthResponse": {
+      "type": "object",
+      "properties": {
+        "currentStatus": {
+          "$ref": "#/definitions/v1DeviceHealthStatus"
+        },
+        "historicalStatus": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1DeviceHealthStatus"
+          }
+        }
+      }
+    },
+    "v1GetDeviceInfoResponse": {
+      "type": "object",
+      "properties": {
+        "deviceInfo": {
+          "$ref": "#/definitions/v1DeviceInfo"
+        }
+      }
+    },
+    "v1GetDeviceLogsResponse": {
+      "type": "object",
+      "properties": {
+        "logs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LogEntry"
+          },
+          "title": "Uses LogEntry from sync.proto"
+        }
+      }
+    },
+    "v1GetDeviceMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1MetricSeries"
+          }
+        }
+      }
+    },
+    "v1GetDeviceStatsResponse": {
+      "type": "object",
+      "properties": {
+        "totalDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "onlineDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "offlineDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "updatingDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "errorDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "devicesByType": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "devicesByVersion": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "v1GetDeviceUpdateStatusResponse": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "campaignId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1DeviceUpdateStatus"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1GetDownloadURLResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "For authentication"
+        }
+      }
+    },
+    "v1GetFleetResponse": {
+      "type": "object",
+      "properties": {
+        "fleet": {
+          "$ref": "#/definitions/v1Fleet"
+        }
+      }
+    },
+    "v1GetNodeStatusResponse": {
+      "type": "object",
+      "properties": {
+        "node": {
+          "$ref": "#/definitions/v1ClusterNode"
+        },
+        "status": {
+          "$ref": "#/definitions/v1NodeStatus"
+        },
+        "pods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Running pod names"
+        }
+      }
+    },
+    "v1GetOrganizationResponse": {
+      "type": "object",
+      "properties": {
+        "organization": {
+          "$ref": "#/definitions/v1Organization"
+        }
+      }
+    },
+    "v1GetPerformanceMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PerformanceMetric"
+          }
+        },
+        "aggregatedMetrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      }
+    },
+    "v1GetSSOProvidersResponse": {
+      "type": "object",
+      "properties": {
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SSOProvider"
+          }
+        }
+      },
+      "title": "SSO messages"
+    },
+    "v1GetSyncConfigResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1SyncConfig"
+        },
+        "metricsEndpoint": {
+          "type": "string",
+          "title": "Server endpoints for different data types"
+        },
+        "logsEndpoint": {
+          "type": "string"
+        },
+        "eventsEndpoint": {
+          "type": "string"
+        },
+        "enableCompression": {
+          "type": "boolean",
+          "title": "Feature flags"
+        },
+        "enableBatching": {
+          "type": "boolean"
+        },
+        "enableEdgeAnalytics": {
+          "type": "boolean"
+        }
+      },
+      "title": "Response with sync configuration"
+    },
+    "v1GetTelemetryResponse": {
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TelemetryPoint"
+          }
+        }
+      }
+    },
+    "v1GetUpdateAnalyticsResponse": {
+      "type": "object",
+      "properties": {
+        "campaigns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1UpdateMetrics"
+          }
+        },
+        "overallSuccessRate": {
+          "type": "number",
+          "format": "double"
+        },
+        "averageCompletionTime": {
+          "type": "number",
+          "format": "double"
+        },
+        "failuresByReason": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "v1GetUpdateCampaignResponse": {
+      "type": "object",
+      "properties": {
+        "campaign": {
+          "$ref": "#/definitions/v1UpdateCampaign"
+        }
+      }
+    },
+    "v1GetUpdateStatusResponse": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1UpdateDeploymentStatus"
+        },
+        "totalDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "updatedDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "failedDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pendingDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1GetUsageResponse": {
+      "type": "object",
+      "properties": {
+        "deviceCount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "telemetryPoints": {
+          "type": "string",
+          "format": "int64"
+        },
+        "apiCalls": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bandwidthBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "storageBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "dailyUsage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1UsageByDay"
+          }
+        }
+      }
+    },
+    "v1HTTPHealthCheck": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "scheme": {
+          "type": "string",
+          "title": "\"http\" or \"https\""
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1HealthCheck": {
+      "type": "object",
+      "properties": {
+        "http": {
+          "$ref": "#/definitions/v1HTTPHealthCheck"
+        },
+        "tcp": {
+          "$ref": "#/definitions/v1TCPHealthCheck"
+        },
+        "exec": {
+          "$ref": "#/definitions/v1ExecHealthCheck"
+        },
+        "intervalSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "retries": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "startPeriodSeconds": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/HealthCheckResponseServingStatus"
+        }
+      }
+    },
+    "v1HeartbeatResponse": {
+      "type": "object",
+      "properties": {
+        "hasUpdate": {
+          "type": "boolean"
+        },
+        "updateId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1InitiateSSOLoginResponse": {
+      "type": "object",
+      "properties": {
+        "authUrl": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        }
+      }
+    },
+    "v1InviteMemberResponse": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "$ref": "#/definitions/v1Member"
+        },
+        "invitationLink": {
+          "type": "string"
+        }
+      }
+    },
+    "v1JoinClusterResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "node": {
+          "$ref": "#/definitions/v1ClusterNode"
+        }
+      }
+    },
+    "v1K3sRole": {
+      "type": "string",
+      "enum": [
+        "K3S_ROLE_UNSPECIFIED",
+        "K3S_ROLE_SERVER",
+        "K3S_ROLE_AGENT",
+        "K3S_ROLE_SERVER_INIT"
+      ],
+      "default": "K3S_ROLE_UNSPECIFIED",
+      "description": "- K3S_ROLE_SERVER: Control plane node\n - K3S_ROLE_AGENT: Worker node\n - K3S_ROLE_SERVER_INIT: First server (with --cluster-init)",
+      "title": "K3sRole defines the role in a k3s cluster"
+    },
+    "v1ListAPIKeysResponse": {
+      "type": "object",
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1APIKey"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListApplicationsResponse": {
+      "type": "object",
+      "properties": {
+        "applications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Application"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListArtifactsResponse": {
+      "type": "object",
+      "properties": {
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Artifact"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListClustersResponse": {
+      "type": "object",
+      "properties": {
+        "clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Cluster"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListDeploymentsResponse": {
+      "type": "object",
+      "properties": {
+        "deployments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Deployment"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListFleetsResponse": {
+      "type": "object",
+      "properties": {
+        "fleets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Fleet"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListMembersResponse": {
+      "type": "object",
+      "properties": {
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Member"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListTeamsResponse": {
+      "type": "object",
+      "properties": {
+        "teams": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Team"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListUpdateCampaignsResponse": {
+      "type": "object",
+      "properties": {
+        "campaigns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1UpdateCampaign"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListUpdatesResponse": {
+      "type": "object",
+      "properties": {
+        "updates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Update"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1LogEntry": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "title": "debug, info, warn, error, fatal"
+        },
+        "message": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Log entry"
+    },
+    "v1LoginResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        },
+        "expiresIn": {
+          "type": "string",
+          "format": "int64"
+        },
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1LogsBatch": {
+      "type": "object",
+      "properties": {
+        "logs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LogEntry"
+          }
+        },
+        "compression": {
+          "type": "string"
+        },
+        "compressedData": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "title": "Logs batch"
+    },
+    "v1Member": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/v1UserRole"
+        },
+        "teamIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "$ref": "#/definitions/v1MemberStatus"
+        }
+      },
+      "title": "Member of an organization"
+    },
+    "v1MemberStatus": {
+      "type": "string",
+      "enum": [
+        "MEMBER_STATUS_UNSPECIFIED",
+        "MEMBER_STATUS_ACTIVE",
+        "MEMBER_STATUS_INVITED",
+        "MEMBER_STATUS_SUSPENDED"
+      ],
+      "default": "MEMBER_STATUS_UNSPECIFIED"
+    },
+    "v1Metric": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Metric data point"
+    },
+    "v1MetricSeries": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1MetricValue"
+          }
+        }
+      }
+    },
+    "v1MetricValue": {
+      "type": "object",
+      "properties": {
+        "numeric": {
+          "type": "number",
+          "format": "double"
+        },
+        "text": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1MetricsBatch": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Metric"
+          }
+        },
+        "compression": {
+          "type": "string",
+          "title": "none, gzip, zstd"
+        },
+        "compressedData": {
+          "type": "string",
+          "format": "byte",
+          "title": "If compression != none"
+        },
+        "originalSize": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Compressed metrics batch"
+    },
+    "v1NodeAffinity": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "operator": {
+          "type": "string",
+          "title": "\"In\", \"NotIn\", \"Exists\", \"DoesNotExist\""
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1NodeStatus": {
+      "type": "object",
+      "properties": {
+        "ready": {
+          "type": "boolean"
+        },
+        "schedulable": {
+          "type": "boolean"
+        },
+        "memoryUsage": {
+          "type": "string",
+          "format": "int64",
+          "title": "bytes"
+        },
+        "memoryCapacity": {
+          "type": "string",
+          "format": "int64",
+          "title": "bytes"
+        },
+        "cpuUsage": {
+          "type": "integer",
+          "format": "int32",
+          "title": "millicores"
+        },
+        "cpuCapacity": {
+          "type": "integer",
+          "format": "int32",
+          "title": "millicores"
+        },
+        "podCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "podCapacity": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "conditions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "NodeStatus represents the status of a cluster node"
+    },
+    "v1Organization": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "logoUrl": {
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "#/definitions/v1Plan"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "settings": {
+          "$ref": "#/definitions/v1OrganizationSettings"
+        }
+      },
+      "title": "Organization represents a tenant"
+    },
+    "v1OrganizationSettings": {
+      "type": "object",
+      "properties": {
+        "require2fa": {
+          "type": "boolean"
+        },
+        "allowedDomains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ssoEnabled": {
+          "type": "boolean"
+        },
+        "ssoProviderId": {
+          "type": "string"
+        },
+        "sessionTimeoutMinutes": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ipWhitelist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1PasswordCredential": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1PerformanceMetric": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1PlacementConstraints": {
+      "type": "object",
+      "properties": {
+        "deviceSelector": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "nodeAffinities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1NodeAffinity"
+          }
+        },
+        "requiredCapabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1Plan": {
+      "type": "string",
+      "enum": [
+        "PLAN_UNSPECIFIED",
+        "PLAN_FREE",
+        "PLAN_STARTER",
+        "PLAN_PROFESSIONAL",
+        "PLAN_ENTERPRISE",
+        "PLAN_SELF_HOSTED"
+      ],
+      "default": "PLAN_UNSPECIFIED",
+      "title": "- PLAN_SELF_HOSTED: OSS version"
+    },
+    "v1Platform": {
+      "type": "object",
+      "properties": {
+        "os": {
+          "type": "string"
+        },
+        "arch": {
+          "type": "string"
+        },
+        "variant": {
+          "type": "string",
+          "title": "\"v7\", \"v8\" for ARM"
+        }
+      }
+    },
+    "v1RefreshTokenResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        },
+        "expiresIn": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1RegisterRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "systemInfo": {
+          "$ref": "#/definitions/fleetdv1SystemInfo"
+        }
+      }
+    },
+    "v1RegisterResponse": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "apiKey": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RemoveNodeResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ReportStatusResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1ReportUpdateStatusResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1Requirements": {
+      "type": "object",
+      "properties": {
+        "minMemory": {
+          "type": "string",
+          "format": "int64",
+          "title": "bytes"
+        },
+        "minStorage": {
+          "type": "string",
+          "format": "int64",
+          "title": "bytes"
+        },
+        "minCpuMhz": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "\"docker\", \"systemd\", \"gpu\""
+        },
+        "osFamily": {
+          "type": "string",
+          "title": "\"linux\", \"rtos\""
+        },
+        "minKernel": {
+          "type": "string",
+          "title": "\"5.10\""
+        },
+        "architectures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "[\"arm64\", \"amd64\"]"
+        }
+      }
+    },
+    "v1ResourceSpec": {
+      "type": "object",
+      "properties": {
+        "memory": {
+          "type": "string",
+          "format": "int64",
+          "title": "bytes"
+        },
+        "cpuMillicores": {
+          "type": "integer",
+          "format": "int32",
+          "title": "1000 = 1 CPU"
+        },
+        "storage": {
+          "type": "string",
+          "format": "int64",
+          "title": "bytes"
+        },
+        "gpuCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "fileDescriptors": {
+          "type": "integer",
+          "format": "int32",
+          "title": "max open files"
+        }
+      }
+    },
+    "v1Resources": {
+      "type": "object",
+      "properties": {
+        "limits": {
+          "$ref": "#/definitions/v1ResourceSpec"
+        },
+        "requests": {
+          "$ref": "#/definitions/v1ResourceSpec"
+        }
+      }
+    },
+    "v1RestartPolicy": {
+      "type": "string",
+      "enum": [
+        "RESTART_POLICY_UNSPECIFIED",
+        "RESTART_POLICY_ALWAYS",
+        "RESTART_POLICY_ON_FAILURE",
+        "RESTART_POLICY_NEVER"
+      ],
+      "default": "RESTART_POLICY_UNSPECIFIED"
+    },
+    "v1RollbackConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RollbackTrigger"
+          }
+        },
+        "fallbackVersion": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RollbackTrigger": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/v1TriggerType"
+        },
+        "threshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "durationSeconds": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1RollingUpdateStrategy": {
+      "type": "object",
+      "properties": {
+        "maxUnavailable": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxSurge": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "batchSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "batchIntervalSeconds": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1RuntimeConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/v1RuntimeType"
+        },
+        "restartPolicy": {
+          "$ref": "#/definitions/v1RestartPolicy"
+        },
+        "startupTimeoutSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "stopTimeoutSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "user": {
+          "type": "string"
+        },
+        "group": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RuntimeType": {
+      "type": "string",
+      "enum": [
+        "RUNTIME_TYPE_UNSPECIFIED",
+        "RUNTIME_TYPE_SYSTEMD",
+        "RUNTIME_TYPE_DOCKER",
+        "RUNTIME_TYPE_SUPERVISOR",
+        "RUNTIME_TYPE_RAW"
+      ],
+      "default": "RUNTIME_TYPE_UNSPECIFIED"
+    },
+    "v1SSOProvider": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1SSOProviderType"
+        },
+        "iconUrl": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1SSOProviderType": {
+      "type": "string",
+      "enum": [
+        "SSO_PROVIDER_TYPE_UNSPECIFIED",
+        "SSO_PROVIDER_TYPE_GOOGLE",
+        "SSO_PROVIDER_TYPE_GITHUB",
+        "SSO_PROVIDER_TYPE_OKTA",
+        "SSO_PROVIDER_TYPE_AZURE_AD",
+        "SSO_PROVIDER_TYPE_SAML",
+        "SSO_PROVIDER_TYPE_OIDC"
+      ],
+      "default": "SSO_PROVIDER_TYPE_UNSPECIFIED"
+    },
+    "v1SecurityConfig": {
+      "type": "object",
+      "properties": {
+        "tlsRequired": {
+          "type": "boolean"
+        },
+        "minTlsVersion": {
+          "type": "string"
+        },
+        "auditLogging": {
+          "type": "boolean"
+        },
+        "allowedIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1Signature": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "title": "\"ed25519\", \"rsa-sha256\""
+        },
+        "keyId": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string",
+          "format": "byte"
+        },
+        "signer": {
+          "type": "string"
+        }
+      }
+    },
+    "v1StartBinaryResponse": {
+      "type": "object"
+    },
+    "v1StopBinaryResponse": {
+      "type": "object"
+    },
+    "v1SuccessCriteria": {
+      "type": "object",
+      "properties": {
+        "minSuccessRate": {
+          "type": "number",
+          "format": "float",
+          "title": "0.95 = 95%"
+        },
+        "minHealthySeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxErrorRate": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "v1SyncAck": {
+      "type": "object",
+      "properties": {
+        "sequenceNumber": {
+          "type": "string",
+          "format": "int64"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "title": "Acknowledgment message"
+    },
+    "v1SyncCommand": {
+      "type": "object",
+      "properties": {
+        "configUpdate": {
+          "$ref": "#/definitions/v1SyncConfig"
+        },
+        "flush": {
+          "$ref": "#/definitions/v1SyncFlush"
+        },
+        "pause": {
+          "$ref": "#/definitions/v1SyncPause"
+        },
+        "resume": {
+          "$ref": "#/definitions/v1SyncResume"
+        },
+        "ack": {
+          "$ref": "#/definitions/v1SyncAck"
+        },
+        "serverTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "Sync command from server"
+    },
+    "v1SyncConfig": {
+      "type": "object",
+      "properties": {
+        "batchSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "syncIntervalSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "retentionHours": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "compressionEnabled": {
+          "type": "boolean"
+        },
+        "compressionType": {
+          "type": "string"
+        },
+        "maxRetries": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "initialBackoffSeconds": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Backoff configuration"
+        },
+        "maxBackoffSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "backoffMultiplier": {
+          "type": "number",
+          "format": "double"
+        },
+        "maxMetricsPerSecond": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Rate limiting"
+        },
+        "maxLogsPerSecond": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxLocalStorageBytes": {
+          "type": "string",
+          "format": "int64",
+          "title": "Storage configuration"
+        },
+        "maxMetricsRetained": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Sync configuration"
+    },
+    "v1SyncDeviceCapability": {
+      "type": "object",
+      "properties": {
+        "tier": {
+          "type": "integer",
+          "format": "int32",
+          "title": "1=Full, 2=Constrained, 3=Minimal"
+        },
+        "totalRam": {
+          "type": "string",
+          "format": "int64"
+        },
+        "availableRam": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalDisk": {
+          "type": "string",
+          "format": "int64"
+        },
+        "availableDisk": {
+          "type": "string",
+          "format": "int64"
+        },
+        "cpuCores": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "architecture": {
+          "type": "string"
+        },
+        "os": {
+          "type": "string"
+        },
+        "hasSqlite": {
+          "type": "boolean",
+          "title": "Storage capabilities"
+        },
+        "localStorageSize": {
+          "type": "string",
+          "format": "int64"
+        },
+        "maxMetricsInMemory": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "hasNetwork": {
+          "type": "boolean",
+          "title": "Network capabilities"
+        },
+        "bandwidthKbps": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "supportsHttp2": {
+          "type": "boolean"
+        }
+      },
+      "title": "Device capability information for sync"
+    },
+    "v1SyncFlush": {
+      "type": "object",
+      "properties": {
+        "force": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "title": "Flush command"
+    },
+    "v1SyncHeartbeat": {
+      "type": "object",
+      "properties": {
+        "unsyncedMetrics": {
+          "type": "string",
+          "format": "int64"
+        },
+        "unsyncedLogs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "storageUsedBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "cpuUsagePercent": {
+          "type": "number",
+          "format": "double"
+        },
+        "memoryUsagePercent": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "title": "Heartbeat message"
+    },
+    "v1SyncLogsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "lastSequenceAck": {
+          "type": "string",
+          "format": "int64"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "configUpdate": {
+          "$ref": "#/definitions/v1SyncConfig"
+        }
+      },
+      "title": "Response from logs sync"
+    },
+    "v1SyncMetadata": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "sequenceNumber": {
+          "type": "string",
+          "format": "int64"
+        },
+        "clientTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "retryCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "checksum": {
+          "type": "string",
+          "format": "byte",
+          "title": "SHA256 of uncompressed data"
+        },
+        "capability": {
+          "$ref": "#/definitions/v1SyncDeviceCapability"
+        }
+      },
+      "title": "Sync metadata"
+    },
+    "v1SyncMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "lastSequenceAck": {
+          "type": "string",
+          "format": "int64"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "configUpdate": {
+          "$ref": "#/definitions/v1SyncConfig",
+          "title": "Server can send back updated config"
+        },
+        "serverTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Server time for clock sync"
+        }
+      },
+      "title": "Response from metrics sync"
+    },
+    "v1SyncPause": {
+      "type": "object",
+      "properties": {
+        "durationSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "title": "Pause sync command"
+    },
+    "v1SyncResume": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      },
+      "title": "Resume sync command"
+    },
+    "v1SystemStats": {
+      "type": "object",
+      "properties": {
+        "cpuUsage": {
+          "type": "number",
+          "format": "double"
+        },
+        "memoryTotal": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "memoryUsed": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "diskTotal": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "diskUsed": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1TCPHealthCheck": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1Team": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "deviceTags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Devices with these tags belong to this team"
+        },
+        "memberIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "Team for organizing devices and access"
+    },
+    "v1TelemetryConfig": {
+      "type": "object",
+      "properties": {
+        "metricsIntervalSeconds": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "logsEnabled": {
+          "type": "boolean"
+        },
+        "tracesEnabled": {
+          "type": "boolean"
+        },
+        "retentionDays": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1TelemetryEvent": {
+      "type": "object",
+      "properties": {
+        "point": {
+          "$ref": "#/definitions/v1TelemetryPoint"
+        }
+      }
+    },
+    "v1TelemetryPoint": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "metricName": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "labels": {
+          "type": "object"
+        }
+      }
+    },
+    "v1TimeRange": {
+      "type": "object",
+      "properties": {
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1TriggerType": {
+      "type": "string",
+      "enum": [
+        "TRIGGER_TYPE_UNSPECIFIED",
+        "TRIGGER_TYPE_CRASH_LOOP",
+        "TRIGGER_TYPE_HIGH_ERROR_RATE",
+        "TRIGGER_TYPE_HEALTH_CHECK_FAILURE",
+        "TRIGGER_TYPE_HIGH_CPU",
+        "TRIGGER_TYPE_HIGH_MEMORY"
+      ],
+      "default": "TRIGGER_TYPE_UNSPECIFIED"
+    },
+    "v1Update": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "binaryUrl": {
+          "type": "string"
+        },
+        "checksum": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "releaseNotes": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "targetDeviceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "channel": {
+          "type": "string",
+          "title": "stable, beta, nightly"
+        }
+      },
+      "title": "Update management messages"
+    },
+    "v1UpdateCampaign": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "binaryId": {
+          "type": "string"
+        },
+        "targetVersion": {
+          "type": "string"
+        },
+        "targetPlatforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetArchitectures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetMetadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "strategy": {
+          "$ref": "#/definitions/v1UpdateStrategy"
+        },
+        "status": {
+          "$ref": "#/definitions/v1UpdateCampaignStatus"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "totalDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "updatedDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "failedDevices": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1UpdateCampaignStatus": {
+      "type": "string",
+      "enum": [
+        "UPDATE_CAMPAIGN_STATUS_UNSPECIFIED",
+        "UPDATE_CAMPAIGN_STATUS_CREATED",
+        "UPDATE_CAMPAIGN_STATUS_IN_PROGRESS",
+        "UPDATE_CAMPAIGN_STATUS_COMPLETED",
+        "UPDATE_CAMPAIGN_STATUS_FAILED",
+        "UPDATE_CAMPAIGN_STATUS_CANCELLED"
+      ],
+      "default": "UPDATE_CAMPAIGN_STATUS_UNSPECIFIED"
+    },
+    "v1UpdateConfigResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdateConfigurationResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "object"
+        },
+        "version": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1UpdateDeploymentStatus": {
+      "type": "string",
+      "enum": [
+        "UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED",
+        "UPDATE_DEPLOYMENT_STATUS_IN_PROGRESS",
+        "UPDATE_DEPLOYMENT_STATUS_COMPLETED",
+        "UPDATE_DEPLOYMENT_STATUS_FAILED",
+        "UPDATE_DEPLOYMENT_STATUS_CANCELLED"
+      ],
+      "default": "UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED"
+    },
+    "v1UpdateFleetResponse": {
+      "type": "object",
+      "properties": {
+        "fleet": {
+          "$ref": "#/definitions/v1Fleet"
+        }
+      }
+    },
+    "v1UpdateMemberRoleResponse": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1UpdateMetrics": {
+      "type": "object",
+      "properties": {
+        "campaignId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "totalDevices": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "successfulUpdates": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "failedUpdates": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "successRate": {
+          "type": "number",
+          "format": "double"
+        },
+        "averageDurationSeconds": {
+          "type": "number",
+          "format": "double"
+        },
+        "commonFailureReasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1UpdateOrganizationResponse": {
+      "type": "object",
+      "properties": {
+        "organization": {
+          "$ref": "#/definitions/v1Organization"
+        }
+      }
+    },
+    "v1UpdateStrategy": {
+      "type": "string",
+      "enum": [
+        "UPDATE_STRATEGY_UNSPECIFIED",
+        "UPDATE_STRATEGY_IMMEDIATE",
+        "UPDATE_STRATEGY_ROLLING",
+        "UPDATE_STRATEGY_MANUAL"
+      ],
+      "default": "UPDATE_STRATEGY_UNSPECIFIED"
+    },
+    "v1UpdateTeamResponse": {
+      "type": "object",
+      "properties": {
+        "team": {
+          "$ref": "#/definitions/v1Team"
+        }
+      }
+    },
+    "v1UploadArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "artifactId": {
+          "type": "string"
+        },
+        "downloadUrl": {
+          "type": "string"
+        },
+        "checksums": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1UploadBinaryResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UsageByDay": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deviceCount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "telemetryPoints": {
+          "type": "string",
+          "format": "int64"
+        },
+        "apiCalls": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/v1UserRole"
+        },
+        "organizationId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "User represents an authenticated user"
+    },
+    "v1UserRole": {
+      "type": "string",
+      "enum": [
+        "USER_ROLE_UNSPECIFIED",
+        "USER_ROLE_VIEWER",
+        "USER_ROLE_OPERATOR",
+        "USER_ROLE_ADMIN",
+        "USER_ROLE_OWNER"
+      ],
+      "default": "USER_ROLE_UNSPECIFIED"
+    }
+  }
+}

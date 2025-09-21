@@ -3,17 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { DownloadBinaryRequest, DownloadBinaryResponse, GetBinaryRequest, GetBinaryResponse, ListBinariesRequest, ListBinariesResponse, UploadBinaryRequest, UploadBinaryResponse } from "./binary_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  DownloadBinaryRequest,
-  DownloadBinaryResponse,
-  GetBinaryRequest,
-  GetBinaryResponse,
-  ListBinariesRequest,
-  ListBinariesResponse,
-  UploadBinaryRequest,
-  UploadBinaryResponse,
-} from "./binary_pb.js";
 
 /**
  * @generated from service fleetd.v1.BinaryService
@@ -65,5 +56,6 @@ export const BinaryService = {
       O: ListBinariesResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

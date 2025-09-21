@@ -3,25 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { CompleteSSOLoginRequest, CompleteSSOLoginResponse, CreateAPIKeyRequest, CreateAPIKeyResponse, GetCurrentUserResponse, GetSSOProvidersResponse, InitiateSSOLoginRequest, InitiateSSOLoginResponse, ListAPIKeysRequest, ListAPIKeysResponse, LoginRequest, LoginResponse, LogoutRequest, RefreshTokenRequest, RefreshTokenResponse, RevokeAPIKeyRequest } from "./auth_pb.js";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import {
-  CompleteSSOLoginRequest,
-  CompleteSSOLoginResponse,
-  CreateAPIKeyRequest,
-  CreateAPIKeyResponse,
-  GetCurrentUserResponse,
-  GetSSOProvidersResponse,
-  InitiateSSOLoginRequest,
-  InitiateSSOLoginResponse,
-  ListAPIKeysRequest,
-  ListAPIKeysResponse,
-  LoginRequest,
-  LoginResponse,
-  LogoutRequest,
-  RefreshTokenRequest,
-  RefreshTokenResponse,
-  RevokeAPIKeyRequest,
-} from "./auth_pb.js";
 
 /**
  * AuthService handles authentication and authorization
@@ -128,5 +111,6 @@ export const AuthService = {
       O: CompleteSSOLoginResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

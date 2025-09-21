@@ -3,8 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { MethodKind } from "@bufbuild/protobuf";
 import { HealthCheckRequest, HealthCheckResponse } from "./health_pb.js";
+import { MethodKind } from "@bufbuild/protobuf";
 
 /**
  * @generated from service grpc.health.v1.Health
@@ -30,5 +30,6 @@ export const Health = {
       O: HealthCheckResponse,
       kind: MethodKind.ServerStreaming,
     },
-  },
+  }
 } as const;
+

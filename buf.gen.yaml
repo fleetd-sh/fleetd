@@ -26,3 +26,12 @@ plugins:
     out: web/lib/api/gen
     opt:
       - target=ts
+
+  # Generate OpenAPI v2 (Swagger) documentation
+  - remote: buf.build/grpc-ecosystem/openapiv2
+    out: docs/api
+    opt:
+      - logtostderr=true
+      - allow_merge=true
+      - merge_file_name=fleetd
+      - json_names_for_fields=true

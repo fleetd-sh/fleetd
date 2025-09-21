@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -237,7 +238,10 @@ func (s *SyncService) validateDevice(ctx context.Context, deviceID string) (*Dev
 		return nil, fmt.Errorf("database error: %w", err)
 	}
 
-	// TODO: Validate API key from request headers
+	// Validate API key from request headers
+	if err := s.validateAPIKey(ctx, device.APIKey); err != nil {
+		return nil, fmt.Errorf("unauthorized: %w", err)
+	}
 
 	return &device, nil
 }
@@ -249,6 +253,64 @@ type Device struct {
 	Name     string
 	APIKey   string
 	OrgID    string
+}
+
+// validateAPIKey validates the API key from the request context
+func (s *SyncService) validateAPIKey(ctx context.Context, expectedKey string) error {
+	// Get the API key that was validated by the middleware
+	if providedKey, ok := getAPIKeyFromContext(ctx); ok {
+		// Use constant-time comparison to prevent timing attacks
+		if subtle.ConstantTimeCompare([]byte(providedKey), []byte(expectedKey)) == 1 {
+			return nil
+		}
+		return fmt.Errorf("API key mismatch for device")
+	}
+
+	// Check if JWT claims are present (alternative auth method)
+	if claims, ok := getClaimsFromContext(ctx); ok {
+		// Device operations require specific permissions
+		if hasDevicePermission(claims) {
+			return nil
+		}
+		return fmt.Errorf("insufficient permissions for device operations")
+	}
+
+	return fmt.Errorf("no valid authentication found in request")
+}
+
+// getAPIKeyFromContext retrieves the API key from the request context
+func getAPIKeyFromContext(ctx context.Context) (string, bool) {
+	// This should match the key used by the auth middleware
+	type contextKey string
+	const APIKeyContextKey contextKey = "api_key"
+
+	apiKey, ok := ctx.Value(APIKeyContextKey).(string)
+	return apiKey, ok
+}
+
+// getClaimsFromContext retrieves JWT claims from the request context
+func getClaimsFromContext(ctx context.Context) (map[string]interface{}, bool) {
+	// This should match the key used by the auth middleware
+	type contextKey string
+	const ClaimsContextKey contextKey = "claims"
+
+	claims, ok := ctx.Value(ClaimsContextKey).(map[string]interface{})
+	return claims, ok
+}
+
+// hasDevicePermission checks if the claims have permission for device operations
+func hasDevicePermission(claims map[string]interface{}) bool {
+	// Check for device-related permissions or roles
+	if roles, ok := claims["roles"].([]interface{}); ok {
+		for _, role := range roles {
+			if roleStr, ok := role.(string); ok {
+				if roleStr == "admin" || roleStr == "device" || roleStr == "operator" {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 // storeMetricAggregates stores metric aggregates in PostgreSQL

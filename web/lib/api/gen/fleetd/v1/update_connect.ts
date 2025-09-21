@@ -3,19 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { CreateUpdateCampaignRequest, CreateUpdateCampaignResponse, GetDeviceUpdateStatusRequest, GetDeviceUpdateStatusResponse, GetUpdateCampaignRequest, GetUpdateCampaignResponse, ListUpdateCampaignsRequest, ListUpdateCampaignsResponse, ReportUpdateStatusRequest, ReportUpdateStatusResponse } from "./update_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  CreateUpdateCampaignRequest,
-  CreateUpdateCampaignResponse,
-  GetDeviceUpdateStatusRequest,
-  GetDeviceUpdateStatusResponse,
-  GetUpdateCampaignRequest,
-  GetUpdateCampaignResponse,
-  ListUpdateCampaignsRequest,
-  ListUpdateCampaignsResponse,
-  ReportUpdateStatusRequest,
-  ReportUpdateStatusResponse,
-} from "./update_pb.js";
 
 /**
  * @generated from service fleetd.v1.UpdateService
@@ -78,5 +67,6 @@ export const UpdateService = {
       O: ReportUpdateStatusResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

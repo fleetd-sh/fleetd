@@ -28,7 +28,7 @@ port = 5432
 host = "localhost"
 name = "fleetd"
 user = "fleetd"
-password = "fleetd_secret"
+# password = "" # Set via environment variable POSTGRES_PASSWORD for production
 
 [stack]
 # Services to start with 'fleet start'
@@ -50,7 +50,7 @@ loki_port = 3100
 grafana_port = 3001
 
 [auth]
-jwt_secret = "development-secret-change-in-production"
+# jwt_secret = "" # Set via environment variable JWT_SECRET for production
 api_keys = []
 
 [provisioning]

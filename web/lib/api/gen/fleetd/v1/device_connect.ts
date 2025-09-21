@@ -3,21 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { DeleteDeviceRequest, DeleteDeviceResponse, GetDeviceRequest, GetDeviceResponse, HeartbeatRequest, HeartbeatResponse, ListDevicesRequest, ListDevicesResponse, RegisterRequest, RegisterResponse, ReportStatusRequest, ReportStatusResponse } from "./device_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  DeleteDeviceRequest,
-  DeleteDeviceResponse,
-  GetDeviceRequest,
-  GetDeviceResponse,
-  HeartbeatRequest,
-  HeartbeatResponse,
-  ListDevicesRequest,
-  ListDevicesResponse,
-  RegisterRequest,
-  RegisterResponse,
-  ReportStatusRequest,
-  ReportStatusResponse,
-} from "./device_pb.js";
 
 /**
  * @generated from service fleetd.v1.DeviceService
@@ -91,5 +78,6 @@ export const DeviceService = {
       O: DeleteDeviceResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

@@ -5,19 +5,36 @@ package fleetd.v1;
 option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
 
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 service AnalyticsService {
   // Get device metrics aggregation
-  rpc GetDeviceMetrics(GetDeviceMetricsRequest) returns (GetDeviceMetricsResponse);
-  
+  rpc GetDeviceMetrics(GetDeviceMetricsRequest) returns (GetDeviceMetricsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/analytics/devices/{device_id}/metrics"
+    };
+  }
+
   // Get update campaign analytics
-  rpc GetUpdateAnalytics(GetUpdateAnalyticsRequest) returns (GetUpdateAnalyticsResponse);
-  
+  rpc GetUpdateAnalytics(GetUpdateAnalyticsRequest) returns (GetUpdateAnalyticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/analytics/updates/{campaign_id}"
+    };
+  }
+
   // Get device health metrics
-  rpc GetDeviceHealth(GetDeviceHealthRequest) returns (GetDeviceHealthResponse);
-  
+  rpc GetDeviceHealth(GetDeviceHealthRequest) returns (GetDeviceHealthResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/analytics/devices/{device_id}/health"
+    };
+  }
+
   // Get performance metrics
-  rpc GetPerformanceMetrics(GetPerformanceMetricsRequest) returns (GetPerformanceMetricsResponse);
+  rpc GetPerformanceMetrics(GetPerformanceMetricsRequest) returns (GetPerformanceMetricsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/analytics/performance"
+    };
+  }
 }
 
 message TimeRange {

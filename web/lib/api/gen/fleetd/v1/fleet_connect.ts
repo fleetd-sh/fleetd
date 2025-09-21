@@ -3,21 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { CreateFleetRequest, CreateFleetResponse, DeleteFleetRequest, DeleteFleetResponse, GetDeviceLogsRequest, GetDeviceLogsResponse, GetFleetRequest, GetFleetResponse, ListFleetsRequest, ListFleetsResponse, UpdateFleetRequest, UpdateFleetResponse } from "./fleet_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  CreateFleetRequest,
-  CreateFleetResponse,
-  DeleteFleetRequest,
-  DeleteFleetResponse,
-  GetDeviceLogsRequest,
-  GetDeviceLogsResponse,
-  GetFleetRequest,
-  GetFleetResponse,
-  ListFleetsRequest,
-  ListFleetsResponse,
-  UpdateFleetRequest,
-  UpdateFleetResponse,
-} from "./fleet_pb.js";
 
 /**
  * FleetService manages fleet-level operations
@@ -93,5 +80,6 @@ export const FleetService = {
       O: GetDeviceLogsResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+

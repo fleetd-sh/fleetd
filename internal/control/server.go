@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strings"
 	"syscall"
 	"time"
 
@@ -20,7 +21,6 @@ import (
 	"fleetd.sh/internal/version"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rs/cors"
 	"github.com/spf13/viper"
 )
 
@@ -110,11 +110,15 @@ func NewServer(config *Config) (*Server, error) {
 			slog.Warn("Failed to initialize Valkey rate limiter", "error", err)
 			// Fall back to in-memory rate limiting
 			rate := float64(config.RateLimitReq) / float64(config.RateLimitWin)
-			inMemoryLimiter = middleware.NewRateLimiter(middleware.RateLimiterConfig{
+			rl, rlErr := middleware.NewRateLimiter(middleware.RateLimiterConfig{
 				Rate:       rate,
 				Burst:      config.RateLimitReq,
 				Expiration: 1 * time.Hour,
 			})
+			if rlErr != nil {
+				return nil, fmt.Errorf("failed to create in-memory rate limiter: %w", rlErr)
+			}
+			inMemoryLimiter = rl
 			slog.Info("Falling back to in-memory rate limiting",
 				"rate_per_second", rate,
 				"burst", config.RateLimitReq)
@@ -124,11 +128,15 @@ func NewServer(config *Config) (*Server, error) {
 	} else {
 		// Use in-memory rate limiting when Valkey is not configured
 		rate := float64(config.RateLimitReq) / float64(config.RateLimitWin)
-		inMemoryLimiter = middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		rl, err := middleware.NewRateLimiter(middleware.RateLimiterConfig{
 			Rate:       rate,
 			Burst:      config.RateLimitReq,
 			Expiration: 1 * time.Hour,
 		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create in-memory rate limiter: %w", err)
+		}
+		inMemoryLimiter = rl
 		slog.Info("Using in-memory rate limiting",
 			"rate_per_second", rate,
 			"burst", config.RateLimitReq)
@@ -148,27 +156,47 @@ func (s *Server) Run() error {
 	mux := http.NewServeMux()
 
 	// Setup middleware
-	authMiddleware := middleware.NewAuthMiddleware(s.config.SecretKey)
+	authConfig := middleware.AuthConfig{
+		JWTSecretKey:  s.config.SecretKey,
+		EnableAPIKeys: true,
+		RequireAuth:   true,
+	}
+	authMiddleware := middleware.NewAuthMiddleware(authConfig)
 	loggingMiddleware := middleware.NewLoggingMiddleware()
 	metricsMiddleware := middleware.NewMetricsMiddleware("platform-api")
 
-	// Create service handlers
-	fleetService := NewFleetService(s.db, s.deviceAPI)
-	deviceService := NewDeviceService(s.db, s.deviceAPI)
-	analyticsService := NewAnalyticsService(s.db)
-	// TODO: Add deployment and configuration services when proto definitions are ready
-	// deploymentService := NewDeploymentService(s.db, s.deviceAPI)
-	// configService := NewConfigurationService(s.db)
+	// Check if REST API support is enabled via Vanguard
+	enableREST := os.Getenv("FLEETD_ENABLE_REST") == "true"
 
-	// Register Connect handlers
-	fleetPath, fleetHandler := fleetpbconnect.NewFleetServiceHandler(fleetService)
-	devicePath, deviceHandler := fleetpbconnect.NewDeviceServiceHandler(deviceService)
-	analyticsPath, analyticsHandler := fleetpbconnect.NewAnalyticsServiceHandler(analyticsService)
+	if enableREST {
+		// Use Vanguard transcoder for REST + Connect-RPC support
+		slog.Info("Enabling REST API support via Vanguard transcoder")
 
-	// Apply middleware and register routes
-	mux.Handle(fleetPath, withMiddleware(fleetHandler, authMiddleware, loggingMiddleware))
-	mux.Handle(devicePath, withMiddleware(deviceHandler, authMiddleware, loggingMiddleware))
-	mux.Handle(analyticsPath, withMiddleware(analyticsHandler, authMiddleware, loggingMiddleware))
+		vanguardHandler, err := s.SetupVanguard()
+		if err != nil {
+			return fmt.Errorf("failed to setup Vanguard: %w", err)
+		}
+
+		// Apply middleware to the transcoder
+		handler := withMiddleware(vanguardHandler, authMiddleware, loggingMiddleware, metricsMiddleware)
+		mux.Handle("/", handler)
+	} else {
+		// Original Connect-RPC only setup
+		// Create service handlers
+		fleetService := NewFleetService(s.db, s.deviceAPI)
+		deviceService := NewDeviceService(s.db, s.deviceAPI)
+		analyticsService := NewAnalyticsService(s.db)
+
+		// Register Connect handlers
+		fleetPath, fleetHandler := fleetpbconnect.NewFleetServiceHandler(fleetService)
+		devicePath, deviceHandler := fleetpbconnect.NewDeviceServiceHandler(deviceService)
+		analyticsPath, analyticsHandler := fleetpbconnect.NewAnalyticsServiceHandler(analyticsService)
+
+		// Apply middleware and register routes
+		mux.Handle(fleetPath, withMiddleware(fleetHandler, authMiddleware, loggingMiddleware))
+		mux.Handle(devicePath, withMiddleware(deviceHandler, authMiddleware, loggingMiddleware))
+		mux.Handle(analyticsPath, withMiddleware(analyticsHandler, authMiddleware, loggingMiddleware))
+	}
 
 	// Health check endpoints
 	mux.HandleFunc("/health", s.handleHealth)
@@ -203,13 +231,24 @@ func (s *Server) Run() error {
 		json.NewEncoder(w).Encode(status)
 	})
 
-	// Setup CORS
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:3001"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: true,
-	})
+	// Configure CORS based on environment
+	var corsConfig *middleware.CORSConfig
+	if os.Getenv("FLEET_ENV") == "development" {
+		corsConfig = middleware.DevelopmentCORSConfig()
+	} else {
+		// Parse allowed origins from environment
+		allowedOrigins := []string{}
+		if origins := os.Getenv("FLEET_ALLOWED_ORIGINS"); origins != "" {
+			allowedOrigins = strings.Split(origins, ",")
+		}
+		corsConfig = middleware.ProductionCORSConfig(allowedOrigins)
+	}
+
+	// Validate CORS configuration
+	if err := middleware.ValidateCORSConfig(corsConfig); err != nil {
+		slog.Error("Invalid CORS configuration", "error", err)
+		return fmt.Errorf("invalid CORS configuration: %w", err)
+	}
 
 	// Apply middleware stack
 	var handler http.Handler = mux
@@ -223,7 +262,7 @@ func (s *Server) Run() error {
 	}
 
 	// Apply CORS
-	handler = c.Handler(handler)
+	handler = middleware.CORSMiddleware(corsConfig)(handler)
 
 	// Setup HTTP server
 	s.httpServer = &http.Server{

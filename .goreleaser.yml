@@ -1,0 +1,400 @@
+version: 2
+
+project_name: fleetd
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+    - buf generate
+
+builds:
+  - id: fleetctl
+    main: ./cmd/fleetctl
+    binary: fleetctl
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    goarm:
+      - "7"
+    ignore:
+      - goos: windows
+        goarch: arm64
+      - goos: windows
+        goarch: arm
+    ldflags:
+      - -s -w
+      - -X fleetd.sh/internal/version.Version={{.Version}}
+      - -X fleetd.sh/internal/version.CommitSHA={{.Commit}}
+      - -X fleetd.sh/internal/version.BuildTime={{.Date}}
+
+  - id: fleetd
+    main: ./cmd/fleetd
+    binary: fleetd
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    goarm:
+      - "7"
+    ldflags:
+      - -s -w
+      - -X fleetd.sh/internal/version.Version={{.Version}}
+      - -X fleetd.sh/internal/version.CommitSHA={{.Commit}}
+      - -X fleetd.sh/internal/version.BuildTime={{.Date}}
+
+  - id: device-api
+    main: ./cmd/device-api
+    binary: device-api
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X fleetd.sh/internal/version.Version={{.Version}}
+      - -X fleetd.sh/internal/version.CommitSHA={{.Commit}}
+      - -X fleetd.sh/internal/version.BuildTime={{.Date}}
+
+  - id: platform-api
+    main: ./cmd/platform-api
+    binary: platform-api
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X fleetd.sh/internal/version.Version={{.Version}}
+      - -X fleetd.sh/internal/version.CommitSHA={{.Commit}}
+      - -X fleetd.sh/internal/version.BuildTime={{.Date}}
+
+archives:
+  - id: fleetctl
+    builds:
+      - fleetctl
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "fleetctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    files:
+      - LICENSE
+      - README.md
+
+  - id: fleetd
+    builds:
+      - fleetd
+    format: tar.gz
+    name_template: "fleetd_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    files:
+      - LICENSE
+      - README.md
+      - QUICK_START.md
+
+  - id: servers
+    builds:
+      - device-api
+      - platform-api
+    format: tar.gz
+    name_template: "fleetd-servers_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch
+  groups:
+    - title: 'New Features'
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: 'Bug Fixes'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: 'Performance Improvements'
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: 'Code Refactoring'
+      regexp: '^.*?refactor(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: 'Security Updates'
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 4
+    - title: 'Other Changes'
+      order: 999
+
+release:
+  github:
+    owner: fleetd-sh
+    name: fleetd
+  draft: false
+  prerelease: auto
+  mode: keep-existing
+  name_template: "{{.ProjectName}}-v{{.Version}}"
+
+dockers:
+  - id: device-api
+    ids:
+      - device-api
+    image_templates:
+      - "fleetd/device-api:latest"
+      - "fleetd/device-api:{{ .Tag }}"
+      - "fleetd/device-api:{{ .Major }}"
+      - "fleetd/device-api:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/fleetd-sh/device-api:latest"
+      - "ghcr.io/fleetd-sh/device-api:{{ .Tag }}"
+      - "ghcr.io/fleetd-sh/device-api:{{ .Major }}"
+      - "ghcr.io/fleetd-sh/device-api:{{ .Major }}.{{ .Minor }}"
+    dockerfile: container/device.dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64,linux/arm64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title=device-api"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+
+  - id: platform-api
+    ids:
+      - platform-api
+    image_templates:
+      - "fleetd/platform-api:latest"
+      - "fleetd/platform-api:{{ .Tag }}"
+      - "fleetd/platform-api:{{ .Major }}"
+      - "fleetd/platform-api:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/fleetd-sh/platform-api:latest"
+      - "ghcr.io/fleetd-sh/platform-api:{{ .Tag }}"
+      - "ghcr.io/fleetd-sh/platform-api:{{ .Major }}"
+      - "ghcr.io/fleetd-sh/platform-api:{{ .Major }}.{{ .Minor }}"
+    dockerfile: container/platform.dockerfile
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64,linux/arm64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title=platform-api"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+
+  - id: fleetd
+    ids:
+      - fleetd
+    image_templates:
+      - "fleetd/fleetd:latest"
+      - "fleetd/fleetd:{{ .Tag }}"
+      - "fleetd/fleetd:{{ .Major }}"
+      - "fleetd/fleetd:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/fleetd-sh/fleetd:latest"
+      - "ghcr.io/fleetd-sh/fleetd:{{ .Tag }}"
+      - "ghcr.io/fleetd-sh/fleetd:{{ .Major }}"
+      - "ghcr.io/fleetd-sh/fleetd:{{ .Major }}.{{ .Minor }}"
+    dockerfile: Dockerfile
+    skip_push: auto
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64,linux/arm64,linux/arm/v7"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title=fleetd"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+
+brews:
+  - name: fleetctl
+    ids:
+      - fleetctl
+    repository:
+      owner: fleetd-sh
+      name: homebrew-fleetd
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@fleetd.sh
+    homepage: "https://fleetd.sh"
+    description: "Fleet management CLI tool for edge device orchestration"
+    license: "MIT"
+    folder: Formula
+    test: |
+      system "#{bin}/fleetctl", "--version"
+    install: |
+      bin.install "fleetctl"
+
+      # Install bash completions
+      output = Utils.safe_popen_read("#{bin}/fleetctl", "completion", "bash")
+      (bash_completion/"fleetctl").write output
+
+      # Install zsh completions
+      output = Utils.safe_popen_read("#{bin}/fleetctl", "completion", "zsh")
+      (zsh_completion/"_fleetctl").write output
+
+      # Install fish completions
+      output = Utils.safe_popen_read("#{bin}/fleetctl", "completion", "fish")
+      (fish_completion/"fleetctl.fish").write output
+
+scoop:
+  bucket:
+    owner: fleetd-sh
+    name: scoop-fleetd
+    branch: main
+    token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
+  commit_author:
+    name: goreleaserbot
+    email: goreleaser@fleetd.sh
+  homepage: "https://fleetd.sh"
+  description: "Fleet management CLI tool for edge device orchestration"
+  license: MIT
+  persist:
+    - "data"
+    - "config.toml"
+
+nfpms:
+  - id: fleetctl
+    package_name: fleetctl
+    builds:
+      - fleetctl
+    vendor: Fleetd
+    homepage: https://fleetd.sh
+    maintainer: Fleetd Maintainers <maintainers@fleetd.sh>
+    description: Fleet management CLI tool for edge device orchestration
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    dependencies:
+      - ca-certificates
+    recommends:
+      - git
+    section: utils
+    priority: optional
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/fleetctl/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/fleetctl/README.md
+    scripts:
+      postinstall: |
+        #!/bin/sh
+        echo "Fleetctl installed successfully!"
+        echo "Run 'fleetctl --help' to get started"
+
+  - id: fleetd
+    package_name: fleetd
+    builds:
+      - fleetd
+    vendor: Fleetd
+    homepage: https://fleetd.sh
+    maintainer: Fleetd Maintainers <maintainers@fleetd.sh>
+    description: Fleet daemon for edge device management
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    dependencies:
+      - ca-certificates
+    section: admin
+    priority: optional
+    contents:
+      - src: LICENSE
+        dst: /usr/share/doc/fleetd/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/fleetd/README.md
+      - src: configs/fleetd.service
+        dst: /etc/systemd/system/fleetd.service
+        type: config
+      - src: configs/fleetd.toml
+        dst: /etc/fleetd/config.toml
+        type: config
+    scripts:
+      postinstall: |
+        #!/bin/sh
+        systemctl daemon-reload
+        echo "Fleetd installed successfully!"
+        echo "Run 'systemctl start fleetd' to start the service"
+      preremove: |
+        #!/bin/sh
+        systemctl stop fleetd || true
+        systemctl disable fleetd || true
+
+signs:
+  - cmd: cosign
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--output-signature=${signature}"
+      - "--output-certificate=${certificate}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: all
+
+sboms:
+  - id: source
+    artifacts: source
+  - id: binaries
+    artifacts: binary
+  - id: archives
+    artifacts: archive
+  - id: packages
+    artifacts: package
+
+announce:
+  discord:
+    enabled: true
+    message_template: |
+      **Fleetd {{ .Tag }} Released!** 🚀
+
+      {{ .ProjectName }} {{ .Tag }} is now available!
+
+      **Changelog:**
+      {{ .ReleaseNotes }}
+
+      **Downloads:** https://github.com/fleetd-sh/fleetd/releases/tag/{{ .Tag }}
+
+  slack:
+    enabled: false
+    message_template: |
+      Fleetd {{ .Tag }} has been released!
+      Check it out at {{ .ReleaseURL }}
+
+  twitter:
+    enabled: false
+    message_template: |
+      Fleetd {{ .Tag }} is out! 🎉
+
+      Check out the release notes: {{ .ReleaseURL }}
+
+      #fleetd #edgecomputing #devops

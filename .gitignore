@@ -45,3 +45,7 @@ test/e2e/testdata/fleetd
 # Wiki submodule (when added)
 #wiki/
 .zed/
+
+# Next.js build output
+web/.next/
+web/out/

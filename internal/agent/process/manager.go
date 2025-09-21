@@ -1,13 +1,23 @@
 package process
 
 import (
+	"archive/tar"
+	"archive/zip"
 	"bufio"
+	"bytes"
+	"compress/gzip"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
+	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -30,15 +40,18 @@ type Config struct {
 
 // ProcessConfig represents configuration for a single process
 type ProcessConfig struct {
-	Executable    string
-	Args          []string
-	Environment   map[string]string
-	WorkingDir    string
-	User          string
-	Group         string
-	RestartPolicy pb.RestartPolicy
-	Resources     *pb.Resources
-	HealthCheck   *pb.HealthCheck
+	Executable              string
+	Args                    []string
+	Environment             map[string]string
+	WorkingDir              string
+	User                    string
+	Group                   string
+	RestartPolicy           pb.RestartPolicy
+	Resources               *pb.Resources
+	HealthCheck             *pb.HealthCheck
+	GracefulShutdownTimeout int32  // Seconds to wait after SIGTERM before SIGKILL
+	PreStopHook             string // Command to run before stopping the process
+	PostStopHook            string // Command to run after the process stops
 }
 
 // ProcessState represents the state of a managed process
@@ -829,9 +842,89 @@ func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Ap
 		return "", ferrors.New(ferrors.ErrCodeInvalidInput, "no artifacts provided")
 	}
 
-	// TODO: Implement artifact extraction and validation
-	// This is a placeholder
-	return "/usr/local/bin/app", nil
+	// Create deployment directory
+	deployDir := filepath.Join("/opt/fleetd/deployments", app.Name, app.Version)
+	if err := os.MkdirAll(deployDir, 0755); err != nil {
+		return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to create deployment directory")
+	}
+
+	// Process each artifact
+	var mainExecutable string
+	for name, artifact := range artifacts {
+		// Download artifact if URL is provided
+		var artifactData []byte
+		if artifact.StorageUrl != "" {
+			data, err := m.downloadArtifact(ctx, artifact.StorageUrl)
+			if err != nil {
+				return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to download artifact")
+			}
+			artifactData = data
+		} else {
+			return "", ferrors.New(ferrors.ErrCodeInvalidInput, "artifact has no storage URL")
+		}
+
+		// Validate checksum if provided
+		if len(artifact.Checksums) > 0 {
+			// Try SHA256 first, then other checksums
+			if sha256sum, ok := artifact.Checksums["sha256"]; ok {
+				if err := m.validateChecksum(artifactData, sha256sum); err != nil {
+					return "", ferrors.Wrap(err, ferrors.ErrCodePermissionDenied, "artifact checksum validation failed")
+				}
+			}
+		}
+
+		// Extract based on type
+		artifactPath := filepath.Join(deployDir, name)
+		switch artifact.Type {
+		case pb.ArtifactType_ARTIFACT_TYPE_BINARY:
+			// Write binary directly
+			if err := os.WriteFile(artifactPath, artifactData, 0755); err != nil {
+				return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to write binary")
+			}
+			if mainExecutable == "" {
+				mainExecutable = artifactPath
+			}
+
+		case pb.ArtifactType_ARTIFACT_TYPE_ARCHIVE:
+			// Determine archive type by extension or content
+			if strings.HasSuffix(name, ".tar.gz") || strings.HasSuffix(name, ".tgz") {
+				// Extract tar.gz archive
+				if err := m.extractTarGz(artifactData, deployDir); err != nil {
+					return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to extract tar.gz")
+				}
+			} else if strings.HasSuffix(name, ".zip") {
+				// Extract zip archive
+				if err := m.extractZip(artifactData, deployDir); err != nil {
+					return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to extract zip")
+				}
+			}
+			// Find main executable in extracted files
+			if mainExecutable == "" {
+				mainExecutable = m.findExecutable(deployDir, app.Name)
+			}
+
+		case pb.ArtifactType_ARTIFACT_TYPE_SCRIPT:
+			// Write script with execute permissions
+			if err := os.WriteFile(artifactPath, artifactData, 0755); err != nil {
+				return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to write script")
+			}
+			if mainExecutable == "" {
+				mainExecutable = artifactPath
+			}
+
+		default:
+			// Write as-is for unknown types
+			if err := os.WriteFile(artifactPath, artifactData, 0644); err != nil {
+				return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to write artifact")
+			}
+		}
+	}
+
+	if mainExecutable == "" {
+		return "", ferrors.New(ferrors.ErrCodeInvalidInput, "no executable found in artifacts")
+	}
+
+	return mainExecutable, nil
 }
 
 func (m *Manager) buildProcessConfigWithValidation(app *pb.Application, execPath string) (*ProcessConfig, error) {
@@ -884,19 +977,42 @@ func (m *Manager) stopProcessWithTimeout(ctx context.Context, appID string, time
 		return nil // Already stopped
 	}
 
-	stopCtx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
 	// Signal stop
 	close(mp.stopCh)
 
+	// Execute pre-stop hook if configured
+	if mp.config != nil && mp.config.PreStopHook != "" {
+		m.logger.Info("Executing pre-stop hook", "app", appID, "hook", mp.config.PreStopHook)
+		hookCtx, hookCancel := context.WithTimeout(ctx, 5*time.Second)
+		defer hookCancel()
+
+		hookCmd := exec.CommandContext(hookCtx, "sh", "-c", mp.config.PreStopHook)
+		hookCmd.Env = append(os.Environ(),
+			fmt.Sprintf("APP_ID=%s", appID),
+			fmt.Sprintf("APP_PID=%d", mp.Process.Pid),
+		)
+		if err := hookCmd.Run(); err != nil {
+			m.logger.Warn("Pre-stop hook failed", "error", err)
+			// Continue with shutdown even if hook fails
+		}
+	}
+
 	// Try graceful shutdown first
 	if mp.Process != nil {
+		// Send SIGTERM for graceful shutdown
 		if err := mp.Process.Signal(syscall.SIGTERM); err != nil {
 			m.logger.Debug("Failed to send SIGTERM", "error", err)
 		}
 
-		// Wait for graceful shutdown
+		// Wait for graceful shutdown with configurable grace period
+		gracePeriod := 30 * time.Second
+		if mp.config != nil && mp.config.GracefulShutdownTimeout > 0 {
+			gracePeriod = time.Duration(mp.config.GracefulShutdownTimeout) * time.Second
+		}
+
+		graceCtx, graceCancel := context.WithTimeout(ctx, gracePeriod)
+		defer graceCancel()
+
 		done := make(chan struct{})
 		go func() {
 			mp.Cmd.Wait()
@@ -904,14 +1020,32 @@ func (m *Manager) stopProcessWithTimeout(ctx context.Context, appID string, time
 		}()
 
 		select {
-		case <-stopCtx.Done():
-			// Force kill if timeout
+		case <-graceCtx.Done():
+			// Send SIGKILL if graceful shutdown times out
+			m.logger.Warn("Process did not exit after SIGTERM, sending SIGKILL",
+				"app", appID, "grace_period", gracePeriod)
 			if err := mp.Process.Kill(); err != nil {
 				return ferrors.Wrap(err, ferrors.ErrCodeTimeout,
 					"failed to kill process after timeout")
 			}
+			// Wait for process to fully exit after SIGKILL
+			<-done
 		case <-done:
 			// Process exited gracefully
+			m.logger.Info("Process exited gracefully", "app", appID)
+		}
+	}
+
+	// Execute post-stop hook if configured
+	if mp.config != nil && mp.config.PostStopHook != "" {
+		m.logger.Info("Executing post-stop hook", "app", appID, "hook", mp.config.PostStopHook)
+		hookCtx, hookCancel := context.WithTimeout(ctx, 5*time.Second)
+		defer hookCancel()
+
+		hookCmd := exec.CommandContext(hookCtx, "sh", "-c", mp.config.PostStopHook)
+		hookCmd.Env = append(os.Environ(), fmt.Sprintf("APP_ID=%s", appID))
+		if err := hookCmd.Run(); err != nil {
+			m.logger.Warn("Post-stop hook failed", "error", err)
 		}
 	}
 
@@ -943,17 +1077,34 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 	m.logger.Info("Shutting down process manager")
 
 	// Signal shutdown
-	close(m.shutdownCh)
+	select {
+	case <-m.shutdownCh:
+		// Already shutting down
+		return nil
+	default:
+		close(m.shutdownCh)
+	}
 
-	// Stop all processes
+	// Stop all processes with proper ordering (reverse dependency order if needed)
 	var wg sync.WaitGroup
 	m.mu.RLock()
+	processList := make([]string, 0, len(m.processes))
 	for appID := range m.processes {
+		processList = append(processList, appID)
+	}
+	m.mu.RUnlock()
+
+	// Stop processes in parallel with timeout per process
+	for _, appID := range processList {
 		appID := appID
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := m.stopProcessWithTimeout(ctx, appID, 30*time.Second); err != nil {
+			// Allow up to 60 seconds for each process to shutdown gracefully
+			processCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
+			defer cancel()
+
+			if err := m.stopProcessWithTimeout(processCtx, appID, 60*time.Second); err != nil {
 				m.logger.Error("Failed to stop process during shutdown",
 					"app", appID,
 					"error", err,
@@ -961,7 +1112,6 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 			}
 		}()
 	}
-	m.mu.RUnlock()
 
 	// Wait for all processes to stop
 	done := make(chan struct{})
@@ -983,4 +1133,213 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 
 	m.logger.Info("Process manager shutdown complete")
 	return nil
+}
+
+// HandleSignals sets up signal handling for graceful shutdown
+func (m *Manager) HandleSignals(ctx context.Context) {
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP)
+	defer signal.Stop(sigCh)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case sig := <-sigCh:
+			m.logger.Info("Received signal", "signal", sig)
+			switch sig {
+			case syscall.SIGTERM, syscall.SIGINT:
+				// Initiate graceful shutdown
+				m.logger.Info("Initiating graceful shutdown due to signal", "signal", sig)
+				shutdownCtx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+				defer cancel()
+
+				if err := m.Shutdown(shutdownCtx); err != nil {
+					m.logger.Error("Error during shutdown", "error", err)
+				}
+				return
+
+			case syscall.SIGHUP:
+				// Reload configuration (if applicable)
+				m.logger.Info("Received SIGHUP - reload not implemented")
+				// TODO: Implement configuration reload if needed
+			}
+		}
+	}
+}
+
+// Artifact handling helper methods
+
+// downloadArtifact downloads an artifact from the given URL
+func (m *Manager) downloadArtifact(ctx context.Context, url string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{Timeout: 5 * time.Minute}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("download failed with status %d", resp.StatusCode)
+	}
+
+	return io.ReadAll(resp.Body)
+}
+
+// validateChecksum validates the SHA256 checksum of the artifact
+func (m *Manager) validateChecksum(data []byte, expectedChecksum string) error {
+	h := sha256.New()
+	h.Write(data)
+	actualChecksum := hex.EncodeToString(h.Sum(nil))
+
+	if actualChecksum != expectedChecksum {
+		return fmt.Errorf("checksum mismatch: expected %s, got %s", expectedChecksum, actualChecksum)
+	}
+
+	return nil
+}
+
+// extractTarGz extracts a tar.gz archive to the target directory
+func (m *Manager) extractTarGz(data []byte, targetDir string) error {
+	gzReader, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	defer gzReader.Close()
+
+	tarReader := tar.NewReader(gzReader)
+
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		targetPath := filepath.Join(targetDir, header.Name)
+
+		// Ensure the path is within targetDir to prevent path traversal
+		if !filepath.HasPrefix(filepath.Clean(targetPath), filepath.Clean(targetDir)) {
+			return fmt.Errorf("invalid path in archive: %s", header.Name)
+		}
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.MkdirAll(targetPath, os.FileMode(header.Mode)); err != nil {
+				return err
+			}
+		case tar.TypeReg:
+			// Create directory if needed
+			if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+				return err
+			}
+
+			outFile, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(header.Mode))
+			if err != nil {
+				return err
+			}
+
+			if _, err := io.CopyN(outFile, tarReader, header.Size); err != nil {
+				outFile.Close()
+				return err
+			}
+			outFile.Close()
+		}
+	}
+
+	return nil
+}
+
+// extractZip extracts a zip archive to the target directory
+func (m *Manager) extractZip(data []byte, targetDir string) error {
+	reader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		return err
+	}
+
+	for _, file := range reader.File {
+		targetPath := filepath.Join(targetDir, file.Name)
+
+		// Ensure the path is within targetDir to prevent path traversal
+		if !filepath.HasPrefix(filepath.Clean(targetPath), filepath.Clean(targetDir)) {
+			return fmt.Errorf("invalid path in archive: %s", file.Name)
+		}
+
+		if file.FileInfo().IsDir() {
+			if err := os.MkdirAll(targetPath, file.Mode()); err != nil {
+				return err
+			}
+			continue
+		}
+
+		// Create directory if needed
+		if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+			return err
+		}
+
+		fileReader, err := file.Open()
+		if err != nil {
+			return err
+		}
+		defer fileReader.Close()
+
+		outFile, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, file.Mode())
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(outFile, fileReader)
+		outFile.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// findExecutable finds the main executable in the deployment directory
+func (m *Manager) findExecutable(deployDir string, appName string) string {
+	// First, look for an exact match with the app name
+	exactPath := filepath.Join(deployDir, appName)
+	if info, err := os.Stat(exactPath); err == nil && !info.IsDir() && info.Mode()&0111 != 0 {
+		return exactPath
+	}
+
+	// Look for common executable names
+	commonNames := []string{
+		appName,
+		"bin/" + appName,
+		appName + ".bin",
+		"main",
+		"app",
+		"start.sh",
+		"run.sh",
+	}
+
+	for _, name := range commonNames {
+		path := filepath.Join(deployDir, name)
+		if info, err := os.Stat(path); err == nil && !info.IsDir() && info.Mode()&0111 != 0 {
+			return path
+		}
+	}
+
+	// Walk the directory to find the first executable
+	var executable string
+	filepath.Walk(deployDir, func(path string, info os.FileInfo, err error) error {
+		if err == nil && !info.IsDir() && info.Mode()&0111 != 0 && executable == "" {
+			executable = path
+			return filepath.SkipAll // Stop walking once we find one
+		}
+		return nil
+	})
+
+	return executable
 }

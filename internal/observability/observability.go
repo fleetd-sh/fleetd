@@ -454,9 +454,23 @@ func (p *Provider) serveMetrics() {
 
 	// Ready check endpoint
 	mux.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Add readiness checks
+		// Check if metrics are being collected
+		if p.meterProvider == nil && p.config.EnableMetrics {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte("Metrics not ready"))
+			return
+		}
+
+		// Check if tracing is initialized
+		if p.tracerProvider == nil && p.config.EnableTracing {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte("Tracing not ready"))
+			return
+		}
+
+		// All checks passed
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		w.Write([]byte("Ready"))
 	})
 
 	addr := fmt.Sprintf(":%d", p.config.MetricsPort)

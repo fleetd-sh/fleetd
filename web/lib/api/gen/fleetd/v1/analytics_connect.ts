@@ -3,17 +3,8 @@
 /* eslint-disable */
 // @ts-nocheck
 
+import { GetDeviceHealthRequest, GetDeviceHealthResponse, GetDeviceMetricsRequest, GetDeviceMetricsResponse, GetPerformanceMetricsRequest, GetPerformanceMetricsResponse, GetUpdateAnalyticsRequest, GetUpdateAnalyticsResponse } from "./analytics_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
-import {
-  GetDeviceHealthRequest,
-  GetDeviceHealthResponse,
-  GetDeviceMetricsRequest,
-  GetDeviceMetricsResponse,
-  GetPerformanceMetricsRequest,
-  GetPerformanceMetricsResponse,
-  GetUpdateAnalyticsRequest,
-  GetUpdateAnalyticsResponse,
-} from "./analytics_pb.js";
 
 /**
  * @generated from service fleetd.v1.AnalyticsService
@@ -65,5 +56,6 @@ export const AnalyticsService = {
       O: GetPerformanceMetricsResponse,
       kind: MethodKind.Unary,
     },
-  },
+  }
 } as const;
+
