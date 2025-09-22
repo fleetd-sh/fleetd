@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -46,11 +49,8 @@ func newDevicesListCmd() *cobra.Command {
 		Short: "List all devices",
 		Long:  `Display a list of all registered devices in your fleet`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Get auth token from config or environment
-			authToken := viper.GetString("auth.token")
-			if authToken == "" {
-				authToken = os.Getenv("FLEETCTL_AUTH_TOKEN")
-			}
+			// Get auth token from saved config, viper, or environment
+			authToken := getAuthToken()
 
 			// Create API client
 			apiClient, err := client.NewClient(&client.Config{
@@ -134,11 +134,8 @@ func newDevicesGetCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			deviceID := args[0]
 
-			// Get auth token from config or environment
-			authToken := viper.GetString("auth.token")
-			if authToken == "" {
-				authToken = os.Getenv("FLEETCTL_AUTH_TOKEN")
-			}
+			// Get auth token from saved config, viper, or environment
+			authToken := getAuthToken()
 
 			// Create API client
 			apiClient, err := client.NewClient(&client.Config{
@@ -348,4 +345,117 @@ func newDevicesMetricsCmd() *cobra.Command {
 	}
 
 	return cmd
+}
+
+// getAuthToken retrieves the auth token from saved config, viper, or environment
+func getAuthToken() string {
+	// First check viper config (set during login in current session)
+	if token := viper.GetString("auth.token"); token != "" {
+		return token
+	}
+
+	// Check environment variable
+	if token := os.Getenv("FLEETCTL_AUTH_TOKEN"); token != "" {
+		return token
+	}
+
+	// Try to load from saved auth config
+	configPath := filepath.Join(os.Getenv("HOME"), ".fleetctl", "auth.json")
+	if data, err := os.ReadFile(configPath); err == nil {
+		var authCfg struct {
+			AccessToken  string    `json:"access_token"`
+			RefreshToken string    `json:"refresh_token"`
+			ExpiresAt    time.Time `json:"expires_at"`
+		}
+		if err := json.Unmarshal(data, &authCfg); err == nil {
+			// Check if token is not expired (with 5 minute buffer)
+			if time.Now().Add(5 * time.Minute).Before(authCfg.ExpiresAt) {
+				return authCfg.AccessToken
+			}
+
+			// Token expired or about to expire, try to refresh
+			if authCfg.RefreshToken != "" {
+				if newToken := refreshAuthToken(authCfg.RefreshToken); newToken != "" {
+					return newToken
+				}
+			}
+		}
+	}
+
+	return ""
+}
+
+// refreshAuthToken attempts to refresh the access token using a refresh token
+func refreshAuthToken(refreshToken string) string {
+	// Get platform API URL from config
+	baseURL := viper.GetString("platform_api.url")
+	if baseURL == "" {
+		host := viper.GetString("platform_api.host")
+		port := viper.GetInt("platform_api.port")
+		if host == "" {
+			host = "localhost"
+		}
+		if port == 0 {
+			port = 8090
+		}
+		baseURL = fmt.Sprintf("http://%s:%d", host, port)
+	}
+
+	// Create HTTP client
+	httpClient := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	// Create refresh request
+	reqBody := fmt.Sprintf(`{"refresh_token":"%s"}`, refreshToken)
+	req, err := http.NewRequest("POST", baseURL+"/api/v1/auth/refresh", strings.NewReader(reqBody))
+	if err != nil {
+		return ""
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send request
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		// Refresh failed, user needs to login again
+		return ""
+	}
+
+	// Parse response
+	var refreshResp struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+		ExpiresIn    int64  `json:"expires_in"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&refreshResp); err != nil {
+		return ""
+	}
+
+	// Calculate expiry time
+	expiresAt := time.Now().Add(time.Duration(refreshResp.ExpiresIn) * time.Second)
+
+	// Save updated credentials
+	configPath := filepath.Join(os.Getenv("HOME"), ".fleetctl", "auth.json")
+	authCfg := map[string]interface{}{
+		"access_token":  refreshResp.AccessToken,
+		"refresh_token": refreshResp.RefreshToken,
+		"expires_at":    expiresAt,
+	}
+
+	configData, err := json.MarshalIndent(authCfg, "", "  ")
+	if err == nil {
+		os.WriteFile(configPath, configData, 0600)
+	}
+
+	// Update viper for current session
+	viper.Set("auth.token", refreshResp.AccessToken)
+	viper.Set("auth.refresh_token", refreshResp.RefreshToken)
+
+	return refreshResp.AccessToken
 }

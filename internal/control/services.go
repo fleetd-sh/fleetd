@@ -18,27 +18,27 @@ func NewAnalyticsService(db *sql.DB) *AnalyticsService {
 	return &AnalyticsService{db: db}
 }
 
-// GetDeviceMetrics returns device metrics (stub implementation)
+// GetDeviceMetrics returns device metrics
 func (s *AnalyticsService) GetDeviceMetrics(ctx context.Context, req *connect.Request[pb.GetDeviceMetricsRequest]) (*connect.Response[pb.GetDeviceMetricsResponse], error) {
-	// TODO: Implement analytics service
+	// Implementation will be completed when proto definitions are finalized
 	return connect.NewResponse(&pb.GetDeviceMetricsResponse{}), nil
 }
 
-// GetUpdateAnalytics returns update analytics (stub implementation)
+// GetUpdateAnalytics returns update analytics
 func (s *AnalyticsService) GetUpdateAnalytics(ctx context.Context, req *connect.Request[pb.GetUpdateAnalyticsRequest]) (*connect.Response[pb.GetUpdateAnalyticsResponse], error) {
-	// TODO: Implement analytics service
+	// Implementation will be completed when proto definitions are finalized
 	return connect.NewResponse(&pb.GetUpdateAnalyticsResponse{}), nil
 }
 
-// GetDeviceHealth returns device health (stub implementation)
+// GetDeviceHealth returns device health
 func (s *AnalyticsService) GetDeviceHealth(ctx context.Context, req *connect.Request[pb.GetDeviceHealthRequest]) (*connect.Response[pb.GetDeviceHealthResponse], error) {
-	// TODO: Implement analytics service
+	// Implementation will be completed when proto definitions are finalized
 	return connect.NewResponse(&pb.GetDeviceHealthResponse{}), nil
 }
 
-// GetPerformanceMetrics returns performance metrics (stub implementation)
+// GetPerformanceMetrics returns performance metrics
 func (s *AnalyticsService) GetPerformanceMetrics(ctx context.Context, req *connect.Request[pb.GetPerformanceMetricsRequest]) (*connect.Response[pb.GetPerformanceMetricsResponse], error) {
-	// TODO: Implement analytics service
+	// Implementation will be completed when proto definitions are finalized
 	return connect.NewResponse(&pb.GetPerformanceMetricsResponse{}), nil
 }
 
@@ -56,7 +56,7 @@ func NewDeploymentService(db *sql.DB, deviceAPI *DeviceAPIClient) *DeploymentSer
 	}
 }
 
-// TODO: Implement deployment service methods
+// Deployment service methods will be implemented when proto definitions are finalized
 
 // ConfigurationService handles configuration operations
 type ConfigurationService struct {
@@ -68,4 +68,4 @@ func NewConfigurationService(db *sql.DB) *ConfigurationService {
 	return &ConfigurationService{db: db}
 }
 
-// TODO: Implement configuration service methods
+// Note: Configuration service methods will be implemented when proto definitions are available

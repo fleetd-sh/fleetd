@@ -134,6 +134,15 @@ func main() {
 		}
 	}
 
+	// TLS Configuration
+	tlsMode := os.Getenv("FLEETD_TLS_MODE")
+	if tlsMode == "" {
+		tlsMode = "tls" // Default to TLS enabled
+	}
+	tlsCertFile := os.Getenv("FLEETD_TLS_CERT")
+	tlsKeyFile := os.Getenv("FLEETD_TLS_KEY")
+	tlsCAFile := os.Getenv("FLEETD_TLS_CA")
+
 	config := &control.Config{
 		Port:         serverPort,
 		DatabasePath: serverDBPath,
@@ -142,6 +151,10 @@ func main() {
 		ValkeyAddr:   valkeyAddr,
 		RateLimitReq: rateLimitReq,
 		RateLimitWin: rateLimitWindow,
+		TLSMode:      tlsMode,
+		TLSCert:      tlsCertFile,
+		TLSKey:       tlsKeyFile,
+		TLSCA:        tlsCAFile,
 	}
 
 	s, err := control.NewServer(config)

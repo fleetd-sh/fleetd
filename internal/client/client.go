@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"connectrpc.com/connect"
 	fleetpb "fleetd.sh/gen/fleetd/v1"
 	"fleetd.sh/gen/fleetd/v1/fleetpbconnect"
+	"fleetd.sh/internal/security"
 	"github.com/spf13/viper"
 )
 
@@ -90,16 +92,48 @@ func NewClient(config *Config) (*Client, error) {
 		config.Timeout = 30 * time.Second
 	}
 
-	// Create HTTP client with optional auth
-	httpClient := &http.Client{
-		Timeout: config.Timeout,
+	// Create HTTP client with optional auth and TLS
+	var transport http.RoundTripper = http.DefaultTransport
+
+	// Configure TLS if needed
+	if strings.HasPrefix(config.BaseURL, "https://") {
+		tlsConfig := &security.TLSConfig{
+			Mode:         "tls",
+			AutoGenerate: false,
+		}
+
+		// Check for custom certificates from environment
+		if certFile := os.Getenv("FLEETCTL_TLS_CERT"); certFile != "" {
+			tlsConfig.CertFile = certFile
+		}
+		if keyFile := os.Getenv("FLEETCTL_TLS_KEY"); keyFile != "" {
+			tlsConfig.KeyFile = keyFile
+		}
+		if caFile := os.Getenv("FLEETCTL_TLS_CA"); caFile != "" {
+			tlsConfig.CAFile = caFile
+		}
+
+		tlsManager, err := security.NewTLSManager(tlsConfig)
+		if err == nil && tlsManager != nil {
+			if tlsClientConfig := tlsManager.GetClientTLSConfig(); tlsClientConfig != nil {
+				transport = &http.Transport{
+					TLSClientConfig: tlsClientConfig,
+				}
+			}
+		}
 	}
 
+	// Add auth if token provided
 	if config.AuthToken != "" {
-		httpClient.Transport = &authTransport{
+		transport = &authTransport{
 			token:     config.AuthToken,
-			transport: http.DefaultTransport,
+			transport: transport,
 		}
+	}
+
+	httpClient := &http.Client{
+		Timeout:   config.Timeout,
+		Transport: transport,
 	}
 
 	// Create Connect clients (using Connect protocol, not gRPC)

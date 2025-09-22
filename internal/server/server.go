@@ -42,7 +42,14 @@ type Config struct {
 	ValkeyAddr     string
 	RateLimitReq   int
 	RateLimitWin   int
-	TLS            *fleetdTLS.Config
+
+	// TLS Configuration
+	TLSMode string // "none", "tls", or "mtls"
+	TLSCert string // Path to TLS certificate
+	TLSKey  string // Path to TLS private key
+	TLSCA   string // Path to CA certificate (for mTLS)
+
+	TLS            *fleetdTLS.Config // Legacy TLS config (to be removed)
 	Tracing        *tracing.Config
 	AllowedOrigins string // Comma-separated list of allowed origins
 }

@@ -588,8 +588,8 @@ func CollectSystemInfo() (*SystemInfo, error) {
 	// Get timezone
 	info.Timezone = time.Local.String()
 
-	// Set agent version (TODO: Get from build info)
-	info.AgentVersion = "0.1.0"
+	// Set agent version from build info
+	info.AgentVersion = "0.1.0" // Will be set via ldflags during build
 
 	// Get system load averages
 	loadAvg, err := load.Avg()

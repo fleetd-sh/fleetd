@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"fleetd.sh/internal/server"
-	fleetdTLS "fleetd.sh/internal/tls"
 	"fleetd.sh/internal/tracing"
 	"fleetd.sh/internal/version"
 )
@@ -110,29 +109,26 @@ func main() {
 		tlsSelfSigned = true
 	}
 
-	// Configure TLS
-	tlsConfig := &fleetdTLS.Config{
-		Enabled:      tlsEnabled,
-		CertFile:     tlsCertFile,
-		KeyFile:      tlsKeyFile,
-		AutoTLS:      tlsAutoTLS,
-		Domain:       tlsDomain,
-		SelfSigned:   tlsSelfSigned,
-		Port:         443,
-		HTTPPort:     serverPort,
-		RedirectHTTP: tlsEnabled,
-		CacheDir:     "./certs",
+	// Configure TLS using environment or flags
+	tlsMode := os.Getenv("FLEETD_TLS_MODE")
+	if tlsMode == "" && tlsEnabled {
+		tlsMode = "tls"
+	} else if tlsMode == "" {
+		tlsMode = "none"
 	}
 
-	// Override ports if TLS is enabled
-	if tlsEnabled {
-		if serverPort == 8080 {
-			tlsConfig.HTTPPort = 80
-			tlsConfig.Port = 443
-		} else {
-			tlsConfig.HTTPPort = serverPort
-			tlsConfig.Port = serverPort + 443 - 80 // e.g., 8080 -> 8443
-		}
+	// Override with environment variables if not set via flags
+	if tlsCertFile == "" {
+		tlsCertFile = os.Getenv("FLEETD_TLS_CERT")
+	}
+	if tlsKeyFile == "" {
+		tlsKeyFile = os.Getenv("FLEETD_TLS_KEY")
+	}
+	tlsCAFile := os.Getenv("FLEETD_TLS_CA")
+
+	// For mTLS support
+	if tlsCAFile != "" && tlsMode == "tls" {
+		tlsMode = "mtls"
 	}
 
 	// Configure tracing from environment
@@ -147,8 +143,11 @@ func main() {
 		EnableMDNS:   enableMDNS,
 		ValkeyAddr:   valkeyAddr,
 		RateLimitReq: rateLimitReq,
+		TLSMode:      tlsMode,
+		TLSCert:      tlsCertFile,
+		TLSKey:       tlsKeyFile,
+		TLSCA:        tlsCAFile,
 		RateLimitWin: rateLimitWindow,
-		TLS:          tlsConfig,
 		Tracing:      tracingConfig,
 	}
 
@@ -173,9 +172,9 @@ func main() {
 	// Log endpoints with correct protocol
 	protocol := "http"
 	port := serverPort
-	if tlsEnabled {
+	if tlsMode != "none" && tlsMode != "" {
 		protocol = "https"
-		port = tlsConfig.Port
+		// Keep same port for now, in production would use 443 or 8443
 	}
 
 	slog.Info("Device API endpoints available")

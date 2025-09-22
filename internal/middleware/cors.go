@@ -238,8 +238,14 @@ func isPrivateNetwork(origin string) bool {
 
 	host := u.Hostname()
 
-	// Check for localhost
-	if host == "localhost" || host == "127.0.0.1" || host == "::1" {
+	// Special handling for bare IPv6 addresses without brackets
+	// URL parser incorrectly parses http://::1 as host=: port=:1
+	if u.Host == "::1" {
+		return true
+	}
+
+	// Check for localhost (including IPv6)
+	if host == "localhost" || host == "127.0.0.1" || host == "::1" || host == "[::1]" {
 		return true
 	}
 

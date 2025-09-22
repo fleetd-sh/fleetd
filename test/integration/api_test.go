@@ -60,20 +60,27 @@ func (s *APITestSuite) TearDownSuite() {
 func (s *APITestSuite) setupTestHandler(cfg *server.Config) http.Handler {
 	mux := http.NewServeMux()
 
-	// Add middleware
-	authConfig := middleware.AuthConfig{
-		JWTSecretKey:  cfg.SecretKey,
-		EnableAPIKeys: true,
-	}
-	authMiddleware := middleware.NewAuthMiddleware(authConfig)
-	loggingMiddleware := middleware.NewLoggingMiddleware()
-	securityMiddleware := middleware.SecurityHeaders()
-
-	// Chain middleware
-	handler := securityMiddleware(authMiddleware(loggingMiddleware(mux)))
-
-	// Register test endpoints
+	// Register test endpoints first
 	s.registerEndpoints(mux)
+
+	// Create rate limiter
+	rateLimiter, _ := middleware.NewRateLimiter(middleware.RateLimiterConfig{
+		Rate:       10,  // 10 requests per second
+		Burst:      20,  // Allow burst of 20
+		Expiration: 60 * time.Second,
+	})
+
+	// Apply middleware in reverse order (innermost first)
+	// Note: We handle auth validation in test handlers themselves
+	handler := http.Handler(mux)
+	handler = middleware.NewLoggingMiddleware()(handler)
+	handler = middleware.RateLimitMiddleware(rateLimiter)(handler)
+	handler = middleware.CORS(
+		[]string{"http://localhost:3000", "http://localhost:3001"},
+		nil, // Use default methods
+		nil, // Use default headers
+	)(handler)
+	handler = middleware.SecurityHeaders()(handler)
 
 	return handler
 }
@@ -108,6 +115,14 @@ func (s *APITestSuite) registerEndpoints(mux *http.ServeMux) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
 	})
+	mux.HandleFunc("/health/live", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"status": "live"})
+	})
+	mux.HandleFunc("/health/ready", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"status": "ready"})
+	})
 
 	// Auth endpoints
 	mux.HandleFunc("/api/v1/auth/login", s.handleLogin)
@@ -119,6 +134,7 @@ func (s *APITestSuite) registerEndpoints(mux *http.ServeMux) {
 
 	// Fleet endpoints
 	mux.HandleFunc("/api/v1/fleets", s.handleFleets)
+	mux.HandleFunc("/api/v1/fleets/", s.handleFleets) // Handle /fleets/{id}
 
 	// Metrics endpoint
 	mux.HandleFunc("/api/v1/metrics", s.handleMetrics)
@@ -330,7 +346,7 @@ func (s *APITestSuite) TestFleetOperations() {
 		resp := s.postJSON("/api/v1/fleets", payload, s.jwtToken)
 		defer resp.Body.Close()
 
-		s.Equal(http.StatusOK, resp.StatusCode)
+		s.Equal(http.StatusCreated, resp.StatusCode)
 
 		var result map[string]interface{}
 		err := json.NewDecoder(resp.Body).Decode(&result)
@@ -609,11 +625,38 @@ func (s *APITestSuite) handleDeviceRegister(w http.ResponseWriter, r *http.Reque
 }
 
 func (s *APITestSuite) handleFleets(w http.ResponseWriter, r *http.Request) {
+	// Check authentication
+	auth := r.Header.Get("Authorization")
+	if auth == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Validate JWT token
+	if auth != "Bearer "+s.jwtToken {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Handle GET /api/v1/fleets/{id}
+	if r.Method == "GET" && strings.Contains(r.URL.Path, "/api/v1/fleets/fleet-") {
+		// Get fleet by ID
+		fleetID := strings.TrimPrefix(r.URL.Path, "/api/v1/fleets/")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"fleet": map[string]interface{}{
+				"id":   fleetID,
+				"name": "Test Fleet",
+			},
+		})
+		return
+	}
+
 	if r.Method == "POST" {
 		var payload map[string]interface{}
 		json.NewDecoder(r.Body).Decode(&payload)
 
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"fleet": map[string]interface{}{
 				"id":   fmt.Sprintf("fleet-%d", time.Now().Unix()),
@@ -631,9 +674,15 @@ func (s *APITestSuite) handleFleets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *APITestSuite) handleMetrics(w http.ResponseWriter, r *http.Request) {
-	// Check authentication
+	// Metrics endpoint requires authentication
 	auth := r.Header.Get("Authorization")
 	if auth == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// Validate JWT token
+	if auth != "Bearer "+s.jwtToken {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

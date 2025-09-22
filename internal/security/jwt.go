@@ -469,3 +469,17 @@ func (m *JWTManager) GetTokenInfo(tokenString string) (*TokenInfo, error) {
 		Expired:   expired,
 	}, nil
 }
+
+// GenerateAPIKey generates a secure random API key
+func GenerateAPIKey() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return fmt.Sprintf("fleetd_%s", base64.URLEncoding.EncodeToString(b))
+}
+
+// GenerateID generates a unique ID
+func GenerateID() string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}

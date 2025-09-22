@@ -15,9 +15,11 @@ import (
 	"time"
 
 	"fleetd.sh/gen/fleetd/v1/fleetpbconnect"
+	"fleetd.sh/gen/public/v1/publicv1connect"
 	"fleetd.sh/internal/database"
 	"fleetd.sh/internal/metrics"
 	"fleetd.sh/internal/middleware"
+	"fleetd.sh/internal/security"
 	"fleetd.sh/internal/version"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -33,6 +35,12 @@ type Config struct {
 	ValkeyAddr   string
 	RateLimitReq int
 	RateLimitWin int
+
+	// TLS Configuration
+	TLSMode string // "none", "tls", or "mtls"
+	TLSCert string // Path to TLS certificate
+	TLSKey  string // Path to TLS private key
+	TLSCA   string // Path to CA certificate (for mTLS)
 }
 
 // Server represents the control plane API server
@@ -43,6 +51,7 @@ type Server struct {
 	deviceAPI       *DeviceAPIClient
 	valkeyLimiter   *middleware.ValkeyRateLimiter
 	inMemoryLimiter *middleware.RateLimiter
+	tlsManager      *security.TLSManager
 }
 
 // DeviceAPIClient wraps communication with the device API
@@ -85,6 +94,20 @@ func NewServer(config *Config) (*Server, error) {
 
 	// Get the underlying sql.DB for compatibility
 	db := dbInstance.DB
+
+	// Run database migrations
+	driver := "sqlite3"
+	if strings.Contains(config.DatabasePath, "postgres") || strings.Contains(config.DatabasePath, "host=") {
+		driver = "postgres"
+	}
+
+	ctx := context.Background()
+	if err := database.RunMigrations(ctx, db, driver); err != nil {
+		slog.Warn("Failed to run database migrations", "error", err)
+		// Don't fail startup - migrations may have already been applied
+	} else {
+		slog.Info("Database migrations completed successfully")
+	}
 
 	// Create device API client
 	deviceAPI := &DeviceAPIClient{
@@ -142,12 +165,33 @@ func NewServer(config *Config) (*Server, error) {
 			"burst", config.RateLimitReq)
 	}
 
+	// Initialize TLS manager
+	tlsConfig := &security.TLSConfig{
+		Mode:         config.TLSMode,
+		CertFile:     config.TLSCert,
+		KeyFile:      config.TLSKey,
+		CAFile:       config.TLSCA,
+		AutoGenerate: true, // Auto-generate if certs not provided
+		Organization: "FleetD",
+		CommonName:   "platform-api.fleetd.local",
+		Hosts:        []string{"localhost", "127.0.0.1", "platform-api", "*.fleetd.local"},
+		ValidDays:    365,
+	}
+
+	tlsManager, err := security.NewTLSManager(tlsConfig)
+	if err != nil {
+		slog.Warn("Failed to initialize TLS", "error", err, "mode", config.TLSMode)
+		// Continue without TLS if it fails
+		tlsManager = nil
+	}
+
 	return &Server{
 		config:          config,
 		db:              db,
 		deviceAPI:       deviceAPI,
 		valkeyLimiter:   valkeyLimiter,
 		inMemoryLimiter: inMemoryLimiter,
+		tlsManager:      tlsManager,
 	}, nil
 }
 
@@ -182,17 +226,32 @@ func (s *Server) Run() error {
 		mux.Handle("/", handler)
 	} else {
 		// Original Connect-RPC only setup
+		// Create JWT manager for auth service
+		jwtManager, err := security.NewJWTManager(&security.JWTConfig{
+			SigningKey:       []byte(s.config.SecretKey),
+			Issuer:          "fleetd",
+			AccessTokenTTL:  1 * time.Hour,
+			RefreshTokenTTL: 24 * time.Hour * 7,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create JWT manager: %w", err)
+		}
+
 		// Create service handlers
 		fleetService := NewFleetService(s.db, s.deviceAPI)
 		deviceService := NewDeviceService(s.db, s.deviceAPI)
 		analyticsService := NewAnalyticsService(s.db)
+		authService := NewAuthService(s.db, jwtManager)
 
 		// Register Connect handlers
 		fleetPath, fleetHandler := fleetpbconnect.NewFleetServiceHandler(fleetService)
 		devicePath, deviceHandler := fleetpbconnect.NewDeviceServiceHandler(deviceService)
 		analyticsPath, analyticsHandler := fleetpbconnect.NewAnalyticsServiceHandler(analyticsService)
+		authPath, authHandler := publicv1connect.NewAuthServiceHandler(authService)
 
 		// Apply middleware and register routes
+		// Auth service doesn't need auth middleware on Login endpoint
+		mux.Handle(authPath, withMiddleware(authHandler, loggingMiddleware))
 		mux.Handle(fleetPath, withMiddleware(fleetHandler, authMiddleware, loggingMiddleware))
 		mux.Handle(devicePath, withMiddleware(deviceHandler, authMiddleware, loggingMiddleware))
 		mux.Handle(analyticsPath, withMiddleware(analyticsHandler, authMiddleware, loggingMiddleware))
@@ -253,6 +312,9 @@ func (s *Server) Run() error {
 	// Apply middleware stack
 	var handler http.Handler = mux
 
+	// Apply request ID middleware first (so all other middleware can use it)
+	handler = middleware.RequestIDMiddleware(handler)
+
 	// Apply metrics middleware
 	handler = metricsMiddleware(handler)
 
@@ -264,13 +326,21 @@ func (s *Server) Run() error {
 	// Apply CORS
 	handler = middleware.CORSMiddleware(corsConfig)(handler)
 
-	// Setup HTTP server
+	// Setup HTTP server with TLS config
 	s.httpServer = &http.Server{
 		Addr:         fmt.Sprintf(":%d", s.config.Port),
 		Handler:      handler,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
+	}
+
+	// Apply TLS configuration if available
+	if s.tlsManager != nil && s.tlsManager.IsEnabled() {
+		s.httpServer.TLSConfig = s.tlsManager.GetServerTLSConfig()
+		slog.Info("TLS enabled",
+			"mode", s.tlsManager.GetMode(),
+			"info", s.tlsManager.GetCertificateInfo())
 	}
 
 	// Setup graceful shutdown
@@ -283,9 +353,29 @@ func (s *Server) Run() error {
 	go s.collectSystemMetrics(ctx)
 
 	go func() {
-		slog.Info("Control plane server listening", "port", s.config.Port)
-		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("Server error", "error", err)
+		if s.tlsManager != nil && s.tlsManager.IsEnabled() {
+			scheme := "https"
+			if s.tlsManager.GetMode() == "mtls" {
+				scheme = "https+mtls"
+			}
+			slog.Info("Control plane server listening",
+				"port", s.config.Port,
+				"scheme", scheme,
+				"url", fmt.Sprintf("%s://localhost:%d", scheme, s.config.Port))
+
+			// ListenAndServeTLS with empty cert/key paths since they're in TLSConfig
+			if err := s.httpServer.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+				slog.Error("Server error", "error", err)
+			}
+		} else {
+			slog.Info("Control plane server listening",
+				"port", s.config.Port,
+				"scheme", "http",
+				"url", fmt.Sprintf("http://localhost:%d", s.config.Port))
+
+			if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				slog.Error("Server error", "error", err)
+			}
 		}
 	}()
 

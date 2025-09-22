@@ -258,14 +258,22 @@ func NewLoggingMiddleware() func(http.Handler) http.Handler {
 				logLevel = slog.LevelError
 			}
 
-			logger.Log(r.Context(), logLevel, "HTTP request",
+			// Include request ID if available
+			fields := []any{
 				"method", r.Method,
 				"path", r.URL.Path,
 				"status", rw.statusCode,
 				"duration_ms", duration.Milliseconds(),
 				"remote_addr", r.RemoteAddr,
 				"user_agent", r.UserAgent(),
-			)
+			}
+
+			// Add request ID if present
+			if requestID := GetRequestID(r.Context()); requestID != "" {
+				fields = append(fields, "request_id", requestID)
+			}
+
+			logger.Log(r.Context(), logLevel, "HTTP request", fields...)
 		})
 	}
 }
