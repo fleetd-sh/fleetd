@@ -3,7 +3,7 @@
 # Test script for TLS/mTLS functionality
 set -e
 
-echo "🔐 Testing FleetD TLS/mTLS Configuration"
+echo "🔐 Testing fleetd TLS/mTLS Configuration"
 echo "=========================================="
 
 # Colors for output

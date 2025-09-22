@@ -397,7 +397,7 @@ func (p *CoreProvisioner) ProvisionWithCustomImage(ctx context.Context, imageURL
 }
 
 func (p *CoreProvisioner) generateFleetdConfig() string {
-	config := fmt.Sprintf(`# FleetD Agent Configuration
+	config := fmt.Sprintf(`# fleetd Agent Configuration
 agent:
   id: %s
   name: %s
@@ -439,7 +439,7 @@ server:
 
 func (p *CoreProvisioner) generateSystemdService() string {
 	return fmt.Sprintf(`[Unit]
-Description=FleetD Agent
+Description=fleetd Agent
 After=network-online.target
 Wants=network-online.target
 
@@ -463,11 +463,11 @@ PASSWORD=%s
 
 func (p *CoreProvisioner) generateStartupScript() string {
 	return `#!/bin/bash
-# FleetD Setup Script
+# fleetd Setup Script
 
 set -e
 
-echo "Setting up FleetD agent..."
+echo "Setting up fleetd agent..."
 
 # Create directories
 mkdir -p /etc/fleetd

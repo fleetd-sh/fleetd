@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# FleetD Release Script
+# fleetd Release Script
 # Builds and packages binaries for multiple platforms
 
 set -euo pipefail
@@ -98,7 +98,7 @@ log_info "Generating checksums..."
 # Create release notes template
 log_info "Creating release notes template..."
 cat > "${OUTPUT_DIR}/release_notes.md" <<EOF
-# FleetD v${VERSION}
+# fleetd v${VERSION}
 
 ## What's New
 - Feature 1

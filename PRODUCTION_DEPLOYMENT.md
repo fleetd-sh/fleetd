@@ -1,4 +1,4 @@
-# FleetD Production Deployment Guide
+# fleetd Production Deployment Guide
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@
 
 ### TLS/mTLS Setup
 
-FleetD supports three TLS modes:
+fleetd supports three TLS modes:
 
 1. **Auto-generated certificates** (default)
    ```yaml
@@ -94,7 +94,7 @@ jwt:
 1. Create service file `/etc/systemd/system/fleetd-platform.service`:
    ```ini
    [Unit]
-   Description=FleetD Platform API
+   Description=fleetd Platform API
    After=network.target postgresql.service
    
    [Service]

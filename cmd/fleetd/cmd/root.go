@@ -9,8 +9,8 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "fleetd",
-	Short: "FleetD agent for device management",
-	Long: `FleetD is a lightweight agent that enables remote management,
+	Short: "fleetd agent for device management",
+	Long: `fleetd is a lightweight agent that enables remote management,
 monitoring, and updates for edge devices.`,
 }
 

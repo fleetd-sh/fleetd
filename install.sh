@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# FleetD CLI Installer Script
+# fleetd CLI Installer Script
 # Usage: curl -fsSL https://get.fleetd.sh | bash
 # or:    wget -qO- https://get.fleetd.sh | bash
 
@@ -126,7 +126,7 @@ download_binary() {
     local tmp_dir="$(mktemp -d)"
     local tmp_file="${tmp_dir}/${filename}"
     
-    log_info "Downloading FleetD CLI v${version}..."
+    log_info "Downloading fleetd CLI v${version}..."
     log_info "URL: ${url}"
     
     if command -v curl &> /dev/null; then
@@ -166,7 +166,7 @@ install_binary() {
     # Verify installation
     if command -v "${BINARY_NAME}" &> /dev/null; then
         local installed_version="$(${BINARY_NAME} version --short 2>/dev/null || echo 'unknown')"
-        log_success "FleetD CLI installed successfully!"
+        log_success "fleetd CLI installed successfully!"
         log_info "Version: ${installed_version}"
     else
         log_warning "${BINARY_NAME} installed but not in PATH"
@@ -205,7 +205,7 @@ install_completions() {
 # Main installation flow
 main() {
     echo -e "${BLUE}╔════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║   FleetD CLI Installer             ║${NC}"
+    echo -e "${BLUE}║   fleetd CLI Installer             ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════╝${NC}"
     echo
     
@@ -259,8 +259,8 @@ main() {
     log_success "Installation complete!"
     echo
     echo "To get started, run:"
-    echo "  ${BINARY_NAME} init        # Initialize a new FleetD project"
-    echo "  ${BINARY_NAME} start       # Start local FleetD stack"
+    echo "  ${BINARY_NAME} init        # Initialize a new fleetd project"
+    echo "  ${BINARY_NAME} start       # Start local fleetd stack"
     echo "  ${BINARY_NAME} help        # Show available commands"
     echo
     echo "Documentation: https://docs.fleetd.sh"

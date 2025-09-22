@@ -55,7 +55,7 @@ func main() {
 			Title string
 			APIURL string
 		}{
-			Title: "FleetD API Documentation",
+			Title: "fleetd API Documentation",
 			APIURL: "/openapi.json",
 		}
 

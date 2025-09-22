@@ -1,8 +1,8 @@
-# FleetD CLI Homebrew Formula
+# fleetd CLI Homebrew Formula
 # To install: brew tap fleetd/tap && brew install fleetctl
 
 class Fleetctl < Formula
-  desc "Command-line interface for FleetD fleet management platform"
+  desc "Command-line interface for fleetd fleet management platform"
   homepage "https://fleetd.sh"
   version "0.5.2"
   license "Apache-2.0"
@@ -53,11 +53,11 @@ class Fleetctl < Formula
 
   def caveats
     <<~EOS
-      FleetD CLI has been installed successfully!
+      fleetd CLI has been installed successfully!
       
       To get started:
-        fleetctl init     # Initialize a new FleetD project
-        fleetctl start    # Start local FleetD stack
+        fleetctl init     # Initialize a new fleetd project
+        fleetctl start    # Start local fleetd stack
         
       Docker is recommended for local development:
         brew install docker

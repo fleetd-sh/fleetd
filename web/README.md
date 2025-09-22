@@ -1,6 +1,6 @@
-# FleetD Web Dashboard
+# fleetd Web Dashboard
 
-Modern, real-time web dashboard for FleetD management built with Next.js 15.
+Modern, real-time web dashboard for fleetd management built with Next.js 15.
 
 ## Tech Stack
 
@@ -32,7 +32,7 @@ Modern, real-time web dashboard for FleetD management built with Next.js 15.
 ### Prerequisites
 
 - Bun installed (`curl -fsSL https://bun.sh/install | bash`)
-- FleetD server running on port 8080
+- fleetd server running on port 8080
 
 ### Installation
 
@@ -135,7 +135,7 @@ fleet provision \
 
 ## API Integration
 
-The dashboard connects to the FleetD backend API:
+The dashboard connects to the fleetd backend API:
 
 - `/api/v1/devices` - Device management
 - `/api/v1/telemetry` - Telemetry data

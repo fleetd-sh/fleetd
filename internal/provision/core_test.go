@@ -74,7 +74,7 @@ func TestCoreProvisioner_GetCoreFiles(t *testing.T) {
 
 	// Check systemd service
 	service := string(files["/boot/fleetd/fleetd.service"])
-	if !strings.Contains(service, "Description=FleetD Agent") {
+	if !strings.Contains(service, "Description=fleetd Agent") {
 		t.Error("Service file missing description")
 	}
 	if !strings.Contains(service, "FLEETD_DEVICE_ID=test-device-123") {

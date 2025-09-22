@@ -33,7 +33,7 @@ func newProvisionCmd() *cobra.Command {
 	)
 	cmd := &cobra.Command{
 		Use:   "provision",
-		Short: "Provision edge devices with FleetD",
+		Short: "Provision edge devices with fleetd",
 		Long: `Provision a device with the fleetd agent and optional plugins.
 
 This command writes an OS image to an SD card or device, configures networking,

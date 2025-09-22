@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# FleetD Service Installer
-# Installs FleetD as a system service (systemd or launchd)
+# fleetd Service Installer
+# Installs fleetd as a system service (systemd or launchd)
 
 set -euo pipefail
 
@@ -38,7 +38,7 @@ install_systemd_service() {
     local config_path="${2:-/etc/fleetd/config.yaml}"
     local binary_path="$(which fleetctl || echo /usr/local/bin/fleetctl)"
     
-    log_info "Installing FleetD systemd service..."
+    log_info "Installing fleetd systemd service..."
     
     # Create service file
     local service_file="/etc/systemd/system/fleetd-${service_type}.service"
@@ -47,7 +47,7 @@ install_systemd_service() {
         agent)
             cat <<EOF | sudo tee "$service_file" > /dev/null
 [Unit]
-Description=FleetD Agent Service
+Description=fleetd Agent Service
 Documentation=https://docs.fleetd.sh
 After=network-online.target
 Wants=network-online.target
@@ -81,7 +81,7 @@ EOF
         platform-api)
             cat <<EOF | sudo tee "$service_file" > /dev/null
 [Unit]
-Description=FleetD Platform API Service
+Description=fleetd Platform API Service
 Documentation=https://docs.fleetd.sh
 After=network-online.target postgresql.service
 Wants=network-online.target
@@ -117,7 +117,7 @@ EOF
         device-api)
             cat <<EOF | sudo tee "$service_file" > /dev/null
 [Unit]
-Description=FleetD Device API Service
+Description=fleetd Device API Service
 Documentation=https://docs.fleetd.sh
 After=network-online.target fleetd-platform-api.service
 Wants=network-online.target
@@ -175,7 +175,7 @@ EOF
     sudo systemctl daemon-reload
     sudo systemctl enable "fleetd-${service_type}.service"
     
-    log_success "FleetD $service_type service installed"
+    log_success "fleetd $service_type service installed"
     echo
     echo "To start the service:"
     echo "  sudo systemctl start fleetd-${service_type}"
@@ -190,7 +190,7 @@ install_launchd_service() {
     local config_path="${2:-$HOME/.fleetd/config.yaml}"
     local binary_path="$(which fleetctl || echo /usr/local/bin/fleetctl)"
     
-    log_info "Installing FleetD launchd service..."
+    log_info "Installing fleetd launchd service..."
     
     local plist_file="$HOME/Library/LaunchAgents/sh.fleetd.${service_type}.plist"
     
@@ -311,7 +311,7 @@ EOF
     # Load the service
     launchctl load "$plist_file"
     
-    log_success "FleetD $service_type service installed"
+    log_success "fleetd $service_type service installed"
     echo
     echo "To start the service:"
     echo "  launchctl start sh.fleetd.${service_type}"
@@ -331,7 +331,7 @@ create_default_config() {
     case "$service_type" in
         agent)
             cat <<EOF | sudo tee "$config_path" > /dev/null
-# FleetD Agent Configuration
+# fleetd Agent Configuration
 
 server:
   url: "https://api.fleetd.sh"
@@ -360,7 +360,7 @@ EOF
         
         platform-api)
             cat <<EOF | sudo tee "$config_path" > /dev/null
-# FleetD Platform API Configuration
+# fleetd Platform API Configuration
 
 server:
   host: "0.0.0.0"
@@ -378,7 +378,7 @@ auth:
 tls:
   mode: tls
   auto_generate: true
-  organization: "FleetD"
+  organization: "fleetd"
   common_name: "platform-api.local"
   
 logging:
@@ -436,7 +436,7 @@ main() {
             ;;
         
         *)
-            echo "FleetD Service Installer"
+            echo "fleetd Service Installer"
             echo
             echo "Usage: $0 [install|uninstall] [agent|platform-api|device-api] [config-path]"
             echo

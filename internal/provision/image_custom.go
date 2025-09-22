@@ -166,7 +166,7 @@ func (p *CustomImageProvider) downloadChecksum() (string, error) {
 }
 
 func (p *CustomImageProvider) writeFleetdConfig(bootPath string, config *Config) error {
-	fleetdYAML := fmt.Sprintf(`# FleetD Agent Configuration
+	fleetdYAML := fmt.Sprintf(`# fleetd Agent Configuration
 agent:
   id: %s
   name: %s
