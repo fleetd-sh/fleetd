@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import "./env"; // Validate env vars at build time
 
 const nextConfig: NextConfig = {
+  output: "standalone", // Enable standalone output for Docker
   experimental: {
     reactCompiler: false, // We'll enable this when React Compiler is stable
     serverActions: {

@@ -1,51 +1,29 @@
-bin/
-.DS_Store
-
-# Temporary files
-tmp/
+# Fleet
+.env
 *.log
-*.db
-*.db-wal
-*.db-shm
+data/
 
-# editor
-.idea/
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
-.settings/
-.cursorrules
-.claude/
+.idea/
+*.swp
+*.swo
 
-# coverage
-**/*.cov
+# Build
+dist/
+build/
+*.exe
+fleetd
+fleet
 
-# env
-.env*
+# Dependencies
+node_modules/
+vendor/
 
-# closed-source
-platform/
-
-# Cloud/Proprietary features (to be extracted to separate repo later)
-/cloud/
-
-# Certificates (never commit these)
-certs/
-*.pem
-*.key
-*.crt
-*.cer
-
-# Binary files
-*.so
-*.dylib
-*.dll
-
-# Test data
-test/e2e/testdata/fleetd
-
-# Wiki submodule (when added)
-#wiki/
-.zed/
-
-# Next.js build output
-web/.next/
-web/out/
+# Testing
+coverage/
+*.test

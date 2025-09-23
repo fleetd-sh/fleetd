@@ -34,14 +34,15 @@ This command starts:
   - Loki (log aggregation)
   - Valkey (caching and rate limiting)
   - Traefik (API gateway)
-  - Fleet server`,
+  - Fleet server (platform & device APIs)
+  - Studio (web UI dashboard)`,
 		RunE: runStart,
 	}
 
 	cmd.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "Services to exclude (e.g., postgres,loki)")
 	cmd.Flags().BoolVarP(&detach, "detach", "d", true, "Run services in background")
 	cmd.Flags().BoolVar(&reset, "reset", false, "Reset all data and regenerate secrets")
-	cmd.Flags().BoolVar(&noWeb, "no-web", false, "Don't start the web UI")
+	cmd.Flags().BoolVar(&noWeb, "no-studio", false, "Don't start the Studio web UI")
 	cmd.Flags().BoolVar(&noServer, "no-server", false, "Don't start the Fleet server")
 	cmd.Flags().IntVar(&exposePort, "expose-port", 8080, "Port to expose the Fleet API")
 
@@ -103,8 +104,17 @@ func runStart(cmd *cobra.Command, args []string) error {
 	for _, service := range activeServices {
 		printInfo("Starting %s...", service)
 		if err := startService(service, secrets, projectRoot); err != nil {
-			printError("Failed to start %s: %v", service, err)
-			return err
+			errorMsg := getDockerError(err, service)
+			if errorMsg != "" {
+				printError(errorMsg)
+			} else {
+				printError("Failed to start %s: %v", service, err)
+			}
+			// Continue with other services if it's not a critical service
+			if service == "postgres" || service == "platform-api" || service == "device-api" {
+				return err
+			}
+			printWarning("Continuing without %s...", service)
 		}
 	}
 
@@ -336,6 +346,7 @@ func startService(service string, secrets map[string]string, projectRoot string)
 			return nil
 		}
 		// Remove failed container
+		printInfo("Cleaning up existing container...")
 		exec.Command("docker", "rm", "-f", containerName).Run()
 	}
 
@@ -419,22 +430,45 @@ func startLoki(containerName string) error {
 }
 
 func startTraefik(containerName, projectRoot string) error {
-	cmd := exec.Command("docker", "run", "-d",
+	// Find available port for Traefik dashboard
+	traefikPort := findAvailablePort(8080)
+	if traefikPort == 0 {
+		printWarning("Could not find available port for Traefik dashboard, using default 8080")
+		traefikPort = 8080
+	}
+
+	if traefikPort != 8080 {
+		printInfo("Using port %d for Traefik dashboard (8080 was occupied)", traefikPort)
+	}
+
+	// Try with simplified configuration without Docker socket
+	// This avoids permission issues on macOS and still works for basic routing
+	err := runDockerCommand(
+		"run", "-d",
 		"--name", containerName,
 		"--network", "fleetd-network",
 		"-p", "80:80",
-		"-p", "443:443",
-		"-p", "8080:8080",
-		"-v", "/var/run/docker.sock:/var/run/docker.sock:ro",
+		"-p", fmt.Sprintf("%d:8080", traefikPort), // Map to available port
 		"--restart", "unless-stopped",
 		"traefik:v3.0",
 		"--api.insecure=true",
-		"--providers.docker=true",
-		"--providers.docker.exposedbydefault=false",
+		"--providers.docker=false", // Disable Docker provider to avoid socket issues
+		"--providers.file.directory=/etc/traefik/dynamic", // Use file provider instead
 		"--entrypoints.web.address=:80",
-		"--entrypoints.websecure.address=:443",
 	)
-	return cmd.Run()
+
+	if err != nil {
+		// Provide helpful error message
+		if strings.Contains(err.Error(), "Unable to find image") {
+			printInfo("Pulling Traefik image...")
+			if pullErr := runDockerCommand("pull", "traefik:v3.0"); pullErr == nil {
+				// Retry after pulling
+				return startTraefik(containerName, projectRoot)
+			}
+		}
+		return fmt.Errorf(getDockerError(err, "Traefik"))
+	}
+	return nil
 }
 
 func startPlatformAPI(containerName string, secrets map[string]string, projectRoot string) error {
@@ -505,16 +539,30 @@ func startDeviceAPI(containerName string, secrets map[string]string, projectRoot
 }
 
 func startFleetWeb(containerName, projectRoot string) error {
+	// First, build the studio image
+	studioPath := filepath.Join(projectRoot, "studio")
+	if _, err := os.Stat(filepath.Join(studioPath, "Dockerfile")); err == nil {
+		// Build the Docker image for studio
+		printInfo("Building studio image...")
+		buildCmd := exec.Command("docker", "build", "-t", "fleetd-studio:latest", studioPath)
+		if output, err := buildCmd.CombinedOutput(); err != nil {
+			printInfo("Build output: %s", string(output))
+			return fmt.Errorf("failed to build studio image: %w", err)
+		}
+	}
+
+	// Run the studio container
 	cmd := exec.Command("docker", "run", "-d",
 		"--name", containerName,
 		"--network", "fleetd-network",
 		"-p", "3000:3000",
-		"-v", fmt.Sprintf("%s/web:/app", projectRoot),
-		"-w", "/app",
+		"-e", "NODE_ENV=production",
 		"-e", "NEXT_PUBLIC_API_URL=http://localhost:8090",
+		"-e", "BACKEND_URL=http://fleetd-platform-api:8090",
+		"-e", "NEXT_PUBLIC_DEVICE_API_URL=http://localhost:8081",
+		"-e", "DEVICE_API_URL=http://fleetd-device-api:8080",
 		"--restart", "unless-stopped",
-		"node:20-alpine",
-		"sh", "-c", "npm install && npm run dev",
+		"fleetd-studio:latest",
 	)
 	return cmd.Run()
 }
@@ -536,13 +584,23 @@ func runMigrations(projectRoot string) error {
 
 func displayStartupInfo(secrets map[string]string) {
 	printHeader("Service URLs")
-	fmt.Printf("  %s Web Dashboard:    %s\n", green("•"), cyan("http://localhost:3000"))
+	fmt.Printf("  %s Studio Dashboard: %s\n", green("•"), cyan("http://localhost:3000"))
 	fmt.Printf("  %s Platform API:     %s\n", green("•"), cyan("http://localhost:8090"))
 	fmt.Printf("  %s Device API:       %s\n", green("•"), cyan("http://localhost:8081"))
 	fmt.Printf("  %s API Gateway:      %s\n", green("•"), cyan("http://localhost:80"))
 	fmt.Printf("  %s Metrics (Victoria): %s\n", green("•"), cyan("http://localhost:8428"))
 	fmt.Printf("  %s Logs (Loki):      %s\n", green("•"), cyan("http://localhost:3100"))
-	fmt.Printf("  %s Traefik Dashboard: %s\n", green("•"), cyan("http://localhost:8080"))
+	// Check which port Traefik is actually using
+	traefikPort := 8080
+	if !isPortAvailable(8080) {
+		for _, port := range []int{8081, 8082, 8083} {
+			if !isPortAvailable(port) {
+				traefikPort = port
+				break
+			}
+		}
+	}
+	fmt.Printf("  %s Traefik Dashboard: %s\n", green("•"), cyan(fmt.Sprintf("http://localhost:%d", traefikPort)))
 
 	fmt.Println()
 	printHeader("Credentials")

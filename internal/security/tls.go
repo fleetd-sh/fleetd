@@ -282,12 +282,12 @@ func (m *TLSManager) generateServerCert(caCert *x509.Certificate, caKey *rsa.Pri
 			PostalCode:    []string{""},
 			CommonName:    m.config.CommonName,
 		},
-		NotBefore:    time.Now(),
-		NotAfter:     time.Now().AddDate(0, 0, m.config.ValidDays),
-		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		IPAddresses:  []net.IP{},
-		DNSNames:     []string{},
+		NotBefore:   time.Now(),
+		NotAfter:    time.Now().AddDate(0, 0, m.config.ValidDays),
+		KeyUsage:    x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		IPAddresses: []net.IP{},
+		DNSNames:    []string{},
 	}
 
 	// Add hosts

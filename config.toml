@@ -1,43 +1,32 @@
 # Fleet Project Configuration
+# WARNING: This file contains generated secrets. Keep it secure and never commit to version control!
+# For production, use environment variables or a secure secret management system.
 
 [project]
-id = "fleetd-dev"
-name = "fleetd Development"
+id = "test"
+name = "test"
 
-# Device API - High-volume device traffic (metrics, logs, telemetry, registration)
-[device_api]
+[api]
 enabled = true
 port = 8080
 host = "localhost"
-# Device API receives all device communications and routes data to backends
-
-# Platform API - Management operations (CLI, Web UI, third-party integrations)
-[platform_api]
-enabled = true
-port = 8090
-host = "localhost"
-# For remote deployment, you can use:
-# host = "fleetd.molland.sh"  # Will use https:// automatically
-# port = 443                   # Optional, defaults to 443 for https
-# OR use a full URL:
-# url = "https://fleetd.molland.sh"
-# Platform API manages fleets, deployments, and analytics without being burdened by device traffic
 
 [db]
 port = 5432
 host = "localhost"
 name = "fleetd"
 user = "fleetd"
-# password = "" # Set via environment variable POSTGRES_PASSWORD for production
+# IMPORTANT: Change this password before production use!
+# Generated password (base64 encoded):
+password = "GKvNf5dioe5eiXVcvSuzjFowd8Or7J_WV2IKIsWkmYA="
 
 [stack]
-# Services to start with 'fleet start'
 services = [
-  "postgres",
-  "victoriametrics",
   "loki",
   "valkey",
-  "traefik"
+  "traefik",
+  "postgres",
+  "victoriametrics"
 ]
 
 [gateway]
@@ -50,7 +39,9 @@ loki_port = 3100
 grafana_port = 3001
 
 [auth]
-# jwt_secret = "" # Set via environment variable JWT_SECRET for production
+# CRITICAL: This JWT secret is auto-generated. Store it securely!
+# For production, use environment variable: FLEETD_JWT_SECRET
+jwt_secret = "hFIIOpqeBcuaefF8eJ7ApNdMxLCYGSTfVwRhjkMPjCJ66X3ZAEouDISHhIWiPnoK"
 api_keys = []
 
 [provisioning]
@@ -59,11 +50,7 @@ default_user = "pi"
 
 # Environment-specific overrides
 [environments.staging]
-device_api.url = "https://device-staging.fleetd.sh"
-control_api.url = "https://api-staging.fleetd.sh"
-db.host = "staging-db.fleetd.sh"
+api.url = "https://staging.fleet.example.com"
 
 [environments.production]
-device_api.url = "https://device.fleetd.sh"
-control_api.url = "https://api.fleetd.sh"
-db.host = "prod-db.fleetd.sh"
+api.url = "https://api.fleet.example.com"

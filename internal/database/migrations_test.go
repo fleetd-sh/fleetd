@@ -19,10 +19,10 @@ import (
 // TestMigrations tests all database migrations
 func TestMigrations(t *testing.T) {
 	tests := []struct {
-		name     string
-		driver   string
-		dsn      string
-		skipCI   bool
+		name   string
+		driver string
+		dsn    string
+		skipCI bool
 	}{
 		{
 			name:   "SQLite",

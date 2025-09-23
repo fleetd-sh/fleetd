@@ -52,10 +52,10 @@ func main() {
 		}
 
 		data := struct {
-			Title string
+			Title  string
 			APIURL string
 		}{
-			Title: "fleetd API Documentation",
+			Title:  "fleetd API Documentation",
 			APIURL: "/openapi.json",
 		}
 

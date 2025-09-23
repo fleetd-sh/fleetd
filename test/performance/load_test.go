@@ -55,14 +55,14 @@ type LoadTester struct {
 
 // MetricsCollector collects performance metrics
 type MetricsCollector struct {
-	mu               sync.RWMutex
-	latencies        []time.Duration
-	statusCodes      map[int]int64
-	totalBytes       int64
-	successCount     int64
-	failureCount     int64
-	startTime        time.Time
-	endTime          time.Time
+	mu           sync.RWMutex
+	latencies    []time.Duration
+	statusCodes  map[int]int64
+	totalBytes   int64
+	successCount int64
+	failureCount int64
+	startTime    time.Time
+	endTime      time.Time
 }
 
 // NewLoadTester creates a new load tester

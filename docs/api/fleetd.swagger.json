@@ -39,6 +39,12 @@
       "name": "FleetService"
     },
     {
+      "name": "SettingsService"
+    },
+    {
+      "name": "TelemetryService"
+    },
+    {
       "name": "UpdateService"
     },
     {
@@ -904,6 +910,18 @@
         }
       }
     },
+    "fleetdv1GetTelemetryResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TelemetryData"
+          }
+        }
+      }
+    },
     "fleetdv1ListBinariesResponse": {
       "type": "object",
       "properties": {
@@ -979,6 +997,34 @@
         "mtu": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "fleetdv1OrganizationSettings": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "contactEmail": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "logoUrl": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -1188,6 +1234,18 @@
         }
       }
     },
+    "publicv1GetTelemetryResponse": {
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TelemetryPoint"
+          }
+        }
+      }
+    },
     "publicv1ListDevicesResponse": {
       "type": "object",
       "properties": {
@@ -1252,6 +1310,36 @@
         "mtu": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "publicv1OrganizationSettings": {
+      "type": "object",
+      "properties": {
+        "require2fa": {
+          "type": "boolean"
+        },
+        "allowedDomains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ssoEnabled": {
+          "type": "boolean"
+        },
+        "ssoProviderId": {
+          "type": "string"
+        },
+        "sessionTimeoutMinutes": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ipWhitelist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1405,6 +1493,130 @@
           "type": "string"
         }
       }
+    },
+    "v1APISettings": {
+      "type": "object",
+      "properties": {
+        "apiKey": {
+          "type": "string"
+        },
+        "rateLimitPerMinute": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "rateLimitPerHour": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "corsSettings": {
+          "$ref": "#/definitions/v1CORSSettings"
+        },
+        "apiKeyCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1AdvancedSettings": {
+      "type": "object",
+      "properties": {
+        "dataRetention": {
+          "$ref": "#/definitions/v1DataRetention"
+        },
+        "experimentalFeatures": {
+          "$ref": "#/definitions/v1ExperimentalFeatures"
+        },
+        "customConfig": {
+          "type": "object"
+        }
+      }
+    },
+    "v1Alert": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1AlertType"
+        },
+        "threshold": {
+          "type": "number",
+          "format": "double"
+        },
+        "condition": {
+          "$ref": "#/definitions/v1AlertCondition"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "deviceIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1AlertCondition": {
+      "type": "string",
+      "enum": [
+        "ALERT_CONDITION_UNSPECIFIED",
+        "ALERT_CONDITION_GREATER_THAN",
+        "ALERT_CONDITION_LESS_THAN",
+        "ALERT_CONDITION_EQUAL",
+        "ALERT_CONDITION_NOT_EQUAL"
+      ],
+      "default": "ALERT_CONDITION_UNSPECIFIED"
+    },
+    "v1AlertThresholds": {
+      "type": "object",
+      "properties": {
+        "cpuUsagePercent": {
+          "type": "number",
+          "format": "double"
+        },
+        "memoryUsagePercent": {
+          "type": "number",
+          "format": "double"
+        },
+        "diskUsagePercent": {
+          "type": "number",
+          "format": "double"
+        },
+        "offlineDurationMinutes": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1AlertType": {
+      "type": "string",
+      "enum": [
+        "ALERT_TYPE_UNSPECIFIED",
+        "ALERT_TYPE_CPU",
+        "ALERT_TYPE_MEMORY",
+        "ALERT_TYPE_DISK",
+        "ALERT_TYPE_NETWORK",
+        "ALERT_TYPE_TEMPERATURE",
+        "ALERT_TYPE_DEVICE_OFFLINE",
+        "ALERT_TYPE_CUSTOM"
+      ],
+      "default": "ALERT_TYPE_UNSPECIFIED"
     },
     "v1AllAtOnceStrategy": {
       "type": "object",
@@ -1711,6 +1923,32 @@
         }
       }
     },
+    "v1CORSSettings": {
+      "type": "object",
+      "properties": {
+        "allowedOrigins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowCredentials": {
+          "type": "boolean"
+        },
+        "allowedMethods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowedHeaders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "v1CanaryStrategy": {
       "type": "object",
       "properties": {
@@ -1909,6 +2147,14 @@
         }
       }
     },
+    "v1ConfigureAlertResponse": {
+      "type": "object",
+      "properties": {
+        "alert": {
+          "$ref": "#/definitions/v1Alert"
+        }
+      }
+    },
     "v1ConfigureDeviceResponse": {
       "type": "object",
       "properties": {
@@ -2027,6 +2273,41 @@
       "properties": {
         "update": {
           "$ref": "#/definitions/v1Update"
+        }
+      }
+    },
+    "v1DataRetention": {
+      "type": "object",
+      "properties": {
+        "telemetryDays": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "logsDays": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "auditLogsDays": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "backupsDays": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1DeleteAlertResponse": {
+      "type": "object"
+    },
+    "v1DeleteAllDataResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string"
         }
       }
     },
@@ -2368,6 +2649,29 @@
         }
       }
     },
+    "v1EmailNotifications": {
+      "type": "object",
+      "properties": {
+        "deviceOfflineAlerts": {
+          "type": "boolean"
+        },
+        "deploymentStatusUpdates": {
+          "type": "boolean"
+        },
+        "securityAlerts": {
+          "type": "boolean"
+        },
+        "weeklySummary": {
+          "type": "boolean"
+        },
+        "recipientEmails": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "v1Event": {
       "type": "object",
       "properties": {
@@ -2416,6 +2720,39 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "v1ExperimentalFeatures": {
+      "type": "object",
+      "properties": {
+        "betaFeaturesEnabled": {
+          "type": "boolean"
+        },
+        "debugModeEnabled": {
+          "type": "boolean"
+        },
+        "enabledFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ExportDataResponse": {
+      "type": "object",
+      "properties": {
+        "downloadUrl": {
+          "type": "string"
+        },
+        "sizeBytes": {
+          "type": "string",
+          "format": "int64"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -2481,6 +2818,22 @@
         }
       },
       "title": "FleetConfig contains fleet-wide configuration"
+    },
+    "v1GetAPISettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1APISettings"
+        }
+      }
+    },
+    "v1GetAdvancedSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1AdvancedSettings"
+        }
+      }
     },
     "v1GetApplicationResponse": {
       "type": "object",
@@ -2731,6 +3084,30 @@
         }
       }
     },
+    "v1GetLogsResponse": {
+      "type": "object",
+      "properties": {
+        "logs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TelemetryLogEntry"
+          }
+        }
+      }
+    },
+    "v1GetMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1MetricData"
+          }
+        }
+      }
+    },
     "v1GetNodeStatusResponse": {
       "type": "object",
       "properties": {
@@ -2749,11 +3126,27 @@
         }
       }
     },
+    "v1GetNotificationSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1NotificationSettings"
+        }
+      }
+    },
     "v1GetOrganizationResponse": {
       "type": "object",
       "properties": {
         "organization": {
           "$ref": "#/definitions/v1Organization"
+        }
+      }
+    },
+    "v1GetOrganizationSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/fleetdv1OrganizationSettings"
         }
       }
     },
@@ -2789,6 +3182,14 @@
       },
       "title": "SSO messages"
     },
+    "v1GetSecuritySettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1SecuritySettings"
+        }
+      }
+    },
     "v1GetSyncConfigResponse": {
       "type": "object",
       "properties": {
@@ -2817,18 +3218,6 @@
         }
       },
       "title": "Response with sync configuration"
-    },
-    "v1GetTelemetryResponse": {
-      "type": "object",
-      "properties": {
-        "points": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1TelemetryPoint"
-          }
-        }
-      }
     },
     "v1GetUpdateAnalyticsResponse": {
       "type": "object",
@@ -3063,6 +3452,18 @@
         }
       }
     },
+    "v1ListAlertsResponse": {
+      "type": "object",
+      "properties": {
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Alert"
+          }
+        }
+      }
+    },
     "v1ListApplicationsResponse": {
       "type": "object",
       "properties": {
@@ -3224,6 +3625,18 @@
       },
       "title": "Log entry"
     },
+    "v1LogLevel": {
+      "type": "string",
+      "enum": [
+        "LOG_LEVEL_UNSPECIFIED",
+        "LOG_LEVEL_DEBUG",
+        "LOG_LEVEL_INFO",
+        "LOG_LEVEL_WARN",
+        "LOG_LEVEL_ERROR",
+        "LOG_LEVEL_FATAL"
+      ],
+      "default": "LOG_LEVEL_UNSPECIFIED"
+    },
     "v1LoginResponse": {
       "type": "object",
       "properties": {
@@ -3328,6 +3741,31 @@
         }
       },
       "title": "Metric data point"
+    },
+    "v1MetricData": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        },
+        "deviceId": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
     },
     "v1MetricSeries": {
       "type": "object",
@@ -3450,6 +3888,20 @@
       },
       "title": "NodeStatus represents the status of a cluster node"
     },
+    "v1NotificationSettings": {
+      "type": "object",
+      "properties": {
+        "emailNotifications": {
+          "$ref": "#/definitions/v1EmailNotifications"
+        },
+        "webhookSettings": {
+          "$ref": "#/definitions/v1WebhookSettings"
+        },
+        "alertThresholds": {
+          "$ref": "#/definitions/v1AlertThresholds"
+        }
+      }
+    },
     "v1Organization": {
       "type": "object",
       "properties": {
@@ -3477,40 +3929,10 @@
           "format": "date-time"
         },
         "settings": {
-          "$ref": "#/definitions/v1OrganizationSettings"
+          "$ref": "#/definitions/publicv1OrganizationSettings"
         }
       },
       "title": "Organization represents a tenant"
-    },
-    "v1OrganizationSettings": {
-      "type": "object",
-      "properties": {
-        "require2fa": {
-          "type": "boolean"
-        },
-        "allowedDomains": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "ssoEnabled": {
-          "type": "boolean"
-        },
-        "ssoProviderId": {
-          "type": "string"
-        },
-        "sessionTimeoutMinutes": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "ipWhitelist": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
     },
     "v1PasswordCredential": {
       "type": "object",
@@ -3520,6 +3942,31 @@
         },
         "password": {
           "type": "string"
+        }
+      }
+    },
+    "v1PasswordPolicy": {
+      "type": "object",
+      "properties": {
+        "minLength": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "requireUppercase": {
+          "type": "boolean"
+        },
+        "requireLowercase": {
+          "type": "boolean"
+        },
+        "requireNumbers": {
+          "type": "boolean"
+        },
+        "requireSpecialChars": {
+          "type": "boolean"
+        },
+        "expiryDays": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -3606,6 +4053,18 @@
         "expiresIn": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "v1RegenerateAPIKeyResponse": {
+      "type": "object",
+      "properties": {
+        "newApiKey": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -3902,6 +4361,33 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "v1SecuritySettings": {
+      "type": "object",
+      "properties": {
+        "twoFactorRequired": {
+          "type": "boolean"
+        },
+        "sessionTimeoutMinutes": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ipWhitelistEnabled": {
+          "type": "boolean"
+        },
+        "allowedIps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "auditLoggingEnabled": {
+          "type": "boolean"
+        },
+        "passwordPolicy": {
+          "$ref": "#/definitions/v1PasswordPolicy"
         }
       }
     },
@@ -4336,11 +4822,77 @@
         }
       }
     },
+    "v1TelemetryData": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "cpuUsage": {
+          "type": "number",
+          "format": "double"
+        },
+        "memoryUsage": {
+          "type": "number",
+          "format": "double"
+        },
+        "diskUsage": {
+          "type": "number",
+          "format": "double"
+        },
+        "networkUsage": {
+          "type": "number",
+          "format": "double"
+        },
+        "temperature": {
+          "type": "number",
+          "format": "double"
+        },
+        "customMetrics": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      }
+    },
     "v1TelemetryEvent": {
       "type": "object",
       "properties": {
         "point": {
           "$ref": "#/definitions/v1TelemetryPoint"
+        }
+      }
+    },
+    "v1TelemetryLogEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "deviceId": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "level": {
+          "$ref": "#/definitions/v1LogLevel"
+        },
+        "message": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
@@ -4432,6 +4984,22 @@
         }
       },
       "title": "Update management messages"
+    },
+    "v1UpdateAPISettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1APISettings"
+        }
+      }
+    },
+    "v1UpdateAdvancedSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1AdvancedSettings"
+        }
+      }
     },
     "v1UpdateCampaign": {
       "type": "object",
@@ -4596,11 +5164,35 @@
         }
       }
     },
+    "v1UpdateNotificationSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1NotificationSettings"
+        }
+      }
+    },
     "v1UpdateOrganizationResponse": {
       "type": "object",
       "properties": {
         "organization": {
           "$ref": "#/definitions/v1Organization"
+        }
+      }
+    },
+    "v1UpdateOrganizationSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/fleetdv1OrganizationSettings"
+        }
+      }
+    },
+    "v1UpdateSecuritySettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1SecuritySettings"
         }
       }
     },
@@ -4719,6 +5311,26 @@
         "USER_ROLE_OWNER"
       ],
       "default": "USER_ROLE_UNSPECIFIED"
+    },
+    "v1WebhookSettings": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "url": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

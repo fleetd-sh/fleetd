@@ -20,11 +20,11 @@ import (
 // APITestSuite tests all API endpoints
 type APITestSuite struct {
 	suite.Suite
-	server      *httptest.Server
-	client      *http.Client
-	jwtToken    string
-	apiKey      string
-	baseURL     string
+	server       *httptest.Server
+	client       *http.Client
+	jwtToken     string
+	apiKey       string
+	baseURL      string
 	testDeviceID string
 	testFleetID  string
 }
@@ -65,8 +65,8 @@ func (s *APITestSuite) setupTestHandler(cfg *server.Config) http.Handler {
 
 	// Create rate limiter
 	rateLimiter, _ := middleware.NewRateLimiter(middleware.RateLimiterConfig{
-		Rate:       10,  // 10 requests per second
-		Burst:      20,  // Allow burst of 20
+		Rate:       10, // 10 requests per second
+		Burst:      20, // Allow burst of 20
 		Expiration: 60 * time.Second,
 	})
 

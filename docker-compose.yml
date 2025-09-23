@@ -140,6 +140,36 @@ services:
       timeout: 5s
       retries: 5
 
+  # Studio - Web UI (Next.js Dashboard)
+  studio:
+    build:
+      context: ./studio
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8090}
+      BACKEND_URL: http://platform-api:8090
+      NEXT_PUBLIC_DEVICE_API_URL: ${PUBLIC_DEVICE_API_URL:-http://localhost:8081}
+      DEVICE_API_URL: http://device-api:8080
+    depends_on:
+      platform-api:
+        condition: service_healthy
+      device-api:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.studio.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.studio.priority=1"
+      - "traefik.http.routers.studio.entrypoints=web"
+      - "traefik.http.services.studio.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Platform API Service (Control Plane)
   platform-api:
     build:

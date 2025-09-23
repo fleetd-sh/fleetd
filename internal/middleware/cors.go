@@ -72,7 +72,7 @@ func ProductionCORSConfig(allowedOrigins []string) *CORSConfig {
 
 	// Stricter settings for production
 	config.AllowCredentials = true // Only if needed
-	config.MaxAge = 600             // 10 minutes
+	config.MaxAge = 600            // 10 minutes
 	config.Debug = false
 	config.AllowPrivateNetwork = false
 

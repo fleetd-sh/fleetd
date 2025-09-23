@@ -17,6 +17,7 @@ import (
 	"fleetd.sh/gen/fleetd/v1/fleetpbconnect"
 	"fleetd.sh/gen/public/v1/publicv1connect"
 	"fleetd.sh/internal/database"
+	"fleetd.sh/internal/services"
 	"fleetd.sh/internal/metrics"
 	"fleetd.sh/internal/middleware"
 	"fleetd.sh/internal/security"
@@ -228,7 +229,7 @@ func (s *Server) Run() error {
 		// Original Connect-RPC only setup
 		// Create JWT manager for auth service
 		jwtManager, err := security.NewJWTManager(&security.JWTConfig{
-			SigningKey:       []byte(s.config.SecretKey),
+			SigningKey:      []byte(s.config.SecretKey),
 			Issuer:          "fleetd",
 			AccessTokenTTL:  1 * time.Hour,
 			RefreshTokenTTL: 24 * time.Hour * 7,
@@ -237,17 +238,24 @@ func (s *Server) Run() error {
 			return fmt.Errorf("failed to create JWT manager: %w", err)
 		}
 
+		// Create database wrapper for services
+		dbWrapper := &database.DB{DB: s.db}
+
 		// Create service handlers
 		fleetService := NewFleetService(s.db, s.deviceAPI)
 		deviceService := NewDeviceService(s.db, s.deviceAPI)
 		analyticsService := NewAnalyticsService(s.db)
 		authService := NewAuthService(s.db, jwtManager)
+		telemetryService := services.NewTelemetryService(dbWrapper)
+		settingsService := services.NewSettingsService(dbWrapper)
 
 		// Register Connect handlers
 		fleetPath, fleetHandler := fleetpbconnect.NewFleetServiceHandler(fleetService)
 		devicePath, deviceHandler := fleetpbconnect.NewDeviceServiceHandler(deviceService)
 		analyticsPath, analyticsHandler := fleetpbconnect.NewAnalyticsServiceHandler(analyticsService)
 		authPath, authHandler := publicv1connect.NewAuthServiceHandler(authService)
+		telemetryPath, telemetryHandler := fleetpbconnect.NewTelemetryServiceHandler(telemetryService)
+		settingsPath, settingsHandler := fleetpbconnect.NewSettingsServiceHandler(settingsService)
 
 		// Apply middleware and register routes
 		// Auth service doesn't need auth middleware on Login endpoint
@@ -255,6 +263,8 @@ func (s *Server) Run() error {
 		mux.Handle(fleetPath, withMiddleware(fleetHandler, authMiddleware, loggingMiddleware))
 		mux.Handle(devicePath, withMiddleware(deviceHandler, authMiddleware, loggingMiddleware))
 		mux.Handle(analyticsPath, withMiddleware(analyticsHandler, authMiddleware, loggingMiddleware))
+		mux.Handle(telemetryPath, withMiddleware(telemetryHandler, authMiddleware, loggingMiddleware))
+		mux.Handle(settingsPath, withMiddleware(settingsHandler, authMiddleware, loggingMiddleware))
 	}
 
 	// Health check endpoints

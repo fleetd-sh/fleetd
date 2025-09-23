@@ -436,8 +436,8 @@ func TestRateLimiter_ConcurrentAccess(t *testing.T) {
 
 func TestRateLimiter_BurstBehavior(t *testing.T) {
 	rl, err := NewRateLimiter(RateLimiterConfig{
-		Rate:       2,  // 2 per second
-		Burst:      5,  // Allow burst of 5
+		Rate:       2, // 2 per second
+		Burst:      5, // Allow burst of 5
 		Expiration: time.Hour,
 	})
 	require.NoError(t, err)

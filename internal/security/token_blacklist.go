@@ -190,8 +190,8 @@ type RedisTokenBlacklist struct {
 
 // TokenBlacklistManager manages token revocation with fallback support
 type TokenBlacklistManager struct {
-	primary   TokenBlacklist
-	fallback  TokenBlacklist
+	primary    TokenBlacklist
+	fallback   TokenBlacklist
 	jwtManager *JWTManager
 }
 

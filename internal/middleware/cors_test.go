@@ -64,13 +64,13 @@ func TestCORSConfig_Validation(t *testing.T) {
 
 func TestCORSMiddleware(t *testing.T) {
 	tests := []struct {
-		name               string
-		config             *CORSConfig
-		requestOrigin      string
-		requestMethod      string
-		expectAllowed      bool
-		expectCredentials  bool
-		expectAllowOrigin  string
+		name              string
+		config            *CORSConfig
+		requestOrigin     string
+		requestMethod     string
+		expectAllowed     bool
+		expectCredentials bool
+		expectAllowOrigin string
 	}{
 		{
 			name: "production config - allowed origin",
@@ -78,40 +78,40 @@ func TestCORSMiddleware(t *testing.T) {
 				"https://app.example.com",
 				"https://admin.example.com",
 			}),
-			requestOrigin:      "https://app.example.com",
-			requestMethod:      "GET",
-			expectAllowed:      true,
-			expectCredentials:  true,
-			expectAllowOrigin:  "https://app.example.com",
+			requestOrigin:     "https://app.example.com",
+			requestMethod:     "GET",
+			expectAllowed:     true,
+			expectCredentials: true,
+			expectAllowOrigin: "https://app.example.com",
 		},
 		{
 			name: "production config - disallowed origin",
 			config: ProductionCORSConfig([]string{
 				"https://app.example.com",
 			}),
-			requestOrigin:      "https://evil.com",
-			requestMethod:      "GET",
-			expectAllowed:      false,
-			expectCredentials:  false,
-			expectAllowOrigin:  "",
+			requestOrigin:     "https://evil.com",
+			requestMethod:     "GET",
+			expectAllowed:     false,
+			expectCredentials: false,
+			expectAllowOrigin: "",
 		},
 		{
-			name:               "development config - localhost",
-			config:             DevelopmentCORSConfig(),
-			requestOrigin:      "http://localhost:3000",
-			requestMethod:      "GET",
-			expectAllowed:      true,
-			expectCredentials:  true,
-			expectAllowOrigin:  "http://localhost:3000",
+			name:              "development config - localhost",
+			config:            DevelopmentCORSConfig(),
+			requestOrigin:     "http://localhost:3000",
+			requestMethod:     "GET",
+			expectAllowed:     true,
+			expectCredentials: true,
+			expectAllowOrigin: "http://localhost:3000",
 		},
 		{
-			name:               "development config - 127.0.0.1",
-			config:             DevelopmentCORSConfig(),
-			requestOrigin:      "http://127.0.0.1:3001",
-			requestMethod:      "POST",
-			expectAllowed:      true,
-			expectCredentials:  true,
-			expectAllowOrigin:  "http://127.0.0.1:3001",
+			name:              "development config - 127.0.0.1",
+			config:            DevelopmentCORSConfig(),
+			requestOrigin:     "http://127.0.0.1:3001",
+			requestMethod:     "POST",
+			expectAllowed:     true,
+			expectCredentials: true,
+			expectAllowOrigin: "http://127.0.0.1:3001",
 		},
 	}
 

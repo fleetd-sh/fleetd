@@ -33,15 +33,15 @@ var staticFS embed.FS
 
 // Config holds the server configuration
 type Config struct {
-	Port           int
-	DatabasePath   string
-	EnableMDNS     bool
-	MDNSPort       int
-	ServerURL      string
-	SecretKey      string
-	ValkeyAddr     string
-	RateLimitReq   int
-	RateLimitWin   int
+	Port         int
+	DatabasePath string
+	EnableMDNS   bool
+	MDNSPort     int
+	ServerURL    string
+	SecretKey    string
+	ValkeyAddr   string
+	RateLimitReq int
+	RateLimitWin int
 
 	// TLS Configuration
 	TLSMode string // "none", "tls", or "mtls"

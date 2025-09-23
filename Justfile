@@ -27,7 +27,7 @@ default:
 # Install all dependencies (Go and Node)
 install:
     go mod download
-    cd web && bun install
+    cd studio && bun install
 
 # Run development servers (backend + frontend)
 dev:
@@ -192,39 +192,39 @@ platform-api-watch:
 
 # Install web dependencies
 web-install:
-    cd web && bun install
+    cd studio && bun install
 
 # Run web development server
 web-dev:
-    cd web && bun dev
+    cd studio && bun dev
 
 # Build web for production
 build-web:
-    cd web && bun run build
+    cd studio && bun run build
 
 # Start production web server
 web-start:
-    cd web && bun start
+    cd studio && bun start
 
 # Run web tests
 test-web:
-    cd web && bun run test
+    cd studio && bun run test
 
 # Type check TypeScript
 test-web-types:
-    cd web && bun run typecheck
+    cd studio && bun run typecheck
 
 # Format web code with Biome
 format-web:
-    cd web && bun run format
+    cd studio && bun run format
 
 # Lint web code with Biome
 lint-web:
-    cd web && bun run lint
+    cd studio && bun run lint
 
 # Analyze web bundle size
 web-analyze:
-    cd web && ANALYZE=true bun run build
+    cd studio && ANALYZE=true bun run build
 
 # Proto & Code Generation
 
@@ -324,12 +324,12 @@ check-tools:
 update-deps:
     go get -u ./...
     go mod tidy
-    cd web && bun update
+    cd studio && bun update
 
 # Run security audit
 audit:
     go list -json -m all | nancy sleuth
-    cd web && bun audit
+    cd studio && bun audit
 
 # Open wiki documentation
 docs:

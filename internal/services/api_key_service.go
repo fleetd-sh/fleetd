@@ -75,8 +75,8 @@ func (s *APIKeyService) CreateAPIKey(ctx context.Context, req *CreateAPIKeyReque
 	}
 
 	return &CreateAPIKeyResponse{
-		APIKey:    apiKey,
-		RawKey:    rawKey, // Return raw key only on creation
+		APIKey: apiKey,
+		RawKey: rawKey, // Return raw key only on creation
 	}, nil
 }
 

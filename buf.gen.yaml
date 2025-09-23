@@ -18,12 +18,12 @@ plugins:
       - paths=source_relative
 
   - remote: buf.build/connectrpc/es
-    out: web/lib/api/gen
+    out: studio/lib/api/gen
     opt:
       - target=ts
 
   - remote: buf.build/bufbuild/es
-    out: web/lib/api/gen
+    out: studio/lib/api/gen
     opt:
       - target=ts
 

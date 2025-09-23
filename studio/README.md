@@ -37,7 +37,7 @@ Modern, real-time web dashboard for fleetd management built with Next.js 15.
 ### Installation
 
 ```bash
-cd web
+cd studio
 bun install
 ```
 

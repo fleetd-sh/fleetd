@@ -22,23 +22,19 @@ export default async function DashboardPage() {
   const initialData = await getInitialData();
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">FleetD Management Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Monitor and manage your fleet of devices in real-time
-          </p>
-        </div>
-      </header>
+    <main className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
+          Monitor and manage your fleet of devices in real-time
+        </p>
+      </div>
 
-      <main className="container mx-auto px-4 py-8">
-        <ErrorBoundary>
-          <Suspense fallback={<DashboardSkeleton />}>
-            <DashboardContent initialData={initialData} />
-          </Suspense>
-        </ErrorBoundary>
-      </main>
-    </div>
+      <ErrorBoundary>
+        <Suspense fallback={<DashboardSkeleton />}>
+          <DashboardContent initialData={initialData} />
+        </Suspense>
+      </ErrorBoundary>
+    </main>
   );
 }

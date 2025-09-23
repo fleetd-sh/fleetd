@@ -47,11 +47,25 @@ func newMigrateUpCmd() *cobra.Command {
 		Short: "Run pending migrations",
 		Long:  `Apply all pending database migrations`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Check if required services are running
+			if err := ensureServicesRunning(true); err != nil {
+				return err
+			}
+
 			printInfo("Running database migrations...")
 
 			// Get database connection
 			db, driver, err := getMigrationDB()
 			if err != nil {
+				// Provide helpful error message based on the error type
+				if strings.Contains(err.Error(), "connection refused") {
+					printError("Cannot connect to PostgreSQL database")
+					printInfo("\nPlease ensure the Fleet platform is running:")
+					printInfo("  fleetctl start")
+					printInfo("\nTo check service status:")
+					printInfo("  fleetctl status")
+					return fmt.Errorf("database not available")
+				}
 				printError("Failed to connect to database: %v", err)
 				return err
 			}
@@ -407,7 +421,6 @@ func newMigrateResetCmd() *cobra.Command {
 
 	return cmd
 }
-
 
 // getMigrationDB returns a database connection suitable for migrations
 func getMigrationDB() (*sql.DB, string, error) {

@@ -49,7 +49,7 @@ const (
 	APIKeyScopeAdmin APIKeyScope = "admin"
 
 	// Special scopes
-	APIKeyScopeDeviceRegister APIKeyScope = "device:register" // For device self-registration
+	APIKeyScopeDeviceRegister  APIKeyScope = "device:register"  // For device self-registration
 	APIKeyScopeDeviceTelemetry APIKeyScope = "device:telemetry" // For sending telemetry data
 )
 

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { DeviceAutoSetup } from "@/components/device-auto-setup";
-import { DeviceList } from "@/components/device-list";
+import { DeviceDataTable } from "@/components/device-data-table";
 import { DeviceStats } from "@/components/device-stats";
 import { ProvisioningGuide } from "@/components/provisioning-guide";
 import { QuickProvision } from "@/components/quick-provision";
@@ -13,6 +13,7 @@ import { TelemetryChart } from "@/components/telemetry-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import type { Device, TelemetryData } from "@/lib/types";
@@ -114,48 +115,104 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
         <QuickProvision />
       </motion.div>
 
-      {/* Main Content Grid */}
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Device List */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+      {/* Main Content with Tabs */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="grid w-full max-w-[400px] grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="devices">Devices</TabsTrigger>
+          <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Device Overview Card */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Device Overview</CardTitle>
+                  <CardDescription>Quick status of your fleet</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-8">
+                    <div className="flex items-center">
+                      <div className="ml-4 space-y-1">
+                        <p className="text-sm font-medium leading-none">Total Devices</p>
+                        <p className="text-2xl font-bold">{devices?.length || 0}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="ml-4 space-y-1">
+                        <p className="text-sm font-medium leading-none">Online</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {devices?.filter((d) => d.status === "online").length || 0}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="ml-4 space-y-1">
+                        <p className="text-sm font-medium leading-none">Offline</p>
+                        <p className="text-2xl font-bold text-gray-600">
+                          {devices?.filter((d) => d.status !== "online").length || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Telemetry Chart */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Telemetry</CardTitle>
+                  <CardDescription>Real-time metrics from your devices</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TelemetryChart data={telemetry || []} />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="devices" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Connected Devices</CardTitle>
-              <CardDescription>All devices in your fleet</CardDescription>
+              <CardTitle>Device Management</CardTitle>
+              <CardDescription>View and manage all devices in your fleet</CardDescription>
             </CardHeader>
             <CardContent>
-              <DeviceList
+              <DeviceDataTable
                 devices={devices || []}
-                selectedDevice={selectedDevice}
-                onSelectDevice={setSelectedDevice}
+                onSelectDevice={(device) => setSelectedDevice(device.id)}
               />
             </CardContent>
           </Card>
-        </motion.div>
+        </TabsContent>
 
-        {/* Telemetry Chart */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <TabsContent value="telemetry" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>
-                {selectedDevice ? `Telemetry for ${selectedDevice}` : "Recent Telemetry"}
+                {selectedDevice ? `Telemetry for ${selectedDevice}` : "System Telemetry"}
               </CardTitle>
-              <CardDescription>Real-time metrics from your devices</CardDescription>
+              <CardDescription>Detailed metrics and performance data</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="h-[500px]">
               <TelemetryChart data={telemetry || []} />
             </CardContent>
           </Card>
-        </motion.div>
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Provisioning Guide Dialog */}
       <Dialog open={showProvisioningGuide} onOpenChange={setShowProvisioningGuide}>
