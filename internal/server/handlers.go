@@ -47,12 +47,15 @@ func (s *Server) handleDevices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := s.db.Query(`
-		SELECT id, name, type, version, last_seen,
+		SELECT id, name,
+		       COALESCE(os_type, type, '') as os_type,
+		       COALESCE(agent_version, version, '') as agent_version,
+		       COALESCE(last_seen, created_at) as last_seen,
 		       CASE
-		         WHEN datetime('now', '-5 minutes') < last_seen THEN 'online'
+		         WHEN datetime('now', '-5 minutes') < COALESCE(last_seen, created_at) THEN 'online'
 		         ELSE 'offline'
 		       END as status,
-		       metadata
+		       COALESCE(metadata, '{}') as metadata
 		FROM device
 		ORDER BY last_seen DESC
 	`)
@@ -63,12 +66,21 @@ func (s *Server) handleDevices(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var devices []Device
+	devices := []Device{}
 	for rows.Next() {
 		var d Device
-		if err := rows.Scan(&d.ID, &d.Name, &d.Type, &d.Version, &d.LastSeen, &d.Status, &d.Metadata); err != nil {
+		var lastSeenStr string
+		if err := rows.Scan(&d.ID, &d.Name, &d.Type, &d.Version, &lastSeenStr, &d.Status, &d.Metadata); err != nil {
 			slog.Error("Failed to scan device", "error", err)
 			continue
+		}
+		// Parse the timestamp
+		if t, err := time.Parse("2006-01-02 15:04:05", lastSeenStr); err == nil {
+			d.LastSeen = t
+		} else if t, err := time.Parse("2006-01-02T15:04:05Z", lastSeenStr); err == nil {
+			d.LastSeen = t
+		} else {
+			d.LastSeen = time.Now() // Default to now if parsing fails
 		}
 		devices = append(devices, d)
 	}
@@ -171,10 +183,31 @@ func (s *Server) handleTelemetry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Store telemetry data
-	_, err := s.db.Exec(`
+	// Store telemetry data (check if table exists first)
+	var exists bool
+	err := s.db.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'telemetry')").Scan(&exists)
+	if err != nil || !exists {
+		// Table doesn't exist, create it
+		_, err = s.db.Exec(`
+			CREATE TABLE IF NOT EXISTS telemetry (
+				id SERIAL PRIMARY KEY,
+				device_id VARCHAR(255) NOT NULL,
+				timestamp TIMESTAMP NOT NULL,
+				metric_name VARCHAR(255) NOT NULL,
+				metric_value DOUBLE PRECISION,
+				metadata TEXT
+			)
+		`)
+		if err != nil {
+			slog.Error("Failed to create telemetry table", "error", err)
+			http.Error(w, "Failed to store telemetry", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	_, err = s.db.Exec(`
 		INSERT INTO telemetry (device_id, timestamp, metric_name, metric_value, metadata)
-		VALUES (?, ?, ?, ?, ?)
+		VALUES ($1, $2, $3, $4, $5)
 	`, data.DeviceID, data.Timestamp, data.MetricName, data.Value, data.Metadata)
 	if err != nil {
 		slog.Error("Failed to store telemetry", "error", err)
@@ -183,7 +216,7 @@ func (s *Server) handleTelemetry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update device last_seen
-	s.db.Exec("UPDATE device SET last_seen = CURRENT_TIMESTAMP WHERE id = ?", data.DeviceID)
+	s.db.Exec("UPDATE device SET last_seen = CURRENT_TIMESTAMP WHERE id = $1", data.DeviceID)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"status": "stored"})
@@ -203,22 +236,34 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 		limit = "100"
 	}
 
+	// Check if telemetry table exists
+	var exists bool
+	err := s.db.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'telemetry')").Scan(&exists)
+	if err != nil || !exists {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode([]TelemetryData{})
+		return
+	}
+
 	query := `
-		SELECT device_id, timestamp, metric_name, metric_value, metadata
+		SELECT device_id, timestamp, metric_name, metric_value, COALESCE(metadata, '{}')
 		FROM telemetry
 		WHERE 1=1
 	`
 	args := []any{}
+	argNum := 1
 
 	if deviceID != "" {
-		query += " AND device_id = ?"
+		query += fmt.Sprintf(" AND device_id = $%d", argNum)
 		args = append(args, deviceID)
+		argNum++
 	}
 	if metricName != "" {
-		query += " AND metric_name = ?"
+		query += fmt.Sprintf(" AND metric_name = $%d", argNum)
 		args = append(args, metricName)
+		argNum++
 	}
-	query += " ORDER BY timestamp DESC LIMIT ?"
+	query += fmt.Sprintf(" ORDER BY timestamp DESC LIMIT $%d", argNum)
 	args = append(args, limit)
 
 	rows, err := s.db.Query(query, args...)
@@ -348,7 +393,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 	html := `<!DOCTYPE html>
 <html>
 <head>
-    <title>FleetD Management Dashboard</title>
+    <title>fleetd Management Dashboard</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -369,7 +414,7 @@ func (s *Server) handleDashboard(w http.ResponseWriter, r *http.Request) {
 </head>
 <body>
     <div class="container">
-        <h1>FleetD Management Dashboard</h1>
+        <h1>fleetd Management Dashboard</h1>
 
         <div class="card">
             <h2>Fleet Status</h2>

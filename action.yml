@@ -1,0 +1,484 @@
+name: 'fleetd Deploy'
+description: 'Deploy software to your fleet of devices using fleetd'
+author: 'fleetd'
+
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+
+inputs:
+  api_url:
+    description: 'fleetd API URL'
+    required: true
+  api_key:
+    description: 'fleetd API key for authentication'
+    required: true
+
+  # Deployment identification
+  name:
+    description: 'Deployment name'
+    required: true
+  description:
+    description: 'Deployment description'
+    required: false
+    default: 'Deployment from GitHub Actions'
+
+  # Deployment type
+  type:
+    description: 'Deployment type (binary, script, container, config, firmware, package, bundle)'
+    required: true
+    default: 'binary'
+
+  # Payload configuration (depends on type)
+  artifact_url:
+    description: 'URL to download the artifact'
+    required: false
+  artifact_path:
+    description: 'Local path to the artifact'
+    required: false
+  version:
+    description: 'Version of the deployment'
+    required: false
+    default: '${{ github.sha }}'
+  checksum:
+    description: 'Checksum of the artifact'
+    required: false
+
+  # Script specific
+  script_content:
+    description: 'Inline script content (for script deployments)'
+    required: false
+  interpreter:
+    description: 'Script interpreter (e.g., /bin/bash, /usr/bin/python3)'
+    required: false
+    default: '/bin/bash'
+
+  # Container specific
+  container_image:
+    description: 'Container image (for container deployments)'
+    required: false
+  container_name:
+    description: 'Container name to update'
+    required: false
+
+  # Target configuration
+  target_devices:
+    description: 'Comma-separated device IDs'
+    required: false
+  target_groups:
+    description: 'Comma-separated group IDs'
+    required: false
+  target_labels:
+    description: 'Label selector (JSON format)'
+    required: false
+  target_query:
+    description: 'Custom query selector'
+    required: false
+  target_filters:
+    description: 'Target filters (JSON format)'
+    required: false
+  max_devices:
+    description: 'Maximum number of devices to target'
+    required: false
+
+  # Strategy
+  strategy:
+    description: 'Deployment strategy (immediate, rolling, canary, blue-green)'
+    required: false
+    default: 'rolling'
+
+  # Rollout configuration
+  batch_size:
+    description: 'Number of devices per batch'
+    required: false
+    default: '10'
+  pause_seconds:
+    description: 'Pause between batches in seconds'
+    required: false
+    default: '60'
+  canary_size:
+    description: 'Size of canary deployment'
+    required: false
+    default: '1'
+
+  # Health check
+  health_check_enabled:
+    description: 'Enable health checks'
+    required: false
+    default: 'true'
+  health_check_timeout:
+    description: 'Health check timeout in seconds'
+    required: false
+    default: '60'
+
+  # Rollback
+  auto_rollback:
+    description: 'Enable automatic rollback on failure'
+    required: false
+    default: 'true'
+  failure_threshold:
+    description: 'Failure percentage to trigger rollback'
+    required: false
+    default: '0.1'
+
+  # Notifications
+  webhook_urls:
+    description: 'Comma-separated webhook URLs for notifications'
+    required: false
+
+  # Behavior
+  auto_start:
+    description: 'Start deployment immediately'
+    required: false
+    default: 'true'
+  wait_for_completion:
+    description: 'Wait for deployment to complete'
+    required: false
+    default: 'true'
+  timeout_minutes:
+    description: 'Deployment timeout in minutes'
+    required: false
+    default: '60'
+
+  # Environment
+  environment:
+    description: 'Target environment (dev, staging, production)'
+    required: false
+    default: 'production'
+
+outputs:
+  deployment_id:
+    description: 'The ID of the created deployment'
+    value: ${{ steps.deploy.outputs.deployment_id }}
+  status:
+    description: 'Final deployment status'
+    value: ${{ steps.status.outputs.status }}
+  message:
+    description: 'Deployment message'
+    value: ${{ steps.status.outputs.message }}
+  devices_deployed:
+    description: 'Number of devices successfully deployed'
+    value: ${{ steps.status.outputs.devices_deployed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup fleetctl
+      shell: bash
+      run: |
+        echo "Installing fleetctl..."
+        curl -sSL https://fleetd.sh/install | sh
+        echo "$HOME/.fleetd/bin" >> $GITHUB_PATH
+
+    - name: Prepare deployment configuration
+      id: prepare
+      shell: bash
+      run: |
+        cat > deployment.json <<'EOF'
+        {
+          "name": "${{ inputs.name }}",
+          "description": "${{ inputs.description }}",
+          "type": "DEPLOYMENT_TYPE_${{ inputs.type }}",
+          "payload": $(cat <<'PAYLOAD'
+        EOF
+
+        # Build payload based on type
+        case "${{ inputs.type }}" in
+          binary)
+            cat >> deployment.json <<EOF
+            {
+              "binary": {
+                "download_url": "${{ inputs.artifact_url }}",
+                "checksum": "${{ inputs.checksum }}",
+                "version": "${{ inputs.version }}",
+                "restart_on_update": true
+              }
+            }
+        EOF
+            ;;
+          script)
+            if [ -n "${{ inputs.script_content }}" ]; then
+              SCRIPT_CONTENT=$(echo "${{ inputs.script_content }}" | jq -Rs .)
+            else
+              SCRIPT_CONTENT='""'
+            fi
+            cat >> deployment.json <<EOF
+            {
+              "script": {
+                "script_content": ${SCRIPT_CONTENT},
+                "script_url": "${{ inputs.artifact_url }}",
+                "interpreter": "${{ inputs.interpreter }}",
+                "timeout_seconds": 300
+              }
+            }
+        EOF
+            ;;
+          container)
+            cat >> deployment.json <<EOF
+            {
+              "container": {
+                "image": "${{ inputs.container_image }}",
+                "container_name": "${{ inputs.container_name }}",
+                "restart_policy": "RESTART_POLICY_UNLESS_STOPPED"
+              }
+            }
+        EOF
+            ;;
+          *)
+            echo "Unsupported deployment type: ${{ inputs.type }}"
+            exit 1
+            ;;
+        esac
+
+        cat >> deployment.json <<'EOF'
+        PAYLOAD
+        ),
+          "target": $(cat <<'TARGET'
+        EOF
+
+        # Build target selector
+        if [ -n "${{ inputs.target_devices }}" ]; then
+          cat >> deployment.json <<EOF
+            {
+              "devices": {
+                "device_ids": [$(echo "${{ inputs.target_devices }}" | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]
+              }
+            }
+        EOF
+        elif [ -n "${{ inputs.target_groups }}" ]; then
+          cat >> deployment.json <<EOF
+            {
+              "groups": {
+                "group_ids": [$(echo "${{ inputs.target_groups }}" | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]
+              }
+            }
+        EOF
+        elif [ -n "${{ inputs.target_labels }}" ]; then
+          cat >> deployment.json <<EOF
+            {
+              "labels": ${{ inputs.target_labels }}
+            }
+        EOF
+        elif [ -n "${{ inputs.target_query }}" ]; then
+          cat >> deployment.json <<EOF
+            {
+              "query": {
+                "expression": "${{ inputs.target_query }}"
+              }
+            }
+        EOF
+        else
+          echo "No target specified"
+          exit 1
+        fi
+
+        # Add filters if provided
+        if [ -n "${{ inputs.target_filters }}" ]; then
+          cat >> deployment.json <<EOF
+            ,
+            "filters": ${{ inputs.target_filters }}
+        EOF
+        fi
+
+        if [ -n "${{ inputs.max_devices }}" ]; then
+          cat >> deployment.json <<EOF
+            ,
+            "max_devices": ${{ inputs.max_devices }}
+        EOF
+        fi
+
+        cat >> deployment.json <<'EOF'
+        TARGET
+        ),
+          "strategy": "DEPLOYMENT_STRATEGY_${{ inputs.strategy }}",
+          "config": {
+            "rollout": {
+              "batch_size": ${{ inputs.batch_size }},
+              "pause_seconds": ${{ inputs.pause_seconds }},
+              "canary_size": ${{ inputs.canary_size }}
+            },
+            "health_check": {
+              "enabled": ${{ inputs.health_check_enabled }},
+              "timeout_seconds": ${{ inputs.health_check_timeout }}
+            },
+            "rollback": {
+              "auto_rollback": ${{ inputs.auto_rollback }},
+              "failure_threshold": ${{ inputs.failure_threshold }}
+            },
+            "timeout_minutes": ${{ inputs.timeout_minutes }}
+        EOF
+
+        # Add notifications if provided
+        if [ -n "${{ inputs.webhook_urls }}" ]; then
+          cat >> deployment.json <<EOF
+            ,
+            "notifications": {
+              "webhook_urls": [$(echo "${{ inputs.webhook_urls }}" | sed 's/,/","/g' | sed 's/^/"/;s/$/"/')]
+            }
+        EOF
+        fi
+
+        cat >> deployment.json <<EOF
+          },
+          "metadata": {
+            "source": "github-action",
+            "source_ref": "${{ github.run_id }}",
+            "commit_sha": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "repository": "${{ github.repository }}",
+            "triggered_by": "${{ github.actor }}",
+            "environment": "${{ inputs.environment }}",
+            "tags": {
+              "workflow": "${{ github.workflow }}",
+              "run_number": "${{ github.run_number }}",
+              "event": "${{ github.event_name }}"
+            }
+          },
+          "auto_start": ${{ inputs.auto_start }}
+        }
+        EOF
+
+        # Validate JSON
+        jq . deployment.json > /dev/null || (echo "Invalid deployment configuration" && exit 1)
+
+        echo "Deployment configuration prepared"
+
+    - name: Create deployment
+      id: deploy
+      shell: bash
+      env:
+        FLEETD_API_URL: ${{ inputs.api_url }}
+        FLEETD_API_KEY: ${{ inputs.api_key }}
+      run: |
+        echo "Creating deployment..."
+
+        RESPONSE=$(curl -X POST \
+          -H "Authorization: Bearer $FLEETD_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d @deployment.json \
+          "$FLEETD_API_URL/api/v1/deployments")
+
+        DEPLOYMENT_ID=$(echo "$RESPONSE" | jq -r '.deployment.id')
+
+        if [ -z "$DEPLOYMENT_ID" ] || [ "$DEPLOYMENT_ID" = "null" ]; then
+          echo "Failed to create deployment"
+          echo "$RESPONSE" | jq .
+          exit 1
+        fi
+
+        echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+        echo "Deployment created: $DEPLOYMENT_ID"
+
+        # Show warnings if any
+        WARNINGS=$(echo "$RESPONSE" | jq -r '.warnings[]?.message' 2>/dev/null)
+        if [ -n "$WARNINGS" ]; then
+          echo "⚠️  Warnings:"
+          echo "$WARNINGS"
+        fi
+
+    - name: Monitor deployment
+      id: monitor
+      if: inputs.wait_for_completion == 'true'
+      shell: bash
+      env:
+        FLEETD_API_URL: ${{ inputs.api_url }}
+        FLEETD_API_KEY: ${{ inputs.api_key }}
+      run: |
+        DEPLOYMENT_ID="${{ steps.deploy.outputs.deployment_id }}"
+        TIMEOUT_SECONDS=$(( ${{ inputs.timeout_minutes }} * 60 ))
+        START_TIME=$(date +%s)
+
+        echo "Monitoring deployment $DEPLOYMENT_ID..."
+
+        while true; do
+          # Get deployment status
+          RESPONSE=$(curl -s \
+            -H "Authorization: Bearer $FLEETD_API_KEY" \
+            "$FLEETD_API_URL/api/v1/deployments/$DEPLOYMENT_ID/status")
+
+          STATE=$(echo "$RESPONSE" | jq -r '.state')
+          PROGRESS=$(echo "$RESPONSE" | jq -r '.progress')
+
+          if [ -n "$PROGRESS" ] && [ "$PROGRESS" != "null" ]; then
+            TOTAL=$(echo "$PROGRESS" | jq -r '.total_devices')
+            SUCCEEDED=$(echo "$PROGRESS" | jq -r '.succeeded_devices')
+            FAILED=$(echo "$PROGRESS" | jq -r '.failed_devices')
+            PERCENTAGE=$(echo "$PROGRESS" | jq -r '.percentage_complete')
+
+            echo "Progress: ${PERCENTAGE}% - Success: $SUCCEEDED/$TOTAL, Failed: $FAILED"
+          fi
+
+          # Check terminal states
+          case "$STATE" in
+            DEPLOYMENT_STATE_COMPLETED)
+              echo "✅ Deployment completed successfully!"
+              echo "status=completed" >> $GITHUB_OUTPUT
+              echo "devices_deployed=$SUCCEEDED" >> $GITHUB_OUTPUT
+              exit 0
+              ;;
+            DEPLOYMENT_STATE_FAILED|DEPLOYMENT_STATE_CANCELLED|DEPLOYMENT_STATE_ROLLED_BACK)
+              echo "❌ Deployment $STATE"
+              echo "status=$STATE" >> $GITHUB_OUTPUT
+              echo "devices_deployed=$SUCCEEDED" >> $GITHUB_OUTPUT
+
+              # Get failure details
+              EVENTS=$(curl -s \
+                -H "Authorization: Bearer $FLEETD_API_KEY" \
+                "$FLEETD_API_URL/api/v1/deployments/$DEPLOYMENT_ID?include_events=true" \
+                | jq -r '.events[] | select(.severity == "error") | .message')
+
+              if [ -n "$EVENTS" ]; then
+                echo "Errors:"
+                echo "$EVENTS"
+              fi
+
+              exit 1
+              ;;
+          esac
+
+          # Check timeout
+          CURRENT_TIME=$(date +%s)
+          ELAPSED=$((CURRENT_TIME - START_TIME))
+          if [ $ELAPSED -gt $TIMEOUT_SECONDS ]; then
+            echo "⏱️  Deployment timed out after ${{ inputs.timeout_minutes }} minutes"
+            echo "status=timeout" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Wait before next check
+          sleep 10
+        done
+
+    - name: Get final status
+      id: status
+      if: always()
+      shell: bash
+      env:
+        FLEETD_API_URL: ${{ inputs.api_url }}
+        FLEETD_API_KEY: ${{ inputs.api_key }}
+      run: |
+        if [ -n "${{ steps.deploy.outputs.deployment_id }}" ]; then
+          DEPLOYMENT_ID="${{ steps.deploy.outputs.deployment_id }}"
+
+          RESPONSE=$(curl -s \
+            -H "Authorization: Bearer $FLEETD_API_KEY" \
+            "$FLEETD_API_URL/api/v1/deployments/$DEPLOYMENT_ID")
+
+          STATE=$(echo "$RESPONSE" | jq -r '.deployment.state')
+          echo "Final deployment state: $STATE"
+          echo "status=$STATE" >> $GITHUB_OUTPUT
+
+          # Create summary
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment ID:** $DEPLOYMENT_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- **Name:** ${{ inputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Type:** ${{ inputs.type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Strategy:** ${{ inputs.strategy }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** $STATE" >> $GITHUB_STEP_SUMMARY
+
+          if [ -n "${{ steps.monitor.outputs.devices_deployed }}" ]; then
+            echo "- **Devices Deployed:** ${{ steps.monitor.outputs.devices_deployed }}" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi

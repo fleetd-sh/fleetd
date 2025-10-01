@@ -1,0 +1,501 @@
+name: Load Tests
+
+on:
+  # Run on push to main branch
+  push:
+    branches: [ main ]
+
+  # Run on pull requests
+  pull_request:
+    branches: [ main ]
+
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      test_scenario:
+        description: 'Test scenario to run'
+        required: true
+        default: 'quick'
+        type: choice
+        options:
+          - quick
+          - onboarding
+          - steady
+          - stress
+          - full
+
+      device_count:
+        description: 'Number of devices to simulate'
+        required: false
+        default: '100'
+        type: string
+
+      test_duration:
+        description: 'Test duration (e.g., 5m, 10m, 30m)'
+        required: false
+        default: '5m'
+        type: string
+
+      server_url:
+        description: 'Server URL to test (leave empty for local)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  GO_VERSION: '1.21'
+  LOAD_TEST_RESULTS_DIR: './load_test_results'
+
+jobs:
+  # Quick smoke test - runs on all PRs and pushes
+  quick-test:
+    name: Quick Load Test
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.test_scenario == 'quick'
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fleetd_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build fleetd
+        run: |
+          go build -o bin/platform-api ./cmd/platform-api
+          go build -o bin/device-api ./cmd/device-api
+          chmod +x bin/*
+
+      - name: Start fleetd server
+        run: |
+          ./bin/platform-api &
+          sleep 10
+          curl -f http://localhost:8080/health || exit 1
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/fleetd_test?sslmode=disable
+
+      - name: Run quick load test
+        run: |
+          cd test/load/scripts
+          go run run_load_test.go \
+            -server="http://localhost:8080" \
+            -devices=50 \
+            -duration=2m \
+            -dashboard=false \
+            -onboarding=true \
+            -steady-state=false \
+            -update-campaign=false \
+            -network-resilience=false \
+            -output="${{ env.LOAD_TEST_RESULTS_DIR }}" \
+            -verbose=true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: quick-load-test-results
+          path: ${{ env.LOAD_TEST_RESULTS_DIR }}
+          retention-days: 7
+
+      - name: Parse test results
+        if: always()
+        run: |
+          if [ -f "${{ env.LOAD_TEST_RESULTS_DIR }}/load_test_report_*.json" ]; then
+            # Extract key metrics from JSON report
+            REPORT_FILE=$(ls ${{ env.LOAD_TEST_RESULTS_DIR }}/load_test_report_*.json | head -1)
+            SUCCESS_RATE=$(jq -r '.results.success_rate' "$REPORT_FILE")
+            THROUGHPUT=$(jq -r '.results.average_throughput' "$REPORT_FILE")
+            P95_LATENCY=$(jq -r '.performance.latency_analysis.p95' "$REPORT_FILE")
+
+            echo "## Load Test Results 📊" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Success Rate | ${SUCCESS_RATE}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Average Throughput | ${THROUGHPUT} req/s |" >> $GITHUB_STEP_SUMMARY
+            echo "| P95 Latency | ${P95_LATENCY} |" >> $GITHUB_STEP_SUMMARY
+
+            # Check if test passed
+            if (( $(echo "$SUCCESS_RATE > 90" | bc -l) )); then
+              echo "✅ Load test passed!" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ Load test failed - success rate below 90%" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+          else
+            echo "❌ No test results found" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  # Comprehensive load test - runs on manual trigger or scheduled
+  comprehensive-test:
+    name: Comprehensive Load Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.test_scenario != 'quick'
+
+    strategy:
+      matrix:
+        include:
+          - scenario: onboarding
+            devices: 200
+            duration: 10m
+          - scenario: steady
+            devices: 300
+            duration: 15m
+          - scenario: stress
+            devices: 500
+            duration: 20m
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fleetd_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Build fleetd
+        run: |
+          go build -o bin/platform-api ./cmd/platform-api
+          go build -o bin/device-api ./cmd/device-api
+          chmod +x bin/*
+
+      - name: Configure system limits
+        run: |
+          # Increase file descriptor limits for high load
+          echo "* soft nofile 65536" | sudo tee -a /etc/security/limits.conf
+          echo "* hard nofile 65536" | sudo tee -a /etc/security/limits.conf
+          ulimit -n 65536
+
+      - name: Start fleetd server
+        run: |
+          ./bin/platform-api &
+          sleep 15
+          curl -f http://localhost:8080/health || exit 1
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/fleetd_test?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+
+      - name: Determine test parameters
+        id: test-params
+        run: |
+          SCENARIO="${{ github.event.inputs.test_scenario || matrix.scenario }}"
+          DEVICES="${{ github.event.inputs.device_count || matrix.devices }}"
+          DURATION="${{ github.event.inputs.test_duration || matrix.duration }}"
+          SERVER_URL="${{ github.event.inputs.server_url || 'http://localhost:8080' }}"
+
+          echo "scenario=$SCENARIO" >> $GITHUB_OUTPUT
+          echo "devices=$DEVICES" >> $GITHUB_OUTPUT
+          echo "duration=$DURATION" >> $GITHUB_OUTPUT
+          echo "server_url=$SERVER_URL" >> $GITHUB_OUTPUT
+
+      - name: Run load test scenario
+        run: |
+          cd test/load/scripts
+          case "${{ steps.test-params.outputs.scenario }}" in
+            onboarding)
+              SCENARIOS="-onboarding=true -steady-state=false -update-campaign=false -network-resilience=false"
+              ;;
+            steady)
+              SCENARIOS="-onboarding=false -steady-state=true -update-campaign=false -network-resilience=false"
+              ;;
+            stress)
+              SCENARIOS="-onboarding=true -steady-state=true -update-campaign=false -network-resilience=false"
+              ;;
+            full)
+              SCENARIOS="-onboarding=true -steady-state=true -update-campaign=true -network-resilience=true"
+              ;;
+            *)
+              echo "Unknown scenario: ${{ steps.test-params.outputs.scenario }}"
+              exit 1
+              ;;
+          esac
+
+          go run run_load_test.go \
+            -server="${{ steps.test-params.outputs.server_url }}" \
+            -devices=${{ steps.test-params.outputs.devices }} \
+            -duration=${{ steps.test-params.outputs.duration }} \
+            -dashboard=false \
+            $SCENARIOS \
+            -output="${{ env.LOAD_TEST_RESULTS_DIR }}" \
+            -verbose=true
+
+      - name: Monitor system resources
+        if: always()
+        run: |
+          echo "=== System Resource Usage ===" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          ps aux --sort=-%cpu | head -10 >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          free -h >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          df -h >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: load-test-results-${{ steps.test-params.outputs.scenario }}
+          path: ${{ env.LOAD_TEST_RESULTS_DIR }}
+          retention-days: 30
+
+      - name: Generate test summary
+        if: always()
+        run: |
+          if [ -f "${{ env.LOAD_TEST_RESULTS_DIR }}/load_test_report_*.json" ]; then
+            REPORT_FILE=$(ls ${{ env.LOAD_TEST_RESULTS_DIR }}/load_test_report_*.json | head -1)
+
+            # Extract metrics
+            SUCCESS_RATE=$(jq -r '.results.success_rate * 100' "$REPORT_FILE")
+            THROUGHPUT=$(jq -r '.results.average_throughput' "$REPORT_FILE")
+            PEAK_THROUGHPUT=$(jq -r '.results.peak_throughput' "$REPORT_FILE")
+            P50_LATENCY=$(jq -r '.performance.latency_analysis.median' "$REPORT_FILE")
+            P95_LATENCY=$(jq -r '.performance.latency_analysis.p95' "$REPORT_FILE")
+            P99_LATENCY=$(jq -r '.performance.latency_analysis.p99' "$REPORT_FILE")
+            ERROR_RATE=$(jq -r '.performance.error_analysis.error_rate * 100' "$REPORT_FILE")
+            CPU_PEAK=$(jq -r '.performance.resource_analysis.cpu.peak' "$REPORT_FILE")
+            MEMORY_PEAK=$(jq -r '.performance.resource_analysis.memory.peak' "$REPORT_FILE")
+            GRADE=$(jq -r '.executive_summary.performance_grade' "$REPORT_FILE")
+            OVERALL_SCORE=$(jq -r '.executive_summary.overall_score' "$REPORT_FILE")
+
+            echo "## Load Test Results - ${{ steps.test-params.outputs.scenario }} 📊" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Overall Grade: $GRADE ($OVERALL_SCORE/100)**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Test Configuration" >> $GITHUB_STEP_SUMMARY
+            echo "- Scenario: ${{ steps.test-params.outputs.scenario }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Devices: ${{ steps.test-params.outputs.devices }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Duration: ${{ steps.test-params.outputs.duration }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Server: ${{ steps.test-params.outputs.server_url }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Performance Metrics" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|--------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Success Rate | ${SUCCESS_RATE}% | $([ $(echo "$SUCCESS_RATE > 95" | bc -l) -eq 1 ] && echo "✅" || echo "⚠️") |" >> $GITHUB_STEP_SUMMARY
+            echo "| Error Rate | ${ERROR_RATE}% | $([ $(echo "$ERROR_RATE < 5" | bc -l) -eq 1 ] && echo "✅" || echo "❌") |" >> $GITHUB_STEP_SUMMARY
+            echo "| Avg Throughput | ${THROUGHPUT} req/s | ✅ |" >> $GITHUB_STEP_SUMMARY
+            echo "| Peak Throughput | ${PEAK_THROUGHPUT} req/s | ✅ |" >> $GITHUB_STEP_SUMMARY
+            echo "| P50 Latency | ${P50_LATENCY} | $([ $(echo "${P50_LATENCY%*ms} < 50" | bc -l) -eq 1 ] && echo "✅" || echo "⚠️") |" >> $GITHUB_STEP_SUMMARY
+            echo "| P95 Latency | ${P95_LATENCY} | $([ $(echo "${P95_LATENCY%*ms} < 100" | bc -l) -eq 1 ] && echo "✅" || echo "⚠️") |" >> $GITHUB_STEP_SUMMARY
+            echo "| P99 Latency | ${P99_LATENCY} | $([ $(echo "${P99_LATENCY%*ms} < 200" | bc -l) -eq 1 ] && echo "✅" || echo "❌") |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Resource Usage" >> $GITHUB_STEP_SUMMARY
+            echo "| Resource | Peak Usage |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|------------|" >> $GITHUB_STEP_SUMMARY
+            echo "| CPU | ${CPU_PEAK}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Memory | ${MEMORY_PEAK}% |" >> $GITHUB_STEP_SUMMARY
+
+            # Add recommendations if any
+            RECOMMENDATIONS=$(jq -r '.recommendations[] | select(.priority == "high") | .title' "$REPORT_FILE" 2>/dev/null || echo "")
+            if [ -n "$RECOMMENDATIONS" ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### High Priority Recommendations" >> $GITHUB_STEP_SUMMARY
+              echo "$RECOMMENDATIONS" | while read -r rec; do
+                echo "- $rec" >> $GITHUB_STEP_SUMMARY
+              done
+            fi
+
+            # Determine if test passed
+            if [ $(echo "$SUCCESS_RATE > 90 && $ERROR_RATE < 10" | bc -l) -eq 1 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **Load test PASSED!**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "❌ **Load test FAILED!**" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            fi
+          else
+            echo "❌ No test results found" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  # Performance regression check
+  performance-check:
+    name: Performance Regression Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: quick-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for comparison
+
+      - name: Download current test results
+        uses: actions/download-artifact@v3
+        with:
+          name: quick-load-test-results
+          path: ./current-results
+
+      - name: Get baseline results
+        run: |
+          # Try to get baseline results from the main branch
+          # This is a simplified example - in practice you'd store baselines in a database
+          mkdir -p ./baseline-results
+
+          # For demo purposes, create a baseline file
+          cat > ./baseline-results/baseline.json << EOF
+          {
+            "success_rate": 0.95,
+            "average_throughput": 850.0,
+            "p95_latency": "45ms",
+            "error_rate": 0.02
+          }
+          EOF
+
+      - name: Compare performance
+        run: |
+          CURRENT_REPORT=$(ls ./current-results/load_test_report_*.json | head -1)
+
+          if [ -f "$CURRENT_REPORT" ] && [ -f "./baseline-results/baseline.json" ]; then
+            # Extract current metrics
+            CURRENT_SUCCESS=$(jq -r '.results.success_rate' "$CURRENT_REPORT")
+            CURRENT_THROUGHPUT=$(jq -r '.results.average_throughput' "$CURRENT_REPORT")
+            CURRENT_ERROR=$(jq -r '.performance.error_analysis.error_rate' "$CURRENT_REPORT")
+
+            # Extract baseline metrics
+            BASELINE_SUCCESS=$(jq -r '.success_rate' "./baseline-results/baseline.json")
+            BASELINE_THROUGHPUT=$(jq -r '.average_throughput' "./baseline-results/baseline.json")
+            BASELINE_ERROR=$(jq -r '.error_rate' "./baseline-results/baseline.json")
+
+            echo "## Performance Regression Analysis 📈" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Current | Baseline | Change |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|---------|----------|--------|" >> $GITHUB_STEP_SUMMARY
+
+            # Calculate changes
+            SUCCESS_CHANGE=$(echo "scale=2; ($CURRENT_SUCCESS - $BASELINE_SUCCESS) * 100" | bc)
+            THROUGHPUT_CHANGE=$(echo "scale=2; ($CURRENT_THROUGHPUT - $BASELINE_THROUGHPUT) / $BASELINE_THROUGHPUT * 100" | bc)
+            ERROR_CHANGE=$(echo "scale=2; ($CURRENT_ERROR - $BASELINE_ERROR) * 100" | bc)
+
+            echo "| Success Rate | ${CURRENT_SUCCESS} | ${BASELINE_SUCCESS} | ${SUCCESS_CHANGE}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Throughput | ${CURRENT_THROUGHPUT} | ${BASELINE_THROUGHPUT} | ${THROUGHPUT_CHANGE}% |" >> $GITHUB_STEP_SUMMARY
+            echo "| Error Rate | ${CURRENT_ERROR} | ${BASELINE_ERROR} | ${ERROR_CHANGE}% |" >> $GITHUB_STEP_SUMMARY
+
+            # Check for significant regressions
+            REGRESSION=false
+            if [ $(echo "$SUCCESS_CHANGE < -5" | bc -l) -eq 1 ]; then
+              echo "⚠️ **Significant regression in success rate!**" >> $GITHUB_STEP_SUMMARY
+              REGRESSION=true
+            fi
+
+            if [ $(echo "$THROUGHPUT_CHANGE < -10" | bc -l) -eq 1 ]; then
+              echo "⚠️ **Significant regression in throughput!**" >> $GITHUB_STEP_SUMMARY
+              REGRESSION=true
+            fi
+
+            if [ $(echo "$ERROR_CHANGE > 2" | bc -l) -eq 1 ]; then
+              echo "⚠️ **Significant increase in error rate!**" >> $GITHUB_STEP_SUMMARY
+              REGRESSION=true
+            fi
+
+            if [ "$REGRESSION" = true ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "❌ **Performance regression detected! Please review the changes.**" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            else
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **No significant performance regressions detected.**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⚠️ Could not perform regression analysis - missing data" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Scheduled performance monitoring
+  scheduled-monitoring:
+    name: Scheduled Performance Monitoring
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * *'  # Daily at 2 AM UTC
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run daily performance test
+        run: |
+          cd test/load/scripts
+          ./quick_test.sh steady -d 500 -t 30m --verbose
+
+      - name: Upload results to monitoring system
+        run: |
+          # This would typically send results to a monitoring system
+          # like Grafana, DataDog, or CloudWatch
+          echo "Upload results to monitoring system"
+
+          # Example: Send to webhook
+          # curl -X POST "$MONITORING_WEBHOOK_URL" \
+          #   -H "Content-Type: application/json" \
+          #   -d @"${{ env.LOAD_TEST_RESULTS_DIR }}/load_test_report_*.json"

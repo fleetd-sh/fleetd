@@ -1,0 +1,300 @@
+name: Deploy to Fleet
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      target_devices:
+        description: 'Target device IDs (comma-separated) or "all"'
+        required: false
+        default: 'all'
+      strategy:
+        description: 'Deployment strategy'
+        required: true
+        default: 'rolling'
+        type: choice
+        options:
+          - immediate
+          - rolling
+          - canary
+
+env:
+  FLEETD_API_URL: ${{ secrets.FLEETD_API_URL }}
+  FLEETD_API_KEY: ${{ secrets.FLEETD_API_KEY }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-url: ${{ steps.upload.outputs.url }}
+      version: ${{ steps.version.outputs.version }}
+      checksum: ${{ steps.checksum.outputs.sha256 }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION="${GITHUB_SHA::7}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build binary
+        run: |
+          go build -o fleetd-agent \
+            -ldflags "-X main.Version=${{ steps.version.outputs.version }} -X main.Commit=${{ github.sha }}" \
+            ./cmd/agent
+
+      - name: Calculate checksum
+        id: checksum
+        run: |
+          SHA256=$(sha256sum fleetd-agent | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        id: upload
+        run: |
+          # Upload to S3 or artifact storage
+          # For demo, we'll use GitHub releases artifacts
+          echo "url=https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.version }}/fleetd-agent" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install fleetctl
+        run: |
+          curl -sSL https://fleetd.sh/install | sh
+          echo "$HOME/.fleetd/bin" >> $GITHUB_PATH
+
+      - name: Determine deployment parameters
+        id: params
+        run: |
+          # Set environment
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+            TARGET_DEVICES="${{ github.event.inputs.target_devices }}"
+            STRATEGY="${{ github.event.inputs.strategy }}"
+          else
+            if [[ $GITHUB_REF == refs/tags/* ]]; then
+              ENVIRONMENT="production"
+            else
+              ENVIRONMENT="staging"
+            fi
+            TARGET_DEVICES="all"
+            STRATEGY="rolling"
+          fi
+
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "target_devices=$TARGET_DEVICES" >> $GITHUB_OUTPUT
+          echo "strategy=$STRATEGY" >> $GITHUB_OUTPUT
+
+      - name: Prepare deployment configuration
+        run: |
+          cat > deployment.json <<EOF
+          {
+            "source": {
+              "provider": "CICD_PROVIDER_GITHUB_ACTIONS",
+              "repository": {
+                "url": "${{ github.server_url }}/${{ github.repository }}",
+                "branch": "${{ github.ref_name }}",
+                "commit_sha": "${{ github.sha }}",
+                "commit_message": "${{ github.event.head_commit.message }}",
+                "commit_author": "${{ github.actor }}",
+                "is_pull_request": ${{ github.event_name == 'pull_request' }}
+              },
+              "build": {
+                "build_id": "${{ github.run_id }}",
+                "build_number": "${{ github.run_number }}",
+                "workflow_name": "${{ github.workflow }}",
+                "job_name": "${{ github.job }}",
+                "build_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              },
+              "triggered_by": "${{ github.actor }}",
+              "external_ref": "${{ github.run_id }}"
+            },
+            "artifact": {
+              "download_url": "${{ needs.build.outputs.artifact-url }}",
+              "version": "${{ needs.build.outputs.version }}",
+              "checksum": "${{ needs.build.outputs.checksum }}",
+              "type": "application",
+              "release_notes": "Deployment from GitHub Actions"
+            },
+            "target": {
+              $(if [[ "${{ steps.params.outputs.target_devices }}" == "all" ]]; then
+                echo '"environment_name": "${{ steps.params.outputs.environment }}"'
+              else
+                echo '"devices": { "device_ids": ['
+                echo "${{ steps.params.outputs.target_devices }}" | sed 's/,/","/g' | sed 's/^/"/;s/$/"/'
+                echo '] }'
+              fi)
+            },
+            "config": {
+              "strategy": "${{ steps.params.outputs.strategy }}",
+              "rollout": {
+                "batch_size": 10,
+                "pause_duration": 60,
+                "require_approval_after_canary": ${{ steps.params.outputs.environment == 'production' }}
+              },
+              "health_check": {
+                "enabled": true,
+                "initial_delay": 30,
+                "timeout": 60,
+                "retries": 3
+              },
+              "rollback": {
+                "auto_rollback": true,
+                "failure_threshold": 0.1
+              },
+              "notifications": {
+                "webhook_urls": ["${{ secrets.SLACK_WEBHOOK_URL }}"],
+                "events": ["NOTIFICATION_EVENT_DEPLOYMENT_STARTED", "NOTIFICATION_EVENT_DEPLOYMENT_FAILED", "NOTIFICATION_EVENT_DEPLOYMENT_COMPLETED"]
+              },
+              "deployment_timeout_minutes": 60
+            },
+            "environment": "${{ steps.params.outputs.environment }}",
+            "auto_approve": ${{ steps.params.outputs.environment != 'production' }},
+            "callback_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/webhook",
+            "metadata": {
+              "github_run_id": "${{ github.run_id }}",
+              "github_run_number": "${{ github.run_number }}",
+              "github_actor": "${{ github.actor }}",
+              "github_ref": "${{ github.ref }}"
+            }
+          }
+          EOF
+
+      - name: Validate deployment
+        run: |
+          fleetctl cicd validate --file deployment.json
+
+      - name: Trigger deployment
+        id: deploy
+        run: |
+          DEPLOYMENT_ID=$(fleetctl cicd deploy --file deployment.json --output json | jq -r '.deployment_id')
+          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "Deployment ID: $DEPLOYMENT_ID"
+
+      - name: Monitor deployment
+        run: |
+          fleetctl cicd status --deployment-id ${{ steps.deploy.outputs.deployment_id }} --watch
+
+      - name: Report deployment status
+        if: always()
+        run: |
+          STATUS=$(fleetctl cicd status --deployment-id ${{ steps.deploy.outputs.deployment_id }} --output json | jq -r '.status')
+
+          if [[ "$STATUS" == "COMPLETED" ]]; then
+            echo "✅ Deployment successful!"
+            exit 0
+          else
+            echo "❌ Deployment failed with status: $STATUS"
+
+            # Get failure details
+            fleetctl cicd logs --deployment-id ${{ steps.deploy.outputs.deployment_id }}
+
+            # Trigger rollback if configured
+            if [[ "${{ steps.params.outputs.environment }}" == "production" ]]; then
+              echo "Triggering automatic rollback..."
+              fleetctl cicd rollback --deployment-id ${{ steps.deploy.outputs.deployment_id }}
+            fi
+
+            exit 1
+          fi
+
+      - name: Create GitHub deployment
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: '${{ steps.params.outputs.environment }}',
+              description: 'Deployed via fleetd',
+              auto_merge: false,
+              required_contexts: [],
+              production_environment: ${{ steps.params.outputs.environment == 'production' }}
+            });
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: 'success',
+              environment_url: '${{ env.FLEETD_API_URL }}/deployments/${{ steps.deploy.outputs.deployment_id }}',
+              description: 'Deployment completed successfully'
+            });
+
+  rollback:
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install fleetctl
+        run: |
+          curl -sSL https://fleetd.sh/install | sh
+          echo "$HOME/.fleetd/bin" >> $GITHUB_PATH
+
+      - name: Find last successful deployment
+        id: last_deployment
+        run: |
+          LAST_DEPLOYMENT=$(fleetctl cicd list \
+            --environment production \
+            --status COMPLETED \
+            --limit 1 \
+            --output json | jq -r '.deployments[0].deployment_id')
+          echo "last_deployment_id=$LAST_DEPLOYMENT" >> $GITHUB_OUTPUT
+
+      - name: Rollback to last successful deployment
+        if: steps.last_deployment.outputs.last_deployment_id != ''
+        run: |
+          fleetctl cicd rollback \
+            --to-deployment ${{ steps.last_deployment.outputs.last_deployment_id }} \
+            --reason "Automatic rollback due to failed deployment"
+
+      - name: Notify team
+        if: always()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "⚠️ Production deployment failed and was rolled back",
+              "attachments": [{
+                "color": "warning",
+                "fields": [
+                  {"title": "Repository", "value": "${{ github.repository }}", "short": true},
+                  {"title": "Commit", "value": "${{ github.sha }}", "short": true},
+                  {"title": "Author", "value": "${{ github.actor }}", "short": true},
+                  {"title": "Workflow", "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "short": false}
+                ]
+              }]
+            }'

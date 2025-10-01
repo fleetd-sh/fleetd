@@ -1,26 +1,12 @@
 "use client";
-
-import { CheckCircledIcon, CopyIcon, DesktopIcon, RocketIcon } from "@radix-ui/react-icons";
+import { CheckCircledIcon, DesktopIcon, RocketIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Snippet, SnippetContent, SnippetCopyButton, SnippetHeader } from "@/components/ui/snippet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-
 export function QuickProvision() {
-  const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("raspberrypi");
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied!",
-      description: "Command copied to clipboard",
-    });
-  };
-
   const fleetServerUrl = `http://${window.location.hostname}:8080`;
-
   const templates = {
     raspberrypi: {
       title: "Raspberry Pi",
@@ -118,7 +104,6 @@ export function QuickProvision() {
       ],
     },
   };
-
   return (
     <Card>
       <CardHeader>
@@ -134,37 +119,29 @@ export function QuickProvision() {
             <TabsTrigger value="jetson">NVIDIA Jetson</TabsTrigger>
             <TabsTrigger value="x86">x86 Devices</TabsTrigger>
           </TabsList>
-
           {Object.entries(templates).map(([key, template]) => (
             <TabsContent key={key} value={key} className="space-y-4">
               <div className="text-sm text-muted-foreground">{template.description}</div>
-
-              {template.scenarios.map((scenario, index) => (
-                <Card key={index}>
+              {template.scenarios.map((scenario) => (
+                <Card key={`${key}-${scenario.name}`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         {scenario.icon}
                         <h4 className="font-medium">{scenario.name}</h4>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyToClipboard(scenario.command)}
-                      >
-                        <CopyIcon className="mr-2 h-3 w-3" />
-                        Copy
-                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <pre className="bg-muted p-3 rounded-md overflow-x-auto text-xs">
-                      <code>{scenario.command}</code>
-                    </pre>
+                    <Snippet defaultValue="command">
+                      <SnippetHeader language="bash">
+                        <SnippetCopyButton value={scenario.command} />
+                      </SnippetHeader>
+                      <SnippetContent language="bash">{scenario.command}</SnippetContent>
+                    </Snippet>
                   </CardContent>
                 </Card>
               ))}
-
               <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
                 <h4 className="font-medium text-sm mb-2">Before Running:</h4>
                 <ul className="text-xs space-y-1 text-muted-foreground">
@@ -178,7 +155,7 @@ export function QuickProvision() {
                     <code>sudo cat /var/lib/rancher/k3s/server/node-token</code>
                   </li>
                   <li>
-                    • Ensure Fleet CLI is installed:{" "}
+                    • Ensure fleetd CLI is installed:{" "}
                     <code>go install fleetd.sh/cmd/fleet@latest</code>
                   </li>
                 </ul>

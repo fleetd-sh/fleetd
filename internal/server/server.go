@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -21,11 +22,13 @@ import (
 	"fleetd.sh/internal/database"
 	"fleetd.sh/internal/metrics"
 	"fleetd.sh/internal/middleware"
+	"fleetd.sh/internal/security"
 	fleetdTLS "fleetd.sh/internal/tls"
 	"fleetd.sh/internal/tracing"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq" // PostgreSQL driver
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	_ "modernc.org/sqlite"
 )
 
 //go:embed static/*
@@ -33,21 +36,25 @@ var staticFS embed.FS
 
 // Config holds the server configuration
 type Config struct {
-	Port         int
-	DatabasePath string
-	EnableMDNS   bool
-	MDNSPort     int
-	ServerURL    string
-	SecretKey    string
-	ValkeyAddr   string
-	RateLimitReq int
-	RateLimitWin int
+	Port           int
+	DatabaseDriver string // "sqlite3" or "postgres"
+	DatabasePath   string // Connection string or file path
+	EnableMDNS     bool
+	MDNSPort       int
+	ServerURL      string
+	SecretKey      string
+	ValkeyAddr     string
+	RateLimitReq   int
+	RateLimitWin   int
 
 	// TLS Configuration
 	TLSMode string // "none", "tls", or "mtls"
 	TLSCert string // Path to TLS certificate
 	TLSKey  string // Path to TLS private key
 	TLSCA   string // Path to CA certificate (for mTLS)
+
+	// ACME/Certificate Management
+	ACMEConfig *security.ACMEConfig // ACME configuration for auto-certificates
 
 	TLS            *fleetdTLS.Config // Legacy TLS config (to be removed)
 	Tracing        *tracing.Config
@@ -73,12 +80,15 @@ type Server struct {
 	valkeyLimiter   *middleware.ValkeyRateLimiter
 	inMemoryLimiter *middleware.RateLimiter
 	tlsConfig       *tls.Config
+	tlsManager      *security.TLSManager
+	acmeManager     *security.ACMEManager
+	certManager     *security.CertificateManager
 }
 
 // New creates a new fleet server instance
 func New(config *Config) (*Server, error) {
 	// Initialize database
-	db, err := initDatabase(config.DatabasePath)
+	db, err := initDatabase(config.DatabaseDriver, config.DatabasePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
@@ -138,6 +148,81 @@ func New(config *Config) (*Server, error) {
 			"burst", config.RateLimitReq)
 	}
 
+	// Initialize certificate management for auto-generating certificates
+	// Use a more robust certificate directory path
+	certDir := filepath.Join(os.TempDir(), "fleetd", "device-api", "certs")
+	if homeDir, err := os.UserHomeDir(); err == nil {
+		// Prefer user's home directory for persistent storage
+		certDir = filepath.Join(homeDir, ".fleetd", "device-api", "certs")
+	}
+
+	var tlsManager *security.TLSManager
+	var acmeManager *security.ACMEManager
+	var certManager *security.CertificateManager
+
+	// Initialize certificate manager based on configuration
+	if config.ACMEConfig != nil {
+		// Use ACME manager for automatic certificates
+		slog.Info("Initializing ACME certificate manager for device-api")
+		acmeManager, err = security.NewACMEManager(config.ACMEConfig, slog.Default())
+		if err != nil {
+			slog.Error("Failed to initialize ACME manager", "error", err)
+			// Fall back to TLS manager
+		} else {
+			slog.Info("ACME manager initialized successfully for device-api")
+		}
+	} else if config.TLSMode != "none" && config.TLSMode != "" {
+		// Check if we should use the new certificate manager
+		certConfig := &security.CertConfig{
+			Mode:          "auto", // Default to auto mode
+			StorageDir:    certDir,
+			EnableRenewal: true,
+			RenewalDays:   30,
+		}
+
+		// Set certificate files if provided
+		if config.TLSCert != "" && config.TLSKey != "" {
+			certConfig.Mode = "provided"
+			certConfig.CertFile = config.TLSCert
+			certConfig.KeyFile = config.TLSKey
+			certConfig.CAFile = config.TLSCA
+		}
+
+		// Try to use new certificate manager first
+		certManager, err = security.NewCertificateManager(certConfig)
+		if err != nil {
+			slog.Warn("Failed to initialize certificate manager, falling back to TLS manager", "error", err)
+
+			// Fall back to legacy TLS manager
+			tlsConfig := &security.TLSConfig{
+				Mode:         config.TLSMode,
+				CertFile:     config.TLSCert,
+				KeyFile:      config.TLSKey,
+				CAFile:       config.TLSCA,
+				CertDir:      certDir,
+				AutoGenerate: true, // Auto-generate if certs not provided
+				Organization: "fleetd",
+				CommonName:   "device-api.fleetd.local",
+				Hosts:        []string{"localhost", "127.0.0.1", "device-api", "*.fleetd.local"},
+				ValidDays:    365,
+			}
+
+			tlsManager, err = security.NewTLSManager(tlsConfig)
+			if err != nil {
+				slog.Warn("Failed to initialize TLS manager", "error", err, "mode", config.TLSMode)
+				tlsManager = nil
+			}
+		} else {
+			// Initialize the certificate manager
+			if err := certManager.Initialize(); err != nil {
+				slog.Error("Failed to initialize certificates", "error", err)
+				certManager = nil
+			} else {
+				slog.Info("Certificate manager initialized successfully for device-api")
+			}
+		}
+	}
+
 	return &Server{
 		config:          config,
 		db:              db,
@@ -145,6 +230,9 @@ func New(config *Config) (*Server, error) {
 		sseHub:          sseHub,
 		valkeyLimiter:   valkeyLimiter,
 		inMemoryLimiter: inMemoryLimiter,
+		tlsManager:      tlsManager,
+		acmeManager:     acmeManager,
+		certManager:     certManager,
 	}, nil
 }
 
@@ -231,7 +319,89 @@ func (s *Server) Start(ctx context.Context) error {
 	// Setup servers based on TLS configuration
 	errCh := make(chan error, 2)
 
-	if s.config.TLS != nil && s.config.TLS.Enabled {
+	// Check certificate managers in order of preference
+	if s.acmeManager != nil {
+		// Use ACME manager for TLS config
+		s.httpsServer = &http.Server{
+			Addr:              fmt.Sprintf(":%d", s.config.Port),
+			Handler:           s.withSecurityHeaders(corsHandler),
+			TLSConfig:         s.acmeManager.TLSConfig(),
+			ReadTimeout:       15 * time.Second,
+			ReadHeaderTimeout: 10 * time.Second,
+			WriteTimeout:      15 * time.Second,
+			IdleTimeout:       60 * time.Second,
+		}
+
+		// Start ACME manager
+		if err := s.acmeManager.Start(ctx); err != nil {
+			slog.Error("Failed to start ACME manager", "error", err)
+		}
+
+		go func() {
+			slog.Info("Starting HTTPS server with ACME certificates",
+				"port", s.config.Port,
+				"scheme", "https",
+				"domains", s.acmeManager.GetCertificateInfo())
+
+			// ListenAndServeTLS with empty cert/key paths since they're in TLSConfig
+			if err := s.httpsServer.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+				errCh <- fmt.Errorf("HTTPS server error: %w", err)
+			}
+		}()
+	} else if s.certManager != nil {
+		// Use certificate manager for TLS config
+		s.httpsServer = &http.Server{
+			Addr:              fmt.Sprintf(":%d", s.config.Port),
+			Handler:           s.withSecurityHeaders(corsHandler),
+			TLSConfig:         s.certManager.GetTLSConfig(),
+			ReadTimeout:       15 * time.Second,
+			ReadHeaderTimeout: 10 * time.Second,
+			WriteTimeout:      15 * time.Second,
+			IdleTimeout:       60 * time.Second,
+		}
+
+		// Start auto-renewal if enabled
+		s.certManager.StartAutoRenewal(ctx)
+
+		go func() {
+			slog.Info("Starting HTTPS server with certificate manager",
+				"port", s.config.Port,
+				"scheme", "https")
+
+			// ListenAndServeTLS with empty cert/key paths since they're in TLSConfig
+			if err := s.httpsServer.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+				errCh <- fmt.Errorf("HTTPS server error: %w", err)
+			}
+		}()
+	} else if s.tlsManager != nil && s.tlsManager.IsEnabled() {
+		// Use legacy TLS manager configuration
+		s.httpsServer = &http.Server{
+			Addr:              fmt.Sprintf(":%d", s.config.Port),
+			Handler:           s.withSecurityHeaders(corsHandler),
+			TLSConfig:         s.tlsManager.GetServerTLSConfig(),
+			ReadTimeout:       15 * time.Second,
+			ReadHeaderTimeout: 10 * time.Second,
+			WriteTimeout:      15 * time.Second,
+			IdleTimeout:       60 * time.Second,
+		}
+
+		go func() {
+			scheme := "https"
+			if s.tlsManager.GetMode() == "mtls" {
+				scheme = "https+mtls"
+			}
+			slog.Info("Starting HTTPS server with legacy TLS manager",
+				"port", s.config.Port,
+				"scheme", scheme,
+				"mode", s.tlsManager.GetMode(),
+				"info", s.tlsManager.GetCertificateInfo())
+
+			// ListenAndServeTLS with empty cert/key paths since they're in TLSConfig
+			if err := s.httpsServer.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+				errCh <- fmt.Errorf("HTTPS server error: %w", err)
+			}
+		}()
+	} else if s.config.TLS != nil && s.config.TLS.Enabled {
 		// Get TLS configuration
 		tlsConfig, err := s.config.TLS.GetTLSConfig()
 		if err != nil {
@@ -319,6 +489,14 @@ func (s *Server) Start(ctx context.Context) error {
 // Shutdown gracefully shuts down the server
 func (s *Server) Shutdown(ctx context.Context) error {
 	slog.Info("Shutting down fleet server")
+
+	// Stop certificate managers
+	if s.acmeManager != nil {
+		s.acmeManager.Stop()
+	}
+	if s.certManager != nil {
+		s.certManager.Stop()
+	}
 
 	var httpErr, httpsErr error
 
@@ -417,22 +595,24 @@ func (s *Server) setupDashboard() {
 	s.mux.HandleFunc("/", s.handleDashboard)
 }
 
-// initDatabase initializes the SQLite database
-func initDatabase(path string) (*sql.DB, error) {
+// initDatabase initializes the database
+func initDatabase(driver, path string) (*sql.DB, error) {
 	ctx := context.Background()
 	config := database.DefaultRetryConfig()
 
+	// Default to SQLite if no driver specified
+	if driver == "" {
+		driver = "sqlite3"
+	}
+
 	// Use retry logic for database connection
-	db, err := database.OpenWithRetry(ctx, "sqlite3", path, config)
+	db, err := database.OpenWithRetry(ctx, driver, path, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database with retry: %w", err)
 	}
 
-	// Run migrations with retry
-	err = database.ExecuteWithRetry(ctx, db, func() error {
-		return runMigrations(db)
-	}, config)
-	if err != nil {
+	// Use the proper migration system
+	if err := database.RunMigrations(ctx, db, driver); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to run migrations: %w", err)
 	}
@@ -442,6 +622,18 @@ func initDatabase(path string) (*sql.DB, error) {
 
 // runMigrations runs database migrations
 func runMigrations(db *sql.DB) error {
+	// Detect database driver from the connection
+	var driverName string
+	if err := db.QueryRow("SELECT version()").Scan(&driverName); err == nil {
+		// PostgreSQL returns version info
+		return runPostgresMigrations(db)
+	}
+	// SQLite doesn't have version(), so assume SQLite
+	return runSQLiteMigrations(db)
+}
+
+// runSQLiteMigrations runs SQLite-specific migrations
+func runSQLiteMigrations(db *sql.DB) error {
 	// Create tables if they don't exist
 	queries := []string{
 		`CREATE TABLE IF NOT EXISTS device (
@@ -456,7 +648,7 @@ func runMigrations(db *sql.DB) error {
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)`,
 		`CREATE TABLE IF NOT EXISTS telemetry (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
 			device_id TEXT NOT NULL,
 			timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			metric_name TEXT NOT NULL,
@@ -472,7 +664,66 @@ func runMigrations(db *sql.DB) error {
 			FOREIGN KEY (device_id) REFERENCES device(id)
 		)`,
 		`CREATE TABLE IF NOT EXISTS updates (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id INTEGER PRIMARY KEY,
+			version TEXT NOT NULL,
+			description TEXT,
+			binary_url TEXT NOT NULL,
+			checksum TEXT NOT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`,
+		`CREATE TABLE IF NOT EXISTS device_updates (
+			device_id TEXT NOT NULL,
+			update_id INTEGER NOT NULL,
+			status TEXT DEFAULT 'pending',
+			applied_at TIMESTAMP,
+			PRIMARY KEY (device_id, update_id),
+			FOREIGN KEY (device_id) REFERENCES device(id),
+			FOREIGN KEY (update_id) REFERENCES updates(id)
+		)`,
+	}
+
+	for _, query := range queries {
+		if _, err := db.Exec(query); err != nil {
+			return fmt.Errorf("failed to execute migration: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// runPostgresMigrations runs PostgreSQL-specific migrations
+func runPostgresMigrations(db *sql.DB) error {
+	// Create tables if they don't exist
+	queries := []string{
+		`CREATE TABLE IF NOT EXISTS device (
+			id TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			type TEXT NOT NULL,
+			version TEXT NOT NULL,
+			api_key TEXT UNIQUE NOT NULL,
+			metadata TEXT,
+			last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`,
+		`CREATE TABLE IF NOT EXISTS telemetry (
+			id BIGSERIAL PRIMARY KEY,
+			device_id TEXT NOT NULL,
+			timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			metric_name TEXT NOT NULL,
+			metric_value DOUBLE PRECISION NOT NULL,
+			metadata TEXT,
+			FOREIGN KEY (device_id) REFERENCES device(id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS device_config (
+			device_id TEXT PRIMARY KEY,
+			config TEXT NOT NULL,
+			version INTEGER DEFAULT 1,
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (device_id) REFERENCES device(id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS updates (
+			id BIGSERIAL PRIMARY KEY,
 			version TEXT NOT NULL,
 			description TEXT,
 			binary_url TEXT NOT NULL,
@@ -628,8 +879,8 @@ func (s *Server) collectSystemMetrics(ctx context.Context) {
 			// Update device count metrics (query from database)
 			if s.db != nil {
 				var totalDevices, connectedDevices int
-				s.db.QueryRow("SELECT COUNT(*) FROM devices").Scan(&totalDevices)
-				s.db.QueryRow("SELECT COUNT(*) FROM devices WHERE status = 'online'").Scan(&connectedDevices)
+				s.db.QueryRow("SELECT COUNT(*) FROM device").Scan(&totalDevices)
+				s.db.QueryRow("SELECT COUNT(*) FROM device WHERE status = 'online'").Scan(&connectedDevices)
 
 				metrics.DevicesTotal.WithLabelValues("all", "all").Set(float64(totalDevices))
 				metrics.DevicesConnected.Set(float64(connectedDevices))

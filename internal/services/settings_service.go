@@ -18,15 +18,14 @@ type SettingsService struct {
 	fleetpbconnect.UnimplementedSettingsServiceHandler
 	db *database.DB
 	// In-memory storage for demo purposes
-	orgSettings    *fleetpb.OrganizationSettings
-	secSettings    *fleetpb.SecuritySettings
-	notifSettings  *fleetpb.NotificationSettings
-	apiSettings    *fleetpb.APISettings
-	advSettings    *fleetpb.AdvancedSettings
+	orgSettings   *fleetpb.OrganizationSettings
+	secSettings   *fleetpb.SecuritySettings
+	notifSettings *fleetpb.NotificationSettings
+	apiSettings   *fleetpb.APISettings
+	advSettings   *fleetpb.AdvancedSettings
 }
 
 func NewSettingsService(db *database.DB) *SettingsService {
-	// Initialize with default settings
 	return &SettingsService{
 		db: db,
 		orgSettings: &fleetpb.OrganizationSettings{
@@ -39,27 +38,27 @@ func NewSettingsService(db *database.DB) *SettingsService {
 			UpdatedAt:    timestamppb.Now(),
 		},
 		secSettings: &fleetpb.SecuritySettings{
-			TwoFactorRequired:    true,
+			TwoFactorRequired:     true,
 			SessionTimeoutMinutes: 30,
-			IpWhitelistEnabled:   false,
-			AllowedIps:          []string{},
-			AuditLoggingEnabled: true,
+			IpWhitelistEnabled:    false,
+			AllowedIps:            []string{},
+			AuditLoggingEnabled:   true,
 			PasswordPolicy: &fleetpb.PasswordPolicy{
 				MinLength:           8,
 				RequireUppercase:    true,
 				RequireLowercase:    true,
 				RequireNumbers:      true,
 				RequireSpecialChars: false,
-				ExpiryDays:         90,
+				ExpiryDays:          90,
 			},
 		},
 		notifSettings: &fleetpb.NotificationSettings{
 			EmailNotifications: &fleetpb.EmailNotifications{
 				DeviceOfflineAlerts:     true,
 				DeploymentStatusUpdates: true,
-				SecurityAlerts:         true,
-				WeeklySummary:          false,
-				RecipientEmails:        []string{"admin@acme.com"},
+				SecurityAlerts:          true,
+				WeeklySummary:           false,
+				RecipientEmails:         []string{"admin@acme.com"},
 			},
 			WebhookSettings: &fleetpb.WebhookSettings{
 				Enabled: false,
@@ -88,15 +87,15 @@ func NewSettingsService(db *database.DB) *SettingsService {
 		},
 		advSettings: &fleetpb.AdvancedSettings{
 			DataRetention: &fleetpb.DataRetention{
-				TelemetryDays:  30,
-				LogsDays:       90,
-				AuditLogsDays:  365,
-				BackupsDays:    30,
+				TelemetryDays: 30,
+				LogsDays:      90,
+				AuditLogsDays: 365,
+				BackupsDays:   30,
 			},
 			ExperimentalFeatures: &fleetpb.ExperimentalFeatures{
 				BetaFeaturesEnabled: false,
-				DebugModeEnabled:   false,
-				EnabledFeatures:    []string{},
+				DebugModeEnabled:    false,
+				EnabledFeatures:     []string{},
 			},
 		},
 	}
@@ -119,7 +118,7 @@ func (s *SettingsService) UpdateOrganizationSettings(
 ) (*connect.Response[fleetpb.UpdateOrganizationSettingsResponse], error) {
 	s.orgSettings = req.Msg.Settings
 	s.orgSettings.UpdatedAt = timestamppb.Now()
-	
+
 	return connect.NewResponse(&fleetpb.UpdateOrganizationSettingsResponse{
 		Settings: s.orgSettings,
 	}), nil
@@ -141,7 +140,7 @@ func (s *SettingsService) UpdateSecuritySettings(
 	req *connect.Request[fleetpb.UpdateSecuritySettingsRequest],
 ) (*connect.Response[fleetpb.UpdateSecuritySettingsResponse], error) {
 	s.secSettings = req.Msg.Settings
-	
+
 	return connect.NewResponse(&fleetpb.UpdateSecuritySettingsResponse{
 		Settings: s.secSettings,
 	}), nil
@@ -163,7 +162,7 @@ func (s *SettingsService) UpdateNotificationSettings(
 	req *connect.Request[fleetpb.UpdateNotificationSettingsRequest],
 ) (*connect.Response[fleetpb.UpdateNotificationSettingsResponse], error) {
 	s.notifSettings = req.Msg.Settings
-	
+
 	return connect.NewResponse(&fleetpb.UpdateNotificationSettingsResponse{
 		Settings: s.notifSettings,
 	}), nil
@@ -185,12 +184,12 @@ func (s *SettingsService) UpdateAPISettings(
 	req *connect.Request[fleetpb.UpdateAPISettingsRequest],
 ) (*connect.Response[fleetpb.UpdateAPISettingsResponse], error) {
 	s.apiSettings = req.Msg.Settings
-	
+
 	if req.Msg.RegenerateKey {
 		s.apiSettings.ApiKey = generateAPIKey()
 		s.apiSettings.ApiKeyCreatedAt = timestamppb.Now()
 	}
-	
+
 	return connect.NewResponse(&fleetpb.UpdateAPISettingsResponse{
 		Settings: s.apiSettings,
 	}), nil
@@ -204,7 +203,7 @@ func (s *SettingsService) RegenerateAPIKey(
 	newKey := generateAPIKey()
 	s.apiSettings.ApiKey = newKey
 	s.apiSettings.ApiKeyCreatedAt = timestamppb.Now()
-	
+
 	return connect.NewResponse(&fleetpb.RegenerateAPIKeyResponse{
 		NewApiKey: newKey,
 		CreatedAt: s.apiSettings.ApiKeyCreatedAt,
@@ -227,7 +226,7 @@ func (s *SettingsService) UpdateAdvancedSettings(
 	req *connect.Request[fleetpb.UpdateAdvancedSettingsRequest],
 ) (*connect.Response[fleetpb.UpdateAdvancedSettingsResponse], error) {
 	s.advSettings = req.Msg.Settings
-	
+
 	return connect.NewResponse(&fleetpb.UpdateAdvancedSettingsResponse{
 		Settings: s.advSettings,
 	}), nil
@@ -256,10 +255,10 @@ func (s *SettingsService) DeleteAllData(
 	if req.Msg.ConfirmationCode != "DELETE-ALL-DATA" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid confirmation code"))
 	}
-	
+
 	// In production, this would actually delete data
 	// For safety in demo, we don't actually delete anything
-	
+
 	return connect.NewResponse(&fleetpb.DeleteAllDataResponse{
 		Success: true,
 		Message: "All data has been marked for deletion. This process may take up to 24 hours to complete.",

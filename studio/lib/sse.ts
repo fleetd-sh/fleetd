@@ -2,14 +2,14 @@
 
 import { useEffect, useRef } from "react";
 
-export interface SSEOptions {
-  onMessage?: (data: any) => void;
+export interface SSEOptions<T = unknown> {
+  onMessage?: (data: T) => void;
   onError?: (error: Event) => void;
   onOpen?: () => void;
   reconnectInterval?: number;
 }
 
-export function useSSE(url: string, options: SSEOptions = {}) {
+export function useSSE<T = unknown>(url: string, options: SSEOptions<T> = {}) {
   const { onMessage, onError, onOpen, reconnectInterval = 5000 } = options;
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();

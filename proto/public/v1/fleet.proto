@@ -25,11 +25,16 @@ service FleetService {
   rpc GetTelemetry(GetTelemetryRequest) returns (GetTelemetryResponse);
   rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryEvent);
 
-  // Updates management
-  rpc ListUpdates(ListUpdatesRequest) returns (ListUpdatesResponse);
-  rpc CreateUpdate(CreateUpdateRequest) returns (CreateUpdateResponse);
-  rpc DeployUpdate(DeployUpdateRequest) returns (DeployUpdateResponse);
-  rpc GetUpdateStatus(GetUpdateStatusRequest) returns (GetUpdateStatusResponse);
+  // Deployment management - Unified API for all deployment types
+  rpc CreateDeployment(CreateDeploymentRequest) returns (CreateDeploymentResponse);
+  rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse);
+  rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse);
+  rpc StartDeployment(StartDeploymentRequest) returns (StartDeploymentResponse);
+  rpc PauseDeployment(PauseDeploymentRequest) returns (PauseDeploymentResponse);
+  rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse);
+  rpc RollbackDeployment(RollbackDeploymentRequest) returns (RollbackDeploymentResponse);
+  rpc GetDeploymentStatus(GetDeploymentStatusRequest) returns (GetDeploymentStatusResponse);
+  rpc StreamDeploymentEvents(StreamDeploymentEventsRequest) returns (stream DeploymentEvent);
 
   // Configuration
   rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse);
@@ -230,88 +235,571 @@ message TelemetryEvent {
   TelemetryPoint point = 1;
 }
 
-// Update management messages
-message Update {
+// ==========================================
+// Deployment API - Unified deployment system
+// ==========================================
+
+// Deployment represents any type of deployment (binary, script, container, config)
+message Deployment {
   string id = 1;
-  string version = 2;
+  string name = 2;
   string description = 3;
-  string binary_url = 4;
-  string checksum = 5;
-  int64 size_bytes = 6;
-  string release_notes = 7;
-  google.protobuf.Timestamp created_at = 8;
-  repeated string target_device_types = 9;
-  string channel = 10; // stable, beta, nightly
+  DeploymentType type = 4;
+  DeploymentPayload payload = 5;
+  DeploymentTarget target = 6;
+  DeploymentStrategy strategy = 7;
+  DeploymentConfig config = 8;
+  DeploymentState state = 9;
+  DeploymentMetadata metadata = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp started_at = 12;
+  google.protobuf.Timestamp completed_at = 13;
+  string created_by = 14;
+  map<string, string> labels = 15;
 }
 
-message ListUpdatesRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string channel = 3;
+// DeploymentType specifies what kind of deployment this is
+enum DeploymentType {
+  DEPLOYMENT_TYPE_UNSPECIFIED = 0;
+  DEPLOYMENT_TYPE_BINARY = 1;        // Native executable replacement
+  DEPLOYMENT_TYPE_SCRIPT = 2;        // Shell script execution
+  DEPLOYMENT_TYPE_CONTAINER = 3;     // Docker container update
+  DEPLOYMENT_TYPE_CONFIG = 4;        // Configuration change
+  DEPLOYMENT_TYPE_FIRMWARE = 5;      // Firmware update
+  DEPLOYMENT_TYPE_PACKAGE = 6;       // OS package (apt, yum, etc.)
+  DEPLOYMENT_TYPE_BUNDLE = 7;        // Multi-component deployment
 }
 
-message ListUpdatesResponse {
-  repeated Update updates = 1;
-  string next_page_token = 2;
+// DeploymentPayload contains the actual content to deploy
+message DeploymentPayload {
+  oneof content {
+    BinaryPayload binary = 1;
+    ScriptPayload script = 2;
+    ContainerPayload container = 3;
+    ConfigPayload config = 4;
+    FirmwarePayload firmware = 5;
+    PackagePayload package = 6;
+    BundlePayload bundle = 7;
+  }
 }
 
-message CreateUpdateRequest {
-  string version = 1;
-  string description = 2;
-  string binary_url = 3;
-  string checksum = 4;
-  int64 size_bytes = 5;
-  string release_notes = 6;
-  repeated string target_device_types = 7;
-  string channel = 8;
+message BinaryPayload {
+  string download_url = 1;
+  string checksum = 2;
+  int64 size_bytes = 3;
+  string signature = 4;
+  string version = 5;
+  string target_path = 6;          // Where to install the binary
+  string service_name = 7;          // Optional systemd/init service to restart
+  repeated string args = 8;         // Command line arguments
+  map<string, string> env_vars = 9; // Environment variables
+  bool restart_on_update = 10;      // Whether to restart the process
+  string pre_install_script = 11;   // Script to run before installation
+  string post_install_script = 12;  // Script to run after installation
 }
 
-message CreateUpdateResponse {
-  Update update = 1;
+message ScriptPayload {
+  string script_content = 1;        // Inline script content
+  string script_url = 2;            // Or download from URL
+  string interpreter = 3;           // e.g., "/bin/bash", "/usr/bin/python3"
+  repeated string args = 4;         // Script arguments
+  map<string, string> env_vars = 5; // Environment variables
+  int32 timeout_seconds = 6;        // Execution timeout
+  bool run_as_root = 7;             // Whether to run with elevated privileges
+  string working_directory = 8;     // Working directory for script execution
 }
 
-message DeployUpdateRequest {
-  string update_id = 1;
-  repeated string device_ids = 2;
-  repeated string tags = 3;
-  string group_id = 4;
-  DeploymentStrategy strategy = 5;
+message ContainerPayload {
+  string image = 1;                 // Container image (registry/name:tag)
+  string digest = 2;                // Optional image digest for verification
+  string container_name = 3;        // Container name to update
+  repeated string compose_files = 4; // Docker Compose files if applicable
+  map<string, string> env_vars = 5; // Environment variables
+  repeated PortMapping ports = 6;   // Port mappings
+  repeated VolumeMount volumes = 7; // Volume mounts
+  RestartPolicy restart_policy = 8; // Container restart policy
+  map<string, string> labels = 9;   // Container labels
+  string network_mode = 10;         // Network mode
+  repeated string capabilities = 11; // Linux capabilities
 }
 
+message PortMapping {
+  int32 host_port = 1;
+  int32 container_port = 2;
+  string protocol = 3; // tcp/udp
+}
+
+message VolumeMount {
+  string source = 1;
+  string target = 2;
+  bool read_only = 3;
+}
+
+enum RestartPolicy {
+  RESTART_POLICY_UNSPECIFIED = 0;
+  RESTART_POLICY_NO = 1;
+  RESTART_POLICY_ALWAYS = 2;
+  RESTART_POLICY_ON_FAILURE = 3;
+  RESTART_POLICY_UNLESS_STOPPED = 4;
+}
+
+message ConfigPayload {
+  string config_path = 1;           // Path to config file
+  string content = 2;               // Config content
+  string format = 3;                // json, yaml, toml, ini, etc.
+  bool merge = 4;                   // Merge with existing config
+  bool backup_existing = 5;         // Backup before overwriting
+  string validation_command = 6;    // Command to validate config
+  string reload_command = 7;        // Command to reload service
+}
+
+message FirmwarePayload {
+  string download_url = 1;
+  string checksum = 2;
+  int64 size_bytes = 3;
+  string version = 4;
+  string device_model = 5;          // Target device model
+  bool force_update = 6;            // Force update even if version check fails
+  bool backup_current = 7;          // Backup current firmware
+  int32 reboot_delay_seconds = 8;  // Delay before reboot
+}
+
+message PackagePayload {
+  string package_name = 1;          // Package name
+  string version = 2;               // Package version
+  string repository_url = 3;        // Custom repository URL
+  string package_manager = 4;      // apt, yum, dnf, zypper, etc.
+  repeated string dependencies = 5; // Additional dependencies
+  bool allow_downgrade = 6;        // Allow version downgrade
+}
+
+message BundlePayload {
+  repeated DeploymentPayload components = 1; // Multiple components to deploy
+  bool atomic = 2;                           // All-or-nothing deployment
+  bool sequential = 3;                        // Deploy components sequentially
+}
+
+// DeploymentTarget specifies which devices to deploy to
+message DeploymentTarget {
+  oneof selector {
+    DeviceSelector devices = 1;
+    GroupSelector groups = 2;
+    LabelSelector labels = 3;
+    QuerySelector query = 4;
+  }
+
+  // Filters to apply on top of selector
+  repeated TargetFilter filters = 5;
+
+  // Maximum number of devices to target
+  int32 max_devices = 6;
+
+  // Percentage of matching devices to target
+  int32 percentage = 7;
+}
+
+message DeviceSelector {
+  repeated string device_ids = 1;
+  repeated string exclude_device_ids = 2;
+}
+
+message GroupSelector {
+  repeated string group_ids = 1;
+  repeated string exclude_group_ids = 2;
+}
+
+message LabelSelector {
+  map<string, string> match_labels = 1;
+  repeated LabelRequirement match_expressions = 2;
+}
+
+message LabelRequirement {
+  string key = 1;
+  enum Operator {
+    OPERATOR_UNSPECIFIED = 0;
+    OPERATOR_IN = 1;
+    OPERATOR_NOT_IN = 2;
+    OPERATOR_EXISTS = 3;
+    OPERATOR_DOES_NOT_EXIST = 4;
+    OPERATOR_GT = 5;
+    OPERATOR_LT = 6;
+    OPERATOR_EQUALS = 7;
+    OPERATOR_NOT_EQUALS = 8;
+  }
+  Operator operator = 2;
+  repeated string values = 3;
+}
+
+message QuerySelector {
+  string expression = 1; // SQL-like or custom query language
+}
+
+message TargetFilter {
+  enum FilterType {
+    FILTER_TYPE_UNSPECIFIED = 0;
+    FILTER_TYPE_OS = 1;
+    FILTER_TYPE_ARCH = 2;
+    FILTER_TYPE_VERSION = 3;
+    FILTER_TYPE_CAPABILITY = 4;
+    FILTER_TYPE_ONLINE_STATUS = 5;
+    FILTER_TYPE_LOCATION = 6;
+    FILTER_TYPE_CUSTOM = 7;
+  }
+  FilterType type = 1;
+  string operator = 2; // =, !=, >, <, in, not_in, regex
+  repeated string values = 3;
+}
+
+// DeploymentStrategy defines how the deployment is rolled out
 enum DeploymentStrategy {
   DEPLOYMENT_STRATEGY_UNSPECIFIED = 0;
-  DEPLOYMENT_STRATEGY_IMMEDIATE = 1;
-  DEPLOYMENT_STRATEGY_ROLLING = 2;
-  DEPLOYMENT_STRATEGY_CANARY = 3;
+  DEPLOYMENT_STRATEGY_IMMEDIATE = 1;    // All devices at once
+  DEPLOYMENT_STRATEGY_ROLLING = 2;      // Gradual rollout in batches
+  DEPLOYMENT_STRATEGY_CANARY = 3;       // Test on small subset first
+  DEPLOYMENT_STRATEGY_BLUE_GREEN = 4;   // Switch between two versions
+  DEPLOYMENT_STRATEGY_CUSTOM = 5;       // Custom strategy
 }
 
-message DeployUpdateResponse {
-  string deployment_id = 1;
-  int32 targeted_devices = 2;
+// DeploymentConfig contains deployment behavior configuration
+message DeploymentConfig {
+  RolloutConfig rollout = 1;
+  HealthCheckConfig health_check = 2;
+  RollbackConfig rollback = 3;
+  ValidationConfig validation = 4;
+  NotificationConfig notifications = 5;
+  int32 timeout_minutes = 6;
+  repeated DeploymentHook hooks = 7;
 }
 
-message GetUpdateStatusRequest {
+message RolloutConfig {
+  int32 batch_size = 1;              // Number of devices per batch
+  int32 batch_percentage = 2;        // Or percentage per batch
+  int32 pause_seconds = 3;           // Pause between batches
+  int32 max_parallel = 4;            // Max parallel deployments
+  bool require_approval = 5;         // Require manual approval between batches
+  int32 canary_size = 6;            // Size of canary deployment
+  int32 canary_duration_minutes = 7; // How long to test canary
+}
+
+message HealthCheckConfig {
+  bool enabled = 1;
+  int32 initial_delay_seconds = 2;
+  int32 timeout_seconds = 3;
+  int32 max_retries = 4;
+  string check_command = 5;          // Command to run for health check
+  string http_endpoint = 6;          // HTTP endpoint to check
+  int32 expected_status_code = 7;    // Expected HTTP status
+  repeated string required_metrics = 8; // Metrics that must be healthy
+}
+
+message RollbackConfig {
+  bool auto_rollback = 1;
+  double failure_threshold = 2;      // Percentage of failures to trigger
+  bool keep_failed_devices = 3;      // Don't rollback failed devices
+  string rollback_to = 4;            // Specific version/deployment to rollback to
+}
+
+message ValidationConfig {
+  bool skip_validation = 1;
+  string validation_script = 2;
+  repeated ValidationRule rules = 3;
+}
+
+message ValidationRule {
+  string name = 1;
+  string expression = 2;             // Validation expression
+  string error_message = 3;
+  bool fatal = 4;                    // Whether failure should stop deployment
+}
+
+message NotificationConfig {
+  repeated string webhook_urls = 1;
+  repeated string email_addresses = 2;
+  repeated NotificationEvent events = 3;
+  map<string, string> custom_channels = 4; // Slack, Teams, etc.
+}
+
+enum NotificationEvent {
+  NOTIFICATION_EVENT_UNSPECIFIED = 0;
+  NOTIFICATION_EVENT_STARTED = 1;
+  NOTIFICATION_EVENT_PROGRESS = 2;
+  NOTIFICATION_EVENT_COMPLETED = 3;
+  NOTIFICATION_EVENT_FAILED = 4;
+  NOTIFICATION_EVENT_ROLLED_BACK = 5;
+  NOTIFICATION_EVENT_PAUSED = 6;
+  NOTIFICATION_EVENT_APPROVED = 7;
+}
+
+message DeploymentHook {
+  enum HookType {
+    HOOK_TYPE_UNSPECIFIED = 0;
+    HOOK_TYPE_PRE_DEPLOYMENT = 1;
+    HOOK_TYPE_POST_DEPLOYMENT = 2;
+    HOOK_TYPE_PRE_ROLLBACK = 3;
+    HOOK_TYPE_POST_ROLLBACK = 4;
+    HOOK_TYPE_HEALTH_CHECK = 5;
+    HOOK_TYPE_VALIDATION = 6;
+  }
+  HookType type = 1;
+  string command = 2;
+  int32 timeout_seconds = 3;
+  bool continue_on_failure = 4;
+}
+
+// DeploymentState tracks the current state
+enum DeploymentState {
+  DEPLOYMENT_STATE_UNSPECIFIED = 0;
+  DEPLOYMENT_STATE_DRAFT = 1;        // Created but not started
+  DEPLOYMENT_STATE_PENDING = 2;      // Waiting to start
+  DEPLOYMENT_STATE_RUNNING = 3;      // Currently deploying
+  DEPLOYMENT_STATE_PAUSED = 4;       // Paused by user or system
+  DEPLOYMENT_STATE_COMPLETED = 5;    // Successfully completed
+  DEPLOYMENT_STATE_FAILED = 6;       // Failed
+  DEPLOYMENT_STATE_CANCELLED = 7;    // Cancelled by user
+  DEPLOYMENT_STATE_ROLLING_BACK = 8; // Rolling back
+  DEPLOYMENT_STATE_ROLLED_BACK = 9;  // Rolled back successfully
+}
+
+// DeploymentMetadata contains additional deployment information
+message DeploymentMetadata {
+  string source = 1;                 // Where deployment originated (api, cli, github, etc.)
+  string source_ref = 2;             // External reference (GitHub run ID, etc.)
+  string commit_sha = 3;             // Git commit SHA if applicable
+  string branch = 4;                 // Git branch
+  string repository = 5;             // Repository URL
+  string triggered_by = 6;           // User or system that triggered
+  map<string, string> tags = 7;      // Arbitrary tags
+  string environment = 8;            // Target environment (dev, staging, prod)
+  string previous_deployment_id = 9; // For rollbacks and updates
+}
+
+// ==========================================
+// Deployment API Request/Response messages
+// ==========================================
+
+message CreateDeploymentRequest {
+  string name = 1;
+  string description = 2;
+  DeploymentType type = 3;
+  DeploymentPayload payload = 4;
+  DeploymentTarget target = 5;
+  DeploymentStrategy strategy = 6;
+  DeploymentConfig config = 7;
+  DeploymentMetadata metadata = 8;
+  map<string, string> labels = 9;
+  bool auto_start = 10;              // Start immediately after creation
+  bool validate_only = 11;           // Only validate, don't create
+}
+
+message CreateDeploymentResponse {
+  Deployment deployment = 1;
+  repeated ValidationWarning warnings = 2;
+  DeploymentValidation validation = 3;
+}
+
+message ValidationWarning {
+  string code = 1;
+  string message = 2;
+  string field = 3;
+  enum Severity {
+    SEVERITY_UNSPECIFIED = 0;
+    SEVERITY_INFO = 1;
+    SEVERITY_WARNING = 2;
+    SEVERITY_ERROR = 3;
+  }
+  Severity severity = 4;
+}
+
+message DeploymentValidation {
+  bool valid = 1;
+  repeated ValidationWarning errors = 2;
+  int32 target_device_count = 3;
+  repeated string target_device_ids = 4;
+  int64 estimated_duration_seconds = 5;
+  repeated SimulatedBatch simulated_batches = 6;
+}
+
+message SimulatedBatch {
+  int32 batch_number = 1;
+  int32 device_count = 2;
+  google.protobuf.Timestamp estimated_start = 3;
+  google.protobuf.Timestamp estimated_end = 4;
+}
+
+message ListDeploymentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  repeated DeploymentState states = 3;
+  repeated DeploymentType types = 4;
+  string environment = 5;
+  map<string, string> label_selector = 6;
+  google.protobuf.Timestamp start_time = 7;
+  google.protobuf.Timestamp end_time = 8;
+  string created_by = 9;
+}
+
+message ListDeploymentsResponse {
+  repeated Deployment deployments = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message GetDeploymentRequest {
+  string deployment_id = 1;
+  bool include_device_status = 2;
+  bool include_events = 3;
+}
+
+message GetDeploymentResponse {
+  Deployment deployment = 1;
+  DeploymentProgress progress = 2;
+  repeated DeviceDeploymentStatus device_statuses = 3;
+  repeated DeploymentEvent events = 4;
+}
+
+message StartDeploymentRequest {
+  string deployment_id = 1;
+  bool force = 2;                    // Force start even if validation fails
+  bool skip_approval = 3;            // Skip approval requirements
+}
+
+message StartDeploymentResponse {
+  bool started = 1;
+  string message = 2;
+  google.protobuf.Timestamp estimated_completion = 3;
+}
+
+message PauseDeploymentRequest {
+  string deployment_id = 1;
+  string reason = 2;
+}
+
+message PauseDeploymentResponse {
+  bool paused = 1;
+  string message = 2;
+}
+
+message CancelDeploymentRequest {
+  string deployment_id = 1;
+  string reason = 2;
+}
+
+message CancelDeploymentResponse {
+  bool cancelled = 1;
+  string message = 2;
+}
+
+message RollbackDeploymentRequest {
+  string deployment_id = 1;
+  string target_deployment_id = 2;   // Specific deployment to rollback to
+  string reason = 3;
+  bool force = 4;                    // Force rollback even if some devices succeeded
+}
+
+message RollbackDeploymentResponse {
+  bool rolled_back = 1;
+  string new_deployment_id = 2;      // New deployment created for rollback
+  int32 devices_affected = 3;
+  string message = 4;
+}
+
+message GetDeploymentStatusRequest {
   string deployment_id = 1;
 }
 
-message GetUpdateStatusResponse {
+message GetDeploymentStatusResponse {
   string deployment_id = 1;
-  UpdateDeploymentStatus status = 2;
-  int32 total_devices = 3;
-  int32 updated_devices = 4;
+  DeploymentState state = 2;
+  DeploymentProgress progress = 3;
+  google.protobuf.Timestamp started_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp estimated_completion = 6;
+}
+
+message DeploymentProgress {
+  int32 total_devices = 1;
+  int32 pending_devices = 2;
+  int32 running_devices = 3;
+  int32 succeeded_devices = 4;
   int32 failed_devices = 5;
-  int32 pending_devices = 6;
-  google.protobuf.Timestamp started_at = 7;
-  google.protobuf.Timestamp completed_at = 8;
+  int32 cancelled_devices = 6;
+  double percentage_complete = 7;
+  string current_batch = 8;
+  int32 current_batch_number = 9;
+  int32 total_batches = 10;
+  map<string, int32> devices_by_state = 11;
 }
 
-enum UpdateDeploymentStatus {
-  UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED = 0;
-  UPDATE_DEPLOYMENT_STATUS_IN_PROGRESS = 1;
-  UPDATE_DEPLOYMENT_STATUS_COMPLETED = 2;
-  UPDATE_DEPLOYMENT_STATUS_FAILED = 3;
-  UPDATE_DEPLOYMENT_STATUS_CANCELLED = 4;
+message StreamDeploymentEventsRequest {
+  string deployment_id = 1;
+  repeated string event_types = 2;   // Filter specific event types
+  bool include_device_events = 3;    // Include per-device events
 }
+
+message DeploymentEvent {
+  string id = 1;
+  string deployment_id = 2;
+  string device_id = 3;               // If device-specific event
+  enum EventType {
+    EVENT_TYPE_UNSPECIFIED = 0;
+    EVENT_TYPE_CREATED = 1;
+    EVENT_TYPE_STARTED = 2;
+    EVENT_TYPE_BATCH_STARTED = 3;
+    EVENT_TYPE_BATCH_COMPLETED = 4;
+    EVENT_TYPE_DEVICE_STARTED = 5;
+    EVENT_TYPE_DEVICE_PROGRESS = 6;
+    EVENT_TYPE_DEVICE_COMPLETED = 7;
+    EVENT_TYPE_DEVICE_FAILED = 8;
+    EVENT_TYPE_PAUSED = 9;
+    EVENT_TYPE_RESUMED = 10;
+    EVENT_TYPE_CANCELLED = 11;
+    EVENT_TYPE_COMPLETED = 12;
+    EVENT_TYPE_FAILED = 13;
+    EVENT_TYPE_ROLLBACK_STARTED = 14;
+    EVENT_TYPE_ROLLBACK_COMPLETED = 15;
+    EVENT_TYPE_APPROVAL_REQUIRED = 16;
+    EVENT_TYPE_APPROVED = 17;
+    EVENT_TYPE_HEALTH_CHECK_PASSED = 18;
+    EVENT_TYPE_HEALTH_CHECK_FAILED = 19;
+  }
+  EventType type = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  string message = 6;
+  google.protobuf.Struct details = 7;
+  string severity = 8;               // info, warning, error
+}
+
+message DeviceDeploymentStatus {
+  string device_id = 1;
+  string device_name = 2;
+  enum State {
+    STATE_UNSPECIFIED = 0;
+    STATE_PENDING = 1;
+    STATE_DOWNLOADING = 2;
+    STATE_VALIDATING = 3;
+    STATE_INSTALLING = 4;
+    STATE_CONFIGURING = 5;
+    STATE_RESTARTING = 6;
+    STATE_VERIFYING = 7;
+    STATE_COMPLETED = 8;
+    STATE_FAILED = 9;
+    STATE_CANCELLED = 10;
+    STATE_ROLLED_BACK = 11;
+  }
+  State state = 3;
+  int32 progress_percentage = 4;
+  string message = 5;
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  google.protobuf.Timestamp completed_at = 8;
+  string error_code = 9;
+  string error_details = 10;
+  int32 retry_count = 11;
+}
+
+// ==========================================
+// Legacy Update messages (deprecated)
+// ==========================================
 
 // Configuration messages
 message GetConfigurationRequest {
@@ -363,4 +851,130 @@ message Event {
   google.protobuf.Timestamp timestamp = 4;
   google.protobuf.Struct data = 5;
   string message = 6;
+}
+
+// Application represents a deployable application
+message Application {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  string description = 4;
+  map<string, string> metadata = 5;
+  repeated string args = 6;
+  map<string, string> environment = 7;
+  string working_dir = 8;
+  string user = 9;
+  string group = 10;
+  RestartPolicy restart_policy = 11;
+  Resources resources = 12;
+  HealthCheck health_check = 13;
+}
+
+// Artifact represents a deployable artifact (binary, archive, script, etc)
+message Artifact {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  ArtifactType type = 4;
+  string url = 5;
+  string storage_url = 6;  // Alternative storage URL
+  string checksum = 7;
+  map<string, string> checksums = 8;  // Multiple checksums (sha256, md5, etc)
+  int64 size = 9;
+  map<string, string> metadata = 10;
+}
+
+// ArtifactType defines the type of artifact
+enum ArtifactType {
+  ARTIFACT_TYPE_UNSPECIFIED = 0;
+  ARTIFACT_TYPE_BINARY = 1;
+  ARTIFACT_TYPE_ARCHIVE = 2;
+  ARTIFACT_TYPE_SCRIPT = 3;
+  ARTIFACT_TYPE_CONTAINER = 4;
+  ARTIFACT_TYPE_CONFIGURATION = 5;
+}
+
+
+// Resources defines resource limits and requests
+message Resources {
+  int64 memory_limit_bytes = 1;
+  int64 memory_request_bytes = 2;
+  double cpu_limit = 3;
+  double cpu_request = 4;
+  int64 disk_limit_bytes = 5;
+  map<string, string> limits = 6;  // Generic limits for process manager
+}
+
+// HealthCheck defines health check configuration
+message HealthCheck {
+  string command = 1;
+  int32 interval_seconds = 2;
+  int32 timeout_seconds = 3;
+  int32 retries = 4;
+  int32 start_period_seconds = 5;
+}
+
+// Update-related messages for the Updates API
+message ListUpdatesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string device_id = 3;
+}
+
+message ListUpdatesResponse {
+  repeated Update updates = 1;
+  string next_page_token = 2;
+}
+
+message Update {
+  string id = 1;
+  string version = 2;
+  string description = 3;
+  UpdateStatus status = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+}
+
+enum UpdateStatus {
+  UPDATE_STATUS_UNSPECIFIED = 0;
+  UPDATE_STATUS_PENDING = 1;
+  UPDATE_STATUS_IN_PROGRESS = 2;
+  UPDATE_STATUS_COMPLETED = 3;
+  UPDATE_STATUS_FAILED = 4;
+}
+
+message CreateUpdateRequest {
+  string version = 1;
+  string description = 2;
+  map<string, string> metadata = 3;
+}
+
+message CreateUpdateResponse {
+  Update update = 1;
+}
+
+message DeployUpdateRequest {
+  string update_id = 1;
+  repeated string device_ids = 2;
+}
+
+message DeployUpdateResponse {
+  string deployment_id = 1;
+}
+
+message GetUpdateStatusRequest {
+  string update_id = 1;
+}
+
+message GetUpdateStatusResponse {
+  Update update = 1;
+  map<string, DeviceUpdateStatus> device_status = 2;
+}
+
+message DeviceUpdateStatus {
+  string device_id = 1;
+  UpdateStatus status = 2;
+  string message = 3;
+  google.protobuf.Timestamp updated_at = 4;
 }

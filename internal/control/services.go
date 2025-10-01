@@ -42,30 +42,3 @@ func (s *AnalyticsService) GetPerformanceMetrics(ctx context.Context, req *conne
 	return connect.NewResponse(&pb.GetPerformanceMetricsResponse{}), nil
 }
 
-// DeploymentService handles deployment operations
-type DeploymentService struct {
-	db        *sql.DB
-	deviceAPI *DeviceAPIClient
-}
-
-// NewDeploymentService creates a new deployment service
-func NewDeploymentService(db *sql.DB, deviceAPI *DeviceAPIClient) *DeploymentService {
-	return &DeploymentService{
-		db:        db,
-		deviceAPI: deviceAPI,
-	}
-}
-
-// Deployment service methods will be implemented when proto definitions are finalized
-
-// ConfigurationService handles configuration operations
-type ConfigurationService struct {
-	db *sql.DB
-}
-
-// NewConfigurationService creates a new configuration service
-func NewConfigurationService(db *sql.DB) *ConfigurationService {
-	return &ConfigurationService{db: db}
-}
-
-// Note: Configuration service methods will be implemented when proto definitions are available

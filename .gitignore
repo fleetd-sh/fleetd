@@ -18,6 +18,9 @@ dist/
 build/
 *.exe
 fleetd
+
+# Generated documentation (auto-generated, should not be committed)
+gen/docs/
 fleet
 
 # Dependencies
@@ -27,3 +30,11 @@ vendor/
 # Testing
 coverage/
 *.test
+
+# Development mock data
+dev/mock-data.db
+dev/mock-generator
+dev/*.db
+dev/data/
+*.mock.json
+*.seed.sql

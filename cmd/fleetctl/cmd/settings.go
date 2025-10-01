@@ -32,7 +32,7 @@ var settingsGetCmd = &cobra.Command{
 
 		client := fleetpbconnect.NewSettingsServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		ctx := context.Background()
@@ -116,7 +116,7 @@ var settingsUpdateCmd = &cobra.Command{
 
 		client := fleetpbconnect.NewSettingsServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		ctx := context.Background()
@@ -205,7 +205,7 @@ var settingsAPIKeyShowCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := fleetpbconnect.NewSettingsServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		resp, err := client.GetAPISettings(context.Background(), connect.NewRequest(&fleetpb.GetAPISettingsRequest{}))
@@ -238,7 +238,7 @@ var settingsAPIKeyRegenerateCmd = &cobra.Command{
 
 		client := fleetpbconnect.NewSettingsServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		resp, err := client.RegenerateAPIKey(context.Background(), connect.NewRequest(&fleetpb.RegenerateAPIKeyRequest{}))
@@ -262,7 +262,7 @@ var settingsExportCmd = &cobra.Command{
 
 		client := fleetpbconnect.NewSettingsServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		req := &fleetpb.ExportDataRequest{

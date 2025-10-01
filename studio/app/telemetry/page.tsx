@@ -1,6 +1,6 @@
 import { Suspense } from "react";
+import { DashboardLoadingSkeleton } from "@/components/loading-states";
 import { TelemetryContent } from "@/components/telemetry-content";
-import { LoadingSkeleton } from "@/components/loading-states";
 
 export const metadata = {
   title: "Telemetry | fleetd",
@@ -17,7 +17,7 @@ export default function TelemetryPage() {
         </p>
       </div>
 
-      <Suspense fallback={<LoadingSkeleton />}>
+      <Suspense fallback={<DashboardLoadingSkeleton />}>
         <TelemetryContent />
       </Suspense>
     </main>

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -17,42 +18,52 @@ import (
 	"fleetd.sh/gen/fleetd/v1/fleetpbconnect"
 	"fleetd.sh/gen/public/v1/publicv1connect"
 	"fleetd.sh/internal/database"
-	"fleetd.sh/internal/services"
+	"fleetd.sh/internal/fleet"
 	"fleetd.sh/internal/metrics"
 	"fleetd.sh/internal/middleware"
 	"fleetd.sh/internal/security"
+	"fleetd.sh/internal/services"
 	"fleetd.sh/internal/version"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq" // PostgreSQL driver
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/viper"
+	_ "modernc.org/sqlite"
 )
 
 // Config holds the control plane server configuration
 type Config struct {
-	Port         int
-	DatabasePath string
-	SecretKey    string
-	DeviceAPIURL string
-	ValkeyAddr   string
-	RateLimitReq int
-	RateLimitWin int
+	Port           int
+	DatabaseDriver string // "sqlite3" or "postgres"
+	DatabasePath   string // Connection string or file path
+	SecretKey      string
+	DeviceAPIURL   string
+	ValkeyAddr     string
+	RateLimitReq   int
+	RateLimitWin   int
 
 	// TLS Configuration
 	TLSMode string // "none", "tls", or "mtls"
 	TLSCert string // Path to TLS certificate
 	TLSKey  string // Path to TLS private key
 	TLSCA   string // Path to CA certificate (for mTLS)
+
+	// ACME/Certificate Management
+	ACMEConfig *security.ACMEConfig // ACME configuration for auto-certificates
 }
 
 // Server represents the control plane API server
 type Server struct {
 	config          *Config
 	db              *sql.DB
+	dbInstance      *database.DB // Keep reference to prevent GC
 	httpServer      *http.Server
 	deviceAPI       *DeviceAPIClient
 	valkeyLimiter   *middleware.ValkeyRateLimiter
 	inMemoryLimiter *middleware.RateLimiter
 	tlsManager      *security.TLSManager
+	acmeManager     *security.ACMEManager
+	certManager     *security.CertificateManager
 }
 
 // DeviceAPIClient wraps communication with the device API
@@ -84,7 +95,13 @@ func NewServer(config *Config) (*Server, error) {
 	}
 
 	// Initialize database with migrations
-	dbConfig := database.DefaultConfig("sqlite3")
+	// Use DatabaseDriver from config, default to sqlite3 if not specified
+	dbDriver := config.DatabaseDriver
+	if dbDriver == "" {
+		dbDriver = "sqlite3"
+	}
+
+	dbConfig := database.DefaultConfig(dbDriver)
 	dbConfig.DSN = config.DatabasePath
 	dbConfig.MigrationsPath = "migrations"
 
@@ -96,19 +113,8 @@ func NewServer(config *Config) (*Server, error) {
 	// Get the underlying sql.DB for compatibility
 	db := dbInstance.DB
 
-	// Run database migrations
-	driver := "sqlite3"
-	if strings.Contains(config.DatabasePath, "postgres") || strings.Contains(config.DatabasePath, "host=") {
-		driver = "postgres"
-	}
-
-	ctx := context.Background()
-	if err := database.RunMigrations(ctx, db, driver); err != nil {
-		slog.Warn("Failed to run database migrations", "error", err)
-		// Don't fail startup - migrations may have already been applied
-	} else {
-		slog.Info("Database migrations completed successfully")
-	}
+	// Migrations are already run inside database.New(), so we don't need to run them again
+	// The duplicate migration run was closing the database connection
 
 	// Create device API client
 	deviceAPI := &DeviceAPIClient{
@@ -166,39 +172,103 @@ func NewServer(config *Config) (*Server, error) {
 			"burst", config.RateLimitReq)
 	}
 
-	// Initialize TLS manager
-	tlsConfig := &security.TLSConfig{
-		Mode:         config.TLSMode,
-		CertFile:     config.TLSCert,
-		KeyFile:      config.TLSKey,
-		CAFile:       config.TLSCA,
-		AutoGenerate: true, // Auto-generate if certs not provided
-		Organization: "FleetD",
-		CommonName:   "platform-api.fleetd.local",
-		Hosts:        []string{"localhost", "127.0.0.1", "platform-api", "*.fleetd.local"},
-		ValidDays:    365,
+	// Initialize certificate management
+	// Use a more robust certificate directory path
+	certDir := filepath.Join(os.TempDir(), "fleetd", "platform-api", "certs")
+	if homeDir, err := os.UserHomeDir(); err == nil {
+		// Prefer user's home directory for persistent storage
+		certDir = filepath.Join(homeDir, ".fleetd", "platform-api", "certs")
 	}
 
-	tlsManager, err := security.NewTLSManager(tlsConfig)
-	if err != nil {
-		slog.Warn("Failed to initialize TLS", "error", err, "mode", config.TLSMode)
-		// Continue without TLS if it fails
-		tlsManager = nil
+	var tlsManager *security.TLSManager
+	var acmeManager *security.ACMEManager
+	var certManager *security.CertificateManager
+
+	// Initialize certificate manager based on configuration
+	if config.ACMEConfig != nil {
+		// Use ACME manager for automatic certificates
+		slog.Info("Initializing ACME certificate manager")
+		acmeManager, err = security.NewACMEManager(config.ACMEConfig, slog.Default())
+		if err != nil {
+			slog.Error("Failed to initialize ACME manager", "error", err)
+			// Fall back to TLS manager
+		} else {
+			slog.Info("ACME manager initialized successfully")
+		}
+	} else if config.TLSMode != "none" && config.TLSMode != "" {
+		// Check if we should use the new certificate manager
+		certConfig := &security.CertConfig{
+			Mode:          "auto", // Default to auto mode
+			StorageDir:    certDir,
+			EnableRenewal: true,
+			RenewalDays:   30,
+		}
+
+		// Set certificate files if provided
+		if config.TLSCert != "" && config.TLSKey != "" {
+			certConfig.Mode = "provided"
+			certConfig.CertFile = config.TLSCert
+			certConfig.KeyFile = config.TLSKey
+			certConfig.CAFile = config.TLSCA
+		}
+
+		// Try to use new certificate manager first
+		certManager, err = security.NewCertificateManager(certConfig)
+		if err != nil {
+			slog.Warn("Failed to initialize certificate manager, falling back to TLS manager", "error", err)
+
+			// Fall back to legacy TLS manager
+			tlsConfig := &security.TLSConfig{
+				Mode:         config.TLSMode,
+				CertFile:     config.TLSCert,
+				KeyFile:      config.TLSKey,
+				CAFile:       config.TLSCA,
+				CertDir:      certDir,
+				AutoGenerate: true, // Auto-generate if certs not provided
+				Organization: "fleetd",
+				CommonName:   "platform-api.fleetd.local",
+				Hosts:        []string{"localhost", "127.0.0.1", "platform-api", "*.fleetd.local"},
+				ValidDays:    365,
+			}
+
+			tlsManager, err = security.NewTLSManager(tlsConfig)
+			if err != nil {
+				slog.Warn("Failed to initialize TLS manager", "error", err, "mode", config.TLSMode)
+				tlsManager = nil
+			}
+		} else {
+			// Initialize the certificate manager
+			if err := certManager.Initialize(); err != nil {
+				slog.Error("Failed to initialize certificates", "error", err)
+				certManager = nil
+			} else {
+				slog.Info("Certificate manager initialized successfully")
+			}
+		}
 	}
 
 	return &Server{
 		config:          config,
 		db:              db,
+		dbInstance:      dbInstance, // Keep reference to prevent GC
 		deviceAPI:       deviceAPI,
 		valkeyLimiter:   valkeyLimiter,
 		inMemoryLimiter: inMemoryLimiter,
 		tlsManager:      tlsManager,
+		acmeManager:     acmeManager,
+		certManager:     certManager,
 	}, nil
 }
 
 // Run starts the control plane server
 func (s *Server) Run() error {
-	mux := http.NewServeMux()
+	router := mux.NewRouter()
+
+	// Create auth HTTP service
+	authHTTPService := NewAuthHTTPService(s.db)
+
+	// Register auth HTTP routes
+	authHTTPService.RegisterRoutes(router)
 
 	// Setup middleware
 	authConfig := middleware.AuthConfig{
@@ -206,7 +276,10 @@ func (s *Server) Run() error {
 		EnableAPIKeys: true,
 		RequireAuth:   true,
 	}
-	authMiddleware := middleware.NewAuthMiddleware(authConfig)
+	authMiddleware, err := middleware.NewAuthMiddleware(authConfig)
+	if err != nil {
+		return fmt.Errorf("failed to create auth middleware: %w", err)
+	}
 	loggingMiddleware := middleware.NewLoggingMiddleware()
 	metricsMiddleware := middleware.NewMetricsMiddleware("platform-api")
 
@@ -224,7 +297,7 @@ func (s *Server) Run() error {
 
 		// Apply middleware to the transcoder
 		handler := withMiddleware(vanguardHandler, authMiddleware, loggingMiddleware, metricsMiddleware)
-		mux.Handle("/", handler)
+		router.PathPrefix("/").Handler(handler)
 	} else {
 		// Original Connect-RPC only setup
 		// Create JWT manager for auth service
@@ -241,8 +314,14 @@ func (s *Server) Run() error {
 		// Create database wrapper for services
 		dbWrapper := &database.DB{DB: s.db}
 
+		// Create UpdateClient adapter for orchestrator
+		updateClient := NewUpdateClientAdapter(s.deviceAPI, s.db)
+
+		// Create deployment orchestrator
+		orchestrator := fleet.NewOrchestrator(s.db, updateClient)
+
 		// Create service handlers
-		fleetService := NewFleetService(s.db, s.deviceAPI)
+		fleetService := NewFleetService(s.db, s.deviceAPI, orchestrator)
 		deviceService := NewDeviceService(s.db, s.deviceAPI)
 		analyticsService := NewAnalyticsService(s.db)
 		authService := NewAuthService(s.db, jwtManager)
@@ -250,7 +329,9 @@ func (s *Server) Run() error {
 		settingsService := services.NewSettingsService(dbWrapper)
 
 		// Register Connect handlers
-		fleetPath, fleetHandler := fleetpbconnect.NewFleetServiceHandler(fleetService)
+		// TODO: Update to use public v1 API
+		// fleetPath, fleetHandler := fleetpbconnect.NewFleetServiceHandler(fleetService)
+		fleetPath, fleetHandler := publicv1connect.NewFleetServiceHandler(fleetService)
 		devicePath, deviceHandler := fleetpbconnect.NewDeviceServiceHandler(deviceService)
 		analyticsPath, analyticsHandler := fleetpbconnect.NewAnalyticsServiceHandler(analyticsService)
 		authPath, authHandler := publicv1connect.NewAuthServiceHandler(authService)
@@ -259,24 +340,24 @@ func (s *Server) Run() error {
 
 		// Apply middleware and register routes
 		// Auth service doesn't need auth middleware on Login endpoint
-		mux.Handle(authPath, withMiddleware(authHandler, loggingMiddleware))
-		mux.Handle(fleetPath, withMiddleware(fleetHandler, authMiddleware, loggingMiddleware))
-		mux.Handle(devicePath, withMiddleware(deviceHandler, authMiddleware, loggingMiddleware))
-		mux.Handle(analyticsPath, withMiddleware(analyticsHandler, authMiddleware, loggingMiddleware))
-		mux.Handle(telemetryPath, withMiddleware(telemetryHandler, authMiddleware, loggingMiddleware))
-		mux.Handle(settingsPath, withMiddleware(settingsHandler, authMiddleware, loggingMiddleware))
+		router.Handle(authPath, withMiddleware(authHandler, loggingMiddleware))
+		router.Handle(fleetPath, withMiddleware(fleetHandler, authMiddleware, loggingMiddleware))
+		router.Handle(devicePath, withMiddleware(deviceHandler, authMiddleware, loggingMiddleware))
+		router.Handle(analyticsPath, withMiddleware(analyticsHandler, authMiddleware, loggingMiddleware))
+		router.Handle(telemetryPath, withMiddleware(telemetryHandler, authMiddleware, loggingMiddleware))
+		router.Handle(settingsPath, withMiddleware(settingsHandler, authMiddleware, loggingMiddleware))
 	}
 
 	// Health check endpoints
-	mux.HandleFunc("/health", s.handleHealth)
-	mux.HandleFunc("/health/live", s.handleHealthLive)
-	mux.HandleFunc("/health/ready", s.handleHealthReady)
+	router.HandleFunc("/health", s.handleHealth)
+	router.HandleFunc("/health/live", s.handleHealthLive)
+	router.HandleFunc("/health/ready", s.handleHealthReady)
 
 	// Prometheus metrics endpoint
-	mux.Handle("/metrics", promhttp.Handler())
+	router.Handle("/metrics", promhttp.Handler())
 
 	// Security status endpoint
-	mux.HandleFunc("/security", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/security", func(w http.ResponseWriter, r *http.Request) {
 		devMode := os.Getenv("FLEETD_AUTH_MODE") == "development" ||
 			os.Getenv("FLEETD_INSECURE") == "true" ||
 			os.Getenv("NODE_ENV") == "development"
@@ -320,7 +401,7 @@ func (s *Server) Run() error {
 	}
 
 	// Apply middleware stack
-	var handler http.Handler = mux
+	var handler http.Handler = router
 
 	// Apply request ID middleware first (so all other middleware can use it)
 	handler = middleware.RequestIDMiddleware(handler)
@@ -345,10 +426,28 @@ func (s *Server) Run() error {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// Apply TLS configuration if available
-	if s.tlsManager != nil && s.tlsManager.IsEnabled() {
+	// Apply TLS configuration based on available managers
+	if s.acmeManager != nil {
+		// Use ACME manager for TLS config
+		s.httpServer.TLSConfig = s.acmeManager.TLSConfig()
+		slog.Info("TLS enabled with ACME manager",
+			"domains", s.acmeManager.GetCertificateInfo())
+
+		// Start ACME manager
+		if err := s.acmeManager.Start(ctx); err != nil {
+			slog.Error("Failed to start ACME manager", "error", err)
+		}
+	} else if s.certManager != nil {
+		// Use certificate manager for TLS config
+		s.httpServer.TLSConfig = s.certManager.GetTLSConfig()
+		slog.Info("TLS enabled with certificate manager")
+
+		// Start auto-renewal if enabled
+		s.certManager.StartAutoRenewal(ctx)
+	} else if s.tlsManager != nil && s.tlsManager.IsEnabled() {
+		// Use legacy TLS manager
 		s.httpServer.TLSConfig = s.tlsManager.GetServerTLSConfig()
-		slog.Info("TLS enabled",
+		slog.Info("TLS enabled with legacy TLS manager",
 			"mode", s.tlsManager.GetMode(),
 			"info", s.tlsManager.GetCertificateInfo())
 	}
@@ -363,14 +462,25 @@ func (s *Server) Run() error {
 	go s.collectSystemMetrics(ctx)
 
 	go func() {
-		if s.tlsManager != nil && s.tlsManager.IsEnabled() {
+		if s.httpServer.TLSConfig != nil {
 			scheme := "https"
-			if s.tlsManager.GetMode() == "mtls" {
+			if s.tlsManager != nil && s.tlsManager.GetMode() == "mtls" {
 				scheme = "https+mtls"
 			}
+
+			managerType := "unknown"
+			if s.acmeManager != nil {
+				managerType = "ACME"
+			} else if s.certManager != nil {
+				managerType = "certificate"
+			} else if s.tlsManager != nil {
+				managerType = "legacy TLS"
+			}
+
 			slog.Info("Control plane server listening",
 				"port", s.config.Port,
 				"scheme", scheme,
+				"manager", managerType,
 				"url", fmt.Sprintf("%s://localhost:%d", scheme, s.config.Port))
 
 			// ListenAndServeTLS with empty cert/key paths since they're in TLSConfig
@@ -393,6 +503,15 @@ func (s *Server) Run() error {
 	cancel()
 
 	slog.Info("Shutting down control plane server...")
+
+	// Stop certificate managers
+	if s.acmeManager != nil {
+		s.acmeManager.Stop()
+	}
+	if s.certManager != nil {
+		s.certManager.Stop()
+	}
+
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 
@@ -541,7 +660,7 @@ func (s *Server) collectSystemMetrics(ctx context.Context) {
 			// Update fleet metrics (query from database)
 			if s.db != nil {
 				var fleetsCount int
-				s.db.QueryRow("SELECT COUNT(*) FROM fleets").Scan(&fleetsCount)
+				s.db.QueryRow("SELECT COUNT(*) FROM device_fleet").Scan(&fleetsCount)
 				metrics.FleetsTotal.Set(float64(fleetsCount))
 			}
 		}
@@ -550,8 +669,8 @@ func (s *Server) collectSystemMetrics(ctx context.Context) {
 
 // Close closes the server resources
 func (s *Server) Close() error {
-	if s.db != nil {
-		return s.db.Close()
+	if s.dbInstance != nil {
+		return s.dbInstance.Close()
 	}
 	return nil
 }

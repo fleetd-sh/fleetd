@@ -153,7 +153,7 @@ func TestSignatureMiddleware(t *testing.T) {
 			// Create test request
 			req := httptest.NewRequest("POST", "/webhook", bytes.NewReader(tt.body))
 			if tt.signature != "" {
-				req.Header.Set("X-FleetD-Signature", tt.signature)
+				req.Header.Set("X-fleetd-Signature", tt.signature)
 			}
 
 			// Create test response recorder

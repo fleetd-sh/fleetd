@@ -26,19 +26,15 @@ func NewAPIKeyService(db *sql.DB) *APIKeyService {
 
 // CreateAPIKey creates a new API key
 func (s *APIKeyService) CreateAPIKey(ctx context.Context, req *CreateAPIKeyRequest) (*CreateAPIKeyResponse, error) {
-	// Generate new API key
 	rawKey, err := models.GenerateAPIKey("fld")
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate API key: %w", err)
 	}
 
-	// Hash the key for storage
 	hashedKey := s.hashAPIKey(rawKey)
 
-	// Extract prefix for identification
 	keyPrefix := models.ExtractKeyPrefix(rawKey)
 
-	// Create API key record
 	apiKey := &models.APIKey{
 		ID:             generateID("key"),
 		Key:            hashedKey,
@@ -115,7 +111,6 @@ func (s *APIKeyService) ValidateAPIKey(ctx context.Context, rawKey string) (*mod
 		return nil, fmt.Errorf("failed to query API key: %w", err)
 	}
 
-	// Check if key is valid
 	if !apiKey.IsValid() {
 		if apiKey.IsExpired() {
 			return nil, ErrAPIKeyExpired
@@ -129,7 +124,6 @@ func (s *APIKeyService) ValidateAPIKey(ctx context.Context, rawKey string) (*mod
 		return nil, ErrInvalidAPIKey
 	}
 
-	// Update last used timestamp (async)
 	go s.updateLastUsed(context.Background(), apiKey.ID)
 
 	return &apiKey, nil

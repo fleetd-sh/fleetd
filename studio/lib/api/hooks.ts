@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
-import { authClient, fleetClient, orgClient } from "./client";
+import { authClient, fleetClient } from "./client";
 import type { PasswordCredential } from "./gen/public/v1/auth_pb";
 import type {
   DiscoverDevicesRequest,
@@ -210,16 +210,17 @@ export function useLogout() {
 }
 
 // Organization hooks
-export function useOrganization(organizationId: string) {
-  return useQuery({
-    queryKey: ["organization", organizationId],
-    queryFn: async () => {
-      const response = await orgClient.getOrganization({ organizationId });
-      return response.organization;
-    },
-    enabled: !!organizationId,
-  });
-}
+// Organization hooks - commented out as organization service was removed
+// export function useOrganization(organizationId: string) {
+//   return useQuery({
+//     queryKey: ["organization", organizationId],
+//     queryFn: async () => {
+//       const response = await orgClient.getOrganization({ organizationId });
+//       return response.organization;
+//     },
+//     enabled: !!organizationId,
+//   });
+// }
 
 // TODO: Implement when listTeams endpoint is available
 // export function useTeams(organizationId: string) {
@@ -233,13 +234,13 @@ export function useOrganization(organizationId: string) {
 //   })
 // }
 
-export function useMembers(organizationId: string, teamId?: string) {
-  return useQuery({
-    queryKey: ["members", organizationId, teamId],
-    queryFn: async () => {
-      const response = await orgClient.listMembers({ organizationId, teamId });
-      return response.members;
-    },
-    enabled: !!organizationId,
-  });
-}
+// export function useMembers(organizationId: string, teamId?: string) {
+//   return useQuery({
+//     queryKey: ["members", organizationId, teamId],
+//     queryFn: async () => {
+//       const response = await orgClient.listMembers({ organizationId, teamId });
+//       return response.members;
+//     },
+//     enabled: !!organizationId,
+//   });
+// }

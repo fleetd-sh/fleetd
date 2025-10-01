@@ -46,7 +46,7 @@ func DefaultTLSConfig() *TLSConfig {
 	return &TLSConfig{
 		Mode:         "tls",
 		AutoGenerate: true,
-		Organization: "FleetD",
+		Organization: "fleetd",
 		CommonName:   "fleetd.local",
 		Hosts:        []string{"localhost", "127.0.0.1", "::1"},
 		ValidDays:    365,
@@ -161,9 +161,9 @@ func (m *TLSManager) initialize() error {
 
 // generateCertificates generates self-signed certificates
 func (m *TLSManager) generateCertificates() error {
-	// Create certificate directory
-	if err := os.MkdirAll(m.config.CertDir, 0700); err != nil {
-		return fmt.Errorf("failed to create cert directory: %w", err)
+	// Ensure certificate directory exists with proper fallbacks
+	if err := m.ensureCertDirectory(); err != nil {
+		return fmt.Errorf("failed to ensure cert directory: %w", err)
 	}
 
 	// Generate CA certificate first
@@ -487,4 +487,40 @@ func (m *TLSManager) GetCertificateInfo() map[string]string {
 	}
 
 	return info
+}
+
+// ensureCertDirectory ensures the certificate directory exists with proper permissions
+func (m *TLSManager) ensureCertDirectory() error {
+	// Try to create the directory
+	err := os.MkdirAll(m.config.CertDir, 0700)
+	if err == nil {
+		return nil
+	}
+
+	slog.Warn("Failed to create certificate directory, trying fallback locations",
+		"path", m.config.CertDir,
+		"error", err)
+
+	// Try fallback locations
+	fallbacks := []string{
+		filepath.Join(os.TempDir(), "fleetd", "certs"),
+		filepath.Join(".", "certs"),
+		filepath.Join(os.Getenv("HOME"), ".fleetd", "certs"),
+	}
+
+	for _, fallback := range fallbacks {
+		if fallback == "" {
+			continue
+		}
+
+		err := os.MkdirAll(fallback, 0700)
+		if err == nil {
+			slog.Info("Using fallback certificate directory", "path", fallback)
+			m.config.CertDir = fallback
+			return nil
+		}
+		slog.Debug("Failed to create fallback directory", "path", fallback, "error", err)
+	}
+
+	return fmt.Errorf("failed to create certificate directory after trying all fallback locations: %w", err)
 }

@@ -94,14 +94,14 @@ func Load() (*Config, error) {
 	cfg := &Config{}
 
 	cfg.Server.Port = getEnvInt("PORT", 8080)
-	cfg.Server.Host = getEnvString("HOST", "0.0.0.0")
+	cfg.Server.Host = getEnv("HOST", "0.0.0.0")
 	cfg.Server.ReadTimeout = getEnvDuration("READ_TIMEOUT", 30*time.Second)
 	cfg.Server.WriteTimeout = getEnvDuration("WRITE_TIMEOUT", 30*time.Second)
 	cfg.Server.IdleTimeout = getEnvDuration("IDLE_TIMEOUT", 120*time.Second)
 	cfg.Server.EnableMDNS = getEnvBool("ENABLE_MDNS", true)
 	cfg.Server.MDNSPort = getEnvInt("MDNS_PORT", 5353)
 
-	cfg.Database.URL = getEnvString("DATABASE_URL", "fleet.db")
+	cfg.Database.URL = getEnv("DATABASE_URL", "fleet.db")
 	cfg.Database.MaxConnections = getEnvInt("DB_MAX_CONNECTIONS", 25)
 	cfg.Database.MaxIdleConns = getEnvInt("DB_MAX_IDLE_CONNS", 5)
 	cfg.Database.ConnMaxLifetime = getEnvDuration("DB_CONN_MAX_LIFETIME", 30*time.Minute)
@@ -119,8 +119,8 @@ func Load() (*Config, error) {
 	cfg.API.RateLimitWindow = getEnvDuration("API_RATE_LIMIT_WINDOW", time.Minute)
 	cfg.API.RequestTimeout = getEnvDuration("API_REQUEST_TIMEOUT", 30*time.Second)
 	cfg.API.MaxRequestSize = int64(getEnvInt("API_MAX_REQUEST_SIZE", 10485760))
-	cfg.API.ValkeyAddr = getEnvString("VALKEY_ADDR", "")
-	corsOrigins := getEnvString("API_CORS_ORIGINS", "")
+	cfg.API.ValkeyAddr = getEnv("VALKEY_ADDR", "")
+	corsOrigins := getEnv("API_CORS_ORIGINS", "")
 	if corsOrigins != "" {
 		cfg.API.CORSAllowedOrigins = []string{corsOrigins}
 	} else {
@@ -132,7 +132,7 @@ func Load() (*Config, error) {
 	cfg.SSE.MaxClients = getEnvInt("SSE_MAX_CLIENTS", 1000)
 	cfg.SSE.BufferSize = getEnvInt("SSE_BUFFER_SIZE", 10)
 
-	cfg.Auth.JWTSecret = getEnvString("JWT_SECRET", "")
+	cfg.Auth.JWTSecret = getEnv("JWT_SECRET", "")
 	if cfg.Auth.JWTSecret == "" && !cfg.Features.DebugMode {
 		return nil, fmt.Errorf("JWT_SECRET is required in production")
 	}
@@ -175,36 +175,36 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-func getEnvString(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
+func getEnv(key, def string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
-	return defaultValue
+	return def
 }
 
-func getEnvInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		if intVal, err := strconv.Atoi(value); err == nil {
-			return intVal
+func getEnvInt(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		if i, err := strconv.Atoi(v); err == nil {
+			return i
 		}
 	}
-	return defaultValue
+	return def
 }
 
-func getEnvBool(key string, defaultValue bool) bool {
-	if value := os.Getenv(key); value != "" {
-		if boolVal, err := strconv.ParseBool(value); err == nil {
-			return boolVal
+func getEnvBool(key string, def bool) bool {
+	if v := os.Getenv(key); v != "" {
+		if b, err := strconv.ParseBool(v); err == nil {
+			return b
 		}
 	}
-	return defaultValue
+	return def
 }
 
-func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
-	if value := os.Getenv(key); value != "" {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
+func getEnvDuration(key string, def time.Duration) time.Duration {
+	if v := os.Getenv(key); v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			return d
 		}
 	}
-	return defaultValue
+	return def
 }

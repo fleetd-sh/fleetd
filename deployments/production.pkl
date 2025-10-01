@@ -1,0 +1,341 @@
+/// Production deployment configuration using Pkl
+/// This demonstrates type-safe configuration with validation
+
+module fleet.deployment
+
+import "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.0.1/api/core/v1/PodSpec.pkl"
+
+/// Base deployment configuration that can be extended
+abstract class BaseDeployment {
+  apiVersion: String = "fleet/v1"
+  kind: String = "Deployment"
+
+  metadata: Metadata
+  spec: DeploymentSpec
+}
+
+class Metadata {
+  name: String
+  namespace: String = "default"
+  labels: Map<String, String> = new {}
+  annotations: Map<String, String> = new {}
+}
+
+class DeploymentSpec {
+  selector: Selector
+  strategy: Strategy
+  template: Template
+}
+
+class Selector {
+  matchLabels: Map<String, String>
+  matchExpressions: List<SelectorExpression>? = null
+}
+
+class SelectorExpression {
+  key: String
+  operator: "In"|"NotIn"|"Exists"|"DoesNotExist"
+  values: List<String>?
+}
+
+abstract class Strategy {
+  type: String
+}
+
+class RollingUpdateStrategy extends Strategy {
+  type = "RollingUpdate"
+  rollingUpdate: RollingUpdate
+}
+
+class RollingUpdate {
+  maxUnavailable: String = "25%"
+  maxSurge: String = "25%"
+  waitTime: Duration = 30.s
+  healthTimeout: Duration = 5.min
+}
+
+class CanaryStrategy extends Strategy {
+  type = "Canary"
+  canary: Canary
+}
+
+class Canary {
+  steps: List<CanaryStep>
+  analysis: Analysis?
+
+  local constraint = steps.last.weight == 100
+}
+
+class CanaryStep {
+  weight: Int(isBetween(1, 100))
+  duration: Duration
+}
+
+class Analysis {
+  metrics: List<String>
+  threshold: Float(isBetween(0.0, 1.0))
+}
+
+class BlueGreenStrategy extends Strategy {
+  type = "BlueGreen"
+  blueGreen: BlueGreen
+}
+
+class BlueGreen {
+  autoPromote: Boolean = true
+  promoteTimeout: Duration = 30.min
+  scaleDownDelay: Duration = 5.min
+}
+
+class Template {
+  metadata: TemplateMetadata?
+  spec: TemplateSpec
+}
+
+class TemplateMetadata {
+  labels: Map<String, String> = new {}
+  annotations: Map<String, String> = new {}
+}
+
+class TemplateSpec {
+  artifacts: List<Artifact>(length >= 1)
+  config: Map<String, Any>?
+  healthCheck: HealthCheck?
+  preDeploy: Hook?
+  postDeploy: Hook?
+}
+
+class Artifact {
+  name: String(length >= 1)
+  version: String(matches(Regex(#"^v?[0-9]+\.[0-9]+\.[0-9]+.*$"#)))
+  url: String(matches(Regex(#"^https?://.*$"#)))?
+  checksum: String(matches(Regex(#"^(sha256|sha512|md5):[a-f0-9]+$"#)))?
+  type: "binary"|"container"|"config" = "binary"
+  target: String = "/opt/app"
+  mode: String = "755"
+  env: Map<String, String> = new {}
+}
+
+class HealthCheck {
+  httpGet: HTTPGetAction?
+  exec: ExecAction?
+  tcpSocket: TCPSocketAction?
+  initialDelaySeconds: Int = 30
+  periodSeconds: Int = 10
+  timeoutSeconds: Int = 5
+  successThreshold: Int = 1
+  failureThreshold: Int = 3
+
+  local constraint = (httpGet != null) || (exec != null) || (tcpSocket != null)
+}
+
+class HTTPGetAction {
+  path: String
+  port: Int(isBetween(1, 65535))
+  host: String?
+  scheme: "HTTP"|"HTTPS" = "HTTP"
+  headers: Map<String, String> = new {}
+}
+
+class ExecAction {
+  command: List<String>(length >= 1)
+}
+
+class TCPSocketAction {
+  port: Int(isBetween(1, 65535))
+  host: String?
+}
+
+class Hook {
+  exec: ExecAction?
+  timeout: Duration = 5.min
+}
+
+/// Production deployment configuration
+deployment: BaseDeployment = new {
+  metadata = new Metadata {
+    name = "myapp-production"
+    namespace = "production"
+    labels = new {
+      ["app"] = "myapp"
+      ["environment"] = "production"
+      ["managed-by"] = "fleetd"
+    }
+    annotations = new {
+      ["deployment.fleet/description"] = "Production deployment of MyApp"
+      ["deployment.fleet/contact"] = "platform-team@example.com"
+    }
+  }
+
+  spec = new DeploymentSpec {
+    selector = new Selector {
+      matchLabels = new {
+        ["environment"] = "production"
+        ["region"] = "us-west"
+        ["tier"] = "edge"
+      }
+    }
+
+    strategy = new CanaryStrategy {
+      canary = new Canary {
+        steps = new {
+          // Start with 5% of devices
+          new CanaryStep {
+            weight = 5
+            duration = 10.min
+          }
+          // Expand to 25%
+          new CanaryStep {
+            weight = 25
+            duration = 30.min
+          }
+          // Expand to 50%
+          new CanaryStep {
+            weight = 50
+            duration = 30.min
+          }
+          // Full rollout
+          new CanaryStep {
+            weight = 100
+            duration = 0.s
+          }
+        }
+        analysis = new Analysis {
+          metrics = new {
+            "error-rate"
+            "p99-latency"
+            "cpu-usage"
+            "memory-usage"
+          }
+          threshold = 0.95
+        }
+      }
+    }
+
+    template = new Template {
+      metadata = new TemplateMetadata {
+        labels = new {
+          ["version"] = "v2.1.0"
+          ["release"] = "stable"
+        }
+      }
+      spec = new TemplateSpec {
+        artifacts = new {
+          new Artifact {
+            name = "myapp-binary"
+            version = "v2.1.0"
+            url = "https://releases.example.com/myapp/v2.1.0/myapp-linux-arm64.tar.gz"
+            checksum = "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            type = "binary"
+            target = "/opt/myapp/bin"
+            mode = "755"
+            env = new {
+              ["MYAPP_VERSION"] = "v2.1.0"
+              ["MYAPP_ENV"] = "production"
+            }
+          }
+          new Artifact {
+            name = "myapp-config"
+            version = "v2.1.0"
+            url = "https://releases.example.com/myapp/v2.1.0/config.yaml"
+            checksum = "sha256:a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+            type = "config"
+            target = "/etc/myapp"
+            mode = "644"
+          }
+        }
+
+        config = new {
+          ["restart_on_failure"] = true
+          ["max_restart_attempts"] = 3
+          ["log_level"] = "info"
+          ["metrics_enabled"] = true
+        }
+
+        healthCheck = new HealthCheck {
+          httpGet = new HTTPGetAction {
+            path = "/health"
+            port = 8080
+            scheme = "HTTP"
+            headers = new {
+              ["X-Health-Check"] = "fleetd"
+            }
+          }
+          initialDelaySeconds = 60
+          periodSeconds = 30
+          timeoutSeconds = 10
+          successThreshold = 2
+          failureThreshold = 3
+        }
+
+        preDeploy = new Hook {
+          exec = new ExecAction {
+            command = new {
+              "/usr/local/bin/pre-deploy.sh"
+              "v2.1.0"
+            }
+          }
+          timeout = 2.min
+        }
+
+        postDeploy = new Hook {
+          exec = new ExecAction {
+            command = new {
+              "/usr/local/bin/post-deploy.sh"
+              "v2.1.0"
+              "--notify"
+            }
+          }
+          timeout = 5.min
+        }
+      }
+    }
+  }
+}
+
+/// Development override for testing
+development: BaseDeployment = (deployment) {
+  metadata {
+    name = "myapp-dev"
+    namespace = "development"
+    labels {
+      ["environment"] = "development"
+    }
+  }
+
+  spec {
+    selector {
+      matchLabels = new {
+        ["environment"] = "development"
+      }
+    }
+
+    // Use simple rolling update for dev
+    strategy = new RollingUpdateStrategy {
+      rollingUpdate = new RollingUpdate {
+        maxUnavailable = "50%"
+        maxSurge = "50%"
+        waitTime = 5.s
+        healthTimeout = 1.min
+      }
+    }
+
+    template {
+      spec {
+        artifacts {
+          [0] {
+            version = "latest"
+            url = "http://dev-releases.local/myapp-latest.tar.gz"
+            checksum = null  // Skip checksum validation in dev
+          }
+        }
+
+        // Faster health checks for dev
+        healthCheck {
+          initialDelaySeconds = 10
+          periodSeconds = 5
+        }
+      }
+    }
+  }
+}

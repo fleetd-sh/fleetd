@@ -142,7 +142,7 @@ You should change the password after first login.
 
 	// 4. Create systemd service file
 	systemdService := `[Unit]
-Description=FleetD Agent
+Description=fleetd Agent
 After=network-online.target
 Wants=network-online.target
 
@@ -208,10 +208,10 @@ WantedBy=multi-user.target
 	fmt.Printf("Modified cmdline.txt to run firstrun.sh on first boot\n")
 
 	// 9. Create a simple README for reference
-	readme := `FleetD Automatic Installation
+	readme := `fleetd Automatic Installation
 =============================
 
-FleetD will be automatically installed on first boot.
+fleetd will be automatically installed on first boot.
 
 The system will:
 1. Run firstrun.sh on first boot (via cmdline.txt)

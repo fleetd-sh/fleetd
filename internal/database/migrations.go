@@ -60,6 +60,11 @@ func NewMigrator(config *MigrationConfig) (*Migrator, error) {
 }
 
 // Initialize initializes the migrator with database connection
+//
+// NOTE: The migrator does NOT take ownership of the database connection.
+// The caller remains responsible for closing the connection when appropriate.
+// Calling migrator.Close() will close the connection, so only do that if
+// you want to close everything.
 func (m *Migrator) Initialize(db *sql.DB, driver string) error {
 	// Create source from embedded filesystem
 	source, err := iofs.New(migrationsFS, "migrations")
@@ -279,7 +284,12 @@ func (m *Migrator) Force(version int) error {
 	return nil
 }
 
-// Close closes the migrator
+// Close closes the migrator and its underlying database connection
+//
+// WARNING: This will close the database connection passed to Initialize().
+// Only call this when you're completely done with both migrations AND
+// the database connection. In most cases, you should manage the database
+// connection lifecycle separately and not call this method.
 func (m *Migrator) Close() error {
 	if m.migrate != nil {
 		sourceErr, dbErr := m.migrate.Close()
@@ -294,12 +304,40 @@ func (m *Migrator) Close() error {
 }
 
 // RunMigrations is a convenience function to run migrations
+//
+// IMPORTANT: This function does NOT close the database connection.
+// The caller is responsible for managing the database connection lifecycle.
+// The migrator.Close() method is intentionally not called here because it
+// would close the underlying database connection, which should remain open
+// for the application to use after migrations are complete.
 func RunMigrations(ctx context.Context, db *sql.DB, driver string) error {
 	migrator, err := NewMigrator(nil)
 	if err != nil {
 		return err
 	}
-	defer migrator.Close()
+
+	// IMPORTANT: Do NOT defer migrator.Close() here!
+	// Closing the migrator would close the database connection,
+	// but the caller expects to continue using the connection.
+
+	if err := migrator.Initialize(db, driver); err != nil {
+		return err
+	}
+
+	return migrator.Up(ctx)
+}
+
+// RunMigrationsAndClose runs migrations and closes everything
+//
+// This function runs migrations and then closes both the migrator and
+// the database connection. Use this only when you want to run migrations
+// as a one-off operation and don't need the database connection afterwards.
+func RunMigrationsAndClose(ctx context.Context, db *sql.DB, driver string) error {
+	migrator, err := NewMigrator(nil)
+	if err != nil {
+		return err
+	}
+	defer migrator.Close() // This WILL close the database connection
 
 	if err := migrator.Initialize(db, driver); err != nil {
 		return err

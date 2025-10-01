@@ -1,27 +1,32 @@
 "use client";
-
-import * as React from "react";
+import {
+  ComponentPlaceholderIcon,
+  DesktopIcon,
+  HamburgerMenuIcon,
+  MagnifyingGlassIcon,
+  MoonIcon,
+  SunIcon,
+} from "@radix-ui/react-icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ComponentPlaceholderIcon, MoonIcon, SunIcon, DesktopIcon, MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 const navigationItems = [
   {
@@ -45,21 +50,24 @@ const navigationItems = [
     description: "View device metrics and logs",
   },
   {
+    title: "Observability",
+    href: "/observability",
+    description: "Advanced metrics and log analytics",
+  },
+  {
     title: "Settings",
     href: "/settings",
     description: "Configure system settings",
   },
 ];
-
 export function AppHeader() {
   const pathname = usePathname();
-  const { setTheme, theme } = useTheme();
+  const { setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
-
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   React.useEffect(() => {
     setMounted(true);
   }, []);
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
@@ -68,7 +76,6 @@ export function AppHeader() {
             <ComponentPlaceholderIcon className="h-6 w-6" />
             <span className="font-bold inline-block">fleetd</span>
           </Link>
-
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               {navigationItems.map((item) => (
@@ -77,7 +84,7 @@ export function AppHeader() {
                     <NavigationMenuLink
                       className={cn(
                         navigationMenuTriggerStyle(),
-                        pathname === item.href && "bg-accent"
+                        pathname === item.href && "bg-accent",
                       )}
                     >
                       {item.title}
@@ -88,9 +95,40 @@ export function AppHeader() {
             </NavigationMenuList>
           </NavigationMenu>
         </div>
-
         <div className="ml-auto flex items-center gap-2">
-          <button
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
+                <HamburgerMenuIcon className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <ComponentPlaceholderIcon className="h-5 w-5" />
+                  <span>fleetd</span>
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 mt-6">
+                {navigationItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex flex-col gap-1 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                      pathname === item.href && "bg-accent",
+                    )}
+                  >
+                    <span className="font-medium">{item.title}</span>
+                    <span className="text-xs text-muted-foreground">{item.description}</span>
+                  </Link>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
+          <Button
             onClick={() => {
               const event = new KeyboardEvent("keydown", {
                 key: "k",
@@ -106,8 +144,7 @@ export function AppHeader() {
             <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
               <span className="text-xs">⌘</span>K
             </kbd>
-          </button>
-
+          </Button>
           {mounted && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

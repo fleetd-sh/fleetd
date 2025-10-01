@@ -15,12 +15,7 @@ interface UseErrorHandlerOptions {
 export function useErrorHandler(options: UseErrorHandlerOptions = {}) {
   const { toast } = useToast();
   const [retryCount, setRetryCount] = useState(0);
-  const {
-    showToast = true,
-    fallbackMessage = "An unexpected error occurred",
-    maxRetries = 3,
-    retryDelay = 1000,
-  } = options;
+  const { showToast = true, fallbackMessage = "An unexpected error occurred" } = options;
 
   const handleError = useCallback(
     async (error: unknown, customMessage?: string) => {

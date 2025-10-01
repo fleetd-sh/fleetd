@@ -1,0 +1,337 @@
+# Example: Deploying an IoT sensor firmware update to a fleet of devices
+# This shows a real-world scenario of updating temperature sensor firmware
+# across thousands of devices in multiple regions
+
+apiVersion: fleet/v1
+kind: Deployment
+metadata:
+  name: temp-sensor-firmware-v2.4.1
+  namespace: production
+  labels:
+    type: firmware
+    component: temperature-sensor
+    version: v2.4.1
+    criticality: medium
+  annotations:
+    description: "Fix temperature reading drift issue and add humidity support"
+    jira-ticket: "IOT-2843"
+    approved-by: "engineering-lead@company.com"
+
+spec:
+  # Target devices with specific hardware and regions
+  selector:
+    matchLabels:
+      device-type: temp-sensor-mk3
+      environment: production
+    matchExpressions:
+    - key: region
+      operator: In
+      values: ["us-west", "us-east", "eu-west"]
+    - key: firmware-version
+      operator: NotIn
+      values: ["v2.4.1"]  # Skip devices already updated
+
+  # Use canary deployment for safety
+  strategy:
+    type: Canary
+    canary:
+      steps:
+      # Phase 1: Test on small group (1%)
+      - weight: 1
+        duration: 2h
+        pauseAfter: true  # Manual approval required
+
+      # Phase 2: Expand to 10%
+      - weight: 10
+        duration: 4h
+
+      # Phase 3: Half the fleet
+      - weight: 50
+        duration: 6h
+
+      # Phase 4: Complete rollout
+      - weight: 100
+        duration: 0
+
+      # Automatic analysis during canary
+      analysis:
+        interval: 5m
+        metrics:
+        - temperature-reading-accuracy
+        - sensor-response-time
+        - device-restart-count
+        - error-rate
+        queries:
+        - name: temperature-reading-accuracy
+          prometheus: |
+            avg(
+              abs(temperature_reading - temperature_reference)
+              / temperature_reference
+            ) < 0.02  # Less than 2% deviation
+        - name: sensor-response-time
+          prometheus: |
+            histogram_quantile(0.99,
+              rate(sensor_read_duration_seconds_bucket[5m])
+            ) < 0.5  # 99th percentile under 500ms
+        threshold: 0.98  # 98% devices must pass
+
+  # Rollout configuration
+  rollout:
+    maxUnavailable: 5%  # Never take more than 5% offline
+    maxSurge: 10%       # Can temporarily have 10% extra during update
+    progressTimeout: 15m # Timeout if no progress in 15 minutes
+
+  # The actual update payload
+  template:
+    spec:
+      artifacts:
+      # Main firmware binary
+      - name: sensor-firmware
+        version: v2.4.1
+        type: firmware
+        url: https://firmware.company.com/releases/v2.4.1/temp-sensor-mk3.bin
+        checksum: sha256:a7d2cb4f6e12a9c43fe421d2e5c10c9876b5d4e123f456789abcdef0123456789
+        signature: https://firmware.company.com/releases/v2.4.1/temp-sensor-mk3.bin.sig
+        size: 524288  # 512KB
+        target: /dev/mtd0  # Flash partition
+
+      # Configuration update
+      - name: sensor-config
+        version: v2.4.1
+        type: config
+        url: https://firmware.company.com/releases/v2.4.1/config.json
+        checksum: sha256:b8e3dc5f7e23b9c54fe532e1f5d10c9876b5d4e234f567890bcdef0234567890
+        target: /etc/sensor/config.json
+        backup: true
+
+      # Update hooks
+      hooks:
+        preUpdate:
+        - name: backup-calibration
+          command: ["/usr/bin/sensor-util", "backup-calibration", "/tmp/calibration.bak"]
+          timeout: 30s
+
+        - name: enter-update-mode
+          command: ["/usr/bin/sensor-util", "enter-bootloader"]
+          timeout: 10s
+
+        postUpdate:
+        - name: restore-calibration
+          command: ["/usr/bin/sensor-util", "restore-calibration", "/tmp/calibration.bak"]
+          timeout: 30s
+
+        - name: verify-firmware
+          command: ["/usr/bin/sensor-util", "verify-firmware", "--version", "v2.4.1"]
+          timeout: 60s
+          critical: true  # Rollback if this fails
+
+        - name: run-self-test
+          command: ["/usr/bin/sensor-util", "self-test", "--comprehensive"]
+          timeout: 120s
+          critical: true
+
+        - name: restart-services
+          command: ["systemctl", "restart", "sensor-daemon"]
+          timeout: 30s
+
+        rollback:
+        - name: flash-backup-firmware
+          command: ["/usr/bin/sensor-util", "flash-backup"]
+          timeout: 180s
+
+        - name: factory-reset
+          command: ["/usr/bin/sensor-util", "factory-reset", "--preserve-config"]
+          timeout: 60s
+
+      # Health checks after update
+      healthCheck:
+        # HTTP endpoint check
+        httpGet:
+          path: /api/v1/health
+          port: 8080
+          scheme: HTTP
+          headers:
+            X-Firmware-Version: v2.4.1
+        initialDelaySeconds: 60
+        periodSeconds: 30
+        timeoutSeconds: 10
+        successThreshold: 3
+        failureThreshold: 5
+
+        # Custom sensor checks
+        exec:
+          command: ["/usr/bin/sensor-util", "health-check"]
+        periodSeconds: 60
+
+        # TCP connectivity check
+        tcpSocket:
+          port: 1883  # MQTT port
+        periodSeconds: 30
+
+      # Validation rules
+      validation:
+        requirements:
+        - name: battery-level
+          check: "battery_percentage > 30"
+          message: "Battery must be above 30% for firmware update"
+
+        - name: storage-space
+          check: "available_storage > 10485760"  # 10MB
+          message: "Insufficient storage space for update"
+
+        - name: temperature-range
+          check: "device_temperature > -10 && device_temperature < 50"
+          message: "Device temperature out of safe update range"
+
+        - name: network-quality
+          check: "signal_strength > -80"  # dBm
+          message: "Network signal too weak for reliable update"
+
+      # Rollback configuration
+      rollback:
+        enabled: true
+        triggers:
+        - metric: error_rate
+          threshold: 0.05  # 5% error rate
+          duration: 5m
+
+        - metric: device_restarts
+          threshold: 3
+          duration: 10m
+
+        - metric: temperature_deviation
+          threshold: 5  # 5 degrees
+          duration: 15m
+
+        strategy: immediate  # or "gradual"
+        preserveData: true
+
+      # Resource limits during update
+      resources:
+        limits:
+          cpu: 50%      # Don't use more than 50% CPU
+          memory: 64MB  # Memory limit for update process
+          network: 1MB  # Network bandwidth limit
+
+      # Scheduling preferences
+      scheduling:
+        window:
+          start: "02:00"  # 2 AM local time
+          end: "06:00"    # 6 AM local time
+          timezone: "device_local"
+
+        blackoutDates:
+        - "2024-12-24"  # Christmas Eve
+        - "2024-12-25"  # Christmas
+        - "2024-12-31"  # New Year's Eve
+        - "2025-01-01"  # New Year's Day
+
+        priority: medium  # low, medium, high, critical
+
+        deviceGroups:
+        - name: "critical-infrastructure"
+          schedule: "manual"  # Require manual approval
+        - name: "test-devices"
+          schedule: "immediate"
+        - name: "production"
+          schedule: "maintenance-window"
+
+  # Notification configuration
+  notifications:
+    slack:
+      webhook: https://hooks.slack.com/services/XXX/YYY/ZZZ
+      channels:
+        started: "#deployments"
+        failed: "#alerts"
+        completed: "#deployments"
+
+    email:
+      recipients:
+        - ops-team@company.com
+        - on-call@company.com
+      events:
+        - deployment_failed
+        - rollback_initiated
+
+    pagerduty:
+      integrationKey: "xxx-yyy-zzz"
+      severity: warning
+      events:
+        - deployment_failed
+        - high_failure_rate
+
+  # Monitoring and observability
+  monitoring:
+    dashboards:
+      grafana: https://grafana.company.com/d/iot-deployment
+      datadog: https://app.datadoghq.com/dashboard/xxx-yyy
+
+    alerts:
+    - name: high-failure-rate
+      condition: failure_rate > 0.05
+      severity: critical
+
+    - name: slow-rollout
+      condition: rollout_speed < 10  # devices per minute
+      severity: warning
+
+    metrics:
+      custom:
+      - name: temperature_accuracy
+        query: |
+          SELECT AVG(ABS(reading - reference) / reference) * 100
+          FROM sensor_readings
+          WHERE firmware_version = 'v2.4.1'
+
+      - name: power_consumption
+        query: |
+          SELECT AVG(power_mw)
+          FROM device_metrics
+          WHERE firmware_version = 'v2.4.1'
+
+  # Compliance and audit
+  compliance:
+    standards:
+      - ISO-27001
+      - SOC2
+      - GDPR
+
+    approvals:
+      required: true
+      approvers:
+        - role: engineering-lead
+        - role: security-team
+        - role: compliance-officer
+
+    audit:
+      enabled: true
+      retention: 90d
+      includePayload: false  # Don't log sensitive data
+
+  # Cost optimization
+  costOptimization:
+    bandwidth:
+      strategy: "p2p"  # Use peer-to-peer for nearby devices
+      maxPeers: 5
+
+    timing:
+      preferOffPeak: true
+      offPeakHours: "00:00-06:00"
+
+    compression:
+      enabled: true
+      algorithm: zstd
+
+  # Testing configuration
+  testing:
+    smokeTest:
+      enabled: true
+      percentage: 0.1  # Test on 0.1% first
+      duration: 30m
+
+    synthetic:
+      enabled: true
+      endpoints:
+        - /api/v1/temperature
+        - /api/v1/humidity
+        - /api/v1/diagnostics

@@ -2,18 +2,14 @@ import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { env } from "@/env";
 import { authStorage } from "@/lib/auth/storage";
-import type { AuthClient, FleetClient, OrganizationClient } from "./client-types";
-import { AuthService } from "./gen/public/v1/auth_connect";
-import { FleetService } from "./gen/public/v1/fleet_connect";
-import { OrganizationService } from "./gen/public/v1/organization_connect";
+import type { AuthClient, FleetClient } from "./client-types";
+import { AuthService } from "./gen/public/v1/auth_pb";
+import { FleetService } from "./gen/public/v1/fleet_pb";
 
-// Create transport with interceptors for auth and error handling
 const transport = createConnectTransport({
   baseUrl: env.NEXT_PUBLIC_API_URL,
   interceptors: [
-    // Auth interceptor
     (next) => async (req) => {
-      // Add auth headers
       const headers = authStorage.getAuthHeaders();
       for (const [key, value] of Object.entries(headers)) {
         req.header.set(key, value);
@@ -37,16 +33,12 @@ const transport = createConnectTransport({
   ],
 });
 
-// Create service clients
 // Note: Type casting is required due to Connect RPC generated types not directly matching
+// biome-ignore lint/suspicious/noExplicitAny: Required for Connect RPC type compatibility
 export const fleetClient = createClient(FleetService as any, transport) as unknown as FleetClient;
+// biome-ignore lint/suspicious/noExplicitAny: Required for Connect RPC type compatibility
 export const authClient = createClient(AuthService as any, transport) as unknown as AuthClient;
-export const orgClient = createClient(
-  OrganizationService as any,
-  transport,
-) as unknown as OrganizationClient;
 
 export * from "./gen/public/v1/auth_pb";
 // Export types for convenience
 export * from "./gen/public/v1/fleet_pb";
-export * from "./gen/public/v1/organization_pb";

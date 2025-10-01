@@ -256,7 +256,6 @@ func (s *AuthService) RevokeAPIKey(ctx context.Context, req *connect.Request[pub
 // SSO methods (placeholders for now)
 
 func (s *AuthService) GetSSOProviders(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[publicv1.GetSSOProvidersResponse], error) {
-	// Return empty list for now - SSO not yet implemented
 	return connect.NewResponse(&publicv1.GetSSOProvidersResponse{
 		Providers: []*publicv1.SSOProvider{},
 	}), nil

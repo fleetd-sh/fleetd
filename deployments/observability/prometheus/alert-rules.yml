@@ -1,0 +1,250 @@
+groups:
+  - name: fleetd_availability
+    interval: 30s
+    rules:
+      - alert: HighAPIErrorRate
+        expr: |
+          (
+            sum(rate(fleetd_http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(fleetd_http_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: fleetd
+        annotations:
+          summary: "High API error rate detected"
+          description: "API error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      - alert: HighAPILatency
+        expr: |
+          histogram_quantile(0.99, sum(rate(fleetd_http_request_duration_seconds_bucket[5m])) by (le)) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "High API latency detected"
+          description: "99th percentile API latency is {{ $value | humanizeDuration }} (threshold: 1s)"
+
+      - alert: LowDeviceOnlineRate
+        expr: |
+          (
+            sum(fleetd_devices_online)
+            /
+            sum(fleetd_devices_total)
+          ) < 0.8
+        for: 10m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "Low device online rate"
+          description: "Only {{ $value | humanizePercentage }} of devices are online (threshold: 80%)"
+
+  - name: fleetd_updates
+    interval: 30s
+    rules:
+      - alert: HighUpdateFailureRate
+        expr: |
+          (
+            sum(rate(fleetd_updates_failed_total[5m]))
+            /
+            sum(rate(fleetd_updates_initiated_total[5m]))
+          ) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: fleetd
+        annotations:
+          summary: "High update failure rate"
+          description: "Update failure rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+
+      - alert: HighRollbackRate
+        expr: |
+          sum(rate(fleetd_updates_rollbacks_total[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "High rollback rate detected"
+          description: "{{ $value | humanize }} rollbacks per second detected"
+
+      - alert: SlowUpdateDuration
+        expr: |
+          histogram_quantile(0.95, sum(rate(fleetd_updates_duration_seconds_bucket[5m])) by (le)) > 3600
+        for: 10m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "Slow update duration"
+          description: "95th percentile update duration is {{ $value | humanizeDuration }} (threshold: 1 hour)"
+
+  - name: fleetd_resources
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: |
+          avg(fleetd_system_cpu_usage_percent) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "High CPU usage"
+          description: "Average CPU usage is {{ $value }}% (threshold: 80%)"
+
+      - alert: HighMemoryUsage
+        expr: |
+          sum(fleetd_system_memory_usage_bytes{type="rss"}) > 2147483648
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "High memory usage"
+          description: "RSS memory usage is {{ $value | humanize1024 }}B (threshold: 2GB)"
+
+      - alert: HighDiskUsage
+        expr: |
+          (
+            sum(fleetd_system_disk_usage_bytes{type="used"})
+            /
+            sum(fleetd_system_disk_usage_bytes{type="total"})
+          ) > 0.9
+        for: 10m
+        labels:
+          severity: critical
+          service: fleetd
+        annotations:
+          summary: "High disk usage"
+          description: "Disk usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+
+  - name: fleetd_database
+    interval: 30s
+    rules:
+      - alert: HighDatabaseQueryLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(fleetd_database_query_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "High database query latency"
+          description: "95th percentile query latency is {{ $value | humanizeDuration }} (threshold: 500ms)"
+
+      - alert: DatabaseConnectionPoolExhaustion
+        expr: |
+          (
+            fleetd_database_connections_active
+            /
+            (fleetd_database_connections_active + fleetd_database_connections_idle)
+          ) > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          service: fleetd
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "{{ $value | humanizePercentage }} of database connections are active (threshold: 90%)"
+
+      - alert: HighDatabaseErrorRate
+        expr: |
+          sum(rate(fleetd_database_query_errors_total[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "High database error rate"
+          description: "{{ $value | humanize }} database errors per second"
+
+  - name: fleetd_devices
+    interval: 30s
+    rules:
+      - alert: DeviceRegistrationFailures
+        expr: |
+          sum(rate(fleetd_devices_registrations_total{result="failure"}[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "Device registration failures detected"
+          description: "{{ $value | humanize }} registration failures per second"
+
+      - alert: NoDeviceHeartbeat
+        expr: |
+          sum(rate(fleetd_devices_heartbeats_total[5m])) by (device_id) == 0
+        for: 15m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "No heartbeat from device {{ $labels.device_id }}"
+          description: "Device {{ $labels.device_id }} has not sent a heartbeat for 15 minutes"
+
+      - alert: HighDeviceErrorRate
+        expr: |
+          sum(rate(fleetd_devices_errors_total[5m])) by (device_id) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "High error rate for device {{ $labels.device_id }}"
+          description: "Device {{ $labels.device_id }} is experiencing {{ $value | humanize }} errors per second"
+
+  - name: fleetd_telemetry
+    interval: 30s
+    rules:
+      - alert: MetricsIngestionBacklog
+        expr: |
+          fleetd_telemetry_metrics_buffered > 10000
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "Large metrics ingestion backlog"
+          description: "{{ $value | humanize }} metrics are buffered for ingestion"
+
+      - alert: LowMetricsIngestionRate
+        expr: |
+          sum(rate(fleetd_telemetry_metrics_ingested_total[5m])) < 10
+        for: 10m
+        labels:
+          severity: warning
+          service: fleetd
+        annotations:
+          summary: "Low metrics ingestion rate"
+          description: "Only {{ $value | humanize }} metrics per second being ingested (expected: >10)"
+
+  - name: fleetd_agent
+    interval: 30s
+    rules:
+      - alert: HighAgentRestartRate
+        expr: |
+          sum(rate(fleetd_agent_restarts_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: fleetd-agent
+        annotations:
+          summary: "High agent restart rate"
+          description: "Agent is restarting {{ $value | humanize }} times per second"
+
+      - alert: FrequentConfigReloads
+        expr: |
+          sum(rate(fleetd_agent_config_reloads_total[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: fleetd-agent
+        annotations:
+          summary: "Frequent configuration reloads"
+          description: "Agent configuration is being reloaded {{ $value | humanize }} times per second"

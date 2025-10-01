@@ -1,5 +1,4 @@
 "use client";
-
 import {
   CheckCircledIcon,
   DownloadIcon,
@@ -11,7 +10,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Snippet, SnippetContent, SnippetCopyButton, SnippetHeader } from "@/components/ui/snippet";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -49,9 +49,7 @@ interface ProvisioningProfile {
   createdAt: string;
   lastUsed?: string;
 }
-
 // DiscoveredDevice type is imported from protobuf-generated types
-
 export function DeviceAutoSetup() {
   const { toast } = useToast();
   const [selectedDevices, setSelectedDevices] = useState<Set<string>>(new Set());
@@ -59,19 +57,19 @@ export function DeviceAutoSetup() {
   const [isSetupDialogOpen, setIsSetupDialogOpen] = useState(false);
   const [autoSetupEnabled, setAutoSetupEnabled] = useState(false);
 
+  // Generate unique IDs for form elements
+  const autoSetupId = useId();
   // Fetch discovered devices
   const { data: discoveredDevices, refetch: refetchDiscovered } = useQuery({
     queryKey: ["discovered-devices"],
     queryFn: api.getDiscoveredDevices,
     refetchInterval: 30000,
   });
-
   // Fetch provisioning profiles
   const { data: profiles, refetch: refetchProfiles } = useQuery({
     queryKey: ["provisioning-profiles"],
     queryFn: api.getProvisioningProfiles,
   });
-
   // Auto-setup mutation
   const setupDevicesMutation = useMutation({
     mutationFn: async ({ deviceIds, profileId }: { deviceIds: string[]; profileId: string }) => {
@@ -93,7 +91,6 @@ export function DeviceAutoSetup() {
       });
     },
   });
-
   // Create profile mutation
   const createProfileMutation = useMutation({
     mutationFn: api.createProvisioningProfile,
@@ -105,10 +102,8 @@ export function DeviceAutoSetup() {
       refetchProfiles();
     },
   });
-
   const handleSelectAll = () => {
     if (!discoveredDevices) return;
-
     const unregistered = discoveredDevices.filter((d) => !d.isRegistered);
     if (selectedDevices.size === unregistered.length) {
       setSelectedDevices(new Set());
@@ -116,7 +111,6 @@ export function DeviceAutoSetup() {
       setSelectedDevices(new Set(unregistered.map((d) => d.deviceId)));
     }
   };
-
   const handleAutoSetup = () => {
     if (selectedDevices.size === 0 || !selectedProfile) {
       toast({
@@ -126,15 +120,12 @@ export function DeviceAutoSetup() {
       });
       return;
     }
-
     setupDevicesMutation.mutate({
       deviceIds: Array.from(selectedDevices),
       profileId: selectedProfile,
     });
   };
-
   const unregisteredDevices = discoveredDevices?.filter((d) => !d.isRegistered) || [];
-
   return (
     <>
       {/* Auto-Setup Card */}
@@ -151,9 +142,9 @@ export function DeviceAutoSetup() {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Label htmlFor="auto-setup">Auto-setup new devices</Label>
+              <Label htmlFor={autoSetupId}>Auto-setup new devices</Label>
               <Switch
-                id="auto-setup"
+                id={autoSetupId}
                 checked={autoSetupEnabled}
                 onCheckedChange={setAutoSetupEnabled}
               />
@@ -173,7 +164,6 @@ export function DeviceAutoSetup() {
                 </Button>
               )}
             </div>
-
             <ScrollArea className="h-[200px] border rounded-lg">
               <AnimatePresence mode="popLayout">
                 {unregisteredDevices.length === 0 ? (
@@ -238,7 +228,6 @@ export function DeviceAutoSetup() {
               </AnimatePresence>
             </ScrollArea>
           </div>
-
           {/* Provisioning Profile Selection */}
           <div>
             <Label htmlFor="profile">Provisioning Profile</Label>
@@ -258,7 +247,6 @@ export function DeviceAutoSetup() {
                   ))}
                 </SelectContent>
               </Select>
-
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -291,7 +279,6 @@ export function DeviceAutoSetup() {
               </Dialog>
             </div>
           </div>
-
           {/* Action Buttons */}
           <div className="flex gap-2">
             <Button
@@ -310,7 +297,6 @@ export function DeviceAutoSetup() {
                 </>
               )}
             </Button>
-
             <Dialog open={isSetupDialogOpen} onOpenChange={setIsSetupDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline">
@@ -329,7 +315,6 @@ export function DeviceAutoSetup() {
               </DialogContent>
             </Dialog>
           </div>
-
           {/* Auto-Setup Status */}
           {autoSetupEnabled && (
             <motion.div
@@ -351,7 +336,6 @@ export function DeviceAutoSetup() {
     </>
   );
 }
-
 // Profile Manager Component
 function ProfileManager({
   profiles,
@@ -369,13 +353,18 @@ function ProfileManager({
     plugins: [],
   });
 
+  // Generate unique IDs for form elements
+  const profileNameId = useId();
+  const profileDescId = useId();
+  const wifiSsidId = useId();
+  const enableSshId = useId();
+  const autoUpdateId = useId();
   return (
     <Tabs defaultValue="existing" className="w-full">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="existing">Existing Profiles</TabsTrigger>
         <TabsTrigger value="create">Create New</TabsTrigger>
       </TabsList>
-
       <TabsContent value="existing" className="space-y-2">
         <ScrollArea className="h-[300px]">
           {profiles.length === 0 ? (
@@ -408,57 +397,51 @@ function ProfileManager({
           )}
         </ScrollArea>
       </TabsContent>
-
       <TabsContent value="create" className="space-y-4">
         <div className="space-y-3">
           <div>
-            <Label htmlFor="profile-name">Profile Name</Label>
+            <Label htmlFor={profileNameId}>Profile Name</Label>
             <Input
-              id="profile-name"
+              id={profileNameId}
               value={newProfile.name}
               onChange={(e) => setNewProfile({ ...newProfile, name: e.target.value })}
               placeholder="e.g., Production Devices"
             />
           </div>
-
           <div>
-            <Label htmlFor="profile-desc">Description</Label>
+            <Label htmlFor={profileDescId}>Description</Label>
             <Input
-              id="profile-desc"
+              id={profileDescId}
               value={newProfile.description}
               onChange={(e) => setNewProfile({ ...newProfile, description: e.target.value })}
               placeholder="Configuration for production environment"
             />
           </div>
-
           <div>
-            <Label htmlFor="wifi-ssid">WiFi SSID (Optional)</Label>
+            <Label htmlFor={wifiSsidId}>WiFi SSID (Optional)</Label>
             <Input
-              id="wifi-ssid"
+              id={wifiSsidId}
               value={newProfile.wifiSSID}
               onChange={(e) => setNewProfile({ ...newProfile, wifiSSID: e.target.value })}
               placeholder="Network name"
             />
           </div>
-
           <div className="flex items-center justify-between">
-            <Label htmlFor="enable-ssh">Enable SSH Access</Label>
+            <Label htmlFor={enableSshId}>Enable SSH Access</Label>
             <Switch
-              id="enable-ssh"
+              id={enableSshId}
               checked={newProfile.enableSSH}
               onCheckedChange={(checked) => setNewProfile({ ...newProfile, enableSSH: checked })}
             />
           </div>
-
           <div className="flex items-center justify-between">
-            <Label htmlFor="auto-update">Enable Auto-Updates</Label>
+            <Label htmlFor={autoUpdateId}>Enable Auto-Updates</Label>
             <Switch
-              id="auto-update"
+              id={autoUpdateId}
               checked={newProfile.autoUpdate}
               onCheckedChange={(checked) => setNewProfile({ ...newProfile, autoUpdate: checked })}
             />
           </div>
-
           <Button
             className="w-full"
             onClick={() => onCreateProfile(newProfile)}
@@ -471,71 +454,68 @@ function ProfileManager({
     </Tabs>
   );
 }
-
 // Manual Setup Instructions Component
 function ManualSetupInstructions({ profileId }: { profileId: string }) {
   const serverUrl = typeof window !== "undefined" ? window.location.origin : "";
-
   const setupScript = `#!/bin/bash
-# FleetD Device Setup Script
+# fleetd Device Setup Script
 # Generated for profile: ${profileId}
-
 FLEET_SERVER="${serverUrl}"
 PROFILE_ID="${profileId}"
-
-# Download and install FleetD agent
+# Download and install fleetd agent
 curl -sSL $FLEET_SERVER/install.sh | bash
-
 # Configure with profile
 fleetd configure --server $FLEET_SERVER --profile $PROFILE_ID
-
 # Start agent
 systemctl enable fleetd
 systemctl start fleetd
-
 echo "Device configured successfully!"
 `;
-
   return (
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-medium mb-2">Option 1: Run Setup Script</h3>
-        <pre className="bg-muted p-3 rounded-lg text-xs overflow-x-auto">
-          <code>{setupScript}</code>
-        </pre>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-2"
-          onClick={() => {
-            navigator.clipboard.writeText(setupScript);
-          }}
-        >
-          Copy Script
-        </Button>
+        <Snippet defaultValue="setup">
+          <SnippetHeader language="bash">
+            <SnippetCopyButton value={setupScript} />
+          </SnippetHeader>
+          <SnippetContent language="bash">{setupScript}</SnippetContent>
+        </Snippet>
       </div>
-
       <div>
         <h3 className="text-sm font-medium mb-2">Option 2: Manual Configuration</h3>
-        <ol className="text-sm space-y-2">
-          <li>1. SSH into your device</li>
+        <ol className="text-sm space-y-3">
           <li>
-            2. Download FleetD agent:
-            <code className="bg-muted px-2 py-1 rounded text-xs block mt-1">
-              curl -sSL {serverUrl}/install.sh | bash
-            </code>
+            <span>1. SSH into your device</span>
           </li>
           <li>
-            3. Configure the agent:
-            <code className="bg-muted px-2 py-1 rounded text-xs block mt-1">
-              fleetd configure --server {serverUrl}
-            </code>
+            <span>2. Download fleetd agent:</span>
+            <Snippet defaultValue="download" className="mt-1">
+              <SnippetHeader language="bash">
+                <SnippetCopyButton value={`curl -sSL ${serverUrl}/install.sh | bash`} />
+              </SnippetHeader>
+              <SnippetContent language="bash">
+                curl -sSL {serverUrl}/install.sh | bash
+              </SnippetContent>
+            </Snippet>
           </li>
           <li>
-            4. Start the service:
-            <code className="bg-muted px-2 py-1 rounded text-xs block mt-1">
-              systemctl start fleetd
-            </code>
+            <span>3. Configure the agent:</span>
+            <Snippet defaultValue="configure" className="mt-1">
+              <SnippetHeader language="bash">
+                <SnippetCopyButton value={`fleetd configure --server ${serverUrl}`} />
+              </SnippetHeader>
+              <SnippetContent language="bash">fleetd configure --server {serverUrl}</SnippetContent>
+            </Snippet>
+          </li>
+          <li>
+            <span>4. Start the service:</span>
+            <Snippet defaultValue="start" className="mt-1">
+              <SnippetHeader language="bash">
+                <SnippetCopyButton value="systemctl start fleetd" />
+              </SnippetHeader>
+              <SnippetContent language="bash">systemctl start fleetd</SnippetContent>
+            </Snippet>
           </li>
         </ol>
       </div>

@@ -15,6 +15,7 @@
       "!build",
       "!.turbo",
       "!coverage",
+      "!lib/api/gen",
       "!*.min.js",
       "!*.min.css",
       "!**/*.css"

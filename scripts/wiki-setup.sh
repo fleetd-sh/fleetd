@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# FleetD Wiki Setup Script
-# This script helps set up and manage the FleetD documentation wiki
+# fleetd Wiki Setup Script
+# This script helps set up and manage the fleetd documentation wiki
 
 WIKI_REPO="git@github.com:fleetd-sh/fleetd.wiki.git"
 WIKI_DIR="wiki"
@@ -108,7 +108,7 @@ create_wiki_instructions() {
 # Main menu
 show_menu() {
     echo ""
-    echo "FleetD Wiki Management"
+    echo "fleetd Wiki Management"
     echo "====================="
     echo ""
     echo "1) Check if GitHub wiki exists"

@@ -9,7 +9,7 @@ export function useRealtime() {
   const { toast } = useToast();
 
   useSSE("/api/v1/events", {
-    onMessage: (data) => {
+    onMessage: (data: any) => {
       switch (data.type) {
         case "device_update":
           // Invalidate device queries to refetch latest data

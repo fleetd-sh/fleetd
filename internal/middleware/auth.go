@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -52,10 +53,9 @@ type APIKeyValidator interface {
 }
 
 // NewAuthMiddleware creates a new auth middleware
-func NewAuthMiddleware(config AuthConfig) func(http.Handler) http.Handler {
+func NewAuthMiddleware(config AuthConfig) (func(http.Handler) http.Handler, error) {
 	if config.JWTSecretKey == "" {
-		// This should fail fast in production
-		panic("JWT secret key is required for authentication")
+		return nil, fmt.Errorf("JWT secret key is required for authentication")
 	}
 
 	jwtConfig := &security.JWTConfig{
@@ -67,7 +67,7 @@ func NewAuthMiddleware(config AuthConfig) func(http.Handler) http.Handler {
 
 	jwtManager, err := security.NewJWTManager(jwtConfig)
 	if err != nil {
-		panic("Failed to create JWT manager: " + err.Error())
+		return nil, fmt.Errorf("failed to create JWT manager: %w", err)
 	}
 
 	logger := config.Logger
@@ -98,7 +98,7 @@ func NewAuthMiddleware(config AuthConfig) func(http.Handler) http.Handler {
 		requireAuth:   config.RequireAuth,
 	}
 
-	return am.Middleware
+	return am.Middleware, nil
 }
 
 // isPublicPath checks if the path is public
@@ -244,13 +244,11 @@ func NewLoggingMiddleware() func(http.Handler) http.Handler {
 				written:        false,
 			}
 
-			// Process request
 			next.ServeHTTP(rw, r)
 
 			// Log request details
 			duration := time.Since(start)
 
-			// Use appropriate log level based on status code
 			logLevel := slog.LevelInfo
 			if rw.statusCode >= 400 && rw.statusCode < 500 {
 				logLevel = slog.LevelWarn

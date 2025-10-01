@@ -1,5 +1,4 @@
 "use client";
-
 import { ChevronRightIcon, CircleIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
@@ -13,7 +12,6 @@ interface DeviceListProps {
   selectedDevice: string | null;
   onSelectDevice: (deviceId: string | null) => void;
 }
-
 export function DeviceList({ devices, selectedDevice, onSelectDevice }: DeviceListProps) {
   return (
     <ScrollArea className="h-[400px] pr-4">

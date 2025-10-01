@@ -3,7 +3,7 @@
 
 BASE_URL="http://localhost:8090"
 
-echo "Testing FleetD REST API endpoints..."
+echo "Testing fleetd REST API endpoints..."
 echo "====================================="
 echo ""
 

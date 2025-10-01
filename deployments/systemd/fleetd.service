@@ -1,0 +1,50 @@
+[Unit]
+Description=FleetD IoT Device Management Agent
+Documentation=https://github.com/fleetd/fleetd
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/fleetd-agent
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+TimeoutStopSec=30
+
+# Watchdog - agent must send keepalive every 30s
+WatchdogSec=30
+NotifyAccess=main
+
+# Security hardening
+User=fleetd
+Group=fleetd
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/fleetd /var/log/fleetd /var/cache/fleetd
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# Resource limits
+MemoryMax=256M
+CPUQuota=50%
+TasksMax=64
+
+# Environment
+Environment="FLEETD_CONFIG_PATH=/etc/fleetd/config.yaml"
+Environment="FLEETD_DATA_DIR=/var/lib/fleetd"
+Environment="FLEETD_LOG_LEVEL=info"
+EnvironmentFile=-/etc/fleetd/environment
+
+[Install]
+WantedBy=multi-user.target

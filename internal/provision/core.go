@@ -483,7 +483,7 @@ systemctl daemon-reload
 systemctl enable fleetd
 systemctl start fleetd
 
-echo "FleetD agent setup complete!"
+echo "fleetd agent setup complete!"
 `
 }
 

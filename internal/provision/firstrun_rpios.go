@@ -11,7 +11,7 @@ import (
 func createRasPiOSFirstRun(config Config) string {
 	// Create a firstrun.sh script that follows Raspberry Pi OS conventions
 	script := `#!/bin/bash
-# FleetD First Boot Setup for Raspberry Pi OS
+# fleetd First Boot Setup for Raspberry Pi OS
 # This script runs once on first boot via cmdline.txt
 
 set +e  # Don't exit on error to ensure cleanup happens
@@ -24,7 +24,7 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
-log "Starting FleetD first boot setup..."
+log "Starting fleetd first boot setup..."
 
 # Check if we've already run
 if [ -f "$MARKER_FILE" ]; then
@@ -56,7 +56,7 @@ if [ -f "$BOOT_PARTITION/fleetd" ]; then
     log "Installing fleetd binary..."
     cp "$BOOT_PARTITION/fleetd" /usr/local/bin/fleetd
     chmod +x /usr/local/bin/fleetd
-    log "FleetD binary installed"
+    log "fleetd binary installed"
 else
     log "ERROR: fleetd binary not found in $BOOT_PARTITION"
     exit 1
@@ -67,7 +67,7 @@ if [ -f "$BOOT_PARTITION/fleetd.service" ]; then
     log "Installing fleetd systemd service..."
     cp "$BOOT_PARTITION/fleetd.service" /etc/systemd/system/
     systemctl daemon-reload
-    log "FleetD service installed"
+    log "fleetd service installed"
 else
     log "ERROR: fleetd.service not found in $BOOT_PARTITION"
     exit 1
@@ -107,11 +107,11 @@ sleep 5
 
 # Check status
 if systemctl is-active --quiet fleetd; then
-    log "FleetD is running successfully!"
+    log "fleetd is running successfully!"
     DEVICE_IP=$(hostname -I | awk '{print $1}')
     log "Device IP: $DEVICE_IP"
 else
-    log "WARNING: FleetD service failed to start"
+    log "WARNING: fleetd service failed to start"
     log "Check logs with: journalctl -u fleetd"
 fi
 

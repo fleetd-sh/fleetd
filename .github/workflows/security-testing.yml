@@ -1,0 +1,390 @@
+name: Security Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run security tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL to test'
+        required: false
+        default: 'https://localhost:8080'
+      test_categories:
+        description: 'Test categories (comma-separated)'
+        required: false
+        default: 'all'
+      fail_threshold:
+        description: 'Failure threshold'
+        required: false
+        default: 'High'
+        type: choice
+        options:
+        - Critical
+        - High
+        - Medium
+        - Low
+
+env:
+  GO_VERSION: '1.21'
+  NODE_VERSION: '18'
+
+jobs:
+  security-tests:
+    name: Run Security Tests
+    runs-on: ubuntu-latest
+
+    services:
+      # Start fleetd services for testing
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fleetd_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            studio/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('studio/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: |
+          go mod download
+          cd studio && npm ci
+
+      - name: Install security tools
+        run: |
+          # Install gosec for Go security analysis
+          go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+
+          # Install npm audit for Node.js security analysis
+          npm install -g npm-audit-ci-wrapper
+
+          # Install additional security tools
+          sudo apt-get update
+          sudo apt-get install -y nmap sqlmap
+
+      - name: Build fleetd services
+        run: |
+          make build-all
+
+      - name: Start fleetd services
+        run: |
+          # Start services in background for testing
+          make start-test-env &
+
+          # Wait for services to be ready
+          timeout 60s bash -c 'until curl -f http://localhost:8080/health; do sleep 2; done'
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/fleetd_test?sslmode=disable
+
+      - name: Build security test framework
+        run: |
+          cd test/security/cmd/security-test
+          go build -o security-test .
+
+      - name: Run security tests
+        run: |
+          # Set target URL
+          TARGET_URL="${{ github.event.inputs.target_url || 'http://localhost:8080' }}"
+          TEST_CATEGORIES="${{ github.event.inputs.test_categories || 'all' }}"
+          FAIL_THRESHOLD="${{ github.event.inputs.fail_threshold || 'High' }}"
+
+          # Run comprehensive security testing
+          ./test/security/cmd/security-test/security-test \
+            -target "$TARGET_URL" \
+            -categories "$TEST_CATEGORIES" \
+            -formats json,html,junit,sarif \
+            -output ./security-reports \
+            -timeout 30m \
+            -ci \
+            -fail-threshold "$FAIL_THRESHOLD" \
+            -verbose
+        env:
+          FLEETD_API_KEY: ${{ secrets.FLEETD_API_KEY }}
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports-${{ github.run_number }}
+          path: security-reports/
+          retention-days: 30
+
+      - name: Upload SARIF results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: security-reports/security-report-*.sarif
+
+      - name: Comment PR with security results
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request' && always()
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read security report summary
+            const reportFiles = fs.readdirSync('security-reports')
+              .filter(file => file.endsWith('.json'));
+
+            if (reportFiles.length === 0) {
+              console.log('No security reports found');
+              return;
+            }
+
+            const reportPath = path.join('security-reports', reportFiles[0]);
+            const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+
+            const summary = report.summary;
+            const compliance = report.compliance;
+
+            let comment = `## 🔒 Security Test Results\n\n`;
+            comment += `**Overall Security Score:** ${summary.overall_score}% (${summary.security_grade})\n`;
+            comment += `**Risk Level:** ${summary.risk_level}\n\n`;
+
+            if (compliance) {
+              comment += `**Compliance Score:** ${compliance.overall_score}% (${compliance.overall_status})\n\n`;
+            }
+
+            comment += `### Vulnerability Summary\n`;
+            comment += `- **Total:** ${summary.total_vulnerabilities}\n`;
+            comment += `- **Critical:** ${summary.critical_count}\n`;
+            comment += `- **High:** ${summary.high_count}\n`;
+            comment += `- **Medium:** ${summary.medium_count}\n`;
+            comment += `- **Low:** ${summary.low_count}\n\n`;
+
+            if (summary.critical_count > 0 || summary.high_count > 0) {
+              comment += `### ⚠️ Action Required\n`;
+              comment += `Critical or high-severity vulnerabilities found. Please review and address before merging.\n\n`;
+            }
+
+            comment += `### 📊 Reports\n`;
+            comment += `Detailed security reports are available in the [build artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).\n`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Create security issue for failures
+        uses: actions/github-script@v6
+        if: failure() && github.event_name == 'schedule'
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Read security report if available
+            let reportSummary = 'Security testing failed. Check the workflow logs for details.';
+
+            try {
+              const reportFiles = fs.readdirSync('security-reports')
+                .filter(file => file.endsWith('.json'));
+
+              if (reportFiles.length > 0) {
+                const reportPath = path.join('security-reports', reportFiles[0]);
+                const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+                const summary = report.summary;
+
+                reportSummary = `Security assessment detected ${summary.total_vulnerabilities} vulnerabilities:\n`;
+                reportSummary += `- Critical: ${summary.critical_count}\n`;
+                reportSummary += `- High: ${summary.high_count}\n`;
+                reportSummary += `- Medium: ${summary.medium_count}\n`;
+                reportSummary += `- Low: ${summary.low_count}\n`;
+              }
+            } catch (e) {
+              console.log('Could not read security report:', e.message);
+            }
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔒 Security Test Failure - ${new Date().toISOString().split('T')[0]}`,
+              body: `## Security Testing Failed\n\n${reportSummary}\n\n**Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n**Next Steps:**\n1. Review the security reports\n2. Address critical and high-severity issues\n3. Re-run security tests\n4. Update security controls as needed`,
+              labels: ['security', 'bug', 'priority-high']
+            });
+
+      - name: Stop test services
+        if: always()
+        run: |
+          make stop-test-env || true
+
+  dependency-security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run Go vulnerability scan
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run npm audit
+        run: |
+          cd studio
+          npm audit --audit-level moderate
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  container-security:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: |
+          docker build -f Dockerfile.device-api -t fleetd/device-api:test .
+          docker build -f Dockerfile.platform-api -t fleetd/platform-api:test .
+
+      - name: Run Trivy container scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'fleetd/device-api:test'
+          format: 'sarif'
+          output: 'trivy-container-results.sarif'
+
+      - name: Upload container scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-container-results.sarif'
+
+  security-baseline:
+    name: Security Baseline Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run security baseline check
+        run: |
+          # Check for common security issues
+          echo "Checking for exposed secrets..."
+          git log --all --full-history -- | grep -i -E "(password|secret|key|token)" || true
+
+          echo "Checking file permissions..."
+          find . -type f -perm /o+w -exec ls -la {} \; || true
+
+          echo "Checking for TODO/FIXME security items..."
+          grep -r -i -E "(TODO|FIXME).*security" . || true
+
+      - name: Check for exposed secrets with gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify-security-team:
+    name: Notify Security Team
+    runs-on: ubuntu-latest
+    needs: [security-tests, dependency-security, container-security]
+    if: failure() && (github.ref == 'refs/heads/main' || github.event_name == 'schedule')
+
+    steps:
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#security-alerts'
+          text: |
+            🚨 Security testing failed for fleetd
+            Branch: ${{ github.ref }}
+            Workflow: ${{ github.workflow }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: '🔒 fleetd Security Test Failure'
+          to: security-team@company.com
+          from: github-actions@company.com
+          body: |
+            Security testing has failed for the fleetd project.
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Please investigate and address any security issues immediately.
+
+            Best regards,
+            GitHub Actions Security Bot

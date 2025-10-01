@@ -76,7 +76,6 @@ func CORS(allowedOrigins []string, allowedMethods []string, allowedHeaders []str
 				w.Header().Set("Access-Control-Allow-Origin", "*")
 			}
 
-			// Handle preflight requests
 			if r.Method == http.MethodOptions {
 				w.Header().Set("Access-Control-Allow-Methods", methodsStr)
 				w.Header().Set("Access-Control-Allow-Headers", headersStr)

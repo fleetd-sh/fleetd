@@ -479,6 +479,7 @@ func (s *FleetService) StreamTelemetry(ctx context.Context, req *connect.Request
 	return nil
 }
 
+// Update-related methods
 func (s *FleetService) ListUpdates(ctx context.Context, req *connect.Request[pb.ListUpdatesRequest]) (*connect.Response[pb.ListUpdatesResponse], error) {
 	// TODO: Implement update listing
 	return connect.NewResponse(&pb.ListUpdatesResponse{}), nil

@@ -1,0 +1,187 @@
+# Mock Data Scenarios for FleetD Development
+
+# Each scenario generates different patterns of device behavior
+# useful for testing different features and edge cases
+
+scenarios:
+  # Normal operations - typical day-to-day fleet behavior
+  normal:
+    name: "Normal Operations"
+    description: "Typical fleet with regular patterns"
+    devices:
+      - count: 20
+        type: raspberry-pi
+        behavior:
+          online_probability: 0.95
+          cpu_pattern: business_hours
+          error_rate: 0.01
+      - count: 10
+        type: edge-server
+        behavior:
+          online_probability: 0.99
+          cpu_pattern: constant_moderate
+          error_rate: 0.005
+      - count: 30
+        type: iot-sensor
+        behavior:
+          online_probability: 0.90
+          cpu_pattern: periodic_burst
+          error_rate: 0.02
+
+  # High load scenario - testing performance limits
+  high_load:
+    name: "High Load"
+    description: "All devices under heavy load"
+    devices:
+      - count: 50
+        type: gpu-compute
+        behavior:
+          online_probability: 1.0
+          cpu_base: 85
+          memory_base: 90
+          network_spike_frequency: 0.3
+          error_rate: 0.05
+
+  # Unstable network - devices frequently going offline
+  unstable_network:
+    name: "Unstable Network"
+    description: "Simulates poor network conditions"
+    devices:
+      - count: 40
+        type: industrial-controller
+        behavior:
+          online_probability: 0.60
+          connection_flapping: true
+          flap_interval: 60  # seconds
+          error_rate: 0.10
+
+  # Geographic distribution - devices across time zones
+  global_fleet:
+    name: "Global Fleet"
+    description: "Devices distributed across time zones"
+    devices:
+      - count: 10
+        type: edge-server
+        location: "San Francisco"
+        behavior:
+          cpu_pattern: timezone_aware
+      - count: 10
+        type: edge-server
+        location: "London"
+        behavior:
+          cpu_pattern: timezone_aware
+      - count: 10
+        type: edge-server
+        location: "Tokyo"
+        behavior:
+          cpu_pattern: timezone_aware
+      - count: 10
+        type: edge-server
+        location: "Sydney"
+        behavior:
+          cpu_pattern: timezone_aware
+
+  # Deployment testing - frequent updates and rollbacks
+  deployment_chaos:
+    name: "Deployment Chaos"
+    description: "Frequent deployments with failures"
+    devices:
+      - count: 30
+        type: raspberry-pi
+        behavior:
+          deployment_frequency: 300  # every 5 minutes
+          deployment_failure_rate: 0.20
+          rollback_probability: 0.50
+
+  # Resource leak simulation
+  memory_leak:
+    name: "Memory Leak"
+    description: "Devices with growing memory usage"
+    devices:
+      - count: 15
+        type: edge-server
+        behavior:
+          memory_leak: true
+          leak_rate: 0.5  # % per hour
+          max_before_restart: 95
+
+  # Mixed fleet - realistic diverse environment
+  production_simulation:
+    name: "Production Simulation"
+    description: "Realistic mixed fleet"
+    devices:
+      - count: 100
+        type: raspberry-pi
+        behavior:
+          online_probability: 0.92
+          cpu_pattern: business_hours
+      - count: 50
+        type: edge-server
+        behavior:
+          online_probability: 0.98
+          cpu_pattern: constant_moderate
+      - count: 200
+        type: iot-sensor
+        behavior:
+          online_probability: 0.85
+          cpu_pattern: minimal
+      - count: 20
+        type: gpu-compute
+        behavior:
+          online_probability: 0.99
+          cpu_pattern: batch_processing
+      - count: 30
+        type: industrial-controller
+        behavior:
+          online_probability: 0.95
+          cpu_pattern: shift_based
+
+# Data generation patterns
+patterns:
+  business_hours:
+    description: "Higher load during 9-5 business hours"
+    profile:
+      "00-06": 0.2
+      "07-08": 0.4
+      "09-12": 0.7
+      "13-14": 0.5  # lunch dip
+      "15-17": 0.8
+      "18-19": 0.4
+      "20-23": 0.3
+
+  constant_moderate:
+    description: "Steady moderate load"
+    profile:
+      "00-23": 0.5
+
+  periodic_burst:
+    description: "Regular spikes every few hours"
+    profile:
+      interval: 180  # minutes
+      burst_duration: 10
+      burst_intensity: 0.9
+      idle_intensity: 0.1
+
+  batch_processing:
+    description: "Heavy processing in batches"
+    profile:
+      "00-03": 0.9  # night batch
+      "04-11": 0.2
+      "12-15": 0.8  # afternoon batch
+      "16-23": 0.3
+
+  shift_based:
+    description: "Three 8-hour shifts"
+    profile:
+      "00-07": 0.6  # night shift
+      "08-15": 0.7  # day shift
+      "16-23": 0.65 # evening shift
+
+  minimal:
+    description: "Very low constant usage"
+    profile:
+      "00-23": 0.05
+
+  timezone_aware:
+    description: "Adjusts pattern based on device timezone"
+    auto_adjust: true

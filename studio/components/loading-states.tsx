@@ -1,8 +1,6 @@
 "use client";
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
 export function DeviceCardSkeleton() {
   return (
     <Card>
@@ -20,7 +18,6 @@ export function DeviceCardSkeleton() {
     </Card>
   );
 }
-
 export function DataTableSkeleton() {
   return (
     <div className="space-y-4">
@@ -31,7 +28,7 @@ export function DataTableSkeleton() {
       <div className="rounded-md border">
         <div className="p-4 space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center space-x-4">
+            <div key={`skeleton-item-${i + 1}`} className="flex items-center space-x-4">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="space-y-2">
                 <Skeleton className="h-4 w-[200px]" />
@@ -44,7 +41,6 @@ export function DataTableSkeleton() {
     </div>
   );
 }
-
 export function ChartSkeleton() {
   return (
     <div className="space-y-4">
@@ -56,7 +52,6 @@ export function ChartSkeleton() {
     </div>
   );
 }
-
 export function StatsCardSkeleton() {
   return (
     <Card>
@@ -71,7 +66,6 @@ export function StatsCardSkeleton() {
     </Card>
   );
 }
-
 export function DashboardLoadingSkeleton() {
   return (
     <div className="space-y-8">
@@ -81,7 +75,6 @@ export function DashboardLoadingSkeleton() {
         <Skeleton className="h-9 w-[140px]" />
         <Skeleton className="h-9 w-[120px]" />
       </div>
-
       {/* Stats Grid Skeleton */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCardSkeleton />
@@ -89,7 +82,6 @@ export function DashboardLoadingSkeleton() {
         <StatsCardSkeleton />
         <StatsCardSkeleton />
       </div>
-
       {/* Main Content Grid Skeleton */}
       <div className="grid gap-8 lg:grid-cols-2">
         <DeviceCardSkeleton />

@@ -1,0 +1,72 @@
+# Development overrides for local development
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: fleetd
+      POSTGRES_PASSWORD: fleetdpass
+      POSTGRES_DB: fleetd
+
+  platform-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile.platform-api
+    volumes:
+      - ../:/app
+      - /app/vendor
+    environment:
+      ENV: development
+      DEBUG: "true"
+      LOG_LEVEL: debug
+    command: ["air", "-c", ".air.toml"]
+
+  device-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile.device-api
+    volumes:
+      - ../:/app
+      - /app/vendor
+    environment:
+      ENV: development
+      DEBUG: "true"
+      LOG_LEVEL: debug
+    command: ["air", "-c", ".air.toml"]
+
+  studio:
+    build:
+      context: ../studio
+      dockerfile: Dockerfile
+      target: deps
+    volumes:
+      - ../studio:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      NODE_ENV: development
+    command: ["bun", "run", "dev"]
+    ports:
+      - "3000:3000"
+
+  # Development-only services
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: fleetd-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - fleetd-network
+
+  adminer:
+    image: adminer:latest
+    container_name: fleetd-adminer
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+    networks:
+      - fleetd-network

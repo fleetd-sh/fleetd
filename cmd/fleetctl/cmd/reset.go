@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"strings"
 
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 )
 
@@ -65,43 +69,73 @@ func runReset(cmd *cobra.Command, args []string, removeVolumes bool) error {
 		"traefik",
 	}
 
+	// Create Docker client
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return fmt.Errorf("failed to create Docker client: %w", err)
+	}
+	defer cli.Close()
+
 	// Stop and remove all fleetd containers
 	for _, service := range services {
 		containerName := "fleetd-" + service
 
-		// Check if container exists
-		checkCmd := exec.Command("docker", "ps", "-a", "--filter", "name="+containerName, "--format", "{{.Names}}")
-		output, _ := checkCmd.Output()
+		// List containers with filter
+		filterArgs := filters.NewArgs()
+		filterArgs.Add("name", containerName)
+		containers, _ := cli.ContainerList(ctx, container.ListOptions{
+			All:     true,
+			Filters: filterArgs,
+		})
 
-		if output != nil && len(output) > 0 {
+		for _, cnt := range containers {
 			printInfo("Removing %s...", service)
-			exec.Command("docker", "stop", containerName).Run()
-			exec.Command("docker", "rm", containerName).Run()
+			// Stop container if running
+			if cnt.State == "running" {
+				if err := cli.ContainerStop(ctx, cnt.ID, container.StopOptions{}); err != nil {
+					printWarning("Failed to stop %s: %v", service, err)
+				}
+			}
+			// Remove container
+			if err := cli.ContainerRemove(ctx, cnt.ID, container.RemoveOptions{Force: true}); err != nil {
+				printWarning("Failed to remove %s: %v", service, err)
+			}
 		}
 	}
 
 	// Remove network
 	printInfo("Removing Docker network...")
-	exec.Command("docker", "network", "rm", "fleetd-network").Run()
+	if err := cli.NetworkRemove(ctx, "fleetd-network"); err != nil {
+		if !strings.Contains(err.Error(), "not found") {
+			printWarning("Failed to remove network: %v", err)
+		}
+	}
 
 	if removeVolumes {
 		printInfo("Removing Docker volumes...")
 		volumes := []string{
-			"fleetd-postgres-data",
-			"fleetd-valkey-data",
-			"fleetd-metrics-data",
-			"fleetd-loki-data",
+			"fleetd_postgres_data",
+			"fleetd_valkey_data",
+			"fleetd_victoria_data",
+			"fleetd_loki_data",
 		}
-		for _, volume := range volumes {
-			exec.Command("docker", "volume", "rm", volume).Run()
+		for _, volumeName := range volumes {
+			if err := cli.VolumeRemove(ctx, volumeName, true); err != nil {
+				if !strings.Contains(err.Error(), "no such volume") {
+					printWarning("Failed to remove volume %s: %v", volumeName, err)
+				}
+			}
 		}
 	}
 
 	// Clean up dangling images
 	printInfo("Cleaning up dangling images...")
-	pruneCmd := exec.Command("docker", "image", "prune", "-f")
-	if err := pruneCmd.Run(); err != nil {
+	pruneReport, err := cli.ImagesPrune(ctx, filters.NewArgs())
+	if err != nil {
 		printWarning("Failed to prune images: %v", err)
+	} else if len(pruneReport.ImagesDeleted) > 0 {
+		printInfo("Removed %d dangling images", len(pruneReport.ImagesDeleted))
 	}
 
 	// Clean up data directory if it exists

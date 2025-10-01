@@ -1,16 +1,13 @@
 "use client";
-
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Device } from "@/lib/api/gen/public/v1/fleet_pb";
 
 type SystemInfo = NonNullable<Device["systemInfo"]>;
-
 interface DeviceSystemInfoProps {
   systemInfo?: SystemInfo;
 }
-
 export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
   if (!systemInfo) {
     return (
@@ -22,7 +19,6 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
       </Card>
     );
   }
-
   const formatBytes = (bytes: bigint | number): string => {
     const b = typeof bytes === "bigint" ? Number(bytes) : bytes;
     const sizes = ["B", "KB", "MB", "GB", "TB"];
@@ -30,7 +26,6 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
     const i = Math.floor(Math.log(b) / Math.log(1024));
     return `${(b / 1024 ** i).toFixed(2)} ${sizes[i]}`;
   };
-
   return (
     <Card>
       <CardHeader>
@@ -65,7 +60,6 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
             </div>
           </div>
         </div>
-
         {/* CPU Information */}
         <div>
           <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -93,7 +87,6 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
             )}
           </div>
         </div>
-
         {/* Memory Information */}
         <div>
           <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -105,7 +98,6 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
             <p className="font-mono">{formatBytes(systemInfo.memoryTotal || 0)}</p>
           </div>
         </div>
-
         {/* Storage Information */}
         <div>
           <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -117,7 +109,6 @@ export function DeviceSystemInfo({ systemInfo }: DeviceSystemInfoProps) {
             <p className="font-mono">{formatBytes(systemInfo.storageTotal || 0)}</p>
           </div>
         </div>
-
         {/* Additional Information */}
         {systemInfo.extra && Object.keys(systemInfo.extra).length > 0 && (
           <div>

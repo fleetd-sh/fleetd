@@ -1,5 +1,4 @@
 "use client";
-
 import { ActivityLogIcon, ArchiveIcon, DesktopIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,6 @@ import type { Device } from "@/lib/types";
 interface DeviceStatsProps {
   devices: Device[];
 }
-
 export function DeviceStats({ devices }: DeviceStatsProps) {
   const stats = {
     total: devices.length,
@@ -16,7 +14,6 @@ export function DeviceStats({ devices }: DeviceStatsProps) {
     offline: devices.filter((d) => d.status === "offline").length,
     types: [...new Set(devices.map((d) => d.type))].length,
   };
-
   const statCards = [
     {
       title: "Total Devices",
@@ -47,7 +44,6 @@ export function DeviceStats({ devices }: DeviceStatsProps) {
       bgColor: "bg-purple-50 dark:bg-purple-950",
     },
   ];
-
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {statCards.map((stat, index) => (

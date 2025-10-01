@@ -1,6 +1,5 @@
 "use client";
-
-import { MagnifyingGlassIcon, PlusIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { PlusIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { DeviceList } from "@/components/device-list";
@@ -10,24 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import type { Device as ProtoDevice } from "@/lib/api/gen/public/v1/fleet_pb";
-import {
-  useDeviceStats,
-  useDevices,
-  useDiscoverDevices,
-  useEventStream,
-  useTelemetry,
-} from "@/lib/api/hooks";
+import { useDeviceStats, useDevices, useEventStream, useTelemetry } from "@/lib/api/hooks";
 import type { Device } from "@/lib/types";
-
 export function DashboardContentRPC() {
   const { toast } = useToast();
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
-
   // Use Connect RPC hooks
   const { data: devicesResponse, refetch: refetchDevices } = useDevices();
   const { data: statsResponse } = useDeviceStats();
-  const discoverMutation = useDiscoverDevices();
-
   // Convert proto devices to our local type
   const devices: Device[] =
     devicesResponse?.devices?.map((d: ProtoDevice) => ({
@@ -43,13 +32,11 @@ export function DashboardContentRPC() {
       status: d.status === 1 ? "online" : "offline",
       metadata: d.metadata ? JSON.stringify(d.metadata) : undefined,
     })) || [];
-
   // Telemetry query with selected device
   const { data: telemetryPoints } = useTelemetry({
     deviceId: selectedDevice || "",
     limit: 100,
   });
-
   // Use event stream for real-time updates
   useEventStream(
     {
@@ -81,24 +68,6 @@ export function DashboardContentRPC() {
       }
     },
   );
-
-  const handleDiscoverDevices = async () => {
-    try {
-      const discovered = await discoverMutation.mutateAsync({ timeoutSeconds: 10 });
-      toast({
-        title: "Discovery Complete",
-        description: `Found ${discovered?.length || 0} device(s) on the network`,
-      });
-      refetchDevices();
-    } catch (_error) {
-      toast({
-        title: "Discovery Failed",
-        description: "Failed to discover devices on the network",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleRefresh = () => {
     refetchDevices();
     toast({
@@ -106,7 +75,6 @@ export function DashboardContentRPC() {
       description: "Dashboard data has been updated",
     });
   };
-
   // Convert telemetry points for chart
   interface TelemetryPoint {
     deviceId: string;
@@ -114,7 +82,6 @@ export function DashboardContentRPC() {
     value: number;
     timestamp?: { seconds: bigint; nanos: number };
   }
-
   const telemetryData =
     telemetryPoints?.map((point: TelemetryPoint) => ({
       device_id: point.deviceId,
@@ -126,7 +93,6 @@ export function DashboardContentRPC() {
           ).toISOString()
         : new Date().toISOString(),
     })) || [];
-
   return (
     <div className="space-y-8">
       {/* Action Bar */}
@@ -135,30 +101,19 @@ export function DashboardContentRPC() {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-wrap gap-4 justify-between items-center"
       >
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button onClick={handleRefresh} variant="outline" size="sm">
-            <ReloadIcon className="mr-2 h-4 w-4" />
+            <ReloadIcon className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button
-            onClick={handleDiscoverDevices}
-            variant="outline"
-            size="sm"
-            disabled={discoverMutation.isPending}
-          >
-            <MagnifyingGlassIcon className="mr-2 h-4 w-4" />
-            {discoverMutation.isPending ? "Discovering..." : "Discover Devices"}
-          </Button>
           <Button variant="default" size="sm">
-            <PlusIcon className="mr-2 h-4 w-4" />
+            <PlusIcon className="h-4 w-4 mr-2" />
             Add Device
           </Button>
         </div>
       </motion.div>
-
       {/* Stats Overview */}
       <DeviceStats devices={devices} />
-
       {/* Main Content Grid */}
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Device List */}
@@ -185,7 +140,6 @@ export function DashboardContentRPC() {
             </CardContent>
           </Card>
         </motion.div>
-
         {/* Telemetry Chart */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}

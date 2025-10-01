@@ -49,13 +49,17 @@ func newDevicesListCmd() *cobra.Command {
 		Short: "List all devices",
 		Long:  `Display a list of all registered devices in your fleet`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Get auth token from saved config, viper, or environment
-			authToken := getAuthToken()
+			// Get auth token and API URL from saved config, viper, or environment
+			authToken, apiURL := getAuthInfo()
 
 			// Create API client
-			apiClient, err := client.NewClient(&client.Config{
+			clientCfg := &client.Config{
 				AuthToken: authToken,
-			})
+			}
+			if apiURL != "" {
+				clientCfg.BaseURL = apiURL
+			}
+			apiClient, err := client.NewClient(clientCfg)
 			if err != nil {
 				return fmt.Errorf("failed to create API client: %w", err)
 			}
@@ -134,13 +138,17 @@ func newDevicesGetCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			deviceID := args[0]
 
-			// Get auth token from saved config, viper, or environment
-			authToken := getAuthToken()
+			// Get auth token and API URL from saved config, viper, or environment
+			authToken, apiURL := getAuthInfo()
 
 			// Create API client
-			apiClient, err := client.NewClient(&client.Config{
+			clientCfg := &client.Config{
 				AuthToken: authToken,
-			})
+			}
+			if apiURL != "" {
+				clientCfg.BaseURL = apiURL
+			}
+			apiClient, err := client.NewClient(clientCfg)
 			if err != nil {
 				return fmt.Errorf("failed to create API client: %w", err)
 			}
@@ -347,22 +355,23 @@ func newDevicesMetricsCmd() *cobra.Command {
 	return cmd
 }
 
-// getAuthToken retrieves the auth token from saved config, viper, or environment
-func getAuthToken() string {
+// getAuthInfo retrieves the auth token and API URL from saved config, viper, or environment
+func getAuthInfo() (string, string) {
 	// First check viper config (set during login in current session)
 	if token := viper.GetString("auth.token"); token != "" {
-		return token
+		return token, viper.GetString("auth.api_url")
 	}
 
 	// Check environment variable
 	if token := os.Getenv("FLEETCTL_AUTH_TOKEN"); token != "" {
-		return token
+		return token, os.Getenv("FLEETCTL_API_URL")
 	}
 
 	// Try to load from saved auth config
-	configPath := filepath.Join(os.Getenv("HOME"), ".fleetctl", "auth.json")
+	configPath := filepath.Join(os.Getenv("HOME"), ".fleetd", "auth.json")
 	if data, err := os.ReadFile(configPath); err == nil {
 		var authCfg struct {
+			APIURL       string    `json:"api_url"`
 			AccessToken  string    `json:"access_token"`
 			RefreshToken string    `json:"refresh_token"`
 			ExpiresAt    time.Time `json:"expires_at"`
@@ -370,19 +379,19 @@ func getAuthToken() string {
 		if err := json.Unmarshal(data, &authCfg); err == nil {
 			// Check if token is not expired (with 5 minute buffer)
 			if time.Now().Add(5 * time.Minute).Before(authCfg.ExpiresAt) {
-				return authCfg.AccessToken
+				return authCfg.AccessToken, authCfg.APIURL
 			}
 
 			// Token expired or about to expire, try to refresh
 			if authCfg.RefreshToken != "" {
 				if newToken := refreshAuthToken(authCfg.RefreshToken); newToken != "" {
-					return newToken
+					return newToken, authCfg.APIURL
 				}
 			}
 		}
 	}
 
-	return ""
+	return "", ""
 }
 
 // refreshAuthToken attempts to refresh the access token using a refresh token

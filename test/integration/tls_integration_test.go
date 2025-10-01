@@ -180,7 +180,7 @@ func TestMTLS_ServerClientIntegration(t *testing.T) {
 
 	// Should succeed with client certificate
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.Equal(t, "client.local", resp.Header.Get("X-Client-CN"))
+	assert.Equal(t, "fleetd-client", resp.Header.Get("X-Client-CN"))
 
 	// Test without client certificate (should fail)
 	clientWithoutCert := &http.Client{

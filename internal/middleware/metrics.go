@@ -45,10 +45,8 @@ func NewMetricsMiddleware(serviceName string) func(http.Handler) http.Handler {
 				reqSize = 0
 			}
 
-			// Process request
 			next.ServeHTTP(wrapped, r)
 
-			// Record metrics
 			duration := time.Since(start).Seconds()
 			endpoint := cleanPath(r.URL.Path)
 			statusStr := strconv.Itoa(wrapped.statusCode)

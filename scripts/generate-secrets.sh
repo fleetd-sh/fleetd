@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Generate secure secrets for FleetD
+# Generate secure secrets for fleetd
 # This script generates cryptographically secure random secrets
 
 set -e
 
-echo "🔐 FleetD Secret Generator"
+echo "🔐 fleetd Secret Generator"
 echo "=========================="
 echo ""
 

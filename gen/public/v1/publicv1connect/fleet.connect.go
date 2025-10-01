@@ -57,18 +57,33 @@ const (
 	// FleetServiceStreamTelemetryProcedure is the fully-qualified name of the FleetService's
 	// StreamTelemetry RPC.
 	FleetServiceStreamTelemetryProcedure = "/public.v1.FleetService/StreamTelemetry"
-	// FleetServiceListUpdatesProcedure is the fully-qualified name of the FleetService's ListUpdates
-	// RPC.
-	FleetServiceListUpdatesProcedure = "/public.v1.FleetService/ListUpdates"
-	// FleetServiceCreateUpdateProcedure is the fully-qualified name of the FleetService's CreateUpdate
-	// RPC.
-	FleetServiceCreateUpdateProcedure = "/public.v1.FleetService/CreateUpdate"
-	// FleetServiceDeployUpdateProcedure is the fully-qualified name of the FleetService's DeployUpdate
-	// RPC.
-	FleetServiceDeployUpdateProcedure = "/public.v1.FleetService/DeployUpdate"
-	// FleetServiceGetUpdateStatusProcedure is the fully-qualified name of the FleetService's
-	// GetUpdateStatus RPC.
-	FleetServiceGetUpdateStatusProcedure = "/public.v1.FleetService/GetUpdateStatus"
+	// FleetServiceCreateDeploymentProcedure is the fully-qualified name of the FleetService's
+	// CreateDeployment RPC.
+	FleetServiceCreateDeploymentProcedure = "/public.v1.FleetService/CreateDeployment"
+	// FleetServiceListDeploymentsProcedure is the fully-qualified name of the FleetService's
+	// ListDeployments RPC.
+	FleetServiceListDeploymentsProcedure = "/public.v1.FleetService/ListDeployments"
+	// FleetServiceGetDeploymentProcedure is the fully-qualified name of the FleetService's
+	// GetDeployment RPC.
+	FleetServiceGetDeploymentProcedure = "/public.v1.FleetService/GetDeployment"
+	// FleetServiceStartDeploymentProcedure is the fully-qualified name of the FleetService's
+	// StartDeployment RPC.
+	FleetServiceStartDeploymentProcedure = "/public.v1.FleetService/StartDeployment"
+	// FleetServicePauseDeploymentProcedure is the fully-qualified name of the FleetService's
+	// PauseDeployment RPC.
+	FleetServicePauseDeploymentProcedure = "/public.v1.FleetService/PauseDeployment"
+	// FleetServiceCancelDeploymentProcedure is the fully-qualified name of the FleetService's
+	// CancelDeployment RPC.
+	FleetServiceCancelDeploymentProcedure = "/public.v1.FleetService/CancelDeployment"
+	// FleetServiceRollbackDeploymentProcedure is the fully-qualified name of the FleetService's
+	// RollbackDeployment RPC.
+	FleetServiceRollbackDeploymentProcedure = "/public.v1.FleetService/RollbackDeployment"
+	// FleetServiceGetDeploymentStatusProcedure is the fully-qualified name of the FleetService's
+	// GetDeploymentStatus RPC.
+	FleetServiceGetDeploymentStatusProcedure = "/public.v1.FleetService/GetDeploymentStatus"
+	// FleetServiceStreamDeploymentEventsProcedure is the fully-qualified name of the FleetService's
+	// StreamDeploymentEvents RPC.
+	FleetServiceStreamDeploymentEventsProcedure = "/public.v1.FleetService/StreamDeploymentEvents"
 	// FleetServiceGetConfigurationProcedure is the fully-qualified name of the FleetService's
 	// GetConfiguration RPC.
 	FleetServiceGetConfigurationProcedure = "/public.v1.FleetService/GetConfiguration"
@@ -93,11 +108,16 @@ type FleetServiceClient interface {
 	// Telemetry
 	GetTelemetry(context.Context, *connect.Request[v1.GetTelemetryRequest]) (*connect.Response[v1.GetTelemetryResponse], error)
 	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.TelemetryEvent], error)
-	// Updates management
-	ListUpdates(context.Context, *connect.Request[v1.ListUpdatesRequest]) (*connect.Response[v1.ListUpdatesResponse], error)
-	CreateUpdate(context.Context, *connect.Request[v1.CreateUpdateRequest]) (*connect.Response[v1.CreateUpdateResponse], error)
-	DeployUpdate(context.Context, *connect.Request[v1.DeployUpdateRequest]) (*connect.Response[v1.DeployUpdateResponse], error)
-	GetUpdateStatus(context.Context, *connect.Request[v1.GetUpdateStatusRequest]) (*connect.Response[v1.GetUpdateStatusResponse], error)
+	// Deployment management - Unified API for all deployment types
+	CreateDeployment(context.Context, *connect.Request[v1.CreateDeploymentRequest]) (*connect.Response[v1.CreateDeploymentResponse], error)
+	ListDeployments(context.Context, *connect.Request[v1.ListDeploymentsRequest]) (*connect.Response[v1.ListDeploymentsResponse], error)
+	GetDeployment(context.Context, *connect.Request[v1.GetDeploymentRequest]) (*connect.Response[v1.GetDeploymentResponse], error)
+	StartDeployment(context.Context, *connect.Request[v1.StartDeploymentRequest]) (*connect.Response[v1.StartDeploymentResponse], error)
+	PauseDeployment(context.Context, *connect.Request[v1.PauseDeploymentRequest]) (*connect.Response[v1.PauseDeploymentResponse], error)
+	CancelDeployment(context.Context, *connect.Request[v1.CancelDeploymentRequest]) (*connect.Response[v1.CancelDeploymentResponse], error)
+	RollbackDeployment(context.Context, *connect.Request[v1.RollbackDeploymentRequest]) (*connect.Response[v1.RollbackDeploymentResponse], error)
+	GetDeploymentStatus(context.Context, *connect.Request[v1.GetDeploymentStatusRequest]) (*connect.Response[v1.GetDeploymentStatusResponse], error)
+	StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest]) (*connect.ServerStreamForClient[v1.DeploymentEvent], error)
 	// Configuration
 	GetConfiguration(context.Context, *connect.Request[v1.GetConfigurationRequest]) (*connect.Response[v1.GetConfigurationResponse], error)
 	UpdateConfiguration(context.Context, *connect.Request[v1.UpdateConfigurationRequest]) (*connect.Response[v1.UpdateConfigurationResponse], error)
@@ -164,28 +184,58 @@ func NewFleetServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(fleetServiceMethods.ByName("StreamTelemetry")),
 			connect.WithClientOptions(opts...),
 		),
-		listUpdates: connect.NewClient[v1.ListUpdatesRequest, v1.ListUpdatesResponse](
+		createDeployment: connect.NewClient[v1.CreateDeploymentRequest, v1.CreateDeploymentResponse](
 			httpClient,
-			baseURL+FleetServiceListUpdatesProcedure,
-			connect.WithSchema(fleetServiceMethods.ByName("ListUpdates")),
+			baseURL+FleetServiceCreateDeploymentProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("CreateDeployment")),
 			connect.WithClientOptions(opts...),
 		),
-		createUpdate: connect.NewClient[v1.CreateUpdateRequest, v1.CreateUpdateResponse](
+		listDeployments: connect.NewClient[v1.ListDeploymentsRequest, v1.ListDeploymentsResponse](
 			httpClient,
-			baseURL+FleetServiceCreateUpdateProcedure,
-			connect.WithSchema(fleetServiceMethods.ByName("CreateUpdate")),
+			baseURL+FleetServiceListDeploymentsProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("ListDeployments")),
 			connect.WithClientOptions(opts...),
 		),
-		deployUpdate: connect.NewClient[v1.DeployUpdateRequest, v1.DeployUpdateResponse](
+		getDeployment: connect.NewClient[v1.GetDeploymentRequest, v1.GetDeploymentResponse](
 			httpClient,
-			baseURL+FleetServiceDeployUpdateProcedure,
-			connect.WithSchema(fleetServiceMethods.ByName("DeployUpdate")),
+			baseURL+FleetServiceGetDeploymentProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("GetDeployment")),
 			connect.WithClientOptions(opts...),
 		),
-		getUpdateStatus: connect.NewClient[v1.GetUpdateStatusRequest, v1.GetUpdateStatusResponse](
+		startDeployment: connect.NewClient[v1.StartDeploymentRequest, v1.StartDeploymentResponse](
 			httpClient,
-			baseURL+FleetServiceGetUpdateStatusProcedure,
-			connect.WithSchema(fleetServiceMethods.ByName("GetUpdateStatus")),
+			baseURL+FleetServiceStartDeploymentProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("StartDeployment")),
+			connect.WithClientOptions(opts...),
+		),
+		pauseDeployment: connect.NewClient[v1.PauseDeploymentRequest, v1.PauseDeploymentResponse](
+			httpClient,
+			baseURL+FleetServicePauseDeploymentProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("PauseDeployment")),
+			connect.WithClientOptions(opts...),
+		),
+		cancelDeployment: connect.NewClient[v1.CancelDeploymentRequest, v1.CancelDeploymentResponse](
+			httpClient,
+			baseURL+FleetServiceCancelDeploymentProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("CancelDeployment")),
+			connect.WithClientOptions(opts...),
+		),
+		rollbackDeployment: connect.NewClient[v1.RollbackDeploymentRequest, v1.RollbackDeploymentResponse](
+			httpClient,
+			baseURL+FleetServiceRollbackDeploymentProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("RollbackDeployment")),
+			connect.WithClientOptions(opts...),
+		),
+		getDeploymentStatus: connect.NewClient[v1.GetDeploymentStatusRequest, v1.GetDeploymentStatusResponse](
+			httpClient,
+			baseURL+FleetServiceGetDeploymentStatusProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("GetDeploymentStatus")),
+			connect.WithClientOptions(opts...),
+		),
+		streamDeploymentEvents: connect.NewClient[v1.StreamDeploymentEventsRequest, v1.DeploymentEvent](
+			httpClient,
+			baseURL+FleetServiceStreamDeploymentEventsProcedure,
+			connect.WithSchema(fleetServiceMethods.ByName("StreamDeploymentEvents")),
 			connect.WithClientOptions(opts...),
 		),
 		getConfiguration: connect.NewClient[v1.GetConfigurationRequest, v1.GetConfigurationResponse](
@@ -211,21 +261,26 @@ func NewFleetServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 
 // fleetServiceClient implements FleetServiceClient.
 type fleetServiceClient struct {
-	listDevices         *connect.Client[v1.ListDevicesRequest, v1.ListDevicesResponse]
-	getDevice           *connect.Client[v1.GetDeviceRequest, v1.GetDeviceResponse]
-	updateDevice        *connect.Client[v1.UpdateDeviceRequest, v1.UpdateDeviceResponse]
-	deleteDevice        *connect.Client[v1.DeleteDeviceRequest, emptypb.Empty]
-	getDeviceStats      *connect.Client[v1.GetDeviceStatsRequest, v1.GetDeviceStatsResponse]
-	discoverDevices     *connect.Client[v1.DiscoverDevicesRequest, v1.DiscoverDevicesResponse]
-	getTelemetry        *connect.Client[v1.GetTelemetryRequest, v1.GetTelemetryResponse]
-	streamTelemetry     *connect.Client[v1.StreamTelemetryRequest, v1.TelemetryEvent]
-	listUpdates         *connect.Client[v1.ListUpdatesRequest, v1.ListUpdatesResponse]
-	createUpdate        *connect.Client[v1.CreateUpdateRequest, v1.CreateUpdateResponse]
-	deployUpdate        *connect.Client[v1.DeployUpdateRequest, v1.DeployUpdateResponse]
-	getUpdateStatus     *connect.Client[v1.GetUpdateStatusRequest, v1.GetUpdateStatusResponse]
-	getConfiguration    *connect.Client[v1.GetConfigurationRequest, v1.GetConfigurationResponse]
-	updateConfiguration *connect.Client[v1.UpdateConfigurationRequest, v1.UpdateConfigurationResponse]
-	streamEvents        *connect.Client[v1.StreamEventsRequest, v1.Event]
+	listDevices            *connect.Client[v1.ListDevicesRequest, v1.ListDevicesResponse]
+	getDevice              *connect.Client[v1.GetDeviceRequest, v1.GetDeviceResponse]
+	updateDevice           *connect.Client[v1.UpdateDeviceRequest, v1.UpdateDeviceResponse]
+	deleteDevice           *connect.Client[v1.DeleteDeviceRequest, emptypb.Empty]
+	getDeviceStats         *connect.Client[v1.GetDeviceStatsRequest, v1.GetDeviceStatsResponse]
+	discoverDevices        *connect.Client[v1.DiscoverDevicesRequest, v1.DiscoverDevicesResponse]
+	getTelemetry           *connect.Client[v1.GetTelemetryRequest, v1.GetTelemetryResponse]
+	streamTelemetry        *connect.Client[v1.StreamTelemetryRequest, v1.TelemetryEvent]
+	createDeployment       *connect.Client[v1.CreateDeploymentRequest, v1.CreateDeploymentResponse]
+	listDeployments        *connect.Client[v1.ListDeploymentsRequest, v1.ListDeploymentsResponse]
+	getDeployment          *connect.Client[v1.GetDeploymentRequest, v1.GetDeploymentResponse]
+	startDeployment        *connect.Client[v1.StartDeploymentRequest, v1.StartDeploymentResponse]
+	pauseDeployment        *connect.Client[v1.PauseDeploymentRequest, v1.PauseDeploymentResponse]
+	cancelDeployment       *connect.Client[v1.CancelDeploymentRequest, v1.CancelDeploymentResponse]
+	rollbackDeployment     *connect.Client[v1.RollbackDeploymentRequest, v1.RollbackDeploymentResponse]
+	getDeploymentStatus    *connect.Client[v1.GetDeploymentStatusRequest, v1.GetDeploymentStatusResponse]
+	streamDeploymentEvents *connect.Client[v1.StreamDeploymentEventsRequest, v1.DeploymentEvent]
+	getConfiguration       *connect.Client[v1.GetConfigurationRequest, v1.GetConfigurationResponse]
+	updateConfiguration    *connect.Client[v1.UpdateConfigurationRequest, v1.UpdateConfigurationResponse]
+	streamEvents           *connect.Client[v1.StreamEventsRequest, v1.Event]
 }
 
 // ListDevices calls public.v1.FleetService.ListDevices.
@@ -268,24 +323,49 @@ func (c *fleetServiceClient) StreamTelemetry(ctx context.Context, req *connect.R
 	return c.streamTelemetry.CallServerStream(ctx, req)
 }
 
-// ListUpdates calls public.v1.FleetService.ListUpdates.
-func (c *fleetServiceClient) ListUpdates(ctx context.Context, req *connect.Request[v1.ListUpdatesRequest]) (*connect.Response[v1.ListUpdatesResponse], error) {
-	return c.listUpdates.CallUnary(ctx, req)
+// CreateDeployment calls public.v1.FleetService.CreateDeployment.
+func (c *fleetServiceClient) CreateDeployment(ctx context.Context, req *connect.Request[v1.CreateDeploymentRequest]) (*connect.Response[v1.CreateDeploymentResponse], error) {
+	return c.createDeployment.CallUnary(ctx, req)
 }
 
-// CreateUpdate calls public.v1.FleetService.CreateUpdate.
-func (c *fleetServiceClient) CreateUpdate(ctx context.Context, req *connect.Request[v1.CreateUpdateRequest]) (*connect.Response[v1.CreateUpdateResponse], error) {
-	return c.createUpdate.CallUnary(ctx, req)
+// ListDeployments calls public.v1.FleetService.ListDeployments.
+func (c *fleetServiceClient) ListDeployments(ctx context.Context, req *connect.Request[v1.ListDeploymentsRequest]) (*connect.Response[v1.ListDeploymentsResponse], error) {
+	return c.listDeployments.CallUnary(ctx, req)
 }
 
-// DeployUpdate calls public.v1.FleetService.DeployUpdate.
-func (c *fleetServiceClient) DeployUpdate(ctx context.Context, req *connect.Request[v1.DeployUpdateRequest]) (*connect.Response[v1.DeployUpdateResponse], error) {
-	return c.deployUpdate.CallUnary(ctx, req)
+// GetDeployment calls public.v1.FleetService.GetDeployment.
+func (c *fleetServiceClient) GetDeployment(ctx context.Context, req *connect.Request[v1.GetDeploymentRequest]) (*connect.Response[v1.GetDeploymentResponse], error) {
+	return c.getDeployment.CallUnary(ctx, req)
 }
 
-// GetUpdateStatus calls public.v1.FleetService.GetUpdateStatus.
-func (c *fleetServiceClient) GetUpdateStatus(ctx context.Context, req *connect.Request[v1.GetUpdateStatusRequest]) (*connect.Response[v1.GetUpdateStatusResponse], error) {
-	return c.getUpdateStatus.CallUnary(ctx, req)
+// StartDeployment calls public.v1.FleetService.StartDeployment.
+func (c *fleetServiceClient) StartDeployment(ctx context.Context, req *connect.Request[v1.StartDeploymentRequest]) (*connect.Response[v1.StartDeploymentResponse], error) {
+	return c.startDeployment.CallUnary(ctx, req)
+}
+
+// PauseDeployment calls public.v1.FleetService.PauseDeployment.
+func (c *fleetServiceClient) PauseDeployment(ctx context.Context, req *connect.Request[v1.PauseDeploymentRequest]) (*connect.Response[v1.PauseDeploymentResponse], error) {
+	return c.pauseDeployment.CallUnary(ctx, req)
+}
+
+// CancelDeployment calls public.v1.FleetService.CancelDeployment.
+func (c *fleetServiceClient) CancelDeployment(ctx context.Context, req *connect.Request[v1.CancelDeploymentRequest]) (*connect.Response[v1.CancelDeploymentResponse], error) {
+	return c.cancelDeployment.CallUnary(ctx, req)
+}
+
+// RollbackDeployment calls public.v1.FleetService.RollbackDeployment.
+func (c *fleetServiceClient) RollbackDeployment(ctx context.Context, req *connect.Request[v1.RollbackDeploymentRequest]) (*connect.Response[v1.RollbackDeploymentResponse], error) {
+	return c.rollbackDeployment.CallUnary(ctx, req)
+}
+
+// GetDeploymentStatus calls public.v1.FleetService.GetDeploymentStatus.
+func (c *fleetServiceClient) GetDeploymentStatus(ctx context.Context, req *connect.Request[v1.GetDeploymentStatusRequest]) (*connect.Response[v1.GetDeploymentStatusResponse], error) {
+	return c.getDeploymentStatus.CallUnary(ctx, req)
+}
+
+// StreamDeploymentEvents calls public.v1.FleetService.StreamDeploymentEvents.
+func (c *fleetServiceClient) StreamDeploymentEvents(ctx context.Context, req *connect.Request[v1.StreamDeploymentEventsRequest]) (*connect.ServerStreamForClient[v1.DeploymentEvent], error) {
+	return c.streamDeploymentEvents.CallServerStream(ctx, req)
 }
 
 // GetConfiguration calls public.v1.FleetService.GetConfiguration.
@@ -316,11 +396,16 @@ type FleetServiceHandler interface {
 	// Telemetry
 	GetTelemetry(context.Context, *connect.Request[v1.GetTelemetryRequest]) (*connect.Response[v1.GetTelemetryResponse], error)
 	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.TelemetryEvent]) error
-	// Updates management
-	ListUpdates(context.Context, *connect.Request[v1.ListUpdatesRequest]) (*connect.Response[v1.ListUpdatesResponse], error)
-	CreateUpdate(context.Context, *connect.Request[v1.CreateUpdateRequest]) (*connect.Response[v1.CreateUpdateResponse], error)
-	DeployUpdate(context.Context, *connect.Request[v1.DeployUpdateRequest]) (*connect.Response[v1.DeployUpdateResponse], error)
-	GetUpdateStatus(context.Context, *connect.Request[v1.GetUpdateStatusRequest]) (*connect.Response[v1.GetUpdateStatusResponse], error)
+	// Deployment management - Unified API for all deployment types
+	CreateDeployment(context.Context, *connect.Request[v1.CreateDeploymentRequest]) (*connect.Response[v1.CreateDeploymentResponse], error)
+	ListDeployments(context.Context, *connect.Request[v1.ListDeploymentsRequest]) (*connect.Response[v1.ListDeploymentsResponse], error)
+	GetDeployment(context.Context, *connect.Request[v1.GetDeploymentRequest]) (*connect.Response[v1.GetDeploymentResponse], error)
+	StartDeployment(context.Context, *connect.Request[v1.StartDeploymentRequest]) (*connect.Response[v1.StartDeploymentResponse], error)
+	PauseDeployment(context.Context, *connect.Request[v1.PauseDeploymentRequest]) (*connect.Response[v1.PauseDeploymentResponse], error)
+	CancelDeployment(context.Context, *connect.Request[v1.CancelDeploymentRequest]) (*connect.Response[v1.CancelDeploymentResponse], error)
+	RollbackDeployment(context.Context, *connect.Request[v1.RollbackDeploymentRequest]) (*connect.Response[v1.RollbackDeploymentResponse], error)
+	GetDeploymentStatus(context.Context, *connect.Request[v1.GetDeploymentStatusRequest]) (*connect.Response[v1.GetDeploymentStatusResponse], error)
+	StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest], *connect.ServerStream[v1.DeploymentEvent]) error
 	// Configuration
 	GetConfiguration(context.Context, *connect.Request[v1.GetConfigurationRequest]) (*connect.Response[v1.GetConfigurationResponse], error)
 	UpdateConfiguration(context.Context, *connect.Request[v1.UpdateConfigurationRequest]) (*connect.Response[v1.UpdateConfigurationResponse], error)
@@ -383,28 +468,58 @@ func NewFleetServiceHandler(svc FleetServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(fleetServiceMethods.ByName("StreamTelemetry")),
 		connect.WithHandlerOptions(opts...),
 	)
-	fleetServiceListUpdatesHandler := connect.NewUnaryHandler(
-		FleetServiceListUpdatesProcedure,
-		svc.ListUpdates,
-		connect.WithSchema(fleetServiceMethods.ByName("ListUpdates")),
+	fleetServiceCreateDeploymentHandler := connect.NewUnaryHandler(
+		FleetServiceCreateDeploymentProcedure,
+		svc.CreateDeployment,
+		connect.WithSchema(fleetServiceMethods.ByName("CreateDeployment")),
 		connect.WithHandlerOptions(opts...),
 	)
-	fleetServiceCreateUpdateHandler := connect.NewUnaryHandler(
-		FleetServiceCreateUpdateProcedure,
-		svc.CreateUpdate,
-		connect.WithSchema(fleetServiceMethods.ByName("CreateUpdate")),
+	fleetServiceListDeploymentsHandler := connect.NewUnaryHandler(
+		FleetServiceListDeploymentsProcedure,
+		svc.ListDeployments,
+		connect.WithSchema(fleetServiceMethods.ByName("ListDeployments")),
 		connect.WithHandlerOptions(opts...),
 	)
-	fleetServiceDeployUpdateHandler := connect.NewUnaryHandler(
-		FleetServiceDeployUpdateProcedure,
-		svc.DeployUpdate,
-		connect.WithSchema(fleetServiceMethods.ByName("DeployUpdate")),
+	fleetServiceGetDeploymentHandler := connect.NewUnaryHandler(
+		FleetServiceGetDeploymentProcedure,
+		svc.GetDeployment,
+		connect.WithSchema(fleetServiceMethods.ByName("GetDeployment")),
 		connect.WithHandlerOptions(opts...),
 	)
-	fleetServiceGetUpdateStatusHandler := connect.NewUnaryHandler(
-		FleetServiceGetUpdateStatusProcedure,
-		svc.GetUpdateStatus,
-		connect.WithSchema(fleetServiceMethods.ByName("GetUpdateStatus")),
+	fleetServiceStartDeploymentHandler := connect.NewUnaryHandler(
+		FleetServiceStartDeploymentProcedure,
+		svc.StartDeployment,
+		connect.WithSchema(fleetServiceMethods.ByName("StartDeployment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	fleetServicePauseDeploymentHandler := connect.NewUnaryHandler(
+		FleetServicePauseDeploymentProcedure,
+		svc.PauseDeployment,
+		connect.WithSchema(fleetServiceMethods.ByName("PauseDeployment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	fleetServiceCancelDeploymentHandler := connect.NewUnaryHandler(
+		FleetServiceCancelDeploymentProcedure,
+		svc.CancelDeployment,
+		connect.WithSchema(fleetServiceMethods.ByName("CancelDeployment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	fleetServiceRollbackDeploymentHandler := connect.NewUnaryHandler(
+		FleetServiceRollbackDeploymentProcedure,
+		svc.RollbackDeployment,
+		connect.WithSchema(fleetServiceMethods.ByName("RollbackDeployment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	fleetServiceGetDeploymentStatusHandler := connect.NewUnaryHandler(
+		FleetServiceGetDeploymentStatusProcedure,
+		svc.GetDeploymentStatus,
+		connect.WithSchema(fleetServiceMethods.ByName("GetDeploymentStatus")),
+		connect.WithHandlerOptions(opts...),
+	)
+	fleetServiceStreamDeploymentEventsHandler := connect.NewServerStreamHandler(
+		FleetServiceStreamDeploymentEventsProcedure,
+		svc.StreamDeploymentEvents,
+		connect.WithSchema(fleetServiceMethods.ByName("StreamDeploymentEvents")),
 		connect.WithHandlerOptions(opts...),
 	)
 	fleetServiceGetConfigurationHandler := connect.NewUnaryHandler(
@@ -443,14 +558,24 @@ func NewFleetServiceHandler(svc FleetServiceHandler, opts ...connect.HandlerOpti
 			fleetServiceGetTelemetryHandler.ServeHTTP(w, r)
 		case FleetServiceStreamTelemetryProcedure:
 			fleetServiceStreamTelemetryHandler.ServeHTTP(w, r)
-		case FleetServiceListUpdatesProcedure:
-			fleetServiceListUpdatesHandler.ServeHTTP(w, r)
-		case FleetServiceCreateUpdateProcedure:
-			fleetServiceCreateUpdateHandler.ServeHTTP(w, r)
-		case FleetServiceDeployUpdateProcedure:
-			fleetServiceDeployUpdateHandler.ServeHTTP(w, r)
-		case FleetServiceGetUpdateStatusProcedure:
-			fleetServiceGetUpdateStatusHandler.ServeHTTP(w, r)
+		case FleetServiceCreateDeploymentProcedure:
+			fleetServiceCreateDeploymentHandler.ServeHTTP(w, r)
+		case FleetServiceListDeploymentsProcedure:
+			fleetServiceListDeploymentsHandler.ServeHTTP(w, r)
+		case FleetServiceGetDeploymentProcedure:
+			fleetServiceGetDeploymentHandler.ServeHTTP(w, r)
+		case FleetServiceStartDeploymentProcedure:
+			fleetServiceStartDeploymentHandler.ServeHTTP(w, r)
+		case FleetServicePauseDeploymentProcedure:
+			fleetServicePauseDeploymentHandler.ServeHTTP(w, r)
+		case FleetServiceCancelDeploymentProcedure:
+			fleetServiceCancelDeploymentHandler.ServeHTTP(w, r)
+		case FleetServiceRollbackDeploymentProcedure:
+			fleetServiceRollbackDeploymentHandler.ServeHTTP(w, r)
+		case FleetServiceGetDeploymentStatusProcedure:
+			fleetServiceGetDeploymentStatusHandler.ServeHTTP(w, r)
+		case FleetServiceStreamDeploymentEventsProcedure:
+			fleetServiceStreamDeploymentEventsHandler.ServeHTTP(w, r)
 		case FleetServiceGetConfigurationProcedure:
 			fleetServiceGetConfigurationHandler.ServeHTTP(w, r)
 		case FleetServiceUpdateConfigurationProcedure:
@@ -498,20 +623,40 @@ func (UnimplementedFleetServiceHandler) StreamTelemetry(context.Context, *connec
 	return connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.StreamTelemetry is not implemented"))
 }
 
-func (UnimplementedFleetServiceHandler) ListUpdates(context.Context, *connect.Request[v1.ListUpdatesRequest]) (*connect.Response[v1.ListUpdatesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.ListUpdates is not implemented"))
+func (UnimplementedFleetServiceHandler) CreateDeployment(context.Context, *connect.Request[v1.CreateDeploymentRequest]) (*connect.Response[v1.CreateDeploymentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.CreateDeployment is not implemented"))
 }
 
-func (UnimplementedFleetServiceHandler) CreateUpdate(context.Context, *connect.Request[v1.CreateUpdateRequest]) (*connect.Response[v1.CreateUpdateResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.CreateUpdate is not implemented"))
+func (UnimplementedFleetServiceHandler) ListDeployments(context.Context, *connect.Request[v1.ListDeploymentsRequest]) (*connect.Response[v1.ListDeploymentsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.ListDeployments is not implemented"))
 }
 
-func (UnimplementedFleetServiceHandler) DeployUpdate(context.Context, *connect.Request[v1.DeployUpdateRequest]) (*connect.Response[v1.DeployUpdateResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.DeployUpdate is not implemented"))
+func (UnimplementedFleetServiceHandler) GetDeployment(context.Context, *connect.Request[v1.GetDeploymentRequest]) (*connect.Response[v1.GetDeploymentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.GetDeployment is not implemented"))
 }
 
-func (UnimplementedFleetServiceHandler) GetUpdateStatus(context.Context, *connect.Request[v1.GetUpdateStatusRequest]) (*connect.Response[v1.GetUpdateStatusResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.GetUpdateStatus is not implemented"))
+func (UnimplementedFleetServiceHandler) StartDeployment(context.Context, *connect.Request[v1.StartDeploymentRequest]) (*connect.Response[v1.StartDeploymentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.StartDeployment is not implemented"))
+}
+
+func (UnimplementedFleetServiceHandler) PauseDeployment(context.Context, *connect.Request[v1.PauseDeploymentRequest]) (*connect.Response[v1.PauseDeploymentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.PauseDeployment is not implemented"))
+}
+
+func (UnimplementedFleetServiceHandler) CancelDeployment(context.Context, *connect.Request[v1.CancelDeploymentRequest]) (*connect.Response[v1.CancelDeploymentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.CancelDeployment is not implemented"))
+}
+
+func (UnimplementedFleetServiceHandler) RollbackDeployment(context.Context, *connect.Request[v1.RollbackDeploymentRequest]) (*connect.Response[v1.RollbackDeploymentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.RollbackDeployment is not implemented"))
+}
+
+func (UnimplementedFleetServiceHandler) GetDeploymentStatus(context.Context, *connect.Request[v1.GetDeploymentStatusRequest]) (*connect.Response[v1.GetDeploymentStatusResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.GetDeploymentStatus is not implemented"))
+}
+
+func (UnimplementedFleetServiceHandler) StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest], *connect.ServerStream[v1.DeploymentEvent]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.StreamDeploymentEvents is not implemented"))
 }
 
 func (UnimplementedFleetServiceHandler) GetConfiguration(context.Context, *connect.Request[v1.GetConfigurationRequest]) (*connect.Response[v1.GetConfigurationResponse], error) {

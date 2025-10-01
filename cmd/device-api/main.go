@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"strings"
 
 	"fleetd.sh/internal/server"
 	"fleetd.sh/internal/tracing"
@@ -110,7 +111,7 @@ func main() {
 	}
 
 	// Configure TLS using environment or flags
-	tlsMode := os.Getenv("FLEETD_TLS_MODE")
+	tlsMode := os.Getenv("TLS_MODE")
 	if tlsMode == "" && tlsEnabled {
 		tlsMode = "tls"
 	} else if tlsMode == "" {
@@ -135,20 +136,66 @@ func main() {
 	tracingConfig := tracing.LoadFromEnvironment("device-api")
 	tracingConfig.ServiceVersion = version.Version
 
+	// Database configuration from environment
+	dbDriver := "sqlite3" // Default driver
+	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
+		// Parse DATABASE_URL to determine driver
+		if strings.HasPrefix(databaseURL, "postgres://") || strings.HasPrefix(databaseURL, "postgresql://") {
+			dbDriver = "postgres"
+			serverDBPath = databaseURL
+		} else if strings.HasPrefix(databaseURL, "sqlite://") {
+			dbDriver = "sqlite3"
+			serverDBPath = strings.TrimPrefix(databaseURL, "sqlite://")
+		} else {
+			// Assume it's a direct connection string
+			if strings.Contains(databaseURL, "host=") {
+				dbDriver = "postgres"
+			}
+			serverDBPath = databaseURL
+		}
+	} else {
+		// Fall back to individual environment variables
+		if envDriver := os.Getenv("DB_DRIVER"); envDriver != "" {
+			dbDriver = envDriver
+		}
+
+		// PostgreSQL connection string from individual vars
+		if dbDriver == "postgres" {
+			dbHost := os.Getenv("DB_HOST")
+			dbPort := os.Getenv("DB_PORT")
+			dbName := os.Getenv("DB_NAME")
+			dbUser := os.Getenv("DB_USER")
+			dbPassword := os.Getenv("DB_PASSWORD")
+			dbSSLMode := os.Getenv("DB_SSLMODE")
+
+			if dbHost != "" && dbName != "" && dbUser != "" {
+				if dbPort == "" {
+					dbPort = "5432"
+				}
+				if dbSSLMode == "" {
+					dbSSLMode = "require"
+				}
+				serverDBPath = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+					dbHost, dbPort, dbUser, dbPassword, dbName, dbSSLMode)
+			}
+		}
+	}
+
 	config := &server.Config{
-		Port:         serverPort,
-		DatabasePath: serverDBPath,
-		SecretKey:    secretKey,
-		ServerURL:    serverURL,
-		EnableMDNS:   enableMDNS,
-		ValkeyAddr:   valkeyAddr,
-		RateLimitReq: rateLimitReq,
-		TLSMode:      tlsMode,
-		TLSCert:      tlsCertFile,
-		TLSKey:       tlsKeyFile,
-		TLSCA:        tlsCAFile,
-		RateLimitWin: rateLimitWindow,
-		Tracing:      tracingConfig,
+		Port:           serverPort,
+		DatabaseDriver: dbDriver,
+		DatabasePath:   serverDBPath,
+		SecretKey:      secretKey,
+		ServerURL:      serverURL,
+		EnableMDNS:     enableMDNS,
+		ValkeyAddr:     valkeyAddr,
+		RateLimitReq:   rateLimitReq,
+		TLSMode:        tlsMode,
+		TLSCert:        tlsCertFile,
+		TLSKey:         tlsKeyFile,
+		TLSCA:          tlsCAFile,
+		RateLimitWin:   rateLimitWindow,
+		Tracing:        tracingConfig,
 	}
 
 	s, err := server.New(config)

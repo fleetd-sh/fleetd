@@ -34,7 +34,7 @@ var telemetryGetCmd = &cobra.Command{
 
 		client := fleetpbconnect.NewTelemetryServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		req := &fleetpb.GetTelemetryRequest{
@@ -88,7 +88,7 @@ var telemetryLogsCmd = &cobra.Command{
 
 		client := fleetpbconnect.NewTelemetryServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		if follow {
@@ -168,7 +168,7 @@ var telemetryAlertsListCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client := fleetpbconnect.NewTelemetryServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		req := &fleetpb.ListAlertsRequest{
@@ -212,7 +212,7 @@ var telemetryAlertsCreateCmd = &cobra.Command{
 
 		client := fleetpbconnect.NewTelemetryServiceClient(
 			http.DefaultClient,
-			fmt.Sprintf("http://localhost:%d", getAPIPort()),
+			getAPIURL(),
 		)
 
 		alert := &fleetpb.Alert{

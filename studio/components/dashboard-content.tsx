@@ -1,14 +1,11 @@
 "use client";
-
-import { MagnifyingGlassIcon, PlusIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { PlusIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { DeviceAutoSetup } from "@/components/device-auto-setup";
 import { DeviceDataTable } from "@/components/device-data-table";
 import { DeviceStats } from "@/components/device-stats";
 import { ProvisioningGuide } from "@/components/provisioning-guide";
-import { QuickProvision } from "@/components/quick-provision";
 import { TelemetryChart } from "@/components/telemetry-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,43 +21,22 @@ interface DashboardContentProps {
     telemetry: TelemetryData[];
   };
 }
-
 export function DashboardContent({ initialData }: DashboardContentProps) {
   const { toast } = useToast();
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
   const [showProvisioningGuide, setShowProvisioningGuide] = useState(false);
-
   const { data: devices, refetch: refetchDevices } = useQuery({
     queryKey: ["devices"],
     queryFn: api.getDevices,
     initialData: initialData.devices,
     refetchInterval: 10000,
   });
-
   const { data: telemetry, refetch: refetchTelemetry } = useQuery({
     queryKey: ["telemetry", selectedDevice],
     queryFn: () => (selectedDevice ? api.getTelemetry(selectedDevice) : api.getMetrics()),
     initialData: initialData.telemetry,
     refetchInterval: 5000,
   });
-
-  const handleDiscoverDevices = async () => {
-    try {
-      const discovered = await api.discoverDevices();
-      toast({
-        title: "Discovery Complete",
-        description: `Found ${discovered.length} device(s) on the network`,
-      });
-      refetchDevices();
-    } catch (_error) {
-      toast({
-        title: "Discovery Failed",
-        description: "Failed to discover devices on the network",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleRefresh = () => {
     refetchDevices();
     refetchTelemetry();
@@ -69,7 +45,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
       description: "Dashboard data has been updated",
     });
   };
-
   return (
     <div className="space-y-8">
       {/* Action Bar */}
@@ -78,43 +53,19 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-wrap gap-4 justify-between items-center"
       >
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button onClick={handleRefresh} variant="outline" size="sm">
-            <ReloadIcon className="mr-2 h-4 w-4" />
+            <ReloadIcon className="h-4 w-4 mr-2" />
             Refresh
           </Button>
-          <Button onClick={handleDiscoverDevices} variant="outline" size="sm">
-            <MagnifyingGlassIcon className="mr-2 h-4 w-4" />
-            Discover Devices
-          </Button>
           <Button variant="default" size="sm" onClick={() => setShowProvisioningGuide(true)}>
-            <PlusIcon className="mr-2 h-4 w-4" />
+            <PlusIcon className="h-4 w-4 mr-2" />
             Add Device
           </Button>
         </div>
       </motion.div>
-
       {/* Stats Overview */}
       <DeviceStats devices={devices || []} />
-
-      {/* Device Auto-Setup */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <DeviceAutoSetup />
-      </motion.div>
-
-      {/* Quick Provisioning */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <QuickProvision />
-      </motion.div>
-
       {/* Main Content with Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList className="grid w-full max-w-[400px] grid-cols-3">
@@ -122,7 +73,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
           <TabsTrigger value="devices">Devices</TabsTrigger>
           <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
         </TabsList>
-
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-8 lg:grid-cols-2">
             {/* Device Overview Card */}
@@ -131,13 +81,13 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card>
+              <Card className="h-full">
                 <CardHeader>
                   <CardTitle>Device Overview</CardTitle>
                   <CardDescription>Quick status of your fleet</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-8">
+                  <div className="flex flex-col justify-center h-64 space-y-8">
                     <div className="flex items-center">
                       <div className="ml-4 space-y-1">
                         <p className="text-sm font-medium leading-none">Total Devices</p>
@@ -164,14 +114,13 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
                 </CardContent>
               </Card>
             </motion.div>
-
             {/* Telemetry Chart */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card>
+              <Card className="h-full">
                 <CardHeader>
                   <CardTitle>Recent Telemetry</CardTitle>
                   <CardDescription>Real-time metrics from your devices</CardDescription>
@@ -183,7 +132,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
             </motion.div>
           </div>
         </TabsContent>
-
         <TabsContent value="devices" className="space-y-4">
           <Card>
             <CardHeader>
@@ -198,7 +146,6 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="telemetry" className="space-y-4">
           <Card>
             <CardHeader>
@@ -213,14 +160,15 @@ export function DashboardContent({ initialData }: DashboardContentProps) {
           </Card>
         </TabsContent>
       </Tabs>
-
       {/* Provisioning Guide Dialog */}
       <Dialog open={showProvisioningGuide} onOpenChange={setShowProvisioningGuide}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Provision New Device</DialogTitle>
           </DialogHeader>
-          <ProvisioningGuide />
+          <div className="flex-1 overflow-y-auto">
+            <ProvisioningGuide onClose={() => setShowProvisioningGuide(false)} />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

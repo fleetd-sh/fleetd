@@ -1,0 +1,181 @@
+groups:
+  - name: fleet_platform_alerts
+    interval: 30s
+    rules:
+      # API Health
+      - alert: APIDown
+        expr: up{service=~"platform-api|device-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "{{ $labels.service }} is down"
+          description: "{{ $labels.service }} has been down for more than 2 minutes."
+
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API latency detected"
+          description: "95th percentile latency is above 500ms for {{ $labels.service }}."
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is above 5% for the last 5 minutes."
+
+      # Database Health
+      - alert: DatabaseDown
+        expr: up{service="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL has been unreachable for more than 1 minute."
+
+      - alert: DatabaseHighConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connection pool is above 80% capacity."
+
+      - alert: DatabaseSlowQueries
+        expr: rate(pg_stat_statements_mean_exec_time_seconds[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query execution time is above 1 second."
+
+      # Cache Health
+      - alert: CacheDown
+        expr: up{service="valkey"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Valkey cache is down"
+          description: "Valkey has been unreachable for more than 2 minutes."
+
+      - alert: CacheHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "High cache memory usage"
+          description: "Valkey memory usage is above 90%."
+
+      # Device Fleet Health
+      - alert: DeviceFleetOffline
+        expr: fleet_devices_online_total / fleet_devices_total < 0.5
+        for: 10m
+        labels:
+          severity: warning
+          component: fleet
+        annotations:
+          summary: "More than 50% of devices offline"
+          description: "{{ $value | humanizePercentage }} of devices are offline in fleet {{ $labels.fleet_id }}."
+
+      - alert: DeviceNotReporting
+        expr: time() - device_last_seen_timestamp > 600
+        for: 5m
+        labels:
+          severity: warning
+          component: device
+        annotations:
+          summary: "Device {{ $labels.device_id }} not reporting"
+          description: "Device has not sent telemetry for more than 10 minutes."
+
+      # Resource Usage
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: resource
+        annotations:
+          summary: "High CPU usage on {{ $labels.service }}"
+          description: "CPU usage is above 80% for {{ $labels.service }}."
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / node_memory_MemTotal_bytes * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: resource
+        annotations:
+          summary: "High memory usage on {{ $labels.service }}"
+          description: "Memory usage is above 80% for {{ $labels.service }}."
+
+      # Deployment Issues
+      - alert: DeploymentFailed
+        expr: deployment_status{status="failed"} == 1
+        for: 1m
+        labels:
+          severity: critical
+          component: deployment
+        annotations:
+          summary: "Deployment {{ $labels.deployment_id }} failed"
+          description: "Deployment to fleet {{ $labels.fleet_id }} has failed."
+
+      - alert: DeploymentStalled
+        expr: rate(deployment_progress_percentage[10m]) == 0 and deployment_status{status="running"} == 1
+        for: 15m
+        labels:
+          severity: warning
+          component: deployment
+        annotations:
+          summary: "Deployment {{ $labels.deployment_id }} stalled"
+          description: "Deployment progress has not changed for 15 minutes."
+
+      # Authentication & Security
+      - alert: HighAuthFailureRate
+        expr: rate(auth_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "More than 10 auth failures per second detected."
+
+      - alert: SuspiciousActivity
+        expr: rate(audit_suspicious_events_total[5m]) > 1
+        for: 2m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "Suspicious activity detected"
+          description: "Suspicious events detected in audit log."
+
+      # Rate Limiting
+      - alert: RateLimitExceeded
+        expr: rate(rate_limit_exceeded_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High rate limit violations"
+          description: "More than 100 rate limit violations per second."

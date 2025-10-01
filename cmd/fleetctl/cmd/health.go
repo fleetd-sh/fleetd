@@ -5,9 +5,12 @@ import (
 	"database/sql"
 	"fmt"
 	"net"
-	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 )
 
 // ServiceStatus represents the status of a service
@@ -23,10 +26,39 @@ type ServiceStatus struct {
 func checkDockerService(serviceName string) ServiceStatus {
 	containerName := fmt.Sprintf("fleetd-%s", serviceName)
 
-	// Check if container exists and is running
-	cmd := exec.Command("docker", "ps", "--filter", fmt.Sprintf("name=%s", containerName), "--format", "{{.Status}}")
-	output, err := cmd.Output()
+	// Create Docker client
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
+		return ServiceStatus{
+			Name:    serviceName,
+			Running: false,
+			Message: "Failed to connect to Docker",
+		}
+	}
+	defer cli.Close()
+
+	// List containers with filter
+	filterArgs := filters.NewArgs()
+	filterArgs.Add("name", containerName)
+	containers, err := cli.ContainerList(ctx, container.ListOptions{
+		All:     false, // Only running containers
+		Filters: filterArgs,
+	})
+
+	if err != nil || len(containers) == 0 {
+		// Check if container exists but is stopped
+		containers, _ = cli.ContainerList(ctx, container.ListOptions{
+			All:     true,
+			Filters: filterArgs,
+		})
+		if len(containers) > 0 {
+			return ServiceStatus{
+				Name:    serviceName,
+				Running: false,
+				Message: "Container exists but not running",
+			}
+		}
 		return ServiceStatus{
 			Name:    serviceName,
 			Running: false,
@@ -34,16 +66,9 @@ func checkDockerService(serviceName string) ServiceStatus {
 		}
 	}
 
-	status := strings.TrimSpace(string(output))
-	if status == "" {
-		return ServiceStatus{
-			Name:    serviceName,
-			Running: false,
-			Message: "Container not running",
-		}
-	}
-
 	// Container is running
+	container := containers[0]
+	status := container.Status
 	healthy := strings.Contains(strings.ToLower(status), "healthy") || strings.Contains(status, "Up")
 
 	return ServiceStatus{
@@ -86,7 +111,7 @@ func checkPostgresConnection() error {
 		}
 		// Check if it's an authentication error (which means the server is running)
 		if strings.Contains(err.Error(), "password authentication failed") ||
-		   strings.Contains(err.Error(), "FATAL") {
+			strings.Contains(err.Error(), "FATAL") {
 			// Server is running but auth failed - this is OK for our check
 			return nil
 		}
@@ -150,7 +175,7 @@ To start only PostgreSQL:
     -e POSTGRES_PASSWORD=fleetd_secret \
     -e POSTGRES_USER=fleetd \
     -e POSTGRES_DB=fleetd \
-    postgres:15-alpine
+    postgres:17-alpine
 
 To check service status:
   fleetctl status`)
@@ -165,7 +190,7 @@ To check service status:
 	return nil
 }
 
-// isFleetRunning checks if the Fleet platform is running
+// isFleetRunning checks if the fleetd platform is running
 func isFleetRunning() bool {
 	// Check for key services
 	services := []string{"postgres", "platform-api", "device-api"}

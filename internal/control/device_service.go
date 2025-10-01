@@ -126,7 +126,7 @@ func (s *DeviceService) GetDevice(ctx context.Context, req *connect.Request[pb.G
 
 // DeleteDevice removes a device from the fleet
 func (s *DeviceService) DeleteDevice(ctx context.Context, req *connect.Request[pb.DeleteDeviceRequest]) (*connect.Response[pb.DeleteDeviceResponse], error) {
-	query := `DELETE FROM devices WHERE id = ?`
+	query := `DELETE FROM device WHERE id = ?`
 
 	result, err := s.db.ExecContext(ctx, query, req.Msg.DeviceId)
 	if err != nil {

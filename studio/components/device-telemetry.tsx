@@ -1,5 +1,4 @@
 "use client";
-
 import {
   CpuIcon,
   HardDriveIcon,
@@ -40,20 +39,16 @@ interface TelemetryData {
   loadAvg5?: number;
   loadAvg15?: number;
 }
-
 interface DeviceTelemetryProps {
   device: Device;
   realtime?: boolean;
 }
-
 export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryProps) {
   const [telemetryHistory, setTelemetryHistory] = useState<TelemetryData[]>([]);
   const [currentMetrics, setCurrentMetrics] = useState<TelemetryData | null>(null);
-
   // Simulate real-time data (in production, this would be WebSocket/SSE)
   useEffect(() => {
     if (!realtime) return;
-
     const interval = setInterval(() => {
       const newData: TelemetryData = {
         timestamp: Date.now(),
@@ -74,7 +69,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
         loadAvg5: device.systemInfo?.loadAverage?.load5 || 0,
         loadAvg15: device.systemInfo?.loadAverage?.load15 || 0,
       };
-
       setCurrentMetrics(newData);
       setTelemetryHistory((prev) =>
         [...prev.slice(-59), newData].map((d, i) => ({
@@ -83,10 +77,8 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
         })),
       );
     }, 1000);
-
     return () => clearInterval(interval);
   }, [device, realtime]);
-
   // Calculate percentages and format values
   const metrics = useMemo(() => {
     if (!currentMetrics) {
@@ -100,7 +92,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
         diskTotalGB: "0",
       };
     }
-
     return {
       cpuPercent: Math.round(currentMetrics.cpuUsage),
       memoryPercent: currentMetrics.memoryTotal
@@ -115,7 +106,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
       diskTotalGB: formatBytes(currentMetrics.diskTotal),
     };
   }, [currentMetrics]);
-
   // Determine health status
   const getHealthStatus = () => {
     if (!currentMetrics) return "unknown";
@@ -123,9 +113,7 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
     if (metrics.cpuPercent > 70 || metrics.memoryPercent > 70) return "warning";
     return "healthy";
   };
-
   const healthStatus = getHealthStatus();
-
   return (
     <div className="space-y-6">
       {/* Current Metrics Grid */}
@@ -145,7 +133,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -161,7 +148,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -177,7 +163,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -203,7 +188,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
           </CardContent>
         </Card>
       </div>
-
       {/* System Load & Processes */}
       <Card>
         <CardHeader>
@@ -237,7 +221,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
           </div>
         </CardContent>
       </Card>
-
       {/* Real-time Charts */}
       {realtime && telemetryHistory.length > 0 && (
         <>
@@ -273,7 +256,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
               </ResponsiveContainer>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle className="text-sm">Network Traffic</CardTitle>
@@ -310,7 +292,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
           </Card>
         </>
       )}
-
       {/* Network Interfaces */}
       {device.systemInfo?.networkInterfaces && (
         <Card>
@@ -348,7 +329,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
           </CardContent>
         </Card>
       )}
-
       {/* Health Status Summary */}
       <Card
         className={
@@ -385,7 +365,6 @@ export function DeviceTelemetry({ device, realtime = false }: DeviceTelemetryPro
     </div>
   );
 }
-
 function formatBytes(bytes: number): string {
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   if (bytes === 0) return "0 B";

@@ -1,5 +1,4 @@
 "use client";
-
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
@@ -18,7 +17,6 @@ import type { TelemetryData } from "@/lib/types";
 interface TelemetryChartProps {
   data: TelemetryData[];
 }
-
 export function TelemetryChart({ data }: TelemetryChartProps) {
   const chartData = useMemo(() => {
     // Group data by timestamp and metric name
@@ -33,17 +31,13 @@ export function TelemetryChart({ data }: TelemetryChartProps) {
       },
       {} as Record<string, Record<string, string | number>>,
     );
-
     return Object.values(grouped).slice(-20); // Show last 20 data points
   }, [data]);
-
   const metrics = useMemo(() => {
     const metricSet = new Set(data.map((d) => d.metric_name));
     return Array.from(metricSet);
   }, [data]);
-
   const colors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
-
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground">
@@ -51,7 +45,6 @@ export function TelemetryChart({ data }: TelemetryChartProps) {
       </div>
     );
   }
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}

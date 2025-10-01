@@ -1,5 +1,4 @@
 "use client";
-
 import {
   AlertCircleIcon,
   CheckCircleIcon,
@@ -14,7 +13,7 @@ import {
   UploadIcon,
   XCircleIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,13 +37,21 @@ interface Device {
   name: string;
   [key: string]: unknown;
 }
-
 interface DeploymentManagerProps {
   applicationId?: string;
   devices?: Device[];
 }
+export function DeploymentManager({ devices = [] }: DeploymentManagerProps) {
+  // Generate unique IDs for radio buttons
+  const canaryId = useId();
+  const rollingId = useId();
+  const blueGreenId = useId();
+  const allAtOnceId = useId();
+  const targetAllId = useId();
+  const targetGroupId = useId();
+  const targetTagsId = useId();
+  const targetCustomId = useId();
 
-export function DeploymentManager({ applicationId, devices = [] }: DeploymentManagerProps) {
   const [selectedStrategy, setSelectedStrategy] = useState("canary");
   const [targetGroup, setTargetGroup] = useState("all");
   const [canaryConfig, setCanaryConfig] = useState({
@@ -75,9 +82,7 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
       successRate: number;
     }>;
   }
-
   const [currentDeployment, setCurrentDeployment] = useState<Deployment | null>(null);
-
   // Mock deployment status
   const mockDeployment: Deployment = {
     id: "dep-123",
@@ -123,21 +128,17 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
       },
     ],
   };
-
   const startDeployment = () => {
     setCurrentDeployment(mockDeployment);
   };
-
   const rollbackDeployment = () => {
     // Implement rollback logic
     console.log("Rolling back deployment");
   };
-
   const pauseDeployment = () => {
     // Implement pause logic
     console.log("Pausing deployment");
   };
-
   return (
     <div className="space-y-6">
       {/* Current Deployment Status */}
@@ -173,7 +174,6 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
           </AlertDescription>
         </Alert>
       )}
-
       <Tabs defaultValue="deploy" className="space-y-4">
         <TabsList>
           <TabsTrigger value="deploy">New Deployment</TabsTrigger>
@@ -181,7 +181,6 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
           <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="artifacts">Artifacts</TabsTrigger>
         </TabsList>
-
         {/* New Deployment Tab */}
         <TabsContent value="deploy" className="space-y-4">
           <Card>
@@ -219,7 +218,6 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                   </Select>
                 </div>
               </div>
-
               {/* Deployment Strategy */}
               <div>
                 <Label>Deployment Strategy</Label>
@@ -228,9 +226,9 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                     <Card className={selectedStrategy === "canary" ? "border-primary" : ""}>
                       <CardHeader className="p-4">
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="canary" id="canary" />
+                          <RadioGroupItem value="canary" id={canaryId} />
                           <Label
-                            htmlFor="canary"
+                            htmlFor={canaryId}
                             className="flex items-center gap-2 cursor-pointer"
                           >
                             <TrendingUpIcon className="h-4 w-4" />
@@ -242,13 +240,12 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                         </CardDescription>
                       </CardHeader>
                     </Card>
-
                     <Card className={selectedStrategy === "rolling" ? "border-primary" : ""}>
                       <CardHeader className="p-4">
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="rolling" id="rolling" />
+                          <RadioGroupItem value="rolling" id={rollingId} />
                           <Label
-                            htmlFor="rolling"
+                            htmlFor={rollingId}
                             className="flex items-center gap-2 cursor-pointer"
                           >
                             <RefreshCwIcon className="h-4 w-4" />
@@ -260,13 +257,12 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                         </CardDescription>
                       </CardHeader>
                     </Card>
-
                     <Card className={selectedStrategy === "blue-green" ? "border-primary" : ""}>
                       <CardHeader className="p-4">
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="blue-green" id="blue-green" />
+                          <RadioGroupItem value="blue-green" id={blueGreenId} />
                           <Label
-                            htmlFor="blue-green"
+                            htmlFor={blueGreenId}
                             className="flex items-center gap-2 cursor-pointer"
                           >
                             <LayersIcon className="h-4 w-4" />
@@ -278,13 +274,12 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                         </CardDescription>
                       </CardHeader>
                     </Card>
-
                     <Card className={selectedStrategy === "all-at-once" ? "border-primary" : ""}>
                       <CardHeader className="p-4">
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="all-at-once" id="all-at-once" />
+                          <RadioGroupItem value="all-at-once" id={allAtOnceId} />
                           <Label
-                            htmlFor="all-at-once"
+                            htmlFor={allAtOnceId}
                             className="flex items-center gap-2 cursor-pointer"
                           >
                             <RocketIcon className="h-4 w-4" />
@@ -299,7 +294,6 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                   </div>
                 </RadioGroup>
               </div>
-
               {/* Strategy Configuration */}
               {selectedStrategy === "canary" && (
                 <Card>
@@ -380,32 +374,30 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                   </CardContent>
                 </Card>
               )}
-
               {/* Target Selection */}
               <div>
                 <Label>Target Devices</Label>
                 <RadioGroup value={targetGroup} onValueChange={setTargetGroup}>
                   <div className="space-y-2 mt-2">
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="all" id="all" />
-                      <Label htmlFor="all">All Devices ({devices.length})</Label>
+                      <RadioGroupItem value="all" id={targetAllId} />
+                      <Label htmlFor={targetAllId}>All Devices ({devices.length})</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="group" id="group" />
-                      <Label htmlFor="group">Device Group</Label>
+                      <RadioGroupItem value="group" id={targetGroupId} />
+                      <Label htmlFor={targetGroupId}>Device Group</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="tags" id="tags" />
-                      <Label htmlFor="tags">By Tags</Label>
+                      <RadioGroupItem value="tags" id={targetTagsId} />
+                      <Label htmlFor={targetTagsId}>By Tags</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="custom" id="custom" />
-                      <Label htmlFor="custom">Custom Selection</Label>
+                      <RadioGroupItem value="custom" id={targetCustomId} />
+                      <Label htmlFor={targetCustomId}>Custom Selection</Label>
                     </div>
                   </div>
                 </RadioGroup>
               </div>
-
               {/* Rollback Configuration */}
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
@@ -414,7 +406,6 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                 </div>
                 <Switch checked={rollbackEnabled} onCheckedChange={setRollbackEnabled} />
               </div>
-
               {/* Action Buttons */}
               <div className="flex justify-between">
                 <Button variant="outline">
@@ -429,7 +420,6 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* Active Deployments Tab */}
         <TabsContent value="active" className="space-y-4">
           {currentDeployment && (
@@ -485,7 +475,6 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
                     </span>
                   </div>
                 </div>
-
                 {/* Deployment Phases */}
                 <div>
                   <Label className="text-sm">Deployment Phases</Label>
@@ -540,7 +529,6 @@ export function DeploymentManager({ applicationId, devices = [] }: DeploymentMan
             </Card>
           )}
         </TabsContent>
-
         {/* Artifacts Tab */}
         <TabsContent value="artifacts" className="space-y-4">
           <Card>

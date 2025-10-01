@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
-	"os/exec"
+	"net"
 	"strings"
 
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -48,25 +52,35 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		"studio",
 	}
 
+	// Create Docker client
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return fmt.Errorf("failed to create Docker client: %w", err)
+	}
+	defer cli.Close()
+
 	// Get status of each container
 	var containers []ContainerStatus
 	for _, service := range services {
 		containerName := fmt.Sprintf("fleetd-%s", service)
 
-		// Get container status using docker ps
-		cmd := exec.Command("docker", "ps", "-a", "--filter", fmt.Sprintf("name=%s", containerName), "--format", "{{.Names}}|{{.State}}|{{.Status}}")
-		output, err := cmd.Output()
+		// List containers with filter
+		filterArgs := filters.NewArgs()
+		filterArgs.Add("name", containerName)
+		containerList, err := cli.ContainerList(ctx, container.ListOptions{
+			All:     true,
+			Filters: filterArgs,
+		})
 
-		if err == nil && len(output) > 0 {
-			parts := strings.Split(strings.TrimSpace(string(output)), "|")
-			if len(parts) >= 3 {
-				containers = append(containers, ContainerStatus{
-					Name:    parts[0],
-					State:   parts[1],
-					Status:  parts[2],
-					Service: service,
-				})
-			}
+		if err == nil && len(containerList) > 0 {
+			container := containerList[0]
+			containers = append(containers, ContainerStatus{
+				Name:    strings.TrimPrefix(container.Names[0], "/"),
+				State:   container.State,
+				Status:  container.Status,
+				Service: service,
+			})
 		}
 	}
 
@@ -174,8 +188,12 @@ func checkPorts() {
 }
 
 func isPortOpen(port int) bool {
-	// Simple check using nc (netcat)
-	cmd := exec.Command("nc", "-z", "localhost", fmt.Sprintf("%d", port))
-	err := cmd.Run()
-	return err == nil
+	// Check if port is open by attempting to connect
+	addr := fmt.Sprintf("localhost:%d", port)
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		return false
+	}
+	conn.Close()
+	return true
 }

@@ -1,0 +1,118 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'fleetd-monitor'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "/etc/prometheus/alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # Platform API metrics
+  - job_name: 'platform-api'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['platform-api:8080']
+        labels:
+          service: 'platform-api'
+          component: 'control-plane'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'platform-api'
+
+  # Device API metrics
+  - job_name: 'device-api'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['device-api:8081']
+        labels:
+          service: 'device-api'
+          component: 'device-plane'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'device-api'
+
+  # PostgreSQL metrics (using postgres_exporter)
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+        labels:
+          service: 'postgresql'
+          component: 'database'
+
+  # Valkey/Redis metrics (using redis_exporter)
+  - job_name: 'valkey'
+    static_configs:
+      - targets: ['valkey-exporter:9121']
+        labels:
+          service: 'valkey'
+          component: 'cache'
+
+  # Node Exporter for host metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          service: 'node-exporter'
+          component: 'infrastructure'
+
+  # Kubernetes metrics (if deployed in K8s)
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      # Only scrape pods with prometheus annotations
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+# Service discovery for dynamic device registration
+# Devices can register themselves via the Device API
+- job_name: 'devices'
+  file_sd_configs:
+    - files:
+        - '/etc/prometheus/devices/*.json'
+      refresh_interval: 30s
+  relabel_configs:
+    - source_labels: [__address__]
+      target_label: __param_target
+    - source_labels: [__param_target]
+      target_label: instance
+    - target_label: __address__
+      replacement: device-api:8081  # Device API acts as proxy

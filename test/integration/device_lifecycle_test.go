@@ -13,8 +13,8 @@ import (
 	pb "fleetd.sh/gen/fleetd/v1"
 	"fleetd.sh/gen/fleetd/v1/fleetpbconnect"
 	"fleetd.sh/internal/api"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/suite"
+	_ "modernc.org/sqlite"
 )
 
 // DeviceLifecycleTestSuite tests the complete device lifecycle

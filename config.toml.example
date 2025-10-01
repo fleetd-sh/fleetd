@@ -1,22 +1,93 @@
-# FleetD Configuration Example
+# fleetd Configuration Example
 # Copy this file to config.toml and customize for your environment
 # For production, use environment variables instead of hardcoded values
+
+# TLS Configuration for Self-Hosting
+[tls]
+# Certificate mode: "auto" (Let's Encrypt), "provided" (your certs), or "self-signed"
+mode = "auto"
+
+# Domains for the certificate
+domains = ["fleet.example.com", "api.fleet.example.com"]
+
+# Email for Let's Encrypt registration (required for auto mode)
+email = "admin@example.com"
+
+# Certificate storage directory
+storage_dir = "/etc/fleetd/certs"
+
+# Auto-renewal configuration
+enable_renewal = true
+renewal_days = 30  # Days before expiry to trigger renewal
+
+# ACME configuration for Let's Encrypt
+[tls.acme]
+# Use staging for testing (certificates won't be trusted)
+# directory_url = "https://acme-staging-v02.api.letsencrypt.org/directory"
+directory_url = "https://acme-v02.api.letsencrypt.org/directory"
+
+# Challenge type: "http-01", "tls-alpn-01", or "dns-01"
+challenge_type = "http-01"
+
+# Ports for challenges (ensure these ports are open in your firewall)
+http_port = 80
+tls_port = 443
+
+# DNS provider for dns-01 challenge (e.g., "cloudflare", "route53", "gcloud")
+# Uncomment and configure if using dns-01 challenge
+# dns_provider = "cloudflare"
+
+# DNS provider credentials (set via environment variables for security)
+# For Cloudflare: CLOUDFLARE_API_TOKEN or CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL
+# For Route53: AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY + AWS_REGION
+# For Google Cloud: GOOGLE_APPLICATION_CREDENTIALS
+
+# Key type: "rsa2048", "rsa4096", "ec256", "ec384"
+key_type = "ec256"
+
+# Check interval for renewals (default 12 hours)
+check_interval = "12h"
+
+# Renewal period before expiry (default 30 days)
+renewal_before = "720h"  # 30 days in hours
+
+# For user-provided certificates (uncomment to use)
+# [tls.provided]
+# cert_file = "/path/to/cert.pem"
+# key_file = "/path/to/key.pem"
+# ca_file = "/path/to/ca.pem"  # Optional for client certificate validation
+
+# Self-signed certificate configuration (for development only)
+# [tls.self_signed]
+# # Additional domains beyond those in [tls.domains]
+# additional_domains = ["dev.fleet.local", "localhost"]
+# # Certificate validity period in days
+# valid_days = 365
+# # Organization name for certificate
+# organization = "fleetd Development"
 
 [server]
 port = 8090
 device_api_port = 8080
-tls_enabled = false
+tls_enabled = true  # Enable TLS when certificates are configured
+
+# TLS mode: "none", "tls", or "mtls" (mutual TLS)
+tls_mode = "tls"
 
 [device_api]
 port = 8080
-server_url = "http://localhost:8080"
+server_url = "https://localhost:8080"  # Use HTTPS when TLS is enabled
 # Optional: mdns settings
 enable_mdns = false
 mdns_port = 5353
+# TLS mode for device API
+tls_mode = "tls"
 
 [platform_api]
 port = 8090
-server_url = "http://localhost:8090"
+server_url = "https://localhost:8090"  # Use HTTPS when TLS is enabled
+# TLS mode for platform API
+tls_mode = "tls"
 
 [web]
 port = 3000
@@ -77,6 +148,64 @@ output = "stdout"
 enabled = true
 path = "/metrics"
 
+# Certificate Management Examples:
+
+# Example 1: Let's Encrypt with HTTP-01 challenge (recommended for most setups)
+# [tls]
+# mode = "auto"
+# domains = ["your-domain.com"]
+# email = "your-email@example.com"
+# storage_dir = "/etc/fleetd/certs"
+# enable_renewal = true
+# renewal_days = 30
+# [tls.acme]
+# challenge_type = "http-01"
+# http_port = 80
+
+# Example 2: Let's Encrypt with DNS-01 challenge (for wildcard certificates)
+# [tls]
+# mode = "auto"
+# domains = ["*.your-domain.com", "your-domain.com"]
+# email = "your-email@example.com"
+# storage_dir = "/etc/fleetd/certs"
+# enable_renewal = true
+# [tls.acme]
+# challenge_type = "dns-01"
+# dns_provider = "cloudflare"
+# # Set CLOUDFLARE_API_TOKEN environment variable
+
+# Example 3: User-provided certificates (for enterprise setups)
+# [tls]
+# mode = "provided"
+# [tls.provided]
+# cert_file = "/path/to/your/cert.pem"
+# key_file = "/path/to/your/private.key"
+# ca_file = "/path/to/your/ca.pem"  # Optional
+
+# Example 4: Self-signed certificates (development only)
+# [tls]
+# mode = "self-signed"
+# domains = ["localhost", "dev.fleet.local"]
+# storage_dir = "/tmp/fleetd-certs"
+
+# Environment Variables for TLS:
+# FLEETD_TLS_MODE=auto|provided|self-signed
+# FLEETD_TLS_CERT=/path/to/cert.pem
+# FLEETD_TLS_KEY=/path/to/key.pem
+# FLEETD_TLS_CA=/path/to/ca.pem
+# FLEETD_TLS_DOMAINS=domain1.com,domain2.com
+# FLEETD_TLS_EMAIL=admin@example.com
+# FLEETD_ACME_CHALLENGE=http-01|dns-01|tls-alpn-01
+# FLEETD_ACME_DNS_PROVIDER=cloudflare|route53|gcloud
+
+# CLI Commands for Certificate Management:
+# fleetctl certs init --mode auto --domain your-domain.com --email admin@example.com
+# fleetctl certs status
+# fleetctl certs renew
+# fleetctl certs validate
+# fleetctl certs test --domain your-domain.com --port 8443
+# fleetctl certs backup /path/to/backup/dir
+
 # Production recommendations:
 # 1. Set all passwords via environment variables
 # 2. Use TLS for all connections (tls_enabled = true)
@@ -84,3 +213,7 @@ path = "/metrics"
 # 4. Set appropriate rate limits based on load
 # 5. Use structured logging with log aggregation
 # 6. Enable metrics and monitoring
+# 7. Use Let's Encrypt for automatic certificate management
+# 8. Set up monitoring for certificate expiry
+# 9. Regular certificate backups to secure storage
+# 10. Use DNS-01 challenge for internal services or wildcard certificates

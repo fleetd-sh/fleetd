@@ -5,7 +5,9 @@ import (
 
 	"connectrpc.com/vanguard"
 	"fleetd.sh/gen/fleetd/v1/fleetpbconnect"
+	"fleetd.sh/gen/public/v1/publicv1connect"
 	"fleetd.sh/internal/database"
+	"fleetd.sh/internal/fleet"
 	"fleetd.sh/internal/services"
 )
 
@@ -25,8 +27,14 @@ func (s *Server) SetupVanguard() (http.Handler, error) {
 	// Create database instance for services
 	dbWrapper := &database.DB{DB: s.db}
 
+	// Create UpdateClient adapter for orchestrator
+	updateClient := NewUpdateClientAdapter(s.deviceAPI, s.db)
+
+	// Create deployment orchestrator
+	orchestrator := fleet.NewOrchestrator(s.db, updateClient)
+
 	// Create service implementations
-	fleetService := NewFleetService(s.db, s.deviceAPI)
+	fleetService := NewFleetService(s.db, s.deviceAPI, orchestrator)
 	deviceService := NewDeviceService(s.db, s.deviceAPI)
 	analyticsService := NewAnalyticsService(s.db)
 	// authService := NewAuthService(s.db, jwtManager) // TODO: Add auth service to Vanguard
@@ -37,7 +45,9 @@ func (s *Server) SetupVanguard() (http.Handler, error) {
 	mux := http.NewServeMux()
 
 	// Register Connect handlers
-	fleetPath, fleetHandler := fleetpbconnect.NewFleetServiceHandler(fleetService)
+	// TODO: Update to use public v1 API
+	// fleetPath, fleetHandler := fleetpbconnect.NewFleetServiceHandler(fleetService)
+	fleetPath, fleetHandler := publicv1connect.NewFleetServiceHandler(fleetService)
 	devicePath, deviceHandler := fleetpbconnect.NewDeviceServiceHandler(deviceService)
 	analyticsPath, analyticsHandler := fleetpbconnect.NewAnalyticsServiceHandler(analyticsService)
 	telemetryPath, telemetryHandler := fleetpbconnect.NewTelemetryServiceHandler(telemetryService)

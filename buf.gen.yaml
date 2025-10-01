@@ -1,37 +1,44 @@
 version: v2
 
+clean: true
+
 managed:
   enabled: true
 
+inputs:
+  - directory: proto
+  - module: buf.build/googleapis/googleapis
+
 plugins:
-  # Base types for Go. Generates message and enum types.
+  # Base types for Go. Generates message and enum types
   - remote: buf.build/protocolbuffers/go
     out: gen
     opt:
       - paths=source_relative
 
-  # Generates client and server stubs for connectrpc.com/connect.
+  # Generates client and server stubs for connectrpc.com/connect
   # Compatible with the gRPC, gRPC-Web, and Connect RPC protocols.
   - remote: buf.build/connectrpc/go
     out: gen
     opt:
       - paths=source_relative
 
-  - remote: buf.build/connectrpc/es
-    out: studio/lib/api/gen
-    opt:
-      - target=ts
-
+  # Generate TypeScript message types with protobuf-es
   - remote: buf.build/bufbuild/es
     out: studio/lib/api/gen
     opt:
       - target=ts
+      - keep_empty_files=false
 
-  # Generate OpenAPI v2 (Swagger) documentation
-  - remote: buf.build/grpc-ecosystem/openapiv2
-    out: docs/api
+  # Generate ConnectRPC TypeScript clients (not gRPC-Web)
+  - remote: buf.build/connectrpc/es
+    out: studio/lib/api/gen
     opt:
-      - logtostderr=true
-      - allow_merge=true
-      - merge_file_name=fleetd
-      - json_names_for_fields=true
+      - target=ts
+      - keep_empty_files=false
+
+  # Generate OpenAPI v3 documentation for ConnectRPC services
+  - remote: buf.build/community/sudorandom-connect-openapi
+    out: gen/docs
+    opt:
+      - format=yaml

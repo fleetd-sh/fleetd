@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -18,7 +20,7 @@ func newStopCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&removeVolumes, "volumes", "v", false, "Remove volumes (data will be lost)")
+	cmd.Flags().BoolVar(&removeVolumes, "volumes", false, "Remove volumes (data will be lost)")
 
 	return cmd
 }
@@ -29,8 +31,46 @@ func runStop(cmd *cobra.Command, args []string, removeVolumes bool) error {
 		return err
 	}
 
+	// Check Docker Compose availability
+	if err := checkDockerCompose(); err != nil {
+		return err
+	}
+
 	printHeader("Stopping Fleet development stack...")
 
+	// Get project root
+	projectRoot := getProjectRoot()
+	composeFile := filepath.Join(projectRoot, "docker", "docker-compose.yaml")
+
+	// Build docker-compose command
+	composeArgs := []string{"compose", "-f", composeFile, "down"}
+
+	if removeVolumes {
+		printWarning("Removing volumes - all data will be lost!")
+		composeArgs = append(composeArgs, "-v")
+	}
+
+	// Stop services with docker-compose
+	stopCmd := exec.Command("docker", composeArgs...)
+	stopCmd.Stdout = os.Stdout
+	stopCmd.Stderr = os.Stderr
+	stopCmd.Dir = projectRoot
+
+	if err := stopCmd.Run(); err != nil {
+		// Fallback to manual cleanup if docker-compose fails
+		printWarning("Docker Compose failed, attempting manual cleanup...")
+		return manualCleanup(removeVolumes)
+	}
+
+	if !removeVolumes {
+		printInfo("Data volumes preserved. Use 'fleetctl stop --volumes' to remove them")
+	}
+
+	printSuccess("Fleet development stack stopped")
+	return nil
+}
+
+func manualCleanup(removeVolumes bool) error {
 	// List of services to stop
 	services := []string{
 		"platform-api",
@@ -67,25 +107,18 @@ func runStop(cmd *cobra.Command, args []string, removeVolumes bool) error {
 	exec.Command("docker", "network", "rm", "fleetd-network").Run()
 
 	if removeVolumes {
-		printWarning("Removing volumes - all data will be lost!")
-
 		volumes := []string{
-			"fleetd-postgres-data",
-			"fleetd-valkey-data",
-			"fleetd-metrics-data",
-			"fleetd-loki-data",
+			"fleetd_postgres_data",
+			"fleetd_valkey_data",
+			"fleetd_victoria_data",
+			"fleetd_loki_data",
 		}
 
 		for _, volume := range volumes {
 			printInfo("Removing volume %s...", volume)
 			exec.Command("docker", "volume", "rm", volume).Run()
 		}
-
-		printInfo("All volumes have been removed")
-	} else {
-		printInfo("Data volumes preserved. Use 'fleetctl stop --volumes' to remove them")
 	}
 
-	printSuccess("Fleet development stack stopped")
 	return nil
 }

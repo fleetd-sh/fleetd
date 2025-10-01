@@ -1,6 +1,6 @@
-# FleetD Go SDK
+# fleetd Go SDK
 
-Official Go SDK for FleetD - A modern fleet management platform for IoT and edge devices.
+Official Go SDK for fleetd - A modern fleet management platform for IoT and edge devices.
 
 ## Installation
 
@@ -51,7 +51,7 @@ func main() {
 - 🚀 **Simple API** - Easy-to-use, idiomatic Go interface
 - 🔐 **Secure** - Built-in authentication with API keys
 - 🌐 **Connect RPC** - Modern RPC framework with HTTP/2 and streaming
-- 📦 **Complete** - Full coverage of FleetD API
+- 📦 **Complete** - Full coverage of fleetd API
 - 🔄 **Real-time** - Support for streaming logs and updates
 - ⚡ **Performant** - Connection pooling and efficient serialization
 

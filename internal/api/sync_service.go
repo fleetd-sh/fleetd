@@ -412,7 +412,7 @@ func (s *SyncService) storeLogMetadata(ctx context.Context, deviceID string, bat
 // updateDeviceLastSeen updates the device's last seen timestamp
 func (s *SyncService) updateDeviceLastSeen(ctx context.Context, deviceID string) {
 	_, err := s.db.ExecContext(ctx, `
-		UPDATE devices
+		UPDATE device
 		SET last_seen = $1, updated_at = $1
 		WHERE id = $2
 	`, time.Now(), deviceID)

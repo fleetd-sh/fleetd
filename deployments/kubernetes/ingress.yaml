@@ -1,0 +1,51 @@
+# Ingress configuration for the fleetd platform
+# Adjust based on your ingress controller (nginx, traefik, etc.)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fleetd-ingress
+  namespace: fleetd
+  annotations:
+    # Nginx specific annotations
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+
+    # For cert-manager (optional)
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+spec:
+  ingressClassName: nginx  # Change based on your ingress controller
+  tls:
+    - hosts:
+        - api.fleet.yourdomain.com
+        - devices.fleet.yourdomain.com
+      secretName: fleetd-tls  # Create or use cert-manager
+  rules:
+    # Platform API
+    - host: api.fleet.yourdomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: platform-api
+                port:
+                  number: 8080
+
+    # Device API
+    - host: devices.fleet.yourdomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: device-api
+                port:
+                  number: 8081

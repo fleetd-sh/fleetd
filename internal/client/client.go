@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
@@ -97,27 +98,41 @@ func NewClient(config *Config) (*Client, error) {
 
 	// Configure TLS if needed
 	if strings.HasPrefix(config.BaseURL, "https://") {
-		tlsConfig := &security.TLSConfig{
-			Mode:         "tls",
-			AutoGenerate: false,
-		}
+		// Check if it's localhost/127.0.0.1 - if so, skip TLS verification for self-signed certs
+		isLocalhost := strings.Contains(config.BaseURL, "localhost") ||
+			strings.Contains(config.BaseURL, "127.0.0.1")
 
-		// Check for custom certificates from environment
-		if certFile := os.Getenv("FLEETCTL_TLS_CERT"); certFile != "" {
-			tlsConfig.CertFile = certFile
-		}
-		if keyFile := os.Getenv("FLEETCTL_TLS_KEY"); keyFile != "" {
-			tlsConfig.KeyFile = keyFile
-		}
-		if caFile := os.Getenv("FLEETCTL_TLS_CA"); caFile != "" {
-			tlsConfig.CAFile = caFile
-		}
+		if isLocalhost && os.Getenv("FLEETCTL_TLS_VERIFY") != "true" {
+			// Skip TLS verification for localhost with self-signed certificates
+			transport = &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			}
+		} else {
+			// Use proper TLS configuration
+			tlsConfig := &security.TLSConfig{
+				Mode:         "tls",
+				AutoGenerate: false,
+			}
 
-		tlsManager, err := security.NewTLSManager(tlsConfig)
-		if err == nil && tlsManager != nil {
-			if tlsClientConfig := tlsManager.GetClientTLSConfig(); tlsClientConfig != nil {
-				transport = &http.Transport{
-					TLSClientConfig: tlsClientConfig,
+			// Check for custom certificates from environment
+			if certFile := os.Getenv("FLEETCTL_TLS_CERT"); certFile != "" {
+				tlsConfig.CertFile = certFile
+			}
+			if keyFile := os.Getenv("FLEETCTL_TLS_KEY"); keyFile != "" {
+				tlsConfig.KeyFile = keyFile
+			}
+			if caFile := os.Getenv("FLEETCTL_TLS_CA"); caFile != "" {
+				tlsConfig.CAFile = caFile
+			}
+
+			tlsManager, err := security.NewTLSManager(tlsConfig)
+			if err == nil && tlsManager != nil {
+				if tlsClientConfig := tlsManager.GetClientTLSConfig(); tlsClientConfig != nil {
+					transport = &http.Transport{
+						TLSClientConfig: tlsClientConfig,
+					}
 				}
 			}
 		}

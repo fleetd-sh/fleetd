@@ -82,13 +82,136 @@ func (DeviceStatus) EnumDescriptor() ([]byte, []int) {
 	return file_public_v1_fleet_proto_rawDescGZIP(), []int{0}
 }
 
+// DeploymentType specifies what kind of deployment this is
+type DeploymentType int32
+
+const (
+	DeploymentType_DEPLOYMENT_TYPE_UNSPECIFIED DeploymentType = 0
+	DeploymentType_DEPLOYMENT_TYPE_BINARY      DeploymentType = 1 // Native executable replacement
+	DeploymentType_DEPLOYMENT_TYPE_SCRIPT      DeploymentType = 2 // Shell script execution
+	DeploymentType_DEPLOYMENT_TYPE_CONTAINER   DeploymentType = 3 // Docker container update
+	DeploymentType_DEPLOYMENT_TYPE_CONFIG      DeploymentType = 4 // Configuration change
+	DeploymentType_DEPLOYMENT_TYPE_FIRMWARE    DeploymentType = 5 // Firmware update
+	DeploymentType_DEPLOYMENT_TYPE_PACKAGE     DeploymentType = 6 // OS package (apt, yum, etc.)
+	DeploymentType_DEPLOYMENT_TYPE_BUNDLE      DeploymentType = 7 // Multi-component deployment
+)
+
+// Enum value maps for DeploymentType.
+var (
+	DeploymentType_name = map[int32]string{
+		0: "DEPLOYMENT_TYPE_UNSPECIFIED",
+		1: "DEPLOYMENT_TYPE_BINARY",
+		2: "DEPLOYMENT_TYPE_SCRIPT",
+		3: "DEPLOYMENT_TYPE_CONTAINER",
+		4: "DEPLOYMENT_TYPE_CONFIG",
+		5: "DEPLOYMENT_TYPE_FIRMWARE",
+		6: "DEPLOYMENT_TYPE_PACKAGE",
+		7: "DEPLOYMENT_TYPE_BUNDLE",
+	}
+	DeploymentType_value = map[string]int32{
+		"DEPLOYMENT_TYPE_UNSPECIFIED": 0,
+		"DEPLOYMENT_TYPE_BINARY":      1,
+		"DEPLOYMENT_TYPE_SCRIPT":      2,
+		"DEPLOYMENT_TYPE_CONTAINER":   3,
+		"DEPLOYMENT_TYPE_CONFIG":      4,
+		"DEPLOYMENT_TYPE_FIRMWARE":    5,
+		"DEPLOYMENT_TYPE_PACKAGE":     6,
+		"DEPLOYMENT_TYPE_BUNDLE":      7,
+	}
+)
+
+func (x DeploymentType) Enum() *DeploymentType {
+	p := new(DeploymentType)
+	*p = x
+	return p
+}
+
+func (x DeploymentType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeploymentType) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[1].Descriptor()
+}
+
+func (DeploymentType) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[1]
+}
+
+func (x DeploymentType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeploymentType.Descriptor instead.
+func (DeploymentType) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{1}
+}
+
+type RestartPolicy int32
+
+const (
+	RestartPolicy_RESTART_POLICY_UNSPECIFIED    RestartPolicy = 0
+	RestartPolicy_RESTART_POLICY_NO             RestartPolicy = 1
+	RestartPolicy_RESTART_POLICY_ALWAYS         RestartPolicy = 2
+	RestartPolicy_RESTART_POLICY_ON_FAILURE     RestartPolicy = 3
+	RestartPolicy_RESTART_POLICY_UNLESS_STOPPED RestartPolicy = 4
+)
+
+// Enum value maps for RestartPolicy.
+var (
+	RestartPolicy_name = map[int32]string{
+		0: "RESTART_POLICY_UNSPECIFIED",
+		1: "RESTART_POLICY_NO",
+		2: "RESTART_POLICY_ALWAYS",
+		3: "RESTART_POLICY_ON_FAILURE",
+		4: "RESTART_POLICY_UNLESS_STOPPED",
+	}
+	RestartPolicy_value = map[string]int32{
+		"RESTART_POLICY_UNSPECIFIED":    0,
+		"RESTART_POLICY_NO":             1,
+		"RESTART_POLICY_ALWAYS":         2,
+		"RESTART_POLICY_ON_FAILURE":     3,
+		"RESTART_POLICY_UNLESS_STOPPED": 4,
+	}
+)
+
+func (x RestartPolicy) Enum() *RestartPolicy {
+	p := new(RestartPolicy)
+	*p = x
+	return p
+}
+
+func (x RestartPolicy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RestartPolicy) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[2].Descriptor()
+}
+
+func (RestartPolicy) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[2]
+}
+
+func (x RestartPolicy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RestartPolicy.Descriptor instead.
+func (RestartPolicy) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{2}
+}
+
+// DeploymentStrategy defines how the deployment is rolled out
 type DeploymentStrategy int32
 
 const (
 	DeploymentStrategy_DEPLOYMENT_STRATEGY_UNSPECIFIED DeploymentStrategy = 0
-	DeploymentStrategy_DEPLOYMENT_STRATEGY_IMMEDIATE   DeploymentStrategy = 1
-	DeploymentStrategy_DEPLOYMENT_STRATEGY_ROLLING     DeploymentStrategy = 2
-	DeploymentStrategy_DEPLOYMENT_STRATEGY_CANARY      DeploymentStrategy = 3
+	DeploymentStrategy_DEPLOYMENT_STRATEGY_IMMEDIATE   DeploymentStrategy = 1 // All devices at once
+	DeploymentStrategy_DEPLOYMENT_STRATEGY_ROLLING     DeploymentStrategy = 2 // Gradual rollout in batches
+	DeploymentStrategy_DEPLOYMENT_STRATEGY_CANARY      DeploymentStrategy = 3 // Test on small subset first
+	DeploymentStrategy_DEPLOYMENT_STRATEGY_BLUE_GREEN  DeploymentStrategy = 4 // Switch between two versions
+	DeploymentStrategy_DEPLOYMENT_STRATEGY_CUSTOM      DeploymentStrategy = 5 // Custom strategy
 )
 
 // Enum value maps for DeploymentStrategy.
@@ -98,12 +221,16 @@ var (
 		1: "DEPLOYMENT_STRATEGY_IMMEDIATE",
 		2: "DEPLOYMENT_STRATEGY_ROLLING",
 		3: "DEPLOYMENT_STRATEGY_CANARY",
+		4: "DEPLOYMENT_STRATEGY_BLUE_GREEN",
+		5: "DEPLOYMENT_STRATEGY_CUSTOM",
 	}
 	DeploymentStrategy_value = map[string]int32{
 		"DEPLOYMENT_STRATEGY_UNSPECIFIED": 0,
 		"DEPLOYMENT_STRATEGY_IMMEDIATE":   1,
 		"DEPLOYMENT_STRATEGY_ROLLING":     2,
 		"DEPLOYMENT_STRATEGY_CANARY":      3,
+		"DEPLOYMENT_STRATEGY_BLUE_GREEN":  4,
+		"DEPLOYMENT_STRATEGY_CUSTOM":      5,
 	}
 )
 
@@ -118,11 +245,11 @@ func (x DeploymentStrategy) String() string {
 }
 
 func (DeploymentStrategy) Descriptor() protoreflect.EnumDescriptor {
-	return file_public_v1_fleet_proto_enumTypes[1].Descriptor()
+	return file_public_v1_fleet_proto_enumTypes[3].Descriptor()
 }
 
 func (DeploymentStrategy) Type() protoreflect.EnumType {
-	return &file_public_v1_fleet_proto_enumTypes[1]
+	return &file_public_v1_fleet_proto_enumTypes[3]
 }
 
 func (x DeploymentStrategy) Number() protoreflect.EnumNumber {
@@ -131,62 +258,142 @@ func (x DeploymentStrategy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DeploymentStrategy.Descriptor instead.
 func (DeploymentStrategy) EnumDescriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{1}
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{3}
 }
 
-type UpdateDeploymentStatus int32
+type NotificationEvent int32
 
 const (
-	UpdateDeploymentStatus_UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED UpdateDeploymentStatus = 0
-	UpdateDeploymentStatus_UPDATE_DEPLOYMENT_STATUS_IN_PROGRESS UpdateDeploymentStatus = 1
-	UpdateDeploymentStatus_UPDATE_DEPLOYMENT_STATUS_COMPLETED   UpdateDeploymentStatus = 2
-	UpdateDeploymentStatus_UPDATE_DEPLOYMENT_STATUS_FAILED      UpdateDeploymentStatus = 3
-	UpdateDeploymentStatus_UPDATE_DEPLOYMENT_STATUS_CANCELLED   UpdateDeploymentStatus = 4
+	NotificationEvent_NOTIFICATION_EVENT_UNSPECIFIED NotificationEvent = 0
+	NotificationEvent_NOTIFICATION_EVENT_STARTED     NotificationEvent = 1
+	NotificationEvent_NOTIFICATION_EVENT_PROGRESS    NotificationEvent = 2
+	NotificationEvent_NOTIFICATION_EVENT_COMPLETED   NotificationEvent = 3
+	NotificationEvent_NOTIFICATION_EVENT_FAILED      NotificationEvent = 4
+	NotificationEvent_NOTIFICATION_EVENT_ROLLED_BACK NotificationEvent = 5
+	NotificationEvent_NOTIFICATION_EVENT_PAUSED      NotificationEvent = 6
+	NotificationEvent_NOTIFICATION_EVENT_APPROVED    NotificationEvent = 7
 )
 
-// Enum value maps for UpdateDeploymentStatus.
+// Enum value maps for NotificationEvent.
 var (
-	UpdateDeploymentStatus_name = map[int32]string{
-		0: "UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED",
-		1: "UPDATE_DEPLOYMENT_STATUS_IN_PROGRESS",
-		2: "UPDATE_DEPLOYMENT_STATUS_COMPLETED",
-		3: "UPDATE_DEPLOYMENT_STATUS_FAILED",
-		4: "UPDATE_DEPLOYMENT_STATUS_CANCELLED",
+	NotificationEvent_name = map[int32]string{
+		0: "NOTIFICATION_EVENT_UNSPECIFIED",
+		1: "NOTIFICATION_EVENT_STARTED",
+		2: "NOTIFICATION_EVENT_PROGRESS",
+		3: "NOTIFICATION_EVENT_COMPLETED",
+		4: "NOTIFICATION_EVENT_FAILED",
+		5: "NOTIFICATION_EVENT_ROLLED_BACK",
+		6: "NOTIFICATION_EVENT_PAUSED",
+		7: "NOTIFICATION_EVENT_APPROVED",
 	}
-	UpdateDeploymentStatus_value = map[string]int32{
-		"UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED": 0,
-		"UPDATE_DEPLOYMENT_STATUS_IN_PROGRESS": 1,
-		"UPDATE_DEPLOYMENT_STATUS_COMPLETED":   2,
-		"UPDATE_DEPLOYMENT_STATUS_FAILED":      3,
-		"UPDATE_DEPLOYMENT_STATUS_CANCELLED":   4,
+	NotificationEvent_value = map[string]int32{
+		"NOTIFICATION_EVENT_UNSPECIFIED": 0,
+		"NOTIFICATION_EVENT_STARTED":     1,
+		"NOTIFICATION_EVENT_PROGRESS":    2,
+		"NOTIFICATION_EVENT_COMPLETED":   3,
+		"NOTIFICATION_EVENT_FAILED":      4,
+		"NOTIFICATION_EVENT_ROLLED_BACK": 5,
+		"NOTIFICATION_EVENT_PAUSED":      6,
+		"NOTIFICATION_EVENT_APPROVED":    7,
 	}
 )
 
-func (x UpdateDeploymentStatus) Enum() *UpdateDeploymentStatus {
-	p := new(UpdateDeploymentStatus)
+func (x NotificationEvent) Enum() *NotificationEvent {
+	p := new(NotificationEvent)
 	*p = x
 	return p
 }
 
-func (x UpdateDeploymentStatus) String() string {
+func (x NotificationEvent) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (UpdateDeploymentStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_public_v1_fleet_proto_enumTypes[2].Descriptor()
+func (NotificationEvent) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[4].Descriptor()
 }
 
-func (UpdateDeploymentStatus) Type() protoreflect.EnumType {
-	return &file_public_v1_fleet_proto_enumTypes[2]
+func (NotificationEvent) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[4]
 }
 
-func (x UpdateDeploymentStatus) Number() protoreflect.EnumNumber {
+func (x NotificationEvent) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use UpdateDeploymentStatus.Descriptor instead.
-func (UpdateDeploymentStatus) EnumDescriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{2}
+// Deprecated: Use NotificationEvent.Descriptor instead.
+func (NotificationEvent) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{4}
+}
+
+// DeploymentState tracks the current state
+type DeploymentState int32
+
+const (
+	DeploymentState_DEPLOYMENT_STATE_UNSPECIFIED  DeploymentState = 0
+	DeploymentState_DEPLOYMENT_STATE_DRAFT        DeploymentState = 1 // Created but not started
+	DeploymentState_DEPLOYMENT_STATE_PENDING      DeploymentState = 2 // Waiting to start
+	DeploymentState_DEPLOYMENT_STATE_RUNNING      DeploymentState = 3 // Currently deploying
+	DeploymentState_DEPLOYMENT_STATE_PAUSED       DeploymentState = 4 // Paused by user or system
+	DeploymentState_DEPLOYMENT_STATE_COMPLETED    DeploymentState = 5 // Successfully completed
+	DeploymentState_DEPLOYMENT_STATE_FAILED       DeploymentState = 6 // Failed
+	DeploymentState_DEPLOYMENT_STATE_CANCELLED    DeploymentState = 7 // Cancelled by user
+	DeploymentState_DEPLOYMENT_STATE_ROLLING_BACK DeploymentState = 8 // Rolling back
+	DeploymentState_DEPLOYMENT_STATE_ROLLED_BACK  DeploymentState = 9 // Rolled back successfully
+)
+
+// Enum value maps for DeploymentState.
+var (
+	DeploymentState_name = map[int32]string{
+		0: "DEPLOYMENT_STATE_UNSPECIFIED",
+		1: "DEPLOYMENT_STATE_DRAFT",
+		2: "DEPLOYMENT_STATE_PENDING",
+		3: "DEPLOYMENT_STATE_RUNNING",
+		4: "DEPLOYMENT_STATE_PAUSED",
+		5: "DEPLOYMENT_STATE_COMPLETED",
+		6: "DEPLOYMENT_STATE_FAILED",
+		7: "DEPLOYMENT_STATE_CANCELLED",
+		8: "DEPLOYMENT_STATE_ROLLING_BACK",
+		9: "DEPLOYMENT_STATE_ROLLED_BACK",
+	}
+	DeploymentState_value = map[string]int32{
+		"DEPLOYMENT_STATE_UNSPECIFIED":  0,
+		"DEPLOYMENT_STATE_DRAFT":        1,
+		"DEPLOYMENT_STATE_PENDING":      2,
+		"DEPLOYMENT_STATE_RUNNING":      3,
+		"DEPLOYMENT_STATE_PAUSED":       4,
+		"DEPLOYMENT_STATE_COMPLETED":    5,
+		"DEPLOYMENT_STATE_FAILED":       6,
+		"DEPLOYMENT_STATE_CANCELLED":    7,
+		"DEPLOYMENT_STATE_ROLLING_BACK": 8,
+		"DEPLOYMENT_STATE_ROLLED_BACK":  9,
+	}
+)
+
+func (x DeploymentState) Enum() *DeploymentState {
+	p := new(DeploymentState)
+	*p = x
+	return p
+}
+
+func (x DeploymentState) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeploymentState) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[5].Descriptor()
+}
+
+func (DeploymentState) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[5]
+}
+
+func (x DeploymentState) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeploymentState.Descriptor instead.
+func (DeploymentState) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{5}
 }
 
 type EventType int32
@@ -243,11 +450,11 @@ func (x EventType) String() string {
 }
 
 func (EventType) Descriptor() protoreflect.EnumDescriptor {
-	return file_public_v1_fleet_proto_enumTypes[3].Descriptor()
+	return file_public_v1_fleet_proto_enumTypes[6].Descriptor()
 }
 
 func (EventType) Type() protoreflect.EnumType {
-	return &file_public_v1_fleet_proto_enumTypes[3]
+	return &file_public_v1_fleet_proto_enumTypes[6]
 }
 
 func (x EventType) Number() protoreflect.EnumNumber {
@@ -256,7 +463,541 @@ func (x EventType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use EventType.Descriptor instead.
 func (EventType) EnumDescriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{3}
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{6}
+}
+
+// ArtifactType defines the type of artifact
+type ArtifactType int32
+
+const (
+	ArtifactType_ARTIFACT_TYPE_UNSPECIFIED   ArtifactType = 0
+	ArtifactType_ARTIFACT_TYPE_BINARY        ArtifactType = 1
+	ArtifactType_ARTIFACT_TYPE_ARCHIVE       ArtifactType = 2
+	ArtifactType_ARTIFACT_TYPE_SCRIPT        ArtifactType = 3
+	ArtifactType_ARTIFACT_TYPE_CONTAINER     ArtifactType = 4
+	ArtifactType_ARTIFACT_TYPE_CONFIGURATION ArtifactType = 5
+)
+
+// Enum value maps for ArtifactType.
+var (
+	ArtifactType_name = map[int32]string{
+		0: "ARTIFACT_TYPE_UNSPECIFIED",
+		1: "ARTIFACT_TYPE_BINARY",
+		2: "ARTIFACT_TYPE_ARCHIVE",
+		3: "ARTIFACT_TYPE_SCRIPT",
+		4: "ARTIFACT_TYPE_CONTAINER",
+		5: "ARTIFACT_TYPE_CONFIGURATION",
+	}
+	ArtifactType_value = map[string]int32{
+		"ARTIFACT_TYPE_UNSPECIFIED":   0,
+		"ARTIFACT_TYPE_BINARY":        1,
+		"ARTIFACT_TYPE_ARCHIVE":       2,
+		"ARTIFACT_TYPE_SCRIPT":        3,
+		"ARTIFACT_TYPE_CONTAINER":     4,
+		"ARTIFACT_TYPE_CONFIGURATION": 5,
+	}
+)
+
+func (x ArtifactType) Enum() *ArtifactType {
+	p := new(ArtifactType)
+	*p = x
+	return p
+}
+
+func (x ArtifactType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ArtifactType) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[7].Descriptor()
+}
+
+func (ArtifactType) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[7]
+}
+
+func (x ArtifactType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ArtifactType.Descriptor instead.
+func (ArtifactType) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{7}
+}
+
+type UpdateStatus int32
+
+const (
+	UpdateStatus_UPDATE_STATUS_UNSPECIFIED UpdateStatus = 0
+	UpdateStatus_UPDATE_STATUS_PENDING     UpdateStatus = 1
+	UpdateStatus_UPDATE_STATUS_IN_PROGRESS UpdateStatus = 2
+	UpdateStatus_UPDATE_STATUS_COMPLETED   UpdateStatus = 3
+	UpdateStatus_UPDATE_STATUS_FAILED      UpdateStatus = 4
+)
+
+// Enum value maps for UpdateStatus.
+var (
+	UpdateStatus_name = map[int32]string{
+		0: "UPDATE_STATUS_UNSPECIFIED",
+		1: "UPDATE_STATUS_PENDING",
+		2: "UPDATE_STATUS_IN_PROGRESS",
+		3: "UPDATE_STATUS_COMPLETED",
+		4: "UPDATE_STATUS_FAILED",
+	}
+	UpdateStatus_value = map[string]int32{
+		"UPDATE_STATUS_UNSPECIFIED": 0,
+		"UPDATE_STATUS_PENDING":     1,
+		"UPDATE_STATUS_IN_PROGRESS": 2,
+		"UPDATE_STATUS_COMPLETED":   3,
+		"UPDATE_STATUS_FAILED":      4,
+	}
+)
+
+func (x UpdateStatus) Enum() *UpdateStatus {
+	p := new(UpdateStatus)
+	*p = x
+	return p
+}
+
+func (x UpdateStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (UpdateStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[8].Descriptor()
+}
+
+func (UpdateStatus) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[8]
+}
+
+func (x UpdateStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use UpdateStatus.Descriptor instead.
+func (UpdateStatus) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{8}
+}
+
+type LabelRequirement_Operator int32
+
+const (
+	LabelRequirement_OPERATOR_UNSPECIFIED    LabelRequirement_Operator = 0
+	LabelRequirement_OPERATOR_IN             LabelRequirement_Operator = 1
+	LabelRequirement_OPERATOR_NOT_IN         LabelRequirement_Operator = 2
+	LabelRequirement_OPERATOR_EXISTS         LabelRequirement_Operator = 3
+	LabelRequirement_OPERATOR_DOES_NOT_EXIST LabelRequirement_Operator = 4
+	LabelRequirement_OPERATOR_GT             LabelRequirement_Operator = 5
+	LabelRequirement_OPERATOR_LT             LabelRequirement_Operator = 6
+	LabelRequirement_OPERATOR_EQUALS         LabelRequirement_Operator = 7
+	LabelRequirement_OPERATOR_NOT_EQUALS     LabelRequirement_Operator = 8
+)
+
+// Enum value maps for LabelRequirement_Operator.
+var (
+	LabelRequirement_Operator_name = map[int32]string{
+		0: "OPERATOR_UNSPECIFIED",
+		1: "OPERATOR_IN",
+		2: "OPERATOR_NOT_IN",
+		3: "OPERATOR_EXISTS",
+		4: "OPERATOR_DOES_NOT_EXIST",
+		5: "OPERATOR_GT",
+		6: "OPERATOR_LT",
+		7: "OPERATOR_EQUALS",
+		8: "OPERATOR_NOT_EQUALS",
+	}
+	LabelRequirement_Operator_value = map[string]int32{
+		"OPERATOR_UNSPECIFIED":    0,
+		"OPERATOR_IN":             1,
+		"OPERATOR_NOT_IN":         2,
+		"OPERATOR_EXISTS":         3,
+		"OPERATOR_DOES_NOT_EXIST": 4,
+		"OPERATOR_GT":             5,
+		"OPERATOR_LT":             6,
+		"OPERATOR_EQUALS":         7,
+		"OPERATOR_NOT_EQUALS":     8,
+	}
+)
+
+func (x LabelRequirement_Operator) Enum() *LabelRequirement_Operator {
+	p := new(LabelRequirement_Operator)
+	*p = x
+	return p
+}
+
+func (x LabelRequirement_Operator) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (LabelRequirement_Operator) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[9].Descriptor()
+}
+
+func (LabelRequirement_Operator) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[9]
+}
+
+func (x LabelRequirement_Operator) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use LabelRequirement_Operator.Descriptor instead.
+func (LabelRequirement_Operator) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{38, 0}
+}
+
+type TargetFilter_FilterType int32
+
+const (
+	TargetFilter_FILTER_TYPE_UNSPECIFIED   TargetFilter_FilterType = 0
+	TargetFilter_FILTER_TYPE_OS            TargetFilter_FilterType = 1
+	TargetFilter_FILTER_TYPE_ARCH          TargetFilter_FilterType = 2
+	TargetFilter_FILTER_TYPE_VERSION       TargetFilter_FilterType = 3
+	TargetFilter_FILTER_TYPE_CAPABILITY    TargetFilter_FilterType = 4
+	TargetFilter_FILTER_TYPE_ONLINE_STATUS TargetFilter_FilterType = 5
+	TargetFilter_FILTER_TYPE_LOCATION      TargetFilter_FilterType = 6
+	TargetFilter_FILTER_TYPE_CUSTOM        TargetFilter_FilterType = 7
+)
+
+// Enum value maps for TargetFilter_FilterType.
+var (
+	TargetFilter_FilterType_name = map[int32]string{
+		0: "FILTER_TYPE_UNSPECIFIED",
+		1: "FILTER_TYPE_OS",
+		2: "FILTER_TYPE_ARCH",
+		3: "FILTER_TYPE_VERSION",
+		4: "FILTER_TYPE_CAPABILITY",
+		5: "FILTER_TYPE_ONLINE_STATUS",
+		6: "FILTER_TYPE_LOCATION",
+		7: "FILTER_TYPE_CUSTOM",
+	}
+	TargetFilter_FilterType_value = map[string]int32{
+		"FILTER_TYPE_UNSPECIFIED":   0,
+		"FILTER_TYPE_OS":            1,
+		"FILTER_TYPE_ARCH":          2,
+		"FILTER_TYPE_VERSION":       3,
+		"FILTER_TYPE_CAPABILITY":    4,
+		"FILTER_TYPE_ONLINE_STATUS": 5,
+		"FILTER_TYPE_LOCATION":      6,
+		"FILTER_TYPE_CUSTOM":        7,
+	}
+)
+
+func (x TargetFilter_FilterType) Enum() *TargetFilter_FilterType {
+	p := new(TargetFilter_FilterType)
+	*p = x
+	return p
+}
+
+func (x TargetFilter_FilterType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TargetFilter_FilterType) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[10].Descriptor()
+}
+
+func (TargetFilter_FilterType) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[10]
+}
+
+func (x TargetFilter_FilterType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TargetFilter_FilterType.Descriptor instead.
+func (TargetFilter_FilterType) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{40, 0}
+}
+
+type DeploymentHook_HookType int32
+
+const (
+	DeploymentHook_HOOK_TYPE_UNSPECIFIED     DeploymentHook_HookType = 0
+	DeploymentHook_HOOK_TYPE_PRE_DEPLOYMENT  DeploymentHook_HookType = 1
+	DeploymentHook_HOOK_TYPE_POST_DEPLOYMENT DeploymentHook_HookType = 2
+	DeploymentHook_HOOK_TYPE_PRE_ROLLBACK    DeploymentHook_HookType = 3
+	DeploymentHook_HOOK_TYPE_POST_ROLLBACK   DeploymentHook_HookType = 4
+	DeploymentHook_HOOK_TYPE_HEALTH_CHECK    DeploymentHook_HookType = 5
+	DeploymentHook_HOOK_TYPE_VALIDATION      DeploymentHook_HookType = 6
+)
+
+// Enum value maps for DeploymentHook_HookType.
+var (
+	DeploymentHook_HookType_name = map[int32]string{
+		0: "HOOK_TYPE_UNSPECIFIED",
+		1: "HOOK_TYPE_PRE_DEPLOYMENT",
+		2: "HOOK_TYPE_POST_DEPLOYMENT",
+		3: "HOOK_TYPE_PRE_ROLLBACK",
+		4: "HOOK_TYPE_POST_ROLLBACK",
+		5: "HOOK_TYPE_HEALTH_CHECK",
+		6: "HOOK_TYPE_VALIDATION",
+	}
+	DeploymentHook_HookType_value = map[string]int32{
+		"HOOK_TYPE_UNSPECIFIED":     0,
+		"HOOK_TYPE_PRE_DEPLOYMENT":  1,
+		"HOOK_TYPE_POST_DEPLOYMENT": 2,
+		"HOOK_TYPE_PRE_ROLLBACK":    3,
+		"HOOK_TYPE_POST_ROLLBACK":   4,
+		"HOOK_TYPE_HEALTH_CHECK":    5,
+		"HOOK_TYPE_VALIDATION":      6,
+	}
+)
+
+func (x DeploymentHook_HookType) Enum() *DeploymentHook_HookType {
+	p := new(DeploymentHook_HookType)
+	*p = x
+	return p
+}
+
+func (x DeploymentHook_HookType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeploymentHook_HookType) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[11].Descriptor()
+}
+
+func (DeploymentHook_HookType) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[11]
+}
+
+func (x DeploymentHook_HookType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeploymentHook_HookType.Descriptor instead.
+func (DeploymentHook_HookType) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{48, 0}
+}
+
+type ValidationWarning_Severity int32
+
+const (
+	ValidationWarning_SEVERITY_UNSPECIFIED ValidationWarning_Severity = 0
+	ValidationWarning_SEVERITY_INFO        ValidationWarning_Severity = 1
+	ValidationWarning_SEVERITY_WARNING     ValidationWarning_Severity = 2
+	ValidationWarning_SEVERITY_ERROR       ValidationWarning_Severity = 3
+)
+
+// Enum value maps for ValidationWarning_Severity.
+var (
+	ValidationWarning_Severity_name = map[int32]string{
+		0: "SEVERITY_UNSPECIFIED",
+		1: "SEVERITY_INFO",
+		2: "SEVERITY_WARNING",
+		3: "SEVERITY_ERROR",
+	}
+	ValidationWarning_Severity_value = map[string]int32{
+		"SEVERITY_UNSPECIFIED": 0,
+		"SEVERITY_INFO":        1,
+		"SEVERITY_WARNING":     2,
+		"SEVERITY_ERROR":       3,
+	}
+)
+
+func (x ValidationWarning_Severity) Enum() *ValidationWarning_Severity {
+	p := new(ValidationWarning_Severity)
+	*p = x
+	return p
+}
+
+func (x ValidationWarning_Severity) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ValidationWarning_Severity) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[12].Descriptor()
+}
+
+func (ValidationWarning_Severity) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[12]
+}
+
+func (x ValidationWarning_Severity) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ValidationWarning_Severity.Descriptor instead.
+func (ValidationWarning_Severity) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{52, 0}
+}
+
+type DeploymentEvent_EventType int32
+
+const (
+	DeploymentEvent_EVENT_TYPE_UNSPECIFIED         DeploymentEvent_EventType = 0
+	DeploymentEvent_EVENT_TYPE_CREATED             DeploymentEvent_EventType = 1
+	DeploymentEvent_EVENT_TYPE_STARTED             DeploymentEvent_EventType = 2
+	DeploymentEvent_EVENT_TYPE_BATCH_STARTED       DeploymentEvent_EventType = 3
+	DeploymentEvent_EVENT_TYPE_BATCH_COMPLETED     DeploymentEvent_EventType = 4
+	DeploymentEvent_EVENT_TYPE_DEVICE_STARTED      DeploymentEvent_EventType = 5
+	DeploymentEvent_EVENT_TYPE_DEVICE_PROGRESS     DeploymentEvent_EventType = 6
+	DeploymentEvent_EVENT_TYPE_DEVICE_COMPLETED    DeploymentEvent_EventType = 7
+	DeploymentEvent_EVENT_TYPE_DEVICE_FAILED       DeploymentEvent_EventType = 8
+	DeploymentEvent_EVENT_TYPE_PAUSED              DeploymentEvent_EventType = 9
+	DeploymentEvent_EVENT_TYPE_RESUMED             DeploymentEvent_EventType = 10
+	DeploymentEvent_EVENT_TYPE_CANCELLED           DeploymentEvent_EventType = 11
+	DeploymentEvent_EVENT_TYPE_COMPLETED           DeploymentEvent_EventType = 12
+	DeploymentEvent_EVENT_TYPE_FAILED              DeploymentEvent_EventType = 13
+	DeploymentEvent_EVENT_TYPE_ROLLBACK_STARTED    DeploymentEvent_EventType = 14
+	DeploymentEvent_EVENT_TYPE_ROLLBACK_COMPLETED  DeploymentEvent_EventType = 15
+	DeploymentEvent_EVENT_TYPE_APPROVAL_REQUIRED   DeploymentEvent_EventType = 16
+	DeploymentEvent_EVENT_TYPE_APPROVED            DeploymentEvent_EventType = 17
+	DeploymentEvent_EVENT_TYPE_HEALTH_CHECK_PASSED DeploymentEvent_EventType = 18
+	DeploymentEvent_EVENT_TYPE_HEALTH_CHECK_FAILED DeploymentEvent_EventType = 19
+)
+
+// Enum value maps for DeploymentEvent_EventType.
+var (
+	DeploymentEvent_EventType_name = map[int32]string{
+		0:  "EVENT_TYPE_UNSPECIFIED",
+		1:  "EVENT_TYPE_CREATED",
+		2:  "EVENT_TYPE_STARTED",
+		3:  "EVENT_TYPE_BATCH_STARTED",
+		4:  "EVENT_TYPE_BATCH_COMPLETED",
+		5:  "EVENT_TYPE_DEVICE_STARTED",
+		6:  "EVENT_TYPE_DEVICE_PROGRESS",
+		7:  "EVENT_TYPE_DEVICE_COMPLETED",
+		8:  "EVENT_TYPE_DEVICE_FAILED",
+		9:  "EVENT_TYPE_PAUSED",
+		10: "EVENT_TYPE_RESUMED",
+		11: "EVENT_TYPE_CANCELLED",
+		12: "EVENT_TYPE_COMPLETED",
+		13: "EVENT_TYPE_FAILED",
+		14: "EVENT_TYPE_ROLLBACK_STARTED",
+		15: "EVENT_TYPE_ROLLBACK_COMPLETED",
+		16: "EVENT_TYPE_APPROVAL_REQUIRED",
+		17: "EVENT_TYPE_APPROVED",
+		18: "EVENT_TYPE_HEALTH_CHECK_PASSED",
+		19: "EVENT_TYPE_HEALTH_CHECK_FAILED",
+	}
+	DeploymentEvent_EventType_value = map[string]int32{
+		"EVENT_TYPE_UNSPECIFIED":         0,
+		"EVENT_TYPE_CREATED":             1,
+		"EVENT_TYPE_STARTED":             2,
+		"EVENT_TYPE_BATCH_STARTED":       3,
+		"EVENT_TYPE_BATCH_COMPLETED":     4,
+		"EVENT_TYPE_DEVICE_STARTED":      5,
+		"EVENT_TYPE_DEVICE_PROGRESS":     6,
+		"EVENT_TYPE_DEVICE_COMPLETED":    7,
+		"EVENT_TYPE_DEVICE_FAILED":       8,
+		"EVENT_TYPE_PAUSED":              9,
+		"EVENT_TYPE_RESUMED":             10,
+		"EVENT_TYPE_CANCELLED":           11,
+		"EVENT_TYPE_COMPLETED":           12,
+		"EVENT_TYPE_FAILED":              13,
+		"EVENT_TYPE_ROLLBACK_STARTED":    14,
+		"EVENT_TYPE_ROLLBACK_COMPLETED":  15,
+		"EVENT_TYPE_APPROVAL_REQUIRED":   16,
+		"EVENT_TYPE_APPROVED":            17,
+		"EVENT_TYPE_HEALTH_CHECK_PASSED": 18,
+		"EVENT_TYPE_HEALTH_CHECK_FAILED": 19,
+	}
+)
+
+func (x DeploymentEvent_EventType) Enum() *DeploymentEvent_EventType {
+	p := new(DeploymentEvent_EventType)
+	*p = x
+	return p
+}
+
+func (x DeploymentEvent_EventType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeploymentEvent_EventType) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[13].Descriptor()
+}
+
+func (DeploymentEvent_EventType) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[13]
+}
+
+func (x DeploymentEvent_EventType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeploymentEvent_EventType.Descriptor instead.
+func (DeploymentEvent_EventType) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{71, 0}
+}
+
+type DeviceDeploymentStatus_State int32
+
+const (
+	DeviceDeploymentStatus_STATE_UNSPECIFIED DeviceDeploymentStatus_State = 0
+	DeviceDeploymentStatus_STATE_PENDING     DeviceDeploymentStatus_State = 1
+	DeviceDeploymentStatus_STATE_DOWNLOADING DeviceDeploymentStatus_State = 2
+	DeviceDeploymentStatus_STATE_VALIDATING  DeviceDeploymentStatus_State = 3
+	DeviceDeploymentStatus_STATE_INSTALLING  DeviceDeploymentStatus_State = 4
+	DeviceDeploymentStatus_STATE_CONFIGURING DeviceDeploymentStatus_State = 5
+	DeviceDeploymentStatus_STATE_RESTARTING  DeviceDeploymentStatus_State = 6
+	DeviceDeploymentStatus_STATE_VERIFYING   DeviceDeploymentStatus_State = 7
+	DeviceDeploymentStatus_STATE_COMPLETED   DeviceDeploymentStatus_State = 8
+	DeviceDeploymentStatus_STATE_FAILED      DeviceDeploymentStatus_State = 9
+	DeviceDeploymentStatus_STATE_CANCELLED   DeviceDeploymentStatus_State = 10
+	DeviceDeploymentStatus_STATE_ROLLED_BACK DeviceDeploymentStatus_State = 11
+)
+
+// Enum value maps for DeviceDeploymentStatus_State.
+var (
+	DeviceDeploymentStatus_State_name = map[int32]string{
+		0:  "STATE_UNSPECIFIED",
+		1:  "STATE_PENDING",
+		2:  "STATE_DOWNLOADING",
+		3:  "STATE_VALIDATING",
+		4:  "STATE_INSTALLING",
+		5:  "STATE_CONFIGURING",
+		6:  "STATE_RESTARTING",
+		7:  "STATE_VERIFYING",
+		8:  "STATE_COMPLETED",
+		9:  "STATE_FAILED",
+		10: "STATE_CANCELLED",
+		11: "STATE_ROLLED_BACK",
+	}
+	DeviceDeploymentStatus_State_value = map[string]int32{
+		"STATE_UNSPECIFIED": 0,
+		"STATE_PENDING":     1,
+		"STATE_DOWNLOADING": 2,
+		"STATE_VALIDATING":  3,
+		"STATE_INSTALLING":  4,
+		"STATE_CONFIGURING": 5,
+		"STATE_RESTARTING":  6,
+		"STATE_VERIFYING":   7,
+		"STATE_COMPLETED":   8,
+		"STATE_FAILED":      9,
+		"STATE_CANCELLED":   10,
+		"STATE_ROLLED_BACK": 11,
+	}
+)
+
+func (x DeviceDeploymentStatus_State) Enum() *DeviceDeploymentStatus_State {
+	p := new(DeviceDeploymentStatus_State)
+	*p = x
+	return p
+}
+
+func (x DeviceDeploymentStatus_State) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeviceDeploymentStatus_State) Descriptor() protoreflect.EnumDescriptor {
+	return file_public_v1_fleet_proto_enumTypes[14].Descriptor()
+}
+
+func (DeviceDeploymentStatus_State) Type() protoreflect.EnumType {
+	return &file_public_v1_fleet_proto_enumTypes[14]
+}
+
+func (x DeviceDeploymentStatus_State) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeviceDeploymentStatus_State.Descriptor instead.
+func (DeviceDeploymentStatus_State) EnumDescriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{72, 0}
 }
 
 // Device represents a managed device
@@ -1896,37 +2637,42 @@ func (x *TelemetryEvent) GetPoint() *TelemetryPoint {
 	return nil
 }
 
-// Update management messages
-type Update struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Version           string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	Description       string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	BinaryUrl         string                 `protobuf:"bytes,4,opt,name=binary_url,json=binaryUrl,proto3" json:"binary_url,omitempty"`
-	Checksum          string                 `protobuf:"bytes,5,opt,name=checksum,proto3" json:"checksum,omitempty"`
-	SizeBytes         int64                  `protobuf:"varint,6,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
-	ReleaseNotes      string                 `protobuf:"bytes,7,opt,name=release_notes,json=releaseNotes,proto3" json:"release_notes,omitempty"`
-	CreatedAt         *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	TargetDeviceTypes []string               `protobuf:"bytes,9,rep,name=target_device_types,json=targetDeviceTypes,proto3" json:"target_device_types,omitempty"`
-	Channel           string                 `protobuf:"bytes,10,opt,name=channel,proto3" json:"channel,omitempty"` // stable, beta, nightly
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+// Deployment represents any type of deployment (binary, script, container, config)
+type Deployment struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Type          DeploymentType         `protobuf:"varint,4,opt,name=type,proto3,enum=public.v1.DeploymentType" json:"type,omitempty"`
+	Payload       *DeploymentPayload     `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`
+	Target        *DeploymentTarget      `protobuf:"bytes,6,opt,name=target,proto3" json:"target,omitempty"`
+	Strategy      DeploymentStrategy     `protobuf:"varint,7,opt,name=strategy,proto3,enum=public.v1.DeploymentStrategy" json:"strategy,omitempty"`
+	Config        *DeploymentConfig      `protobuf:"bytes,8,opt,name=config,proto3" json:"config,omitempty"`
+	State         DeploymentState        `protobuf:"varint,9,opt,name=state,proto3,enum=public.v1.DeploymentState" json:"state,omitempty"`
+	Metadata      *DeploymentMetadata    `protobuf:"bytes,10,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	StartedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	CreatedBy     string                 `protobuf:"bytes,14,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	Labels        map[string]string      `protobuf:"bytes,15,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Update) Reset() {
-	*x = Update{}
+func (x *Deployment) Reset() {
+	*x = Deployment{}
 	mi := &file_public_v1_fleet_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Update) String() string {
+func (x *Deployment) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Update) ProtoMessage() {}
+func (*Deployment) ProtoMessage() {}
 
-func (x *Update) ProtoReflect() protoreflect.Message {
+func (x *Deployment) ProtoReflect() protoreflect.Message {
 	mi := &file_public_v1_fleet_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1938,607 +2684,3977 @@ func (x *Update) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Update.ProtoReflect.Descriptor instead.
-func (*Update) Descriptor() ([]byte, []int) {
+// Deprecated: Use Deployment.ProtoReflect.Descriptor instead.
+func (*Deployment) Descriptor() ([]byte, []int) {
 	return file_public_v1_fleet_proto_rawDescGZIP(), []int{23}
 }
 
-func (x *Update) GetId() string {
+func (x *Deployment) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *Update) GetVersion() string {
+func (x *Deployment) GetName() string {
 	if x != nil {
-		return x.Version
+		return x.Name
 	}
 	return ""
 }
 
-func (x *Update) GetDescription() string {
+func (x *Deployment) GetDescription() string {
 	if x != nil {
 		return x.Description
 	}
 	return ""
 }
 
-func (x *Update) GetBinaryUrl() string {
+func (x *Deployment) GetType() DeploymentType {
 	if x != nil {
-		return x.BinaryUrl
+		return x.Type
 	}
-	return ""
+	return DeploymentType_DEPLOYMENT_TYPE_UNSPECIFIED
 }
 
-func (x *Update) GetChecksum() string {
+func (x *Deployment) GetPayload() *DeploymentPayload {
 	if x != nil {
-		return x.Checksum
-	}
-	return ""
-}
-
-func (x *Update) GetSizeBytes() int64 {
-	if x != nil {
-		return x.SizeBytes
-	}
-	return 0
-}
-
-func (x *Update) GetReleaseNotes() string {
-	if x != nil {
-		return x.ReleaseNotes
-	}
-	return ""
-}
-
-func (x *Update) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
+		return x.Payload
 	}
 	return nil
 }
 
-func (x *Update) GetTargetDeviceTypes() []string {
+func (x *Deployment) GetTarget() *DeploymentTarget {
 	if x != nil {
-		return x.TargetDeviceTypes
+		return x.Target
 	}
 	return nil
 }
 
-func (x *Update) GetChannel() string {
-	if x != nil {
-		return x.Channel
-	}
-	return ""
-}
-
-type ListUpdatesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	Channel       string                 `protobuf:"bytes,3,opt,name=channel,proto3" json:"channel,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListUpdatesRequest) Reset() {
-	*x = ListUpdatesRequest{}
-	mi := &file_public_v1_fleet_proto_msgTypes[24]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListUpdatesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListUpdatesRequest) ProtoMessage() {}
-
-func (x *ListUpdatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[24]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListUpdatesRequest.ProtoReflect.Descriptor instead.
-func (*ListUpdatesRequest) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *ListUpdatesRequest) GetPageSize() int32 {
-	if x != nil {
-		return x.PageSize
-	}
-	return 0
-}
-
-func (x *ListUpdatesRequest) GetPageToken() string {
-	if x != nil {
-		return x.PageToken
-	}
-	return ""
-}
-
-func (x *ListUpdatesRequest) GetChannel() string {
-	if x != nil {
-		return x.Channel
-	}
-	return ""
-}
-
-type ListUpdatesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Updates       []*Update              `protobuf:"bytes,1,rep,name=updates,proto3" json:"updates,omitempty"`
-	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListUpdatesResponse) Reset() {
-	*x = ListUpdatesResponse{}
-	mi := &file_public_v1_fleet_proto_msgTypes[25]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListUpdatesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListUpdatesResponse) ProtoMessage() {}
-
-func (x *ListUpdatesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[25]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListUpdatesResponse.ProtoReflect.Descriptor instead.
-func (*ListUpdatesResponse) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *ListUpdatesResponse) GetUpdates() []*Update {
-	if x != nil {
-		return x.Updates
-	}
-	return nil
-}
-
-func (x *ListUpdatesResponse) GetNextPageToken() string {
-	if x != nil {
-		return x.NextPageToken
-	}
-	return ""
-}
-
-type CreateUpdateRequest struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	Version           string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
-	Description       string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	BinaryUrl         string                 `protobuf:"bytes,3,opt,name=binary_url,json=binaryUrl,proto3" json:"binary_url,omitempty"`
-	Checksum          string                 `protobuf:"bytes,4,opt,name=checksum,proto3" json:"checksum,omitempty"`
-	SizeBytes         int64                  `protobuf:"varint,5,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
-	ReleaseNotes      string                 `protobuf:"bytes,6,opt,name=release_notes,json=releaseNotes,proto3" json:"release_notes,omitempty"`
-	TargetDeviceTypes []string               `protobuf:"bytes,7,rep,name=target_device_types,json=targetDeviceTypes,proto3" json:"target_device_types,omitempty"`
-	Channel           string                 `protobuf:"bytes,8,opt,name=channel,proto3" json:"channel,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
-}
-
-func (x *CreateUpdateRequest) Reset() {
-	*x = CreateUpdateRequest{}
-	mi := &file_public_v1_fleet_proto_msgTypes[26]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateUpdateRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateUpdateRequest) ProtoMessage() {}
-
-func (x *CreateUpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[26]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateUpdateRequest.ProtoReflect.Descriptor instead.
-func (*CreateUpdateRequest) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *CreateUpdateRequest) GetVersion() string {
-	if x != nil {
-		return x.Version
-	}
-	return ""
-}
-
-func (x *CreateUpdateRequest) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *CreateUpdateRequest) GetBinaryUrl() string {
-	if x != nil {
-		return x.BinaryUrl
-	}
-	return ""
-}
-
-func (x *CreateUpdateRequest) GetChecksum() string {
-	if x != nil {
-		return x.Checksum
-	}
-	return ""
-}
-
-func (x *CreateUpdateRequest) GetSizeBytes() int64 {
-	if x != nil {
-		return x.SizeBytes
-	}
-	return 0
-}
-
-func (x *CreateUpdateRequest) GetReleaseNotes() string {
-	if x != nil {
-		return x.ReleaseNotes
-	}
-	return ""
-}
-
-func (x *CreateUpdateRequest) GetTargetDeviceTypes() []string {
-	if x != nil {
-		return x.TargetDeviceTypes
-	}
-	return nil
-}
-
-func (x *CreateUpdateRequest) GetChannel() string {
-	if x != nil {
-		return x.Channel
-	}
-	return ""
-}
-
-type CreateUpdateResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Update        *Update                `protobuf:"bytes,1,opt,name=update,proto3" json:"update,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateUpdateResponse) Reset() {
-	*x = CreateUpdateResponse{}
-	mi := &file_public_v1_fleet_proto_msgTypes[27]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateUpdateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateUpdateResponse) ProtoMessage() {}
-
-func (x *CreateUpdateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[27]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateUpdateResponse.ProtoReflect.Descriptor instead.
-func (*CreateUpdateResponse) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *CreateUpdateResponse) GetUpdate() *Update {
-	if x != nil {
-		return x.Update
-	}
-	return nil
-}
-
-type DeployUpdateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UpdateId      string                 `protobuf:"bytes,1,opt,name=update_id,json=updateId,proto3" json:"update_id,omitempty"`
-	DeviceIds     []string               `protobuf:"bytes,2,rep,name=device_ids,json=deviceIds,proto3" json:"device_ids,omitempty"`
-	Tags          []string               `protobuf:"bytes,3,rep,name=tags,proto3" json:"tags,omitempty"`
-	GroupId       string                 `protobuf:"bytes,4,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
-	Strategy      DeploymentStrategy     `protobuf:"varint,5,opt,name=strategy,proto3,enum=public.v1.DeploymentStrategy" json:"strategy,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeployUpdateRequest) Reset() {
-	*x = DeployUpdateRequest{}
-	mi := &file_public_v1_fleet_proto_msgTypes[28]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeployUpdateRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeployUpdateRequest) ProtoMessage() {}
-
-func (x *DeployUpdateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[28]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeployUpdateRequest.ProtoReflect.Descriptor instead.
-func (*DeployUpdateRequest) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{28}
-}
-
-func (x *DeployUpdateRequest) GetUpdateId() string {
-	if x != nil {
-		return x.UpdateId
-	}
-	return ""
-}
-
-func (x *DeployUpdateRequest) GetDeviceIds() []string {
-	if x != nil {
-		return x.DeviceIds
-	}
-	return nil
-}
-
-func (x *DeployUpdateRequest) GetTags() []string {
-	if x != nil {
-		return x.Tags
-	}
-	return nil
-}
-
-func (x *DeployUpdateRequest) GetGroupId() string {
-	if x != nil {
-		return x.GroupId
-	}
-	return ""
-}
-
-func (x *DeployUpdateRequest) GetStrategy() DeploymentStrategy {
+func (x *Deployment) GetStrategy() DeploymentStrategy {
 	if x != nil {
 		return x.Strategy
 	}
 	return DeploymentStrategy_DEPLOYMENT_STRATEGY_UNSPECIFIED
 }
 
-type DeployUpdateResponse struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	DeploymentId    string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	TargetedDevices int32                  `protobuf:"varint,2,opt,name=targeted_devices,json=targetedDevices,proto3" json:"targeted_devices,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *DeployUpdateResponse) Reset() {
-	*x = DeployUpdateResponse{}
-	mi := &file_public_v1_fleet_proto_msgTypes[29]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeployUpdateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeployUpdateResponse) ProtoMessage() {}
-
-func (x *DeployUpdateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[29]
+func (x *Deployment) GetConfig() *DeploymentConfig {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.Config
 	}
-	return mi.MessageOf(x)
+	return nil
 }
 
-// Deprecated: Use DeployUpdateResponse.ProtoReflect.Descriptor instead.
-func (*DeployUpdateResponse) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{29}
-}
-
-func (x *DeployUpdateResponse) GetDeploymentId() string {
+func (x *Deployment) GetState() DeploymentState {
 	if x != nil {
-		return x.DeploymentId
+		return x.State
 	}
-	return ""
+	return DeploymentState_DEPLOYMENT_STATE_UNSPECIFIED
 }
 
-func (x *DeployUpdateResponse) GetTargetedDevices() int32 {
+func (x *Deployment) GetMetadata() *DeploymentMetadata {
 	if x != nil {
-		return x.TargetedDevices
+		return x.Metadata
 	}
-	return 0
+	return nil
 }
 
-type GetUpdateStatusRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DeploymentId  string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUpdateStatusRequest) Reset() {
-	*x = GetUpdateStatusRequest{}
-	mi := &file_public_v1_fleet_proto_msgTypes[30]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUpdateStatusRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUpdateStatusRequest) ProtoMessage() {}
-
-func (x *GetUpdateStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[30]
+func (x *Deployment) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
+		return x.CreatedAt
 	}
-	return mi.MessageOf(x)
+	return nil
 }
 
-// Deprecated: Use GetUpdateStatusRequest.ProtoReflect.Descriptor instead.
-func (*GetUpdateStatusRequest) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{30}
-}
-
-func (x *GetUpdateStatusRequest) GetDeploymentId() string {
-	if x != nil {
-		return x.DeploymentId
-	}
-	return ""
-}
-
-type GetUpdateStatusResponse struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	DeploymentId   string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
-	Status         UpdateDeploymentStatus `protobuf:"varint,2,opt,name=status,proto3,enum=public.v1.UpdateDeploymentStatus" json:"status,omitempty"`
-	TotalDevices   int32                  `protobuf:"varint,3,opt,name=total_devices,json=totalDevices,proto3" json:"total_devices,omitempty"`
-	UpdatedDevices int32                  `protobuf:"varint,4,opt,name=updated_devices,json=updatedDevices,proto3" json:"updated_devices,omitempty"`
-	FailedDevices  int32                  `protobuf:"varint,5,opt,name=failed_devices,json=failedDevices,proto3" json:"failed_devices,omitempty"`
-	PendingDevices int32                  `protobuf:"varint,6,opt,name=pending_devices,json=pendingDevices,proto3" json:"pending_devices,omitempty"`
-	StartedAt      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
-	CompletedAt    *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *GetUpdateStatusResponse) Reset() {
-	*x = GetUpdateStatusResponse{}
-	mi := &file_public_v1_fleet_proto_msgTypes[31]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUpdateStatusResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUpdateStatusResponse) ProtoMessage() {}
-
-func (x *GetUpdateStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[31]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUpdateStatusResponse.ProtoReflect.Descriptor instead.
-func (*GetUpdateStatusResponse) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{31}
-}
-
-func (x *GetUpdateStatusResponse) GetDeploymentId() string {
-	if x != nil {
-		return x.DeploymentId
-	}
-	return ""
-}
-
-func (x *GetUpdateStatusResponse) GetStatus() UpdateDeploymentStatus {
-	if x != nil {
-		return x.Status
-	}
-	return UpdateDeploymentStatus_UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED
-}
-
-func (x *GetUpdateStatusResponse) GetTotalDevices() int32 {
-	if x != nil {
-		return x.TotalDevices
-	}
-	return 0
-}
-
-func (x *GetUpdateStatusResponse) GetUpdatedDevices() int32 {
-	if x != nil {
-		return x.UpdatedDevices
-	}
-	return 0
-}
-
-func (x *GetUpdateStatusResponse) GetFailedDevices() int32 {
-	if x != nil {
-		return x.FailedDevices
-	}
-	return 0
-}
-
-func (x *GetUpdateStatusResponse) GetPendingDevices() int32 {
-	if x != nil {
-		return x.PendingDevices
-	}
-	return 0
-}
-
-func (x *GetUpdateStatusResponse) GetStartedAt() *timestamppb.Timestamp {
+func (x *Deployment) GetStartedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.StartedAt
 	}
 	return nil
 }
 
-func (x *GetUpdateStatusResponse) GetCompletedAt() *timestamppb.Timestamp {
+func (x *Deployment) GetCompletedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CompletedAt
 	}
 	return nil
+}
+
+func (x *Deployment) GetCreatedBy() string {
+	if x != nil {
+		return x.CreatedBy
+	}
+	return ""
+}
+
+func (x *Deployment) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+// DeploymentPayload contains the actual content to deploy
+type DeploymentPayload struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Content:
+	//
+	//	*DeploymentPayload_Binary
+	//	*DeploymentPayload_Script
+	//	*DeploymentPayload_Container
+	//	*DeploymentPayload_Config
+	//	*DeploymentPayload_Firmware
+	//	*DeploymentPayload_Package
+	//	*DeploymentPayload_Bundle
+	Content       isDeploymentPayload_Content `protobuf_oneof:"content"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeploymentPayload) Reset() {
+	*x = DeploymentPayload{}
+	mi := &file_public_v1_fleet_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentPayload) ProtoMessage() {}
+
+func (x *DeploymentPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentPayload.ProtoReflect.Descriptor instead.
+func (*DeploymentPayload) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *DeploymentPayload) GetContent() isDeploymentPayload_Content {
+	if x != nil {
+		return x.Content
+	}
+	return nil
+}
+
+func (x *DeploymentPayload) GetBinary() *BinaryPayload {
+	if x != nil {
+		if x, ok := x.Content.(*DeploymentPayload_Binary); ok {
+			return x.Binary
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentPayload) GetScript() *ScriptPayload {
+	if x != nil {
+		if x, ok := x.Content.(*DeploymentPayload_Script); ok {
+			return x.Script
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentPayload) GetContainer() *ContainerPayload {
+	if x != nil {
+		if x, ok := x.Content.(*DeploymentPayload_Container); ok {
+			return x.Container
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentPayload) GetConfig() *ConfigPayload {
+	if x != nil {
+		if x, ok := x.Content.(*DeploymentPayload_Config); ok {
+			return x.Config
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentPayload) GetFirmware() *FirmwarePayload {
+	if x != nil {
+		if x, ok := x.Content.(*DeploymentPayload_Firmware); ok {
+			return x.Firmware
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentPayload) GetPackage() *PackagePayload {
+	if x != nil {
+		if x, ok := x.Content.(*DeploymentPayload_Package); ok {
+			return x.Package
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentPayload) GetBundle() *BundlePayload {
+	if x != nil {
+		if x, ok := x.Content.(*DeploymentPayload_Bundle); ok {
+			return x.Bundle
+		}
+	}
+	return nil
+}
+
+type isDeploymentPayload_Content interface {
+	isDeploymentPayload_Content()
+}
+
+type DeploymentPayload_Binary struct {
+	Binary *BinaryPayload `protobuf:"bytes,1,opt,name=binary,proto3,oneof"`
+}
+
+type DeploymentPayload_Script struct {
+	Script *ScriptPayload `protobuf:"bytes,2,opt,name=script,proto3,oneof"`
+}
+
+type DeploymentPayload_Container struct {
+	Container *ContainerPayload `protobuf:"bytes,3,opt,name=container,proto3,oneof"`
+}
+
+type DeploymentPayload_Config struct {
+	Config *ConfigPayload `protobuf:"bytes,4,opt,name=config,proto3,oneof"`
+}
+
+type DeploymentPayload_Firmware struct {
+	Firmware *FirmwarePayload `protobuf:"bytes,5,opt,name=firmware,proto3,oneof"`
+}
+
+type DeploymentPayload_Package struct {
+	Package *PackagePayload `protobuf:"bytes,6,opt,name=package,proto3,oneof"`
+}
+
+type DeploymentPayload_Bundle struct {
+	Bundle *BundlePayload `protobuf:"bytes,7,opt,name=bundle,proto3,oneof"`
+}
+
+func (*DeploymentPayload_Binary) isDeploymentPayload_Content() {}
+
+func (*DeploymentPayload_Script) isDeploymentPayload_Content() {}
+
+func (*DeploymentPayload_Container) isDeploymentPayload_Content() {}
+
+func (*DeploymentPayload_Config) isDeploymentPayload_Content() {}
+
+func (*DeploymentPayload_Firmware) isDeploymentPayload_Content() {}
+
+func (*DeploymentPayload_Package) isDeploymentPayload_Content() {}
+
+func (*DeploymentPayload_Bundle) isDeploymentPayload_Content() {}
+
+type BinaryPayload struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	DownloadUrl       string                 `protobuf:"bytes,1,opt,name=download_url,json=downloadUrl,proto3" json:"download_url,omitempty"`
+	Checksum          string                 `protobuf:"bytes,2,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	SizeBytes         int64                  `protobuf:"varint,3,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
+	Signature         string                 `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
+	Version           string                 `protobuf:"bytes,5,opt,name=version,proto3" json:"version,omitempty"`
+	TargetPath        string                 `protobuf:"bytes,6,opt,name=target_path,json=targetPath,proto3" json:"target_path,omitempty"`                                                                  // Where to install the binary
+	ServiceName       string                 `protobuf:"bytes,7,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`                                                               // Optional systemd/init service to restart
+	Args              []string               `protobuf:"bytes,8,rep,name=args,proto3" json:"args,omitempty"`                                                                                                // Command line arguments
+	EnvVars           map[string]string      `protobuf:"bytes,9,rep,name=env_vars,json=envVars,proto3" json:"env_vars,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Environment variables
+	RestartOnUpdate   bool                   `protobuf:"varint,10,opt,name=restart_on_update,json=restartOnUpdate,proto3" json:"restart_on_update,omitempty"`                                               // Whether to restart the process
+	PreInstallScript  string                 `protobuf:"bytes,11,opt,name=pre_install_script,json=preInstallScript,proto3" json:"pre_install_script,omitempty"`                                             // Script to run before installation
+	PostInstallScript string                 `protobuf:"bytes,12,opt,name=post_install_script,json=postInstallScript,proto3" json:"post_install_script,omitempty"`                                          // Script to run after installation
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *BinaryPayload) Reset() {
+	*x = BinaryPayload{}
+	mi := &file_public_v1_fleet_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BinaryPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BinaryPayload) ProtoMessage() {}
+
+func (x *BinaryPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BinaryPayload.ProtoReflect.Descriptor instead.
+func (*BinaryPayload) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *BinaryPayload) GetDownloadUrl() string {
+	if x != nil {
+		return x.DownloadUrl
+	}
+	return ""
+}
+
+func (x *BinaryPayload) GetChecksum() string {
+	if x != nil {
+		return x.Checksum
+	}
+	return ""
+}
+
+func (x *BinaryPayload) GetSizeBytes() int64 {
+	if x != nil {
+		return x.SizeBytes
+	}
+	return 0
+}
+
+func (x *BinaryPayload) GetSignature() string {
+	if x != nil {
+		return x.Signature
+	}
+	return ""
+}
+
+func (x *BinaryPayload) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *BinaryPayload) GetTargetPath() string {
+	if x != nil {
+		return x.TargetPath
+	}
+	return ""
+}
+
+func (x *BinaryPayload) GetServiceName() string {
+	if x != nil {
+		return x.ServiceName
+	}
+	return ""
+}
+
+func (x *BinaryPayload) GetArgs() []string {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *BinaryPayload) GetEnvVars() map[string]string {
+	if x != nil {
+		return x.EnvVars
+	}
+	return nil
+}
+
+func (x *BinaryPayload) GetRestartOnUpdate() bool {
+	if x != nil {
+		return x.RestartOnUpdate
+	}
+	return false
+}
+
+func (x *BinaryPayload) GetPreInstallScript() string {
+	if x != nil {
+		return x.PreInstallScript
+	}
+	return ""
+}
+
+func (x *BinaryPayload) GetPostInstallScript() string {
+	if x != nil {
+		return x.PostInstallScript
+	}
+	return ""
+}
+
+type ScriptPayload struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	ScriptContent    string                 `protobuf:"bytes,1,opt,name=script_content,json=scriptContent,proto3" json:"script_content,omitempty"`                                                         // Inline script content
+	ScriptUrl        string                 `protobuf:"bytes,2,opt,name=script_url,json=scriptUrl,proto3" json:"script_url,omitempty"`                                                                     // Or download from URL
+	Interpreter      string                 `protobuf:"bytes,3,opt,name=interpreter,proto3" json:"interpreter,omitempty"`                                                                                  // e.g., "/bin/bash", "/usr/bin/python3"
+	Args             []string               `protobuf:"bytes,4,rep,name=args,proto3" json:"args,omitempty"`                                                                                                // Script arguments
+	EnvVars          map[string]string      `protobuf:"bytes,5,rep,name=env_vars,json=envVars,proto3" json:"env_vars,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Environment variables
+	TimeoutSeconds   int32                  `protobuf:"varint,6,opt,name=timeout_seconds,json=timeoutSeconds,proto3" json:"timeout_seconds,omitempty"`                                                     // Execution timeout
+	RunAsRoot        bool                   `protobuf:"varint,7,opt,name=run_as_root,json=runAsRoot,proto3" json:"run_as_root,omitempty"`                                                                  // Whether to run with elevated privileges
+	WorkingDirectory string                 `protobuf:"bytes,8,opt,name=working_directory,json=workingDirectory,proto3" json:"working_directory,omitempty"`                                                // Working directory for script execution
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ScriptPayload) Reset() {
+	*x = ScriptPayload{}
+	mi := &file_public_v1_fleet_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScriptPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScriptPayload) ProtoMessage() {}
+
+func (x *ScriptPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScriptPayload.ProtoReflect.Descriptor instead.
+func (*ScriptPayload) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *ScriptPayload) GetScriptContent() string {
+	if x != nil {
+		return x.ScriptContent
+	}
+	return ""
+}
+
+func (x *ScriptPayload) GetScriptUrl() string {
+	if x != nil {
+		return x.ScriptUrl
+	}
+	return ""
+}
+
+func (x *ScriptPayload) GetInterpreter() string {
+	if x != nil {
+		return x.Interpreter
+	}
+	return ""
+}
+
+func (x *ScriptPayload) GetArgs() []string {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *ScriptPayload) GetEnvVars() map[string]string {
+	if x != nil {
+		return x.EnvVars
+	}
+	return nil
+}
+
+func (x *ScriptPayload) GetTimeoutSeconds() int32 {
+	if x != nil {
+		return x.TimeoutSeconds
+	}
+	return 0
+}
+
+func (x *ScriptPayload) GetRunAsRoot() bool {
+	if x != nil {
+		return x.RunAsRoot
+	}
+	return false
+}
+
+func (x *ScriptPayload) GetWorkingDirectory() string {
+	if x != nil {
+		return x.WorkingDirectory
+	}
+	return ""
+}
+
+type ContainerPayload struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Image         string                 `protobuf:"bytes,1,opt,name=image,proto3" json:"image,omitempty"`                                                                                              // Container image (registry/name:tag)
+	Digest        string                 `protobuf:"bytes,2,opt,name=digest,proto3" json:"digest,omitempty"`                                                                                            // Optional image digest for verification
+	ContainerName string                 `protobuf:"bytes,3,opt,name=container_name,json=containerName,proto3" json:"container_name,omitempty"`                                                         // Container name to update
+	ComposeFiles  []string               `protobuf:"bytes,4,rep,name=compose_files,json=composeFiles,proto3" json:"compose_files,omitempty"`                                                            // Docker Compose files if applicable
+	EnvVars       map[string]string      `protobuf:"bytes,5,rep,name=env_vars,json=envVars,proto3" json:"env_vars,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Environment variables
+	Ports         []*PortMapping         `protobuf:"bytes,6,rep,name=ports,proto3" json:"ports,omitempty"`                                                                                              // Port mappings
+	Volumes       []*VolumeMount         `protobuf:"bytes,7,rep,name=volumes,proto3" json:"volumes,omitempty"`                                                                                          // Volume mounts
+	RestartPolicy RestartPolicy          `protobuf:"varint,8,opt,name=restart_policy,json=restartPolicy,proto3,enum=public.v1.RestartPolicy" json:"restart_policy,omitempty"`                           // Container restart policy
+	Labels        map[string]string      `protobuf:"bytes,9,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`                  // Container labels
+	NetworkMode   string                 `protobuf:"bytes,10,opt,name=network_mode,json=networkMode,proto3" json:"network_mode,omitempty"`                                                              // Network mode
+	Capabilities  []string               `protobuf:"bytes,11,rep,name=capabilities,proto3" json:"capabilities,omitempty"`                                                                               // Linux capabilities
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ContainerPayload) Reset() {
+	*x = ContainerPayload{}
+	mi := &file_public_v1_fleet_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContainerPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerPayload) ProtoMessage() {}
+
+func (x *ContainerPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerPayload.ProtoReflect.Descriptor instead.
+func (*ContainerPayload) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ContainerPayload) GetImage() string {
+	if x != nil {
+		return x.Image
+	}
+	return ""
+}
+
+func (x *ContainerPayload) GetDigest() string {
+	if x != nil {
+		return x.Digest
+	}
+	return ""
+}
+
+func (x *ContainerPayload) GetContainerName() string {
+	if x != nil {
+		return x.ContainerName
+	}
+	return ""
+}
+
+func (x *ContainerPayload) GetComposeFiles() []string {
+	if x != nil {
+		return x.ComposeFiles
+	}
+	return nil
+}
+
+func (x *ContainerPayload) GetEnvVars() map[string]string {
+	if x != nil {
+		return x.EnvVars
+	}
+	return nil
+}
+
+func (x *ContainerPayload) GetPorts() []*PortMapping {
+	if x != nil {
+		return x.Ports
+	}
+	return nil
+}
+
+func (x *ContainerPayload) GetVolumes() []*VolumeMount {
+	if x != nil {
+		return x.Volumes
+	}
+	return nil
+}
+
+func (x *ContainerPayload) GetRestartPolicy() RestartPolicy {
+	if x != nil {
+		return x.RestartPolicy
+	}
+	return RestartPolicy_RESTART_POLICY_UNSPECIFIED
+}
+
+func (x *ContainerPayload) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *ContainerPayload) GetNetworkMode() string {
+	if x != nil {
+		return x.NetworkMode
+	}
+	return ""
+}
+
+func (x *ContainerPayload) GetCapabilities() []string {
+	if x != nil {
+		return x.Capabilities
+	}
+	return nil
+}
+
+type PortMapping struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	HostPort      int32                  `protobuf:"varint,1,opt,name=host_port,json=hostPort,proto3" json:"host_port,omitempty"`
+	ContainerPort int32                  `protobuf:"varint,2,opt,name=container_port,json=containerPort,proto3" json:"container_port,omitempty"`
+	Protocol      string                 `protobuf:"bytes,3,opt,name=protocol,proto3" json:"protocol,omitempty"` // tcp/udp
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PortMapping) Reset() {
+	*x = PortMapping{}
+	mi := &file_public_v1_fleet_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PortMapping) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PortMapping) ProtoMessage() {}
+
+func (x *PortMapping) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PortMapping.ProtoReflect.Descriptor instead.
+func (*PortMapping) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *PortMapping) GetHostPort() int32 {
+	if x != nil {
+		return x.HostPort
+	}
+	return 0
+}
+
+func (x *PortMapping) GetContainerPort() int32 {
+	if x != nil {
+		return x.ContainerPort
+	}
+	return 0
+}
+
+func (x *PortMapping) GetProtocol() string {
+	if x != nil {
+		return x.Protocol
+	}
+	return ""
+}
+
+type VolumeMount struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Source        string                 `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
+	Target        string                 `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
+	ReadOnly      bool                   `protobuf:"varint,3,opt,name=read_only,json=readOnly,proto3" json:"read_only,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VolumeMount) Reset() {
+	*x = VolumeMount{}
+	mi := &file_public_v1_fleet_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VolumeMount) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VolumeMount) ProtoMessage() {}
+
+func (x *VolumeMount) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VolumeMount.ProtoReflect.Descriptor instead.
+func (*VolumeMount) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *VolumeMount) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *VolumeMount) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
+func (x *VolumeMount) GetReadOnly() bool {
+	if x != nil {
+		return x.ReadOnly
+	}
+	return false
+}
+
+type ConfigPayload struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ConfigPath        string                 `protobuf:"bytes,1,opt,name=config_path,json=configPath,proto3" json:"config_path,omitempty"`                      // Path to config file
+	Content           string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`                                              // Config content
+	Format            string                 `protobuf:"bytes,3,opt,name=format,proto3" json:"format,omitempty"`                                                // json, yaml, toml, ini, etc.
+	Merge             bool                   `protobuf:"varint,4,opt,name=merge,proto3" json:"merge,omitempty"`                                                 // Merge with existing config
+	BackupExisting    bool                   `protobuf:"varint,5,opt,name=backup_existing,json=backupExisting,proto3" json:"backup_existing,omitempty"`         // Backup before overwriting
+	ValidationCommand string                 `protobuf:"bytes,6,opt,name=validation_command,json=validationCommand,proto3" json:"validation_command,omitempty"` // Command to validate config
+	ReloadCommand     string                 `protobuf:"bytes,7,opt,name=reload_command,json=reloadCommand,proto3" json:"reload_command,omitempty"`             // Command to reload service
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ConfigPayload) Reset() {
+	*x = ConfigPayload{}
+	mi := &file_public_v1_fleet_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfigPayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfigPayload) ProtoMessage() {}
+
+func (x *ConfigPayload) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfigPayload.ProtoReflect.Descriptor instead.
+func (*ConfigPayload) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *ConfigPayload) GetConfigPath() string {
+	if x != nil {
+		return x.ConfigPath
+	}
+	return ""
+}
+
+func (x *ConfigPayload) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *ConfigPayload) GetFormat() string {
+	if x != nil {
+		return x.Format
+	}
+	return ""
+}
+
+func (x *ConfigPayload) GetMerge() bool {
+	if x != nil {
+		return x.Merge
+	}
+	return false
+}
+
+func (x *ConfigPayload) GetBackupExisting() bool {
+	if x != nil {
+		return x.BackupExisting
+	}
+	return false
+}
+
+func (x *ConfigPayload) GetValidationCommand() string {
+	if x != nil {
+		return x.ValidationCommand
+	}
+	return ""
+}
+
+func (x *ConfigPayload) GetReloadCommand() string {
+	if x != nil {
+		return x.ReloadCommand
+	}
+	return ""
+}
+
+type FirmwarePayload struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	DownloadUrl        string                 `protobuf:"bytes,1,opt,name=download_url,json=downloadUrl,proto3" json:"download_url,omitempty"`
+	Checksum           string                 `protobuf:"bytes,2,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	SizeBytes          int64                  `protobuf:"varint,3,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
+	Version            string                 `protobuf:"bytes,4,opt,name=version,proto3" json:"version,omitempty"`
+	DeviceModel        string                 `protobuf:"bytes,5,opt,name=device_model,json=deviceModel,proto3" json:"device_model,omitempty"`                         // Target device model
+	ForceUpdate        bool                   `protobuf:"varint,6,opt,name=force_update,json=forceUpdate,proto3" json:"force_update,omitempty"`                        // Force update even if version check fails
+	BackupCurrent      bool                   `protobuf:"varint,7,opt,name=backup_current,json=backupCurrent,proto3" json:"backup_current,omitempty"`                  // Backup current firmware
+	RebootDelaySeconds int32                  `protobuf:"varint,8,opt,name=reboot_delay_seconds,json=rebootDelaySeconds,proto3" json:"reboot_delay_seconds,omitempty"` // Delay before reboot
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *FirmwarePayload) Reset() {
+	*x = FirmwarePayload{}
+	mi := &file_public_v1_fleet_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FirmwarePayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FirmwarePayload) ProtoMessage() {}
+
+func (x *FirmwarePayload) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FirmwarePayload.ProtoReflect.Descriptor instead.
+func (*FirmwarePayload) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *FirmwarePayload) GetDownloadUrl() string {
+	if x != nil {
+		return x.DownloadUrl
+	}
+	return ""
+}
+
+func (x *FirmwarePayload) GetChecksum() string {
+	if x != nil {
+		return x.Checksum
+	}
+	return ""
+}
+
+func (x *FirmwarePayload) GetSizeBytes() int64 {
+	if x != nil {
+		return x.SizeBytes
+	}
+	return 0
+}
+
+func (x *FirmwarePayload) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *FirmwarePayload) GetDeviceModel() string {
+	if x != nil {
+		return x.DeviceModel
+	}
+	return ""
+}
+
+func (x *FirmwarePayload) GetForceUpdate() bool {
+	if x != nil {
+		return x.ForceUpdate
+	}
+	return false
+}
+
+func (x *FirmwarePayload) GetBackupCurrent() bool {
+	if x != nil {
+		return x.BackupCurrent
+	}
+	return false
+}
+
+func (x *FirmwarePayload) GetRebootDelaySeconds() int32 {
+	if x != nil {
+		return x.RebootDelaySeconds
+	}
+	return 0
+}
+
+type PackagePayload struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	PackageName    string                 `protobuf:"bytes,1,opt,name=package_name,json=packageName,proto3" json:"package_name,omitempty"`           // Package name
+	Version        string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`                                      // Package version
+	RepositoryUrl  string                 `protobuf:"bytes,3,opt,name=repository_url,json=repositoryUrl,proto3" json:"repository_url,omitempty"`     // Custom repository URL
+	PackageManager string                 `protobuf:"bytes,4,opt,name=package_manager,json=packageManager,proto3" json:"package_manager,omitempty"`  // apt, yum, dnf, zypper, etc.
+	Dependencies   []string               `protobuf:"bytes,5,rep,name=dependencies,proto3" json:"dependencies,omitempty"`                            // Additional dependencies
+	AllowDowngrade bool                   `protobuf:"varint,6,opt,name=allow_downgrade,json=allowDowngrade,proto3" json:"allow_downgrade,omitempty"` // Allow version downgrade
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *PackagePayload) Reset() {
+	*x = PackagePayload{}
+	mi := &file_public_v1_fleet_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PackagePayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PackagePayload) ProtoMessage() {}
+
+func (x *PackagePayload) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PackagePayload.ProtoReflect.Descriptor instead.
+func (*PackagePayload) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *PackagePayload) GetPackageName() string {
+	if x != nil {
+		return x.PackageName
+	}
+	return ""
+}
+
+func (x *PackagePayload) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *PackagePayload) GetRepositoryUrl() string {
+	if x != nil {
+		return x.RepositoryUrl
+	}
+	return ""
+}
+
+func (x *PackagePayload) GetPackageManager() string {
+	if x != nil {
+		return x.PackageManager
+	}
+	return ""
+}
+
+func (x *PackagePayload) GetDependencies() []string {
+	if x != nil {
+		return x.Dependencies
+	}
+	return nil
+}
+
+func (x *PackagePayload) GetAllowDowngrade() bool {
+	if x != nil {
+		return x.AllowDowngrade
+	}
+	return false
+}
+
+type BundlePayload struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Components    []*DeploymentPayload   `protobuf:"bytes,1,rep,name=components,proto3" json:"components,omitempty"`  // Multiple components to deploy
+	Atomic        bool                   `protobuf:"varint,2,opt,name=atomic,proto3" json:"atomic,omitempty"`         // All-or-nothing deployment
+	Sequential    bool                   `protobuf:"varint,3,opt,name=sequential,proto3" json:"sequential,omitempty"` // Deploy components sequentially
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BundlePayload) Reset() {
+	*x = BundlePayload{}
+	mi := &file_public_v1_fleet_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BundlePayload) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BundlePayload) ProtoMessage() {}
+
+func (x *BundlePayload) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BundlePayload.ProtoReflect.Descriptor instead.
+func (*BundlePayload) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *BundlePayload) GetComponents() []*DeploymentPayload {
+	if x != nil {
+		return x.Components
+	}
+	return nil
+}
+
+func (x *BundlePayload) GetAtomic() bool {
+	if x != nil {
+		return x.Atomic
+	}
+	return false
+}
+
+func (x *BundlePayload) GetSequential() bool {
+	if x != nil {
+		return x.Sequential
+	}
+	return false
+}
+
+// DeploymentTarget specifies which devices to deploy to
+type DeploymentTarget struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Selector:
+	//
+	//	*DeploymentTarget_Devices
+	//	*DeploymentTarget_Groups
+	//	*DeploymentTarget_Labels
+	//	*DeploymentTarget_Query
+	Selector isDeploymentTarget_Selector `protobuf_oneof:"selector"`
+	// Filters to apply on top of selector
+	Filters []*TargetFilter `protobuf:"bytes,5,rep,name=filters,proto3" json:"filters,omitempty"`
+	// Maximum number of devices to target
+	MaxDevices int32 `protobuf:"varint,6,opt,name=max_devices,json=maxDevices,proto3" json:"max_devices,omitempty"`
+	// Percentage of matching devices to target
+	Percentage    int32 `protobuf:"varint,7,opt,name=percentage,proto3" json:"percentage,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeploymentTarget) Reset() {
+	*x = DeploymentTarget{}
+	mi := &file_public_v1_fleet_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentTarget) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentTarget) ProtoMessage() {}
+
+func (x *DeploymentTarget) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentTarget.ProtoReflect.Descriptor instead.
+func (*DeploymentTarget) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *DeploymentTarget) GetSelector() isDeploymentTarget_Selector {
+	if x != nil {
+		return x.Selector
+	}
+	return nil
+}
+
+func (x *DeploymentTarget) GetDevices() *DeviceSelector {
+	if x != nil {
+		if x, ok := x.Selector.(*DeploymentTarget_Devices); ok {
+			return x.Devices
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentTarget) GetGroups() *GroupSelector {
+	if x != nil {
+		if x, ok := x.Selector.(*DeploymentTarget_Groups); ok {
+			return x.Groups
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentTarget) GetLabels() *LabelSelector {
+	if x != nil {
+		if x, ok := x.Selector.(*DeploymentTarget_Labels); ok {
+			return x.Labels
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentTarget) GetQuery() *QuerySelector {
+	if x != nil {
+		if x, ok := x.Selector.(*DeploymentTarget_Query); ok {
+			return x.Query
+		}
+	}
+	return nil
+}
+
+func (x *DeploymentTarget) GetFilters() []*TargetFilter {
+	if x != nil {
+		return x.Filters
+	}
+	return nil
+}
+
+func (x *DeploymentTarget) GetMaxDevices() int32 {
+	if x != nil {
+		return x.MaxDevices
+	}
+	return 0
+}
+
+func (x *DeploymentTarget) GetPercentage() int32 {
+	if x != nil {
+		return x.Percentage
+	}
+	return 0
+}
+
+type isDeploymentTarget_Selector interface {
+	isDeploymentTarget_Selector()
+}
+
+type DeploymentTarget_Devices struct {
+	Devices *DeviceSelector `protobuf:"bytes,1,opt,name=devices,proto3,oneof"`
+}
+
+type DeploymentTarget_Groups struct {
+	Groups *GroupSelector `protobuf:"bytes,2,opt,name=groups,proto3,oneof"`
+}
+
+type DeploymentTarget_Labels struct {
+	Labels *LabelSelector `protobuf:"bytes,3,opt,name=labels,proto3,oneof"`
+}
+
+type DeploymentTarget_Query struct {
+	Query *QuerySelector `protobuf:"bytes,4,opt,name=query,proto3,oneof"`
+}
+
+func (*DeploymentTarget_Devices) isDeploymentTarget_Selector() {}
+
+func (*DeploymentTarget_Groups) isDeploymentTarget_Selector() {}
+
+func (*DeploymentTarget_Labels) isDeploymentTarget_Selector() {}
+
+func (*DeploymentTarget_Query) isDeploymentTarget_Selector() {}
+
+type DeviceSelector struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	DeviceIds        []string               `protobuf:"bytes,1,rep,name=device_ids,json=deviceIds,proto3" json:"device_ids,omitempty"`
+	ExcludeDeviceIds []string               `protobuf:"bytes,2,rep,name=exclude_device_ids,json=excludeDeviceIds,proto3" json:"exclude_device_ids,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *DeviceSelector) Reset() {
+	*x = DeviceSelector{}
+	mi := &file_public_v1_fleet_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeviceSelector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeviceSelector) ProtoMessage() {}
+
+func (x *DeviceSelector) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeviceSelector.ProtoReflect.Descriptor instead.
+func (*DeviceSelector) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *DeviceSelector) GetDeviceIds() []string {
+	if x != nil {
+		return x.DeviceIds
+	}
+	return nil
+}
+
+func (x *DeviceSelector) GetExcludeDeviceIds() []string {
+	if x != nil {
+		return x.ExcludeDeviceIds
+	}
+	return nil
+}
+
+type GroupSelector struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GroupIds        []string               `protobuf:"bytes,1,rep,name=group_ids,json=groupIds,proto3" json:"group_ids,omitempty"`
+	ExcludeGroupIds []string               `protobuf:"bytes,2,rep,name=exclude_group_ids,json=excludeGroupIds,proto3" json:"exclude_group_ids,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GroupSelector) Reset() {
+	*x = GroupSelector{}
+	mi := &file_public_v1_fleet_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GroupSelector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GroupSelector) ProtoMessage() {}
+
+func (x *GroupSelector) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GroupSelector.ProtoReflect.Descriptor instead.
+func (*GroupSelector) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *GroupSelector) GetGroupIds() []string {
+	if x != nil {
+		return x.GroupIds
+	}
+	return nil
+}
+
+func (x *GroupSelector) GetExcludeGroupIds() []string {
+	if x != nil {
+		return x.ExcludeGroupIds
+	}
+	return nil
+}
+
+type LabelSelector struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	MatchLabels      map[string]string      `protobuf:"bytes,1,rep,name=match_labels,json=matchLabels,proto3" json:"match_labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	MatchExpressions []*LabelRequirement    `protobuf:"bytes,2,rep,name=match_expressions,json=matchExpressions,proto3" json:"match_expressions,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *LabelSelector) Reset() {
+	*x = LabelSelector{}
+	mi := &file_public_v1_fleet_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LabelSelector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LabelSelector) ProtoMessage() {}
+
+func (x *LabelSelector) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LabelSelector.ProtoReflect.Descriptor instead.
+func (*LabelSelector) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *LabelSelector) GetMatchLabels() map[string]string {
+	if x != nil {
+		return x.MatchLabels
+	}
+	return nil
+}
+
+func (x *LabelSelector) GetMatchExpressions() []*LabelRequirement {
+	if x != nil {
+		return x.MatchExpressions
+	}
+	return nil
+}
+
+type LabelRequirement struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Key           string                    `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Operator      LabelRequirement_Operator `protobuf:"varint,2,opt,name=operator,proto3,enum=public.v1.LabelRequirement_Operator" json:"operator,omitempty"`
+	Values        []string                  `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LabelRequirement) Reset() {
+	*x = LabelRequirement{}
+	mi := &file_public_v1_fleet_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LabelRequirement) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LabelRequirement) ProtoMessage() {}
+
+func (x *LabelRequirement) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LabelRequirement.ProtoReflect.Descriptor instead.
+func (*LabelRequirement) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *LabelRequirement) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *LabelRequirement) GetOperator() LabelRequirement_Operator {
+	if x != nil {
+		return x.Operator
+	}
+	return LabelRequirement_OPERATOR_UNSPECIFIED
+}
+
+func (x *LabelRequirement) GetValues() []string {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+type QuerySelector struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Expression    string                 `protobuf:"bytes,1,opt,name=expression,proto3" json:"expression,omitempty"` // SQL-like or custom query language
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *QuerySelector) Reset() {
+	*x = QuerySelector{}
+	mi := &file_public_v1_fleet_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *QuerySelector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*QuerySelector) ProtoMessage() {}
+
+func (x *QuerySelector) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use QuerySelector.ProtoReflect.Descriptor instead.
+func (*QuerySelector) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *QuerySelector) GetExpression() string {
+	if x != nil {
+		return x.Expression
+	}
+	return ""
+}
+
+type TargetFilter struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Type          TargetFilter_FilterType `protobuf:"varint,1,opt,name=type,proto3,enum=public.v1.TargetFilter_FilterType" json:"type,omitempty"`
+	Operator      string                  `protobuf:"bytes,2,opt,name=operator,proto3" json:"operator,omitempty"` // =, !=, >, <, in, not_in, regex
+	Values        []string                `protobuf:"bytes,3,rep,name=values,proto3" json:"values,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TargetFilter) Reset() {
+	*x = TargetFilter{}
+	mi := &file_public_v1_fleet_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TargetFilter) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TargetFilter) ProtoMessage() {}
+
+func (x *TargetFilter) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TargetFilter.ProtoReflect.Descriptor instead.
+func (*TargetFilter) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *TargetFilter) GetType() TargetFilter_FilterType {
+	if x != nil {
+		return x.Type
+	}
+	return TargetFilter_FILTER_TYPE_UNSPECIFIED
+}
+
+func (x *TargetFilter) GetOperator() string {
+	if x != nil {
+		return x.Operator
+	}
+	return ""
+}
+
+func (x *TargetFilter) GetValues() []string {
+	if x != nil {
+		return x.Values
+	}
+	return nil
+}
+
+// DeploymentConfig contains deployment behavior configuration
+type DeploymentConfig struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Rollout        *RolloutConfig         `protobuf:"bytes,1,opt,name=rollout,proto3" json:"rollout,omitempty"`
+	HealthCheck    *HealthCheckConfig     `protobuf:"bytes,2,opt,name=health_check,json=healthCheck,proto3" json:"health_check,omitempty"`
+	Rollback       *RollbackConfig        `protobuf:"bytes,3,opt,name=rollback,proto3" json:"rollback,omitempty"`
+	Validation     *ValidationConfig      `protobuf:"bytes,4,opt,name=validation,proto3" json:"validation,omitempty"`
+	Notifications  *NotificationConfig    `protobuf:"bytes,5,opt,name=notifications,proto3" json:"notifications,omitempty"`
+	TimeoutMinutes int32                  `protobuf:"varint,6,opt,name=timeout_minutes,json=timeoutMinutes,proto3" json:"timeout_minutes,omitempty"`
+	Hooks          []*DeploymentHook      `protobuf:"bytes,7,rep,name=hooks,proto3" json:"hooks,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *DeploymentConfig) Reset() {
+	*x = DeploymentConfig{}
+	mi := &file_public_v1_fleet_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentConfig) ProtoMessage() {}
+
+func (x *DeploymentConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentConfig.ProtoReflect.Descriptor instead.
+func (*DeploymentConfig) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *DeploymentConfig) GetRollout() *RolloutConfig {
+	if x != nil {
+		return x.Rollout
+	}
+	return nil
+}
+
+func (x *DeploymentConfig) GetHealthCheck() *HealthCheckConfig {
+	if x != nil {
+		return x.HealthCheck
+	}
+	return nil
+}
+
+func (x *DeploymentConfig) GetRollback() *RollbackConfig {
+	if x != nil {
+		return x.Rollback
+	}
+	return nil
+}
+
+func (x *DeploymentConfig) GetValidation() *ValidationConfig {
+	if x != nil {
+		return x.Validation
+	}
+	return nil
+}
+
+func (x *DeploymentConfig) GetNotifications() *NotificationConfig {
+	if x != nil {
+		return x.Notifications
+	}
+	return nil
+}
+
+func (x *DeploymentConfig) GetTimeoutMinutes() int32 {
+	if x != nil {
+		return x.TimeoutMinutes
+	}
+	return 0
+}
+
+func (x *DeploymentConfig) GetHooks() []*DeploymentHook {
+	if x != nil {
+		return x.Hooks
+	}
+	return nil
+}
+
+type RolloutConfig struct {
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	BatchSize             int32                  `protobuf:"varint,1,opt,name=batch_size,json=batchSize,proto3" json:"batch_size,omitempty"`                                       // Number of devices per batch
+	BatchPercentage       int32                  `protobuf:"varint,2,opt,name=batch_percentage,json=batchPercentage,proto3" json:"batch_percentage,omitempty"`                     // Or percentage per batch
+	PauseSeconds          int32                  `protobuf:"varint,3,opt,name=pause_seconds,json=pauseSeconds,proto3" json:"pause_seconds,omitempty"`                              // Pause between batches
+	MaxParallel           int32                  `protobuf:"varint,4,opt,name=max_parallel,json=maxParallel,proto3" json:"max_parallel,omitempty"`                                 // Max parallel deployments
+	RequireApproval       bool                   `protobuf:"varint,5,opt,name=require_approval,json=requireApproval,proto3" json:"require_approval,omitempty"`                     // Require manual approval between batches
+	CanarySize            int32                  `protobuf:"varint,6,opt,name=canary_size,json=canarySize,proto3" json:"canary_size,omitempty"`                                    // Size of canary deployment
+	CanaryDurationMinutes int32                  `protobuf:"varint,7,opt,name=canary_duration_minutes,json=canaryDurationMinutes,proto3" json:"canary_duration_minutes,omitempty"` // How long to test canary
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *RolloutConfig) Reset() {
+	*x = RolloutConfig{}
+	mi := &file_public_v1_fleet_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RolloutConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RolloutConfig) ProtoMessage() {}
+
+func (x *RolloutConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RolloutConfig.ProtoReflect.Descriptor instead.
+func (*RolloutConfig) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *RolloutConfig) GetBatchSize() int32 {
+	if x != nil {
+		return x.BatchSize
+	}
+	return 0
+}
+
+func (x *RolloutConfig) GetBatchPercentage() int32 {
+	if x != nil {
+		return x.BatchPercentage
+	}
+	return 0
+}
+
+func (x *RolloutConfig) GetPauseSeconds() int32 {
+	if x != nil {
+		return x.PauseSeconds
+	}
+	return 0
+}
+
+func (x *RolloutConfig) GetMaxParallel() int32 {
+	if x != nil {
+		return x.MaxParallel
+	}
+	return 0
+}
+
+func (x *RolloutConfig) GetRequireApproval() bool {
+	if x != nil {
+		return x.RequireApproval
+	}
+	return false
+}
+
+func (x *RolloutConfig) GetCanarySize() int32 {
+	if x != nil {
+		return x.CanarySize
+	}
+	return 0
+}
+
+func (x *RolloutConfig) GetCanaryDurationMinutes() int32 {
+	if x != nil {
+		return x.CanaryDurationMinutes
+	}
+	return 0
+}
+
+type HealthCheckConfig struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Enabled             bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	InitialDelaySeconds int32                  `protobuf:"varint,2,opt,name=initial_delay_seconds,json=initialDelaySeconds,proto3" json:"initial_delay_seconds,omitempty"`
+	TimeoutSeconds      int32                  `protobuf:"varint,3,opt,name=timeout_seconds,json=timeoutSeconds,proto3" json:"timeout_seconds,omitempty"`
+	MaxRetries          int32                  `protobuf:"varint,4,opt,name=max_retries,json=maxRetries,proto3" json:"max_retries,omitempty"`
+	CheckCommand        string                 `protobuf:"bytes,5,opt,name=check_command,json=checkCommand,proto3" json:"check_command,omitempty"`                      // Command to run for health check
+	HttpEndpoint        string                 `protobuf:"bytes,6,opt,name=http_endpoint,json=httpEndpoint,proto3" json:"http_endpoint,omitempty"`                      // HTTP endpoint to check
+	ExpectedStatusCode  int32                  `protobuf:"varint,7,opt,name=expected_status_code,json=expectedStatusCode,proto3" json:"expected_status_code,omitempty"` // Expected HTTP status
+	RequiredMetrics     []string               `protobuf:"bytes,8,rep,name=required_metrics,json=requiredMetrics,proto3" json:"required_metrics,omitempty"`             // Metrics that must be healthy
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *HealthCheckConfig) Reset() {
+	*x = HealthCheckConfig{}
+	mi := &file_public_v1_fleet_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HealthCheckConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HealthCheckConfig) ProtoMessage() {}
+
+func (x *HealthCheckConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HealthCheckConfig.ProtoReflect.Descriptor instead.
+func (*HealthCheckConfig) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *HealthCheckConfig) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *HealthCheckConfig) GetInitialDelaySeconds() int32 {
+	if x != nil {
+		return x.InitialDelaySeconds
+	}
+	return 0
+}
+
+func (x *HealthCheckConfig) GetTimeoutSeconds() int32 {
+	if x != nil {
+		return x.TimeoutSeconds
+	}
+	return 0
+}
+
+func (x *HealthCheckConfig) GetMaxRetries() int32 {
+	if x != nil {
+		return x.MaxRetries
+	}
+	return 0
+}
+
+func (x *HealthCheckConfig) GetCheckCommand() string {
+	if x != nil {
+		return x.CheckCommand
+	}
+	return ""
+}
+
+func (x *HealthCheckConfig) GetHttpEndpoint() string {
+	if x != nil {
+		return x.HttpEndpoint
+	}
+	return ""
+}
+
+func (x *HealthCheckConfig) GetExpectedStatusCode() int32 {
+	if x != nil {
+		return x.ExpectedStatusCode
+	}
+	return 0
+}
+
+func (x *HealthCheckConfig) GetRequiredMetrics() []string {
+	if x != nil {
+		return x.RequiredMetrics
+	}
+	return nil
+}
+
+type RollbackConfig struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	AutoRollback      bool                   `protobuf:"varint,1,opt,name=auto_rollback,json=autoRollback,proto3" json:"auto_rollback,omitempty"`
+	FailureThreshold  float64                `protobuf:"fixed64,2,opt,name=failure_threshold,json=failureThreshold,proto3" json:"failure_threshold,omitempty"`     // Percentage of failures to trigger
+	KeepFailedDevices bool                   `protobuf:"varint,3,opt,name=keep_failed_devices,json=keepFailedDevices,proto3" json:"keep_failed_devices,omitempty"` // Don't rollback failed devices
+	RollbackTo        string                 `protobuf:"bytes,4,opt,name=rollback_to,json=rollbackTo,proto3" json:"rollback_to,omitempty"`                         // Specific version/deployment to rollback to
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *RollbackConfig) Reset() {
+	*x = RollbackConfig{}
+	mi := &file_public_v1_fleet_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RollbackConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RollbackConfig) ProtoMessage() {}
+
+func (x *RollbackConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RollbackConfig.ProtoReflect.Descriptor instead.
+func (*RollbackConfig) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *RollbackConfig) GetAutoRollback() bool {
+	if x != nil {
+		return x.AutoRollback
+	}
+	return false
+}
+
+func (x *RollbackConfig) GetFailureThreshold() float64 {
+	if x != nil {
+		return x.FailureThreshold
+	}
+	return 0
+}
+
+func (x *RollbackConfig) GetKeepFailedDevices() bool {
+	if x != nil {
+		return x.KeepFailedDevices
+	}
+	return false
+}
+
+func (x *RollbackConfig) GetRollbackTo() string {
+	if x != nil {
+		return x.RollbackTo
+	}
+	return ""
+}
+
+type ValidationConfig struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	SkipValidation   bool                   `protobuf:"varint,1,opt,name=skip_validation,json=skipValidation,proto3" json:"skip_validation,omitempty"`
+	ValidationScript string                 `protobuf:"bytes,2,opt,name=validation_script,json=validationScript,proto3" json:"validation_script,omitempty"`
+	Rules            []*ValidationRule      `protobuf:"bytes,3,rep,name=rules,proto3" json:"rules,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ValidationConfig) Reset() {
+	*x = ValidationConfig{}
+	mi := &file_public_v1_fleet_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidationConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidationConfig) ProtoMessage() {}
+
+func (x *ValidationConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidationConfig.ProtoReflect.Descriptor instead.
+func (*ValidationConfig) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *ValidationConfig) GetSkipValidation() bool {
+	if x != nil {
+		return x.SkipValidation
+	}
+	return false
+}
+
+func (x *ValidationConfig) GetValidationScript() string {
+	if x != nil {
+		return x.ValidationScript
+	}
+	return ""
+}
+
+func (x *ValidationConfig) GetRules() []*ValidationRule {
+	if x != nil {
+		return x.Rules
+	}
+	return nil
+}
+
+type ValidationRule struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Expression    string                 `protobuf:"bytes,2,opt,name=expression,proto3" json:"expression,omitempty"` // Validation expression
+	ErrorMessage  string                 `protobuf:"bytes,3,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	Fatal         bool                   `protobuf:"varint,4,opt,name=fatal,proto3" json:"fatal,omitempty"` // Whether failure should stop deployment
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ValidationRule) Reset() {
+	*x = ValidationRule{}
+	mi := &file_public_v1_fleet_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidationRule) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidationRule) ProtoMessage() {}
+
+func (x *ValidationRule) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidationRule.ProtoReflect.Descriptor instead.
+func (*ValidationRule) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *ValidationRule) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ValidationRule) GetExpression() string {
+	if x != nil {
+		return x.Expression
+	}
+	return ""
+}
+
+func (x *ValidationRule) GetErrorMessage() string {
+	if x != nil {
+		return x.ErrorMessage
+	}
+	return ""
+}
+
+func (x *ValidationRule) GetFatal() bool {
+	if x != nil {
+		return x.Fatal
+	}
+	return false
+}
+
+type NotificationConfig struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	WebhookUrls    []string               `protobuf:"bytes,1,rep,name=webhook_urls,json=webhookUrls,proto3" json:"webhook_urls,omitempty"`
+	EmailAddresses []string               `protobuf:"bytes,2,rep,name=email_addresses,json=emailAddresses,proto3" json:"email_addresses,omitempty"`
+	Events         []NotificationEvent    `protobuf:"varint,3,rep,packed,name=events,proto3,enum=public.v1.NotificationEvent" json:"events,omitempty"`
+	CustomChannels map[string]string      `protobuf:"bytes,4,rep,name=custom_channels,json=customChannels,proto3" json:"custom_channels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Slack, Teams, etc.
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *NotificationConfig) Reset() {
+	*x = NotificationConfig{}
+	mi := &file_public_v1_fleet_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NotificationConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotificationConfig) ProtoMessage() {}
+
+func (x *NotificationConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotificationConfig.ProtoReflect.Descriptor instead.
+func (*NotificationConfig) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *NotificationConfig) GetWebhookUrls() []string {
+	if x != nil {
+		return x.WebhookUrls
+	}
+	return nil
+}
+
+func (x *NotificationConfig) GetEmailAddresses() []string {
+	if x != nil {
+		return x.EmailAddresses
+	}
+	return nil
+}
+
+func (x *NotificationConfig) GetEvents() []NotificationEvent {
+	if x != nil {
+		return x.Events
+	}
+	return nil
+}
+
+func (x *NotificationConfig) GetCustomChannels() map[string]string {
+	if x != nil {
+		return x.CustomChannels
+	}
+	return nil
+}
+
+type DeploymentHook struct {
+	state             protoimpl.MessageState  `protogen:"open.v1"`
+	Type              DeploymentHook_HookType `protobuf:"varint,1,opt,name=type,proto3,enum=public.v1.DeploymentHook_HookType" json:"type,omitempty"`
+	Command           string                  `protobuf:"bytes,2,opt,name=command,proto3" json:"command,omitempty"`
+	TimeoutSeconds    int32                   `protobuf:"varint,3,opt,name=timeout_seconds,json=timeoutSeconds,proto3" json:"timeout_seconds,omitempty"`
+	ContinueOnFailure bool                    `protobuf:"varint,4,opt,name=continue_on_failure,json=continueOnFailure,proto3" json:"continue_on_failure,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *DeploymentHook) Reset() {
+	*x = DeploymentHook{}
+	mi := &file_public_v1_fleet_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentHook) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentHook) ProtoMessage() {}
+
+func (x *DeploymentHook) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentHook.ProtoReflect.Descriptor instead.
+func (*DeploymentHook) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *DeploymentHook) GetType() DeploymentHook_HookType {
+	if x != nil {
+		return x.Type
+	}
+	return DeploymentHook_HOOK_TYPE_UNSPECIFIED
+}
+
+func (x *DeploymentHook) GetCommand() string {
+	if x != nil {
+		return x.Command
+	}
+	return ""
+}
+
+func (x *DeploymentHook) GetTimeoutSeconds() int32 {
+	if x != nil {
+		return x.TimeoutSeconds
+	}
+	return 0
+}
+
+func (x *DeploymentHook) GetContinueOnFailure() bool {
+	if x != nil {
+		return x.ContinueOnFailure
+	}
+	return false
+}
+
+// DeploymentMetadata contains additional deployment information
+type DeploymentMetadata struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Source               string                 `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`                                                                       // Where deployment originated (api, cli, github, etc.)
+	SourceRef            string                 `protobuf:"bytes,2,opt,name=source_ref,json=sourceRef,proto3" json:"source_ref,omitempty"`                                                // External reference (GitHub run ID, etc.)
+	CommitSha            string                 `protobuf:"bytes,3,opt,name=commit_sha,json=commitSha,proto3" json:"commit_sha,omitempty"`                                                // Git commit SHA if applicable
+	Branch               string                 `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch,omitempty"`                                                                       // Git branch
+	Repository           string                 `protobuf:"bytes,5,opt,name=repository,proto3" json:"repository,omitempty"`                                                               // Repository URL
+	TriggeredBy          string                 `protobuf:"bytes,6,opt,name=triggered_by,json=triggeredBy,proto3" json:"triggered_by,omitempty"`                                          // User or system that triggered
+	Tags                 map[string]string      `protobuf:"bytes,7,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Arbitrary tags
+	Environment          string                 `protobuf:"bytes,8,opt,name=environment,proto3" json:"environment,omitempty"`                                                             // Target environment (dev, staging, prod)
+	PreviousDeploymentId string                 `protobuf:"bytes,9,opt,name=previous_deployment_id,json=previousDeploymentId,proto3" json:"previous_deployment_id,omitempty"`             // For rollbacks and updates
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *DeploymentMetadata) Reset() {
+	*x = DeploymentMetadata{}
+	mi := &file_public_v1_fleet_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentMetadata) ProtoMessage() {}
+
+func (x *DeploymentMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentMetadata.ProtoReflect.Descriptor instead.
+func (*DeploymentMetadata) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *DeploymentMetadata) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *DeploymentMetadata) GetSourceRef() string {
+	if x != nil {
+		return x.SourceRef
+	}
+	return ""
+}
+
+func (x *DeploymentMetadata) GetCommitSha() string {
+	if x != nil {
+		return x.CommitSha
+	}
+	return ""
+}
+
+func (x *DeploymentMetadata) GetBranch() string {
+	if x != nil {
+		return x.Branch
+	}
+	return ""
+}
+
+func (x *DeploymentMetadata) GetRepository() string {
+	if x != nil {
+		return x.Repository
+	}
+	return ""
+}
+
+func (x *DeploymentMetadata) GetTriggeredBy() string {
+	if x != nil {
+		return x.TriggeredBy
+	}
+	return ""
+}
+
+func (x *DeploymentMetadata) GetTags() map[string]string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *DeploymentMetadata) GetEnvironment() string {
+	if x != nil {
+		return x.Environment
+	}
+	return ""
+}
+
+func (x *DeploymentMetadata) GetPreviousDeploymentId() string {
+	if x != nil {
+		return x.PreviousDeploymentId
+	}
+	return ""
+}
+
+type CreateDeploymentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Type          DeploymentType         `protobuf:"varint,3,opt,name=type,proto3,enum=public.v1.DeploymentType" json:"type,omitempty"`
+	Payload       *DeploymentPayload     `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`
+	Target        *DeploymentTarget      `protobuf:"bytes,5,opt,name=target,proto3" json:"target,omitempty"`
+	Strategy      DeploymentStrategy     `protobuf:"varint,6,opt,name=strategy,proto3,enum=public.v1.DeploymentStrategy" json:"strategy,omitempty"`
+	Config        *DeploymentConfig      `protobuf:"bytes,7,opt,name=config,proto3" json:"config,omitempty"`
+	Metadata      *DeploymentMetadata    `protobuf:"bytes,8,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	Labels        map[string]string      `protobuf:"bytes,9,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	AutoStart     bool                   `protobuf:"varint,10,opt,name=auto_start,json=autoStart,proto3" json:"auto_start,omitempty"`          // Start immediately after creation
+	ValidateOnly  bool                   `protobuf:"varint,11,opt,name=validate_only,json=validateOnly,proto3" json:"validate_only,omitempty"` // Only validate, don't create
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateDeploymentRequest) Reset() {
+	*x = CreateDeploymentRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateDeploymentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateDeploymentRequest) ProtoMessage() {}
+
+func (x *CreateDeploymentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateDeploymentRequest.ProtoReflect.Descriptor instead.
+func (*CreateDeploymentRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *CreateDeploymentRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateDeploymentRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *CreateDeploymentRequest) GetType() DeploymentType {
+	if x != nil {
+		return x.Type
+	}
+	return DeploymentType_DEPLOYMENT_TYPE_UNSPECIFIED
+}
+
+func (x *CreateDeploymentRequest) GetPayload() *DeploymentPayload {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+func (x *CreateDeploymentRequest) GetTarget() *DeploymentTarget {
+	if x != nil {
+		return x.Target
+	}
+	return nil
+}
+
+func (x *CreateDeploymentRequest) GetStrategy() DeploymentStrategy {
+	if x != nil {
+		return x.Strategy
+	}
+	return DeploymentStrategy_DEPLOYMENT_STRATEGY_UNSPECIFIED
+}
+
+func (x *CreateDeploymentRequest) GetConfig() *DeploymentConfig {
+	if x != nil {
+		return x.Config
+	}
+	return nil
+}
+
+func (x *CreateDeploymentRequest) GetMetadata() *DeploymentMetadata {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *CreateDeploymentRequest) GetLabels() map[string]string {
+	if x != nil {
+		return x.Labels
+	}
+	return nil
+}
+
+func (x *CreateDeploymentRequest) GetAutoStart() bool {
+	if x != nil {
+		return x.AutoStart
+	}
+	return false
+}
+
+func (x *CreateDeploymentRequest) GetValidateOnly() bool {
+	if x != nil {
+		return x.ValidateOnly
+	}
+	return false
+}
+
+type CreateDeploymentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Deployment    *Deployment            `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
+	Warnings      []*ValidationWarning   `protobuf:"bytes,2,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	Validation    *DeploymentValidation  `protobuf:"bytes,3,opt,name=validation,proto3" json:"validation,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateDeploymentResponse) Reset() {
+	*x = CreateDeploymentResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateDeploymentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateDeploymentResponse) ProtoMessage() {}
+
+func (x *CreateDeploymentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateDeploymentResponse.ProtoReflect.Descriptor instead.
+func (*CreateDeploymentResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *CreateDeploymentResponse) GetDeployment() *Deployment {
+	if x != nil {
+		return x.Deployment
+	}
+	return nil
+}
+
+func (x *CreateDeploymentResponse) GetWarnings() []*ValidationWarning {
+	if x != nil {
+		return x.Warnings
+	}
+	return nil
+}
+
+func (x *CreateDeploymentResponse) GetValidation() *DeploymentValidation {
+	if x != nil {
+		return x.Validation
+	}
+	return nil
+}
+
+type ValidationWarning struct {
+	state         protoimpl.MessageState     `protogen:"open.v1"`
+	Code          string                     `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	Message       string                     `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Field         string                     `protobuf:"bytes,3,opt,name=field,proto3" json:"field,omitempty"`
+	Severity      ValidationWarning_Severity `protobuf:"varint,4,opt,name=severity,proto3,enum=public.v1.ValidationWarning_Severity" json:"severity,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ValidationWarning) Reset() {
+	*x = ValidationWarning{}
+	mi := &file_public_v1_fleet_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidationWarning) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidationWarning) ProtoMessage() {}
+
+func (x *ValidationWarning) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidationWarning.ProtoReflect.Descriptor instead.
+func (*ValidationWarning) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *ValidationWarning) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *ValidationWarning) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ValidationWarning) GetField() string {
+	if x != nil {
+		return x.Field
+	}
+	return ""
+}
+
+func (x *ValidationWarning) GetSeverity() ValidationWarning_Severity {
+	if x != nil {
+		return x.Severity
+	}
+	return ValidationWarning_SEVERITY_UNSPECIFIED
+}
+
+type DeploymentValidation struct {
+	state                    protoimpl.MessageState `protogen:"open.v1"`
+	Valid                    bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	Errors                   []*ValidationWarning   `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
+	TargetDeviceCount        int32                  `protobuf:"varint,3,opt,name=target_device_count,json=targetDeviceCount,proto3" json:"target_device_count,omitempty"`
+	TargetDeviceIds          []string               `protobuf:"bytes,4,rep,name=target_device_ids,json=targetDeviceIds,proto3" json:"target_device_ids,omitempty"`
+	EstimatedDurationSeconds int64                  `protobuf:"varint,5,opt,name=estimated_duration_seconds,json=estimatedDurationSeconds,proto3" json:"estimated_duration_seconds,omitempty"`
+	SimulatedBatches         []*SimulatedBatch      `protobuf:"bytes,6,rep,name=simulated_batches,json=simulatedBatches,proto3" json:"simulated_batches,omitempty"`
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
+}
+
+func (x *DeploymentValidation) Reset() {
+	*x = DeploymentValidation{}
+	mi := &file_public_v1_fleet_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentValidation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentValidation) ProtoMessage() {}
+
+func (x *DeploymentValidation) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentValidation.ProtoReflect.Descriptor instead.
+func (*DeploymentValidation) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *DeploymentValidation) GetValid() bool {
+	if x != nil {
+		return x.Valid
+	}
+	return false
+}
+
+func (x *DeploymentValidation) GetErrors() []*ValidationWarning {
+	if x != nil {
+		return x.Errors
+	}
+	return nil
+}
+
+func (x *DeploymentValidation) GetTargetDeviceCount() int32 {
+	if x != nil {
+		return x.TargetDeviceCount
+	}
+	return 0
+}
+
+func (x *DeploymentValidation) GetTargetDeviceIds() []string {
+	if x != nil {
+		return x.TargetDeviceIds
+	}
+	return nil
+}
+
+func (x *DeploymentValidation) GetEstimatedDurationSeconds() int64 {
+	if x != nil {
+		return x.EstimatedDurationSeconds
+	}
+	return 0
+}
+
+func (x *DeploymentValidation) GetSimulatedBatches() []*SimulatedBatch {
+	if x != nil {
+		return x.SimulatedBatches
+	}
+	return nil
+}
+
+type SimulatedBatch struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	BatchNumber    int32                  `protobuf:"varint,1,opt,name=batch_number,json=batchNumber,proto3" json:"batch_number,omitempty"`
+	DeviceCount    int32                  `protobuf:"varint,2,opt,name=device_count,json=deviceCount,proto3" json:"device_count,omitempty"`
+	EstimatedStart *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=estimated_start,json=estimatedStart,proto3" json:"estimated_start,omitempty"`
+	EstimatedEnd   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=estimated_end,json=estimatedEnd,proto3" json:"estimated_end,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *SimulatedBatch) Reset() {
+	*x = SimulatedBatch{}
+	mi := &file_public_v1_fleet_proto_msgTypes[54]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SimulatedBatch) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SimulatedBatch) ProtoMessage() {}
+
+func (x *SimulatedBatch) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[54]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SimulatedBatch.ProtoReflect.Descriptor instead.
+func (*SimulatedBatch) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{54}
+}
+
+func (x *SimulatedBatch) GetBatchNumber() int32 {
+	if x != nil {
+		return x.BatchNumber
+	}
+	return 0
+}
+
+func (x *SimulatedBatch) GetDeviceCount() int32 {
+	if x != nil {
+		return x.DeviceCount
+	}
+	return 0
+}
+
+func (x *SimulatedBatch) GetEstimatedStart() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EstimatedStart
+	}
+	return nil
+}
+
+func (x *SimulatedBatch) GetEstimatedEnd() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EstimatedEnd
+	}
+	return nil
+}
+
+type ListDeploymentsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	States        []DeploymentState      `protobuf:"varint,3,rep,packed,name=states,proto3,enum=public.v1.DeploymentState" json:"states,omitempty"`
+	Types         []DeploymentType       `protobuf:"varint,4,rep,packed,name=types,proto3,enum=public.v1.DeploymentType" json:"types,omitempty"`
+	Environment   string                 `protobuf:"bytes,5,opt,name=environment,proto3" json:"environment,omitempty"`
+	LabelSelector map[string]string      `protobuf:"bytes,6,rep,name=label_selector,json=labelSelector,proto3" json:"label_selector,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	StartTime     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime       *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	CreatedBy     string                 `protobuf:"bytes,9,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListDeploymentsRequest) Reset() {
+	*x = ListDeploymentsRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListDeploymentsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDeploymentsRequest) ProtoMessage() {}
+
+func (x *ListDeploymentsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDeploymentsRequest.ProtoReflect.Descriptor instead.
+func (*ListDeploymentsRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *ListDeploymentsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListDeploymentsRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListDeploymentsRequest) GetStates() []DeploymentState {
+	if x != nil {
+		return x.States
+	}
+	return nil
+}
+
+func (x *ListDeploymentsRequest) GetTypes() []DeploymentType {
+	if x != nil {
+		return x.Types
+	}
+	return nil
+}
+
+func (x *ListDeploymentsRequest) GetEnvironment() string {
+	if x != nil {
+		return x.Environment
+	}
+	return ""
+}
+
+func (x *ListDeploymentsRequest) GetLabelSelector() map[string]string {
+	if x != nil {
+		return x.LabelSelector
+	}
+	return nil
+}
+
+func (x *ListDeploymentsRequest) GetStartTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartTime
+	}
+	return nil
+}
+
+func (x *ListDeploymentsRequest) GetEndTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EndTime
+	}
+	return nil
+}
+
+func (x *ListDeploymentsRequest) GetCreatedBy() string {
+	if x != nil {
+		return x.CreatedBy
+	}
+	return ""
+}
+
+type ListDeploymentsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Deployments   []*Deployment          `protobuf:"bytes,1,rep,name=deployments,proto3" json:"deployments,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	TotalCount    int32                  `protobuf:"varint,3,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListDeploymentsResponse) Reset() {
+	*x = ListDeploymentsResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[56]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListDeploymentsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListDeploymentsResponse) ProtoMessage() {}
+
+func (x *ListDeploymentsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[56]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListDeploymentsResponse.ProtoReflect.Descriptor instead.
+func (*ListDeploymentsResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{56}
+}
+
+func (x *ListDeploymentsResponse) GetDeployments() []*Deployment {
+	if x != nil {
+		return x.Deployments
+	}
+	return nil
+}
+
+func (x *ListDeploymentsResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+func (x *ListDeploymentsResponse) GetTotalCount() int32 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
+type GetDeploymentRequest struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId        string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	IncludeDeviceStatus bool                   `protobuf:"varint,2,opt,name=include_device_status,json=includeDeviceStatus,proto3" json:"include_device_status,omitempty"`
+	IncludeEvents       bool                   `protobuf:"varint,3,opt,name=include_events,json=includeEvents,proto3" json:"include_events,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *GetDeploymentRequest) Reset() {
+	*x = GetDeploymentRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[57]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDeploymentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDeploymentRequest) ProtoMessage() {}
+
+func (x *GetDeploymentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[57]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDeploymentRequest.ProtoReflect.Descriptor instead.
+func (*GetDeploymentRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{57}
+}
+
+func (x *GetDeploymentRequest) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+func (x *GetDeploymentRequest) GetIncludeDeviceStatus() bool {
+	if x != nil {
+		return x.IncludeDeviceStatus
+	}
+	return false
+}
+
+func (x *GetDeploymentRequest) GetIncludeEvents() bool {
+	if x != nil {
+		return x.IncludeEvents
+	}
+	return false
+}
+
+type GetDeploymentResponse struct {
+	state          protoimpl.MessageState    `protogen:"open.v1"`
+	Deployment     *Deployment               `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
+	Progress       *DeploymentProgress       `protobuf:"bytes,2,opt,name=progress,proto3" json:"progress,omitempty"`
+	DeviceStatuses []*DeviceDeploymentStatus `protobuf:"bytes,3,rep,name=device_statuses,json=deviceStatuses,proto3" json:"device_statuses,omitempty"`
+	Events         []*DeploymentEvent        `protobuf:"bytes,4,rep,name=events,proto3" json:"events,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetDeploymentResponse) Reset() {
+	*x = GetDeploymentResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[58]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDeploymentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDeploymentResponse) ProtoMessage() {}
+
+func (x *GetDeploymentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[58]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDeploymentResponse.ProtoReflect.Descriptor instead.
+func (*GetDeploymentResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{58}
+}
+
+func (x *GetDeploymentResponse) GetDeployment() *Deployment {
+	if x != nil {
+		return x.Deployment
+	}
+	return nil
+}
+
+func (x *GetDeploymentResponse) GetProgress() *DeploymentProgress {
+	if x != nil {
+		return x.Progress
+	}
+	return nil
+}
+
+func (x *GetDeploymentResponse) GetDeviceStatuses() []*DeviceDeploymentStatus {
+	if x != nil {
+		return x.DeviceStatuses
+	}
+	return nil
+}
+
+func (x *GetDeploymentResponse) GetEvents() []*DeploymentEvent {
+	if x != nil {
+		return x.Events
+	}
+	return nil
+}
+
+type StartDeploymentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId  string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	Force         bool                   `protobuf:"varint,2,opt,name=force,proto3" json:"force,omitempty"`                                   // Force start even if validation fails
+	SkipApproval  bool                   `protobuf:"varint,3,opt,name=skip_approval,json=skipApproval,proto3" json:"skip_approval,omitempty"` // Skip approval requirements
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StartDeploymentRequest) Reset() {
+	*x = StartDeploymentRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[59]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StartDeploymentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StartDeploymentRequest) ProtoMessage() {}
+
+func (x *StartDeploymentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[59]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StartDeploymentRequest.ProtoReflect.Descriptor instead.
+func (*StartDeploymentRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{59}
+}
+
+func (x *StartDeploymentRequest) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+func (x *StartDeploymentRequest) GetForce() bool {
+	if x != nil {
+		return x.Force
+	}
+	return false
+}
+
+func (x *StartDeploymentRequest) GetSkipApproval() bool {
+	if x != nil {
+		return x.SkipApproval
+	}
+	return false
+}
+
+type StartDeploymentResponse struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Started             bool                   `protobuf:"varint,1,opt,name=started,proto3" json:"started,omitempty"`
+	Message             string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	EstimatedCompletion *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=estimated_completion,json=estimatedCompletion,proto3" json:"estimated_completion,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *StartDeploymentResponse) Reset() {
+	*x = StartDeploymentResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[60]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StartDeploymentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StartDeploymentResponse) ProtoMessage() {}
+
+func (x *StartDeploymentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[60]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StartDeploymentResponse.ProtoReflect.Descriptor instead.
+func (*StartDeploymentResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{60}
+}
+
+func (x *StartDeploymentResponse) GetStarted() bool {
+	if x != nil {
+		return x.Started
+	}
+	return false
+}
+
+func (x *StartDeploymentResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *StartDeploymentResponse) GetEstimatedCompletion() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EstimatedCompletion
+	}
+	return nil
+}
+
+type PauseDeploymentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId  string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PauseDeploymentRequest) Reset() {
+	*x = PauseDeploymentRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[61]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PauseDeploymentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PauseDeploymentRequest) ProtoMessage() {}
+
+func (x *PauseDeploymentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[61]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PauseDeploymentRequest.ProtoReflect.Descriptor instead.
+func (*PauseDeploymentRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{61}
+}
+
+func (x *PauseDeploymentRequest) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+func (x *PauseDeploymentRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type PauseDeploymentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Paused        bool                   `protobuf:"varint,1,opt,name=paused,proto3" json:"paused,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PauseDeploymentResponse) Reset() {
+	*x = PauseDeploymentResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[62]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PauseDeploymentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PauseDeploymentResponse) ProtoMessage() {}
+
+func (x *PauseDeploymentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[62]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PauseDeploymentResponse.ProtoReflect.Descriptor instead.
+func (*PauseDeploymentResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *PauseDeploymentResponse) GetPaused() bool {
+	if x != nil {
+		return x.Paused
+	}
+	return false
+}
+
+func (x *PauseDeploymentResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type CancelDeploymentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId  string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelDeploymentRequest) Reset() {
+	*x = CancelDeploymentRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[63]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelDeploymentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelDeploymentRequest) ProtoMessage() {}
+
+func (x *CancelDeploymentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[63]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelDeploymentRequest.ProtoReflect.Descriptor instead.
+func (*CancelDeploymentRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{63}
+}
+
+func (x *CancelDeploymentRequest) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+func (x *CancelDeploymentRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type CancelDeploymentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cancelled     bool                   `protobuf:"varint,1,opt,name=cancelled,proto3" json:"cancelled,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelDeploymentResponse) Reset() {
+	*x = CancelDeploymentResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[64]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelDeploymentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelDeploymentResponse) ProtoMessage() {}
+
+func (x *CancelDeploymentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[64]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelDeploymentResponse.ProtoReflect.Descriptor instead.
+func (*CancelDeploymentResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{64}
+}
+
+func (x *CancelDeploymentResponse) GetCancelled() bool {
+	if x != nil {
+		return x.Cancelled
+	}
+	return false
+}
+
+func (x *CancelDeploymentResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type RollbackDeploymentRequest struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId       string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	TargetDeploymentId string                 `protobuf:"bytes,2,opt,name=target_deployment_id,json=targetDeploymentId,proto3" json:"target_deployment_id,omitempty"` // Specific deployment to rollback to
+	Reason             string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	Force              bool                   `protobuf:"varint,4,opt,name=force,proto3" json:"force,omitempty"` // Force rollback even if some devices succeeded
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *RollbackDeploymentRequest) Reset() {
+	*x = RollbackDeploymentRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[65]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RollbackDeploymentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RollbackDeploymentRequest) ProtoMessage() {}
+
+func (x *RollbackDeploymentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[65]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RollbackDeploymentRequest.ProtoReflect.Descriptor instead.
+func (*RollbackDeploymentRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{65}
+}
+
+func (x *RollbackDeploymentRequest) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+func (x *RollbackDeploymentRequest) GetTargetDeploymentId() string {
+	if x != nil {
+		return x.TargetDeploymentId
+	}
+	return ""
+}
+
+func (x *RollbackDeploymentRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *RollbackDeploymentRequest) GetForce() bool {
+	if x != nil {
+		return x.Force
+	}
+	return false
+}
+
+type RollbackDeploymentResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	RolledBack      bool                   `protobuf:"varint,1,opt,name=rolled_back,json=rolledBack,proto3" json:"rolled_back,omitempty"`
+	NewDeploymentId string                 `protobuf:"bytes,2,opt,name=new_deployment_id,json=newDeploymentId,proto3" json:"new_deployment_id,omitempty"` // New deployment created for rollback
+	DevicesAffected int32                  `protobuf:"varint,3,opt,name=devices_affected,json=devicesAffected,proto3" json:"devices_affected,omitempty"`
+	Message         string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *RollbackDeploymentResponse) Reset() {
+	*x = RollbackDeploymentResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[66]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RollbackDeploymentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RollbackDeploymentResponse) ProtoMessage() {}
+
+func (x *RollbackDeploymentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[66]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RollbackDeploymentResponse.ProtoReflect.Descriptor instead.
+func (*RollbackDeploymentResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{66}
+}
+
+func (x *RollbackDeploymentResponse) GetRolledBack() bool {
+	if x != nil {
+		return x.RolledBack
+	}
+	return false
+}
+
+func (x *RollbackDeploymentResponse) GetNewDeploymentId() string {
+	if x != nil {
+		return x.NewDeploymentId
+	}
+	return ""
+}
+
+func (x *RollbackDeploymentResponse) GetDevicesAffected() int32 {
+	if x != nil {
+		return x.DevicesAffected
+	}
+	return 0
+}
+
+func (x *RollbackDeploymentResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type GetDeploymentStatusRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId  string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDeploymentStatusRequest) Reset() {
+	*x = GetDeploymentStatusRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[67]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDeploymentStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDeploymentStatusRequest) ProtoMessage() {}
+
+func (x *GetDeploymentStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[67]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDeploymentStatusRequest.ProtoReflect.Descriptor instead.
+func (*GetDeploymentStatusRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{67}
+}
+
+func (x *GetDeploymentStatusRequest) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+type GetDeploymentStatusResponse struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId        string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	State               DeploymentState        `protobuf:"varint,2,opt,name=state,proto3,enum=public.v1.DeploymentState" json:"state,omitempty"`
+	Progress            *DeploymentProgress    `protobuf:"bytes,3,opt,name=progress,proto3" json:"progress,omitempty"`
+	StartedAt           *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	UpdatedAt           *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	EstimatedCompletion *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=estimated_completion,json=estimatedCompletion,proto3" json:"estimated_completion,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *GetDeploymentStatusResponse) Reset() {
+	*x = GetDeploymentStatusResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[68]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDeploymentStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDeploymentStatusResponse) ProtoMessage() {}
+
+func (x *GetDeploymentStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[68]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDeploymentStatusResponse.ProtoReflect.Descriptor instead.
+func (*GetDeploymentStatusResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{68}
+}
+
+func (x *GetDeploymentStatusResponse) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+func (x *GetDeploymentStatusResponse) GetState() DeploymentState {
+	if x != nil {
+		return x.State
+	}
+	return DeploymentState_DEPLOYMENT_STATE_UNSPECIFIED
+}
+
+func (x *GetDeploymentStatusResponse) GetProgress() *DeploymentProgress {
+	if x != nil {
+		return x.Progress
+	}
+	return nil
+}
+
+func (x *GetDeploymentStatusResponse) GetStartedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartedAt
+	}
+	return nil
+}
+
+func (x *GetDeploymentStatusResponse) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *GetDeploymentStatusResponse) GetEstimatedCompletion() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EstimatedCompletion
+	}
+	return nil
+}
+
+type DeploymentProgress struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	TotalDevices       int32                  `protobuf:"varint,1,opt,name=total_devices,json=totalDevices,proto3" json:"total_devices,omitempty"`
+	PendingDevices     int32                  `protobuf:"varint,2,opt,name=pending_devices,json=pendingDevices,proto3" json:"pending_devices,omitempty"`
+	RunningDevices     int32                  `protobuf:"varint,3,opt,name=running_devices,json=runningDevices,proto3" json:"running_devices,omitempty"`
+	SucceededDevices   int32                  `protobuf:"varint,4,opt,name=succeeded_devices,json=succeededDevices,proto3" json:"succeeded_devices,omitempty"`
+	FailedDevices      int32                  `protobuf:"varint,5,opt,name=failed_devices,json=failedDevices,proto3" json:"failed_devices,omitempty"`
+	CancelledDevices   int32                  `protobuf:"varint,6,opt,name=cancelled_devices,json=cancelledDevices,proto3" json:"cancelled_devices,omitempty"`
+	PercentageComplete float64                `protobuf:"fixed64,7,opt,name=percentage_complete,json=percentageComplete,proto3" json:"percentage_complete,omitempty"`
+	CurrentBatch       string                 `protobuf:"bytes,8,opt,name=current_batch,json=currentBatch,proto3" json:"current_batch,omitempty"`
+	CurrentBatchNumber int32                  `protobuf:"varint,9,opt,name=current_batch_number,json=currentBatchNumber,proto3" json:"current_batch_number,omitempty"`
+	TotalBatches       int32                  `protobuf:"varint,10,opt,name=total_batches,json=totalBatches,proto3" json:"total_batches,omitempty"`
+	DevicesByState     map[string]int32       `protobuf:"bytes,11,rep,name=devices_by_state,json=devicesByState,proto3" json:"devices_by_state,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *DeploymentProgress) Reset() {
+	*x = DeploymentProgress{}
+	mi := &file_public_v1_fleet_proto_msgTypes[69]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentProgress) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentProgress) ProtoMessage() {}
+
+func (x *DeploymentProgress) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[69]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentProgress.ProtoReflect.Descriptor instead.
+func (*DeploymentProgress) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{69}
+}
+
+func (x *DeploymentProgress) GetTotalDevices() int32 {
+	if x != nil {
+		return x.TotalDevices
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetPendingDevices() int32 {
+	if x != nil {
+		return x.PendingDevices
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetRunningDevices() int32 {
+	if x != nil {
+		return x.RunningDevices
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetSucceededDevices() int32 {
+	if x != nil {
+		return x.SucceededDevices
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetFailedDevices() int32 {
+	if x != nil {
+		return x.FailedDevices
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetCancelledDevices() int32 {
+	if x != nil {
+		return x.CancelledDevices
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetPercentageComplete() float64 {
+	if x != nil {
+		return x.PercentageComplete
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetCurrentBatch() string {
+	if x != nil {
+		return x.CurrentBatch
+	}
+	return ""
+}
+
+func (x *DeploymentProgress) GetCurrentBatchNumber() int32 {
+	if x != nil {
+		return x.CurrentBatchNumber
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetTotalBatches() int32 {
+	if x != nil {
+		return x.TotalBatches
+	}
+	return 0
+}
+
+func (x *DeploymentProgress) GetDevicesByState() map[string]int32 {
+	if x != nil {
+		return x.DevicesByState
+	}
+	return nil
+}
+
+type StreamDeploymentEventsRequest struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId        string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	EventTypes          []string               `protobuf:"bytes,2,rep,name=event_types,json=eventTypes,proto3" json:"event_types,omitempty"`                               // Filter specific event types
+	IncludeDeviceEvents bool                   `protobuf:"varint,3,opt,name=include_device_events,json=includeDeviceEvents,proto3" json:"include_device_events,omitempty"` // Include per-device events
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *StreamDeploymentEventsRequest) Reset() {
+	*x = StreamDeploymentEventsRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[70]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamDeploymentEventsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamDeploymentEventsRequest) ProtoMessage() {}
+
+func (x *StreamDeploymentEventsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[70]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamDeploymentEventsRequest.ProtoReflect.Descriptor instead.
+func (*StreamDeploymentEventsRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{70}
+}
+
+func (x *StreamDeploymentEventsRequest) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+func (x *StreamDeploymentEventsRequest) GetEventTypes() []string {
+	if x != nil {
+		return x.EventTypes
+	}
+	return nil
+}
+
+func (x *StreamDeploymentEventsRequest) GetIncludeDeviceEvents() bool {
+	if x != nil {
+		return x.IncludeDeviceEvents
+	}
+	return false
+}
+
+type DeploymentEvent struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Id            string                    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	DeploymentId  string                    `protobuf:"bytes,2,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	DeviceId      string                    `protobuf:"bytes,3,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"` // If device-specific event
+	Type          DeploymentEvent_EventType `protobuf:"varint,4,opt,name=type,proto3,enum=public.v1.DeploymentEvent_EventType" json:"type,omitempty"`
+	Timestamp     *timestamppb.Timestamp    `protobuf:"bytes,5,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Message       string                    `protobuf:"bytes,6,opt,name=message,proto3" json:"message,omitempty"`
+	Details       *structpb.Struct          `protobuf:"bytes,7,opt,name=details,proto3" json:"details,omitempty"`
+	Severity      string                    `protobuf:"bytes,8,opt,name=severity,proto3" json:"severity,omitempty"` // info, warning, error
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeploymentEvent) Reset() {
+	*x = DeploymentEvent{}
+	mi := &file_public_v1_fleet_proto_msgTypes[71]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeploymentEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeploymentEvent) ProtoMessage() {}
+
+func (x *DeploymentEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[71]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeploymentEvent.ProtoReflect.Descriptor instead.
+func (*DeploymentEvent) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{71}
+}
+
+func (x *DeploymentEvent) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DeploymentEvent) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+func (x *DeploymentEvent) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *DeploymentEvent) GetType() DeploymentEvent_EventType {
+	if x != nil {
+		return x.Type
+	}
+	return DeploymentEvent_EVENT_TYPE_UNSPECIFIED
+}
+
+func (x *DeploymentEvent) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+func (x *DeploymentEvent) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *DeploymentEvent) GetDetails() *structpb.Struct {
+	if x != nil {
+		return x.Details
+	}
+	return nil
+}
+
+func (x *DeploymentEvent) GetSeverity() string {
+	if x != nil {
+		return x.Severity
+	}
+	return ""
+}
+
+type DeviceDeploymentStatus struct {
+	state              protoimpl.MessageState       `protogen:"open.v1"`
+	DeviceId           string                       `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	DeviceName         string                       `protobuf:"bytes,2,opt,name=device_name,json=deviceName,proto3" json:"device_name,omitempty"`
+	State              DeviceDeploymentStatus_State `protobuf:"varint,3,opt,name=state,proto3,enum=public.v1.DeviceDeploymentStatus_State" json:"state,omitempty"`
+	ProgressPercentage int32                        `protobuf:"varint,4,opt,name=progress_percentage,json=progressPercentage,proto3" json:"progress_percentage,omitempty"`
+	Message            string                       `protobuf:"bytes,5,opt,name=message,proto3" json:"message,omitempty"`
+	StartedAt          *timestamppb.Timestamp       `protobuf:"bytes,6,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	UpdatedAt          *timestamppb.Timestamp       `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	CompletedAt        *timestamppb.Timestamp       `protobuf:"bytes,8,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	ErrorCode          string                       `protobuf:"bytes,9,opt,name=error_code,json=errorCode,proto3" json:"error_code,omitempty"`
+	ErrorDetails       string                       `protobuf:"bytes,10,opt,name=error_details,json=errorDetails,proto3" json:"error_details,omitempty"`
+	RetryCount         int32                        `protobuf:"varint,11,opt,name=retry_count,json=retryCount,proto3" json:"retry_count,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *DeviceDeploymentStatus) Reset() {
+	*x = DeviceDeploymentStatus{}
+	mi := &file_public_v1_fleet_proto_msgTypes[72]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeviceDeploymentStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeviceDeploymentStatus) ProtoMessage() {}
+
+func (x *DeviceDeploymentStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[72]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeviceDeploymentStatus.ProtoReflect.Descriptor instead.
+func (*DeviceDeploymentStatus) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{72}
+}
+
+func (x *DeviceDeploymentStatus) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *DeviceDeploymentStatus) GetDeviceName() string {
+	if x != nil {
+		return x.DeviceName
+	}
+	return ""
+}
+
+func (x *DeviceDeploymentStatus) GetState() DeviceDeploymentStatus_State {
+	if x != nil {
+		return x.State
+	}
+	return DeviceDeploymentStatus_STATE_UNSPECIFIED
+}
+
+func (x *DeviceDeploymentStatus) GetProgressPercentage() int32 {
+	if x != nil {
+		return x.ProgressPercentage
+	}
+	return 0
+}
+
+func (x *DeviceDeploymentStatus) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *DeviceDeploymentStatus) GetStartedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartedAt
+	}
+	return nil
+}
+
+func (x *DeviceDeploymentStatus) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *DeviceDeploymentStatus) GetCompletedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CompletedAt
+	}
+	return nil
+}
+
+func (x *DeviceDeploymentStatus) GetErrorCode() string {
+	if x != nil {
+		return x.ErrorCode
+	}
+	return ""
+}
+
+func (x *DeviceDeploymentStatus) GetErrorDetails() string {
+	if x != nil {
+		return x.ErrorDetails
+	}
+	return ""
+}
+
+func (x *DeviceDeploymentStatus) GetRetryCount() int32 {
+	if x != nil {
+		return x.RetryCount
+	}
+	return 0
 }
 
 // Configuration messages
@@ -2552,7 +6668,7 @@ type GetConfigurationRequest struct {
 
 func (x *GetConfigurationRequest) Reset() {
 	*x = GetConfigurationRequest{}
-	mi := &file_public_v1_fleet_proto_msgTypes[32]
+	mi := &file_public_v1_fleet_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2564,7 +6680,7 @@ func (x *GetConfigurationRequest) String() string {
 func (*GetConfigurationRequest) ProtoMessage() {}
 
 func (x *GetConfigurationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[32]
+	mi := &file_public_v1_fleet_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2577,7 +6693,7 @@ func (x *GetConfigurationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetConfigurationRequest.ProtoReflect.Descriptor instead.
 func (*GetConfigurationRequest) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{32}
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *GetConfigurationRequest) GetDeviceId() string {
@@ -2605,7 +6721,7 @@ type GetConfigurationResponse struct {
 
 func (x *GetConfigurationResponse) Reset() {
 	*x = GetConfigurationResponse{}
-	mi := &file_public_v1_fleet_proto_msgTypes[33]
+	mi := &file_public_v1_fleet_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2617,7 +6733,7 @@ func (x *GetConfigurationResponse) String() string {
 func (*GetConfigurationResponse) ProtoMessage() {}
 
 func (x *GetConfigurationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[33]
+	mi := &file_public_v1_fleet_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2630,7 +6746,7 @@ func (x *GetConfigurationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetConfigurationResponse.ProtoReflect.Descriptor instead.
 func (*GetConfigurationResponse) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{33}
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *GetConfigurationResponse) GetConfig() *structpb.Struct {
@@ -2666,7 +6782,7 @@ type UpdateConfigurationRequest struct {
 
 func (x *UpdateConfigurationRequest) Reset() {
 	*x = UpdateConfigurationRequest{}
-	mi := &file_public_v1_fleet_proto_msgTypes[34]
+	mi := &file_public_v1_fleet_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2678,7 +6794,7 @@ func (x *UpdateConfigurationRequest) String() string {
 func (*UpdateConfigurationRequest) ProtoMessage() {}
 
 func (x *UpdateConfigurationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[34]
+	mi := &file_public_v1_fleet_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2691,7 +6807,7 @@ func (x *UpdateConfigurationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateConfigurationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateConfigurationRequest) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{34}
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *UpdateConfigurationRequest) GetDeviceId() string {
@@ -2732,7 +6848,7 @@ type UpdateConfigurationResponse struct {
 
 func (x *UpdateConfigurationResponse) Reset() {
 	*x = UpdateConfigurationResponse{}
-	mi := &file_public_v1_fleet_proto_msgTypes[35]
+	mi := &file_public_v1_fleet_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2744,7 +6860,7 @@ func (x *UpdateConfigurationResponse) String() string {
 func (*UpdateConfigurationResponse) ProtoMessage() {}
 
 func (x *UpdateConfigurationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[35]
+	mi := &file_public_v1_fleet_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2757,7 +6873,7 @@ func (x *UpdateConfigurationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateConfigurationResponse.ProtoReflect.Descriptor instead.
 func (*UpdateConfigurationResponse) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{35}
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *UpdateConfigurationResponse) GetConfig() *structpb.Struct {
@@ -2785,7 +6901,7 @@ type StreamEventsRequest struct {
 
 func (x *StreamEventsRequest) Reset() {
 	*x = StreamEventsRequest{}
-	mi := &file_public_v1_fleet_proto_msgTypes[36]
+	mi := &file_public_v1_fleet_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2797,7 +6913,7 @@ func (x *StreamEventsRequest) String() string {
 func (*StreamEventsRequest) ProtoMessage() {}
 
 func (x *StreamEventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[36]
+	mi := &file_public_v1_fleet_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2810,7 +6926,7 @@ func (x *StreamEventsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamEventsRequest.ProtoReflect.Descriptor instead.
 func (*StreamEventsRequest) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{36}
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *StreamEventsRequest) GetDeviceIds() []string {
@@ -2841,7 +6957,7 @@ type Event struct {
 
 func (x *Event) Reset() {
 	*x = Event{}
-	mi := &file_public_v1_fleet_proto_msgTypes[37]
+	mi := &file_public_v1_fleet_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2853,7 +6969,7 @@ func (x *Event) String() string {
 func (*Event) ProtoMessage() {}
 
 func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_public_v1_fleet_proto_msgTypes[37]
+	mi := &file_public_v1_fleet_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2866,7 +6982,7 @@ func (x *Event) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Event.ProtoReflect.Descriptor instead.
 func (*Event) Descriptor() ([]byte, []int) {
-	return file_public_v1_fleet_proto_rawDescGZIP(), []int{37}
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *Event) GetId() string {
@@ -2909,6 +7025,995 @@ func (x *Event) GetMessage() string {
 		return x.Message
 	}
 	return ""
+}
+
+// Application represents a deployable application
+type Application struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Version       string                 `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Metadata      map[string]string      `protobuf:"bytes,5,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	Args          []string               `protobuf:"bytes,6,rep,name=args,proto3" json:"args,omitempty"`
+	Environment   map[string]string      `protobuf:"bytes,7,rep,name=environment,proto3" json:"environment,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	WorkingDir    string                 `protobuf:"bytes,8,opt,name=working_dir,json=workingDir,proto3" json:"working_dir,omitempty"`
+	User          string                 `protobuf:"bytes,9,opt,name=user,proto3" json:"user,omitempty"`
+	Group         string                 `protobuf:"bytes,10,opt,name=group,proto3" json:"group,omitempty"`
+	RestartPolicy RestartPolicy          `protobuf:"varint,11,opt,name=restart_policy,json=restartPolicy,proto3,enum=public.v1.RestartPolicy" json:"restart_policy,omitempty"`
+	Resources     *Resources             `protobuf:"bytes,12,opt,name=resources,proto3" json:"resources,omitempty"`
+	HealthCheck   *HealthCheck           `protobuf:"bytes,13,opt,name=health_check,json=healthCheck,proto3" json:"health_check,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Application) Reset() {
+	*x = Application{}
+	mi := &file_public_v1_fleet_proto_msgTypes[79]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Application) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Application) ProtoMessage() {}
+
+func (x *Application) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[79]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Application.ProtoReflect.Descriptor instead.
+func (*Application) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{79}
+}
+
+func (x *Application) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Application) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Application) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *Application) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Application) GetMetadata() map[string]string {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *Application) GetArgs() []string {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *Application) GetEnvironment() map[string]string {
+	if x != nil {
+		return x.Environment
+	}
+	return nil
+}
+
+func (x *Application) GetWorkingDir() string {
+	if x != nil {
+		return x.WorkingDir
+	}
+	return ""
+}
+
+func (x *Application) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *Application) GetGroup() string {
+	if x != nil {
+		return x.Group
+	}
+	return ""
+}
+
+func (x *Application) GetRestartPolicy() RestartPolicy {
+	if x != nil {
+		return x.RestartPolicy
+	}
+	return RestartPolicy_RESTART_POLICY_UNSPECIFIED
+}
+
+func (x *Application) GetResources() *Resources {
+	if x != nil {
+		return x.Resources
+	}
+	return nil
+}
+
+func (x *Application) GetHealthCheck() *HealthCheck {
+	if x != nil {
+		return x.HealthCheck
+	}
+	return nil
+}
+
+// Artifact represents a deployable artifact (binary, archive, script, etc)
+type Artifact struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Version       string                 `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
+	Type          ArtifactType           `protobuf:"varint,4,opt,name=type,proto3,enum=public.v1.ArtifactType" json:"type,omitempty"`
+	Url           string                 `protobuf:"bytes,5,opt,name=url,proto3" json:"url,omitempty"`
+	StorageUrl    string                 `protobuf:"bytes,6,opt,name=storage_url,json=storageUrl,proto3" json:"storage_url,omitempty"` // Alternative storage URL
+	Checksum      string                 `protobuf:"bytes,7,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	Checksums     map[string]string      `protobuf:"bytes,8,rep,name=checksums,proto3" json:"checksums,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Multiple checksums (sha256, md5, etc)
+	Size          int64                  `protobuf:"varint,9,opt,name=size,proto3" json:"size,omitempty"`
+	Metadata      map[string]string      `protobuf:"bytes,10,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Artifact) Reset() {
+	*x = Artifact{}
+	mi := &file_public_v1_fleet_proto_msgTypes[80]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Artifact) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Artifact) ProtoMessage() {}
+
+func (x *Artifact) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[80]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Artifact.ProtoReflect.Descriptor instead.
+func (*Artifact) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{80}
+}
+
+func (x *Artifact) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Artifact) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Artifact) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *Artifact) GetType() ArtifactType {
+	if x != nil {
+		return x.Type
+	}
+	return ArtifactType_ARTIFACT_TYPE_UNSPECIFIED
+}
+
+func (x *Artifact) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *Artifact) GetStorageUrl() string {
+	if x != nil {
+		return x.StorageUrl
+	}
+	return ""
+}
+
+func (x *Artifact) GetChecksum() string {
+	if x != nil {
+		return x.Checksum
+	}
+	return ""
+}
+
+func (x *Artifact) GetChecksums() map[string]string {
+	if x != nil {
+		return x.Checksums
+	}
+	return nil
+}
+
+func (x *Artifact) GetSize() int64 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+func (x *Artifact) GetMetadata() map[string]string {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+// Resources defines resource limits and requests
+type Resources struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	MemoryLimitBytes   int64                  `protobuf:"varint,1,opt,name=memory_limit_bytes,json=memoryLimitBytes,proto3" json:"memory_limit_bytes,omitempty"`
+	MemoryRequestBytes int64                  `protobuf:"varint,2,opt,name=memory_request_bytes,json=memoryRequestBytes,proto3" json:"memory_request_bytes,omitempty"`
+	CpuLimit           float64                `protobuf:"fixed64,3,opt,name=cpu_limit,json=cpuLimit,proto3" json:"cpu_limit,omitempty"`
+	CpuRequest         float64                `protobuf:"fixed64,4,opt,name=cpu_request,json=cpuRequest,proto3" json:"cpu_request,omitempty"`
+	DiskLimitBytes     int64                  `protobuf:"varint,5,opt,name=disk_limit_bytes,json=diskLimitBytes,proto3" json:"disk_limit_bytes,omitempty"`
+	Limits             map[string]string      `protobuf:"bytes,6,rep,name=limits,proto3" json:"limits,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Generic limits for process manager
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *Resources) Reset() {
+	*x = Resources{}
+	mi := &file_public_v1_fleet_proto_msgTypes[81]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Resources) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Resources) ProtoMessage() {}
+
+func (x *Resources) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[81]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Resources.ProtoReflect.Descriptor instead.
+func (*Resources) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{81}
+}
+
+func (x *Resources) GetMemoryLimitBytes() int64 {
+	if x != nil {
+		return x.MemoryLimitBytes
+	}
+	return 0
+}
+
+func (x *Resources) GetMemoryRequestBytes() int64 {
+	if x != nil {
+		return x.MemoryRequestBytes
+	}
+	return 0
+}
+
+func (x *Resources) GetCpuLimit() float64 {
+	if x != nil {
+		return x.CpuLimit
+	}
+	return 0
+}
+
+func (x *Resources) GetCpuRequest() float64 {
+	if x != nil {
+		return x.CpuRequest
+	}
+	return 0
+}
+
+func (x *Resources) GetDiskLimitBytes() int64 {
+	if x != nil {
+		return x.DiskLimitBytes
+	}
+	return 0
+}
+
+func (x *Resources) GetLimits() map[string]string {
+	if x != nil {
+		return x.Limits
+	}
+	return nil
+}
+
+// HealthCheck defines health check configuration
+type HealthCheck struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Command            string                 `protobuf:"bytes,1,opt,name=command,proto3" json:"command,omitempty"`
+	IntervalSeconds    int32                  `protobuf:"varint,2,opt,name=interval_seconds,json=intervalSeconds,proto3" json:"interval_seconds,omitempty"`
+	TimeoutSeconds     int32                  `protobuf:"varint,3,opt,name=timeout_seconds,json=timeoutSeconds,proto3" json:"timeout_seconds,omitempty"`
+	Retries            int32                  `protobuf:"varint,4,opt,name=retries,proto3" json:"retries,omitempty"`
+	StartPeriodSeconds int32                  `protobuf:"varint,5,opt,name=start_period_seconds,json=startPeriodSeconds,proto3" json:"start_period_seconds,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *HealthCheck) Reset() {
+	*x = HealthCheck{}
+	mi := &file_public_v1_fleet_proto_msgTypes[82]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HealthCheck) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HealthCheck) ProtoMessage() {}
+
+func (x *HealthCheck) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[82]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HealthCheck.ProtoReflect.Descriptor instead.
+func (*HealthCheck) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{82}
+}
+
+func (x *HealthCheck) GetCommand() string {
+	if x != nil {
+		return x.Command
+	}
+	return ""
+}
+
+func (x *HealthCheck) GetIntervalSeconds() int32 {
+	if x != nil {
+		return x.IntervalSeconds
+	}
+	return 0
+}
+
+func (x *HealthCheck) GetTimeoutSeconds() int32 {
+	if x != nil {
+		return x.TimeoutSeconds
+	}
+	return 0
+}
+
+func (x *HealthCheck) GetRetries() int32 {
+	if x != nil {
+		return x.Retries
+	}
+	return 0
+}
+
+func (x *HealthCheck) GetStartPeriodSeconds() int32 {
+	if x != nil {
+		return x.StartPeriodSeconds
+	}
+	return 0
+}
+
+// Update-related messages for the Updates API
+type ListUpdatesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PageSize      int32                  `protobuf:"varint,1,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,2,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	DeviceId      string                 `protobuf:"bytes,3,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUpdatesRequest) Reset() {
+	*x = ListUpdatesRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[83]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUpdatesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUpdatesRequest) ProtoMessage() {}
+
+func (x *ListUpdatesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[83]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUpdatesRequest.ProtoReflect.Descriptor instead.
+func (*ListUpdatesRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{83}
+}
+
+func (x *ListUpdatesRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *ListUpdatesRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListUpdatesRequest) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+type ListUpdatesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Updates       []*Update              `protobuf:"bytes,1,rep,name=updates,proto3" json:"updates,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUpdatesResponse) Reset() {
+	*x = ListUpdatesResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[84]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUpdatesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUpdatesResponse) ProtoMessage() {}
+
+func (x *ListUpdatesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[84]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUpdatesResponse.ProtoReflect.Descriptor instead.
+func (*ListUpdatesResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{84}
+}
+
+func (x *ListUpdatesResponse) GetUpdates() []*Update {
+	if x != nil {
+		return x.Updates
+	}
+	return nil
+}
+
+func (x *ListUpdatesResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
+type Update struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Version       string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Status        UpdateStatus           `protobuf:"varint,4,opt,name=status,proto3,enum=public.v1.UpdateStatus" json:"status,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	StartedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Update) Reset() {
+	*x = Update{}
+	mi := &file_public_v1_fleet_proto_msgTypes[85]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Update) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Update) ProtoMessage() {}
+
+func (x *Update) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[85]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Update.ProtoReflect.Descriptor instead.
+func (*Update) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{85}
+}
+
+func (x *Update) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Update) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *Update) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Update) GetStatus() UpdateStatus {
+	if x != nil {
+		return x.Status
+	}
+	return UpdateStatus_UPDATE_STATUS_UNSPECIFIED
+}
+
+func (x *Update) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *Update) GetStartedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartedAt
+	}
+	return nil
+}
+
+func (x *Update) GetCompletedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CompletedAt
+	}
+	return nil
+}
+
+type CreateUpdateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Version       string                 `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Metadata      map[string]string      `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateUpdateRequest) Reset() {
+	*x = CreateUpdateRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[86]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateUpdateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateUpdateRequest) ProtoMessage() {}
+
+func (x *CreateUpdateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[86]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateUpdateRequest.ProtoReflect.Descriptor instead.
+func (*CreateUpdateRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{86}
+}
+
+func (x *CreateUpdateRequest) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *CreateUpdateRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *CreateUpdateRequest) GetMetadata() map[string]string {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+type CreateUpdateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Update        *Update                `protobuf:"bytes,1,opt,name=update,proto3" json:"update,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateUpdateResponse) Reset() {
+	*x = CreateUpdateResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[87]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateUpdateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateUpdateResponse) ProtoMessage() {}
+
+func (x *CreateUpdateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[87]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateUpdateResponse.ProtoReflect.Descriptor instead.
+func (*CreateUpdateResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{87}
+}
+
+func (x *CreateUpdateResponse) GetUpdate() *Update {
+	if x != nil {
+		return x.Update
+	}
+	return nil
+}
+
+type DeployUpdateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UpdateId      string                 `protobuf:"bytes,1,opt,name=update_id,json=updateId,proto3" json:"update_id,omitempty"`
+	DeviceIds     []string               `protobuf:"bytes,2,rep,name=device_ids,json=deviceIds,proto3" json:"device_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeployUpdateRequest) Reset() {
+	*x = DeployUpdateRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[88]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeployUpdateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeployUpdateRequest) ProtoMessage() {}
+
+func (x *DeployUpdateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[88]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeployUpdateRequest.ProtoReflect.Descriptor instead.
+func (*DeployUpdateRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{88}
+}
+
+func (x *DeployUpdateRequest) GetUpdateId() string {
+	if x != nil {
+		return x.UpdateId
+	}
+	return ""
+}
+
+func (x *DeployUpdateRequest) GetDeviceIds() []string {
+	if x != nil {
+		return x.DeviceIds
+	}
+	return nil
+}
+
+type DeployUpdateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeploymentId  string                 `protobuf:"bytes,1,opt,name=deployment_id,json=deploymentId,proto3" json:"deployment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeployUpdateResponse) Reset() {
+	*x = DeployUpdateResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[89]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeployUpdateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeployUpdateResponse) ProtoMessage() {}
+
+func (x *DeployUpdateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[89]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeployUpdateResponse.ProtoReflect.Descriptor instead.
+func (*DeployUpdateResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{89}
+}
+
+func (x *DeployUpdateResponse) GetDeploymentId() string {
+	if x != nil {
+		return x.DeploymentId
+	}
+	return ""
+}
+
+type GetUpdateStatusRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UpdateId      string                 `protobuf:"bytes,1,opt,name=update_id,json=updateId,proto3" json:"update_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUpdateStatusRequest) Reset() {
+	*x = GetUpdateStatusRequest{}
+	mi := &file_public_v1_fleet_proto_msgTypes[90]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUpdateStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUpdateStatusRequest) ProtoMessage() {}
+
+func (x *GetUpdateStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[90]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUpdateStatusRequest.ProtoReflect.Descriptor instead.
+func (*GetUpdateStatusRequest) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{90}
+}
+
+func (x *GetUpdateStatusRequest) GetUpdateId() string {
+	if x != nil {
+		return x.UpdateId
+	}
+	return ""
+}
+
+type GetUpdateStatusResponse struct {
+	state         protoimpl.MessageState         `protogen:"open.v1"`
+	Update        *Update                        `protobuf:"bytes,1,opt,name=update,proto3" json:"update,omitempty"`
+	DeviceStatus  map[string]*DeviceUpdateStatus `protobuf:"bytes,2,rep,name=device_status,json=deviceStatus,proto3" json:"device_status,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUpdateStatusResponse) Reset() {
+	*x = GetUpdateStatusResponse{}
+	mi := &file_public_v1_fleet_proto_msgTypes[91]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUpdateStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUpdateStatusResponse) ProtoMessage() {}
+
+func (x *GetUpdateStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[91]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUpdateStatusResponse.ProtoReflect.Descriptor instead.
+func (*GetUpdateStatusResponse) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{91}
+}
+
+func (x *GetUpdateStatusResponse) GetUpdate() *Update {
+	if x != nil {
+		return x.Update
+	}
+	return nil
+}
+
+func (x *GetUpdateStatusResponse) GetDeviceStatus() map[string]*DeviceUpdateStatus {
+	if x != nil {
+		return x.DeviceStatus
+	}
+	return nil
+}
+
+type DeviceUpdateStatus struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeviceId      string                 `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	Status        UpdateStatus           `protobuf:"varint,2,opt,name=status,proto3,enum=public.v1.UpdateStatus" json:"status,omitempty"`
+	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeviceUpdateStatus) Reset() {
+	*x = DeviceUpdateStatus{}
+	mi := &file_public_v1_fleet_proto_msgTypes[92]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeviceUpdateStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeviceUpdateStatus) ProtoMessage() {}
+
+func (x *DeviceUpdateStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_public_v1_fleet_proto_msgTypes[92]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeviceUpdateStatus.ProtoReflect.Descriptor instead.
+func (*DeviceUpdateStatus) Descriptor() ([]byte, []int) {
+	return file_public_v1_fleet_proto_rawDescGZIP(), []int{92}
+}
+
+func (x *DeviceUpdateStatus) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *DeviceUpdateStatus) GetStatus() UpdateStatus {
+	if x != nil {
+		return x.Status
+	}
+	return UpdateStatus_UPDATE_STATUS_UNSPECIFIED
+}
+
+func (x *DeviceUpdateStatus) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *DeviceUpdateStatus) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
 }
 
 var File_public_v1_fleet_proto protoreflect.FileDescriptor
@@ -3063,65 +8168,481 @@ const file_public_v1_fleet_proto_rawDesc = "" +
 	"device_ids\x18\x01 \x03(\tR\tdeviceIds\x12\x18\n" +
 	"\ametrics\x18\x02 \x03(\tR\ametrics\"A\n" +
 	"\x0eTelemetryEvent\x12/\n" +
-	"\x05point\x18\x01 \x01(\v2\x19.public.v1.TelemetryPointR\x05point\"\xd8\x02\n" +
-	"\x06Update\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1d\n" +
+	"\x05point\x18\x01 \x01(\v2\x19.public.v1.TelemetryPointR\x05point\"\x95\x06\n" +
 	"\n" +
-	"binary_url\x18\x04 \x01(\tR\tbinaryUrl\x12\x1a\n" +
-	"\bchecksum\x18\x05 \x01(\tR\bchecksum\x12\x1d\n" +
+	"Deployment\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12-\n" +
+	"\x04type\x18\x04 \x01(\x0e2\x19.public.v1.DeploymentTypeR\x04type\x126\n" +
+	"\apayload\x18\x05 \x01(\v2\x1c.public.v1.DeploymentPayloadR\apayload\x123\n" +
+	"\x06target\x18\x06 \x01(\v2\x1b.public.v1.DeploymentTargetR\x06target\x129\n" +
+	"\bstrategy\x18\a \x01(\x0e2\x1d.public.v1.DeploymentStrategyR\bstrategy\x123\n" +
+	"\x06config\x18\b \x01(\v2\x1b.public.v1.DeploymentConfigR\x06config\x120\n" +
+	"\x05state\x18\t \x01(\x0e2\x1a.public.v1.DeploymentStateR\x05state\x129\n" +
+	"\bmetadata\x18\n" +
+	" \x01(\v2\x1d.public.v1.DeploymentMetadataR\bmetadata\x129\n" +
 	"\n" +
-	"size_bytes\x18\x06 \x01(\x03R\tsizeBytes\x12#\n" +
-	"\rrelease_notes\x18\a \x01(\tR\freleaseNotes\x129\n" +
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12.\n" +
-	"\x13target_device_types\x18\t \x03(\tR\x11targetDeviceTypes\x12\x18\n" +
-	"\achannel\x18\n" +
-	" \x01(\tR\achannel\"j\n" +
-	"\x12ListUpdatesRequest\x12\x1b\n" +
+	"started_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
+	"\fcompleted_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x12\x1d\n" +
+	"\n" +
+	"created_by\x18\x0e \x01(\tR\tcreatedBy\x129\n" +
+	"\x06labels\x18\x0f \x03(\v2!.public.v1.Deployment.LabelsEntryR\x06labels\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x9c\x03\n" +
+	"\x11DeploymentPayload\x122\n" +
+	"\x06binary\x18\x01 \x01(\v2\x18.public.v1.BinaryPayloadH\x00R\x06binary\x122\n" +
+	"\x06script\x18\x02 \x01(\v2\x18.public.v1.ScriptPayloadH\x00R\x06script\x12;\n" +
+	"\tcontainer\x18\x03 \x01(\v2\x1b.public.v1.ContainerPayloadH\x00R\tcontainer\x122\n" +
+	"\x06config\x18\x04 \x01(\v2\x18.public.v1.ConfigPayloadH\x00R\x06config\x128\n" +
+	"\bfirmware\x18\x05 \x01(\v2\x1a.public.v1.FirmwarePayloadH\x00R\bfirmware\x125\n" +
+	"\apackage\x18\x06 \x01(\v2\x19.public.v1.PackagePayloadH\x00R\apackage\x122\n" +
+	"\x06bundle\x18\a \x01(\v2\x18.public.v1.BundlePayloadH\x00R\x06bundleB\t\n" +
+	"\acontent\"\x85\x04\n" +
+	"\rBinaryPayload\x12!\n" +
+	"\fdownload_url\x18\x01 \x01(\tR\vdownloadUrl\x12\x1a\n" +
+	"\bchecksum\x18\x02 \x01(\tR\bchecksum\x12\x1d\n" +
+	"\n" +
+	"size_bytes\x18\x03 \x01(\x03R\tsizeBytes\x12\x1c\n" +
+	"\tsignature\x18\x04 \x01(\tR\tsignature\x12\x18\n" +
+	"\aversion\x18\x05 \x01(\tR\aversion\x12\x1f\n" +
+	"\vtarget_path\x18\x06 \x01(\tR\n" +
+	"targetPath\x12!\n" +
+	"\fservice_name\x18\a \x01(\tR\vserviceName\x12\x12\n" +
+	"\x04args\x18\b \x03(\tR\x04args\x12@\n" +
+	"\benv_vars\x18\t \x03(\v2%.public.v1.BinaryPayload.EnvVarsEntryR\aenvVars\x12*\n" +
+	"\x11restart_on_update\x18\n" +
+	" \x01(\bR\x0frestartOnUpdate\x12,\n" +
+	"\x12pre_install_script\x18\v \x01(\tR\x10preInstallScript\x12.\n" +
+	"\x13post_install_script\x18\f \x01(\tR\x11postInstallScript\x1a:\n" +
+	"\fEnvVarsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xff\x02\n" +
+	"\rScriptPayload\x12%\n" +
+	"\x0escript_content\x18\x01 \x01(\tR\rscriptContent\x12\x1d\n" +
+	"\n" +
+	"script_url\x18\x02 \x01(\tR\tscriptUrl\x12 \n" +
+	"\vinterpreter\x18\x03 \x01(\tR\vinterpreter\x12\x12\n" +
+	"\x04args\x18\x04 \x03(\tR\x04args\x12@\n" +
+	"\benv_vars\x18\x05 \x03(\v2%.public.v1.ScriptPayload.EnvVarsEntryR\aenvVars\x12'\n" +
+	"\x0ftimeout_seconds\x18\x06 \x01(\x05R\x0etimeoutSeconds\x12\x1e\n" +
+	"\vrun_as_root\x18\a \x01(\bR\trunAsRoot\x12+\n" +
+	"\x11working_directory\x18\b \x01(\tR\x10workingDirectory\x1a:\n" +
+	"\fEnvVarsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xf1\x04\n" +
+	"\x10ContainerPayload\x12\x14\n" +
+	"\x05image\x18\x01 \x01(\tR\x05image\x12\x16\n" +
+	"\x06digest\x18\x02 \x01(\tR\x06digest\x12%\n" +
+	"\x0econtainer_name\x18\x03 \x01(\tR\rcontainerName\x12#\n" +
+	"\rcompose_files\x18\x04 \x03(\tR\fcomposeFiles\x12C\n" +
+	"\benv_vars\x18\x05 \x03(\v2(.public.v1.ContainerPayload.EnvVarsEntryR\aenvVars\x12,\n" +
+	"\x05ports\x18\x06 \x03(\v2\x16.public.v1.PortMappingR\x05ports\x120\n" +
+	"\avolumes\x18\a \x03(\v2\x16.public.v1.VolumeMountR\avolumes\x12?\n" +
+	"\x0erestart_policy\x18\b \x01(\x0e2\x18.public.v1.RestartPolicyR\rrestartPolicy\x12?\n" +
+	"\x06labels\x18\t \x03(\v2'.public.v1.ContainerPayload.LabelsEntryR\x06labels\x12!\n" +
+	"\fnetwork_mode\x18\n" +
+	" \x01(\tR\vnetworkMode\x12\"\n" +
+	"\fcapabilities\x18\v \x03(\tR\fcapabilities\x1a:\n" +
+	"\fEnvVarsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"m\n" +
+	"\vPortMapping\x12\x1b\n" +
+	"\thost_port\x18\x01 \x01(\x05R\bhostPort\x12%\n" +
+	"\x0econtainer_port\x18\x02 \x01(\x05R\rcontainerPort\x12\x1a\n" +
+	"\bprotocol\x18\x03 \x01(\tR\bprotocol\"Z\n" +
+	"\vVolumeMount\x12\x16\n" +
+	"\x06source\x18\x01 \x01(\tR\x06source\x12\x16\n" +
+	"\x06target\x18\x02 \x01(\tR\x06target\x12\x1b\n" +
+	"\tread_only\x18\x03 \x01(\bR\breadOnly\"\xf7\x01\n" +
+	"\rConfigPayload\x12\x1f\n" +
+	"\vconfig_path\x18\x01 \x01(\tR\n" +
+	"configPath\x12\x18\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\x12\x16\n" +
+	"\x06format\x18\x03 \x01(\tR\x06format\x12\x14\n" +
+	"\x05merge\x18\x04 \x01(\bR\x05merge\x12'\n" +
+	"\x0fbackup_existing\x18\x05 \x01(\bR\x0ebackupExisting\x12-\n" +
+	"\x12validation_command\x18\x06 \x01(\tR\x11validationCommand\x12%\n" +
+	"\x0ereload_command\x18\a \x01(\tR\rreloadCommand\"\xa8\x02\n" +
+	"\x0fFirmwarePayload\x12!\n" +
+	"\fdownload_url\x18\x01 \x01(\tR\vdownloadUrl\x12\x1a\n" +
+	"\bchecksum\x18\x02 \x01(\tR\bchecksum\x12\x1d\n" +
+	"\n" +
+	"size_bytes\x18\x03 \x01(\x03R\tsizeBytes\x12\x18\n" +
+	"\aversion\x18\x04 \x01(\tR\aversion\x12!\n" +
+	"\fdevice_model\x18\x05 \x01(\tR\vdeviceModel\x12!\n" +
+	"\fforce_update\x18\x06 \x01(\bR\vforceUpdate\x12%\n" +
+	"\x0ebackup_current\x18\a \x01(\bR\rbackupCurrent\x120\n" +
+	"\x14reboot_delay_seconds\x18\b \x01(\x05R\x12rebootDelaySeconds\"\xea\x01\n" +
+	"\x0ePackagePayload\x12!\n" +
+	"\fpackage_name\x18\x01 \x01(\tR\vpackageName\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\x12%\n" +
+	"\x0erepository_url\x18\x03 \x01(\tR\rrepositoryUrl\x12'\n" +
+	"\x0fpackage_manager\x18\x04 \x01(\tR\x0epackageManager\x12\"\n" +
+	"\fdependencies\x18\x05 \x03(\tR\fdependencies\x12'\n" +
+	"\x0fallow_downgrade\x18\x06 \x01(\bR\x0eallowDowngrade\"\x85\x01\n" +
+	"\rBundlePayload\x12<\n" +
+	"\n" +
+	"components\x18\x01 \x03(\v2\x1c.public.v1.DeploymentPayloadR\n" +
+	"components\x12\x16\n" +
+	"\x06atomic\x18\x02 \x01(\bR\x06atomic\x12\x1e\n" +
+	"\n" +
+	"sequential\x18\x03 \x01(\bR\n" +
+	"sequential\"\xe3\x02\n" +
+	"\x10DeploymentTarget\x125\n" +
+	"\adevices\x18\x01 \x01(\v2\x19.public.v1.DeviceSelectorH\x00R\adevices\x122\n" +
+	"\x06groups\x18\x02 \x01(\v2\x18.public.v1.GroupSelectorH\x00R\x06groups\x122\n" +
+	"\x06labels\x18\x03 \x01(\v2\x18.public.v1.LabelSelectorH\x00R\x06labels\x120\n" +
+	"\x05query\x18\x04 \x01(\v2\x18.public.v1.QuerySelectorH\x00R\x05query\x121\n" +
+	"\afilters\x18\x05 \x03(\v2\x17.public.v1.TargetFilterR\afilters\x12\x1f\n" +
+	"\vmax_devices\x18\x06 \x01(\x05R\n" +
+	"maxDevices\x12\x1e\n" +
+	"\n" +
+	"percentage\x18\a \x01(\x05R\n" +
+	"percentageB\n" +
+	"\n" +
+	"\bselector\"]\n" +
+	"\x0eDeviceSelector\x12\x1d\n" +
+	"\n" +
+	"device_ids\x18\x01 \x03(\tR\tdeviceIds\x12,\n" +
+	"\x12exclude_device_ids\x18\x02 \x03(\tR\x10excludeDeviceIds\"X\n" +
+	"\rGroupSelector\x12\x1b\n" +
+	"\tgroup_ids\x18\x01 \x03(\tR\bgroupIds\x12*\n" +
+	"\x11exclude_group_ids\x18\x02 \x03(\tR\x0fexcludeGroupIds\"\xe7\x01\n" +
+	"\rLabelSelector\x12L\n" +
+	"\fmatch_labels\x18\x01 \x03(\v2).public.v1.LabelSelector.MatchLabelsEntryR\vmatchLabels\x12H\n" +
+	"\x11match_expressions\x18\x02 \x03(\v2\x1b.public.v1.LabelRequirementR\x10matchExpressions\x1a>\n" +
+	"\x10MatchLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xcd\x02\n" +
+	"\x10LabelRequirement\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12@\n" +
+	"\boperator\x18\x02 \x01(\x0e2$.public.v1.LabelRequirement.OperatorR\boperator\x12\x16\n" +
+	"\x06values\x18\x03 \x03(\tR\x06values\"\xcc\x01\n" +
+	"\bOperator\x12\x18\n" +
+	"\x14OPERATOR_UNSPECIFIED\x10\x00\x12\x0f\n" +
+	"\vOPERATOR_IN\x10\x01\x12\x13\n" +
+	"\x0fOPERATOR_NOT_IN\x10\x02\x12\x13\n" +
+	"\x0fOPERATOR_EXISTS\x10\x03\x12\x1b\n" +
+	"\x17OPERATOR_DOES_NOT_EXIST\x10\x04\x12\x0f\n" +
+	"\vOPERATOR_GT\x10\x05\x12\x0f\n" +
+	"\vOPERATOR_LT\x10\x06\x12\x13\n" +
+	"\x0fOPERATOR_EQUALS\x10\a\x12\x17\n" +
+	"\x13OPERATOR_NOT_EQUALS\x10\b\"/\n" +
+	"\rQuerySelector\x12\x1e\n" +
+	"\n" +
+	"expression\x18\x01 \x01(\tR\n" +
+	"expression\"\xd6\x02\n" +
+	"\fTargetFilter\x126\n" +
+	"\x04type\x18\x01 \x01(\x0e2\".public.v1.TargetFilter.FilterTypeR\x04type\x12\x1a\n" +
+	"\boperator\x18\x02 \x01(\tR\boperator\x12\x16\n" +
+	"\x06values\x18\x03 \x03(\tR\x06values\"\xd9\x01\n" +
+	"\n" +
+	"FilterType\x12\x1b\n" +
+	"\x17FILTER_TYPE_UNSPECIFIED\x10\x00\x12\x12\n" +
+	"\x0eFILTER_TYPE_OS\x10\x01\x12\x14\n" +
+	"\x10FILTER_TYPE_ARCH\x10\x02\x12\x17\n" +
+	"\x13FILTER_TYPE_VERSION\x10\x03\x12\x1a\n" +
+	"\x16FILTER_TYPE_CAPABILITY\x10\x04\x12\x1d\n" +
+	"\x19FILTER_TYPE_ONLINE_STATUS\x10\x05\x12\x18\n" +
+	"\x14FILTER_TYPE_LOCATION\x10\x06\x12\x16\n" +
+	"\x12FILTER_TYPE_CUSTOM\x10\a\"\x9a\x03\n" +
+	"\x10DeploymentConfig\x122\n" +
+	"\arollout\x18\x01 \x01(\v2\x18.public.v1.RolloutConfigR\arollout\x12?\n" +
+	"\fhealth_check\x18\x02 \x01(\v2\x1c.public.v1.HealthCheckConfigR\vhealthCheck\x125\n" +
+	"\brollback\x18\x03 \x01(\v2\x19.public.v1.RollbackConfigR\brollback\x12;\n" +
+	"\n" +
+	"validation\x18\x04 \x01(\v2\x1b.public.v1.ValidationConfigR\n" +
+	"validation\x12C\n" +
+	"\rnotifications\x18\x05 \x01(\v2\x1d.public.v1.NotificationConfigR\rnotifications\x12'\n" +
+	"\x0ftimeout_minutes\x18\x06 \x01(\x05R\x0etimeoutMinutes\x12/\n" +
+	"\x05hooks\x18\a \x03(\v2\x19.public.v1.DeploymentHookR\x05hooks\"\xa5\x02\n" +
+	"\rRolloutConfig\x12\x1d\n" +
+	"\n" +
+	"batch_size\x18\x01 \x01(\x05R\tbatchSize\x12)\n" +
+	"\x10batch_percentage\x18\x02 \x01(\x05R\x0fbatchPercentage\x12#\n" +
+	"\rpause_seconds\x18\x03 \x01(\x05R\fpauseSeconds\x12!\n" +
+	"\fmax_parallel\x18\x04 \x01(\x05R\vmaxParallel\x12)\n" +
+	"\x10require_approval\x18\x05 \x01(\bR\x0frequireApproval\x12\x1f\n" +
+	"\vcanary_size\x18\x06 \x01(\x05R\n" +
+	"canarySize\x126\n" +
+	"\x17canary_duration_minutes\x18\a \x01(\x05R\x15canaryDurationMinutes\"\xd2\x02\n" +
+	"\x11HealthCheckConfig\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x122\n" +
+	"\x15initial_delay_seconds\x18\x02 \x01(\x05R\x13initialDelaySeconds\x12'\n" +
+	"\x0ftimeout_seconds\x18\x03 \x01(\x05R\x0etimeoutSeconds\x12\x1f\n" +
+	"\vmax_retries\x18\x04 \x01(\x05R\n" +
+	"maxRetries\x12#\n" +
+	"\rcheck_command\x18\x05 \x01(\tR\fcheckCommand\x12#\n" +
+	"\rhttp_endpoint\x18\x06 \x01(\tR\fhttpEndpoint\x120\n" +
+	"\x14expected_status_code\x18\a \x01(\x05R\x12expectedStatusCode\x12)\n" +
+	"\x10required_metrics\x18\b \x03(\tR\x0frequiredMetrics\"\xb3\x01\n" +
+	"\x0eRollbackConfig\x12#\n" +
+	"\rauto_rollback\x18\x01 \x01(\bR\fautoRollback\x12+\n" +
+	"\x11failure_threshold\x18\x02 \x01(\x01R\x10failureThreshold\x12.\n" +
+	"\x13keep_failed_devices\x18\x03 \x01(\bR\x11keepFailedDevices\x12\x1f\n" +
+	"\vrollback_to\x18\x04 \x01(\tR\n" +
+	"rollbackTo\"\x99\x01\n" +
+	"\x10ValidationConfig\x12'\n" +
+	"\x0fskip_validation\x18\x01 \x01(\bR\x0eskipValidation\x12+\n" +
+	"\x11validation_script\x18\x02 \x01(\tR\x10validationScript\x12/\n" +
+	"\x05rules\x18\x03 \x03(\v2\x19.public.v1.ValidationRuleR\x05rules\"\x7f\n" +
+	"\x0eValidationRule\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1e\n" +
+	"\n" +
+	"expression\x18\x02 \x01(\tR\n" +
+	"expression\x12#\n" +
+	"\rerror_message\x18\x03 \x01(\tR\ferrorMessage\x12\x14\n" +
+	"\x05fatal\x18\x04 \x01(\bR\x05fatal\"\xb5\x02\n" +
+	"\x12NotificationConfig\x12!\n" +
+	"\fwebhook_urls\x18\x01 \x03(\tR\vwebhookUrls\x12'\n" +
+	"\x0femail_addresses\x18\x02 \x03(\tR\x0eemailAddresses\x124\n" +
+	"\x06events\x18\x03 \x03(\x0e2\x1c.public.v1.NotificationEventR\x06events\x12Z\n" +
+	"\x0fcustom_channels\x18\x04 \x03(\v21.public.v1.NotificationConfig.CustomChannelsEntryR\x0ecustomChannels\x1aA\n" +
+	"\x13CustomChannelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8f\x03\n" +
+	"\x0eDeploymentHook\x126\n" +
+	"\x04type\x18\x01 \x01(\x0e2\".public.v1.DeploymentHook.HookTypeR\x04type\x12\x18\n" +
+	"\acommand\x18\x02 \x01(\tR\acommand\x12'\n" +
+	"\x0ftimeout_seconds\x18\x03 \x01(\x05R\x0etimeoutSeconds\x12.\n" +
+	"\x13continue_on_failure\x18\x04 \x01(\bR\x11continueOnFailure\"\xd1\x01\n" +
+	"\bHookType\x12\x19\n" +
+	"\x15HOOK_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18HOOK_TYPE_PRE_DEPLOYMENT\x10\x01\x12\x1d\n" +
+	"\x19HOOK_TYPE_POST_DEPLOYMENT\x10\x02\x12\x1a\n" +
+	"\x16HOOK_TYPE_PRE_ROLLBACK\x10\x03\x12\x1b\n" +
+	"\x17HOOK_TYPE_POST_ROLLBACK\x10\x04\x12\x1a\n" +
+	"\x16HOOK_TYPE_HEALTH_CHECK\x10\x05\x12\x18\n" +
+	"\x14HOOK_TYPE_VALIDATION\x10\x06\"\x93\x03\n" +
+	"\x12DeploymentMetadata\x12\x16\n" +
+	"\x06source\x18\x01 \x01(\tR\x06source\x12\x1d\n" +
+	"\n" +
+	"source_ref\x18\x02 \x01(\tR\tsourceRef\x12\x1d\n" +
+	"\n" +
+	"commit_sha\x18\x03 \x01(\tR\tcommitSha\x12\x16\n" +
+	"\x06branch\x18\x04 \x01(\tR\x06branch\x12\x1e\n" +
+	"\n" +
+	"repository\x18\x05 \x01(\tR\n" +
+	"repository\x12!\n" +
+	"\ftriggered_by\x18\x06 \x01(\tR\vtriggeredBy\x12;\n" +
+	"\x04tags\x18\a \x03(\v2'.public.v1.DeploymentMetadata.TagsEntryR\x04tags\x12 \n" +
+	"\venvironment\x18\b \x01(\tR\venvironment\x124\n" +
+	"\x16previous_deployment_id\x18\t \x01(\tR\x14previousDeploymentId\x1a7\n" +
+	"\tTagsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xdd\x04\n" +
+	"\x17CreateDeploymentRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12-\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x19.public.v1.DeploymentTypeR\x04type\x126\n" +
+	"\apayload\x18\x04 \x01(\v2\x1c.public.v1.DeploymentPayloadR\apayload\x123\n" +
+	"\x06target\x18\x05 \x01(\v2\x1b.public.v1.DeploymentTargetR\x06target\x129\n" +
+	"\bstrategy\x18\x06 \x01(\x0e2\x1d.public.v1.DeploymentStrategyR\bstrategy\x123\n" +
+	"\x06config\x18\a \x01(\v2\x1b.public.v1.DeploymentConfigR\x06config\x129\n" +
+	"\bmetadata\x18\b \x01(\v2\x1d.public.v1.DeploymentMetadataR\bmetadata\x12F\n" +
+	"\x06labels\x18\t \x03(\v2..public.v1.CreateDeploymentRequest.LabelsEntryR\x06labels\x12\x1d\n" +
+	"\n" +
+	"auto_start\x18\n" +
+	" \x01(\bR\tautoStart\x12#\n" +
+	"\rvalidate_only\x18\v \x01(\bR\fvalidateOnly\x1a9\n" +
+	"\vLabelsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xcc\x01\n" +
+	"\x18CreateDeploymentResponse\x125\n" +
+	"\n" +
+	"deployment\x18\x01 \x01(\v2\x15.public.v1.DeploymentR\n" +
+	"deployment\x128\n" +
+	"\bwarnings\x18\x02 \x03(\v2\x1c.public.v1.ValidationWarningR\bwarnings\x12?\n" +
+	"\n" +
+	"validation\x18\x03 \x01(\v2\x1f.public.v1.DeploymentValidationR\n" +
+	"validation\"\xfd\x01\n" +
+	"\x11ValidationWarning\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x14\n" +
+	"\x05field\x18\x03 \x01(\tR\x05field\x12A\n" +
+	"\bseverity\x18\x04 \x01(\x0e2%.public.v1.ValidationWarning.SeverityR\bseverity\"a\n" +
+	"\bSeverity\x12\x18\n" +
+	"\x14SEVERITY_UNSPECIFIED\x10\x00\x12\x11\n" +
+	"\rSEVERITY_INFO\x10\x01\x12\x14\n" +
+	"\x10SEVERITY_WARNING\x10\x02\x12\x12\n" +
+	"\x0eSEVERITY_ERROR\x10\x03\"\xc4\x02\n" +
+	"\x14DeploymentValidation\x12\x14\n" +
+	"\x05valid\x18\x01 \x01(\bR\x05valid\x124\n" +
+	"\x06errors\x18\x02 \x03(\v2\x1c.public.v1.ValidationWarningR\x06errors\x12.\n" +
+	"\x13target_device_count\x18\x03 \x01(\x05R\x11targetDeviceCount\x12*\n" +
+	"\x11target_device_ids\x18\x04 \x03(\tR\x0ftargetDeviceIds\x12<\n" +
+	"\x1aestimated_duration_seconds\x18\x05 \x01(\x03R\x18estimatedDurationSeconds\x12F\n" +
+	"\x11simulated_batches\x18\x06 \x03(\v2\x19.public.v1.SimulatedBatchR\x10simulatedBatches\"\xdc\x01\n" +
+	"\x0eSimulatedBatch\x12!\n" +
+	"\fbatch_number\x18\x01 \x01(\x05R\vbatchNumber\x12!\n" +
+	"\fdevice_count\x18\x02 \x01(\x05R\vdeviceCount\x12C\n" +
+	"\x0festimated_start\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x0eestimatedStart\x12?\n" +
+	"\restimated_end\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\festimatedEnd\"\x8b\x04\n" +
+	"\x16ListDeploymentsRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tR\tpageToken\x12\x18\n" +
-	"\achannel\x18\x03 \x01(\tR\achannel\"j\n" +
-	"\x13ListUpdatesResponse\x12+\n" +
-	"\aupdates\x18\x01 \x03(\v2\x11.public.v1.UpdateR\aupdates\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x9a\x02\n" +
-	"\x13CreateUpdateRequest\x12\x18\n" +
-	"\aversion\x18\x01 \x01(\tR\aversion\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1d\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x122\n" +
+	"\x06states\x18\x03 \x03(\x0e2\x1a.public.v1.DeploymentStateR\x06states\x12/\n" +
+	"\x05types\x18\x04 \x03(\x0e2\x19.public.v1.DeploymentTypeR\x05types\x12 \n" +
+	"\venvironment\x18\x05 \x01(\tR\venvironment\x12[\n" +
+	"\x0elabel_selector\x18\x06 \x03(\v24.public.v1.ListDeploymentsRequest.LabelSelectorEntryR\rlabelSelector\x129\n" +
 	"\n" +
-	"binary_url\x18\x03 \x01(\tR\tbinaryUrl\x12\x1a\n" +
-	"\bchecksum\x18\x04 \x01(\tR\bchecksum\x12\x1d\n" +
+	"start_time\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
+	"\bend_time\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12\x1d\n" +
 	"\n" +
-	"size_bytes\x18\x05 \x01(\x03R\tsizeBytes\x12#\n" +
-	"\rrelease_notes\x18\x06 \x01(\tR\freleaseNotes\x12.\n" +
-	"\x13target_device_types\x18\a \x03(\tR\x11targetDeviceTypes\x12\x18\n" +
-	"\achannel\x18\b \x01(\tR\achannel\"A\n" +
-	"\x14CreateUpdateResponse\x12)\n" +
-	"\x06update\x18\x01 \x01(\v2\x11.public.v1.UpdateR\x06update\"\xbb\x01\n" +
-	"\x13DeployUpdateRequest\x12\x1b\n" +
-	"\tupdate_id\x18\x01 \x01(\tR\bupdateId\x12\x1d\n" +
+	"created_by\x18\t \x01(\tR\tcreatedBy\x1a@\n" +
+	"\x12LabelSelectorEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x9b\x01\n" +
+	"\x17ListDeploymentsResponse\x127\n" +
+	"\vdeployments\x18\x01 \x03(\v2\x15.public.v1.DeploymentR\vdeployments\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
+	"\vtotal_count\x18\x03 \x01(\x05R\n" +
+	"totalCount\"\x96\x01\n" +
+	"\x14GetDeploymentRequest\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x122\n" +
+	"\x15include_device_status\x18\x02 \x01(\bR\x13includeDeviceStatus\x12%\n" +
+	"\x0einclude_events\x18\x03 \x01(\bR\rincludeEvents\"\x89\x02\n" +
+	"\x15GetDeploymentResponse\x125\n" +
 	"\n" +
-	"device_ids\x18\x02 \x03(\tR\tdeviceIds\x12\x12\n" +
-	"\x04tags\x18\x03 \x03(\tR\x04tags\x12\x19\n" +
-	"\bgroup_id\x18\x04 \x01(\tR\agroupId\x129\n" +
-	"\bstrategy\x18\x05 \x01(\x0e2\x1d.public.v1.DeploymentStrategyR\bstrategy\"f\n" +
-	"\x14DeployUpdateResponse\x12#\n" +
-	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x12)\n" +
-	"\x10targeted_devices\x18\x02 \x01(\x05R\x0ftargetedDevices\"=\n" +
-	"\x16GetUpdateStatusRequest\x12#\n" +
-	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\"\x91\x03\n" +
-	"\x17GetUpdateStatusResponse\x12#\n" +
-	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x129\n" +
-	"\x06status\x18\x02 \x01(\x0e2!.public.v1.UpdateDeploymentStatusR\x06status\x12#\n" +
-	"\rtotal_devices\x18\x03 \x01(\x05R\ftotalDevices\x12'\n" +
-	"\x0fupdated_devices\x18\x04 \x01(\x05R\x0eupdatedDevices\x12%\n" +
-	"\x0efailed_devices\x18\x05 \x01(\x05R\rfailedDevices\x12'\n" +
-	"\x0fpending_devices\x18\x06 \x01(\x05R\x0ependingDevices\x129\n" +
+	"deployment\x18\x01 \x01(\v2\x15.public.v1.DeploymentR\n" +
+	"deployment\x129\n" +
+	"\bprogress\x18\x02 \x01(\v2\x1d.public.v1.DeploymentProgressR\bprogress\x12J\n" +
+	"\x0fdevice_statuses\x18\x03 \x03(\v2!.public.v1.DeviceDeploymentStatusR\x0edeviceStatuses\x122\n" +
+	"\x06events\x18\x04 \x03(\v2\x1a.public.v1.DeploymentEventR\x06events\"x\n" +
+	"\x16StartDeploymentRequest\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x12\x14\n" +
+	"\x05force\x18\x02 \x01(\bR\x05force\x12#\n" +
+	"\rskip_approval\x18\x03 \x01(\bR\fskipApproval\"\x9c\x01\n" +
+	"\x17StartDeploymentResponse\x12\x18\n" +
+	"\astarted\x18\x01 \x01(\bR\astarted\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12M\n" +
+	"\x14estimated_completion\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x13estimatedCompletion\"U\n" +
+	"\x16PauseDeploymentRequest\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"K\n" +
+	"\x17PauseDeploymentResponse\x12\x16\n" +
+	"\x06paused\x18\x01 \x01(\bR\x06paused\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"V\n" +
+	"\x17CancelDeploymentRequest\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"R\n" +
+	"\x18CancelDeploymentResponse\x12\x1c\n" +
+	"\tcancelled\x18\x01 \x01(\bR\tcancelled\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xa0\x01\n" +
+	"\x19RollbackDeploymentRequest\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x120\n" +
+	"\x14target_deployment_id\x18\x02 \x01(\tR\x12targetDeploymentId\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\x12\x14\n" +
+	"\x05force\x18\x04 \x01(\bR\x05force\"\xae\x01\n" +
+	"\x1aRollbackDeploymentResponse\x12\x1f\n" +
+	"\vrolled_back\x18\x01 \x01(\bR\n" +
+	"rolledBack\x12*\n" +
+	"\x11new_deployment_id\x18\x02 \x01(\tR\x0fnewDeploymentId\x12)\n" +
+	"\x10devices_affected\x18\x03 \x01(\x05R\x0fdevicesAffected\x12\x18\n" +
+	"\amessage\x18\x04 \x01(\tR\amessage\"A\n" +
+	"\x1aGetDeploymentStatusRequest\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\"\xf4\x02\n" +
+	"\x1bGetDeploymentStatusResponse\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x120\n" +
+	"\x05state\x18\x02 \x01(\x0e2\x1a.public.v1.DeploymentStateR\x05state\x129\n" +
+	"\bprogress\x18\x03 \x01(\v2\x1d.public.v1.DeploymentProgressR\bprogress\x129\n" +
 	"\n" +
-	"started_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
-	"\fcompleted_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"Q\n" +
+	"started_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12M\n" +
+	"\x14estimated_completion\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x13estimatedCompletion\"\xd9\x04\n" +
+	"\x12DeploymentProgress\x12#\n" +
+	"\rtotal_devices\x18\x01 \x01(\x05R\ftotalDevices\x12'\n" +
+	"\x0fpending_devices\x18\x02 \x01(\x05R\x0ependingDevices\x12'\n" +
+	"\x0frunning_devices\x18\x03 \x01(\x05R\x0erunningDevices\x12+\n" +
+	"\x11succeeded_devices\x18\x04 \x01(\x05R\x10succeededDevices\x12%\n" +
+	"\x0efailed_devices\x18\x05 \x01(\x05R\rfailedDevices\x12+\n" +
+	"\x11cancelled_devices\x18\x06 \x01(\x05R\x10cancelledDevices\x12/\n" +
+	"\x13percentage_complete\x18\a \x01(\x01R\x12percentageComplete\x12#\n" +
+	"\rcurrent_batch\x18\b \x01(\tR\fcurrentBatch\x120\n" +
+	"\x14current_batch_number\x18\t \x01(\x05R\x12currentBatchNumber\x12#\n" +
+	"\rtotal_batches\x18\n" +
+	" \x01(\x05R\ftotalBatches\x12[\n" +
+	"\x10devices_by_state\x18\v \x03(\v21.public.v1.DeploymentProgress.DevicesByStateEntryR\x0edevicesByState\x1aA\n" +
+	"\x13DevicesByStateEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"\x99\x01\n" +
+	"\x1dStreamDeploymentEventsRequest\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\x12\x1f\n" +
+	"\vevent_types\x18\x02 \x03(\tR\n" +
+	"eventTypes\x122\n" +
+	"\x15include_device_events\x18\x03 \x01(\bR\x13includeDeviceEvents\"\x97\a\n" +
+	"\x0fDeploymentEvent\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
+	"\rdeployment_id\x18\x02 \x01(\tR\fdeploymentId\x12\x1b\n" +
+	"\tdevice_id\x18\x03 \x01(\tR\bdeviceId\x128\n" +
+	"\x04type\x18\x04 \x01(\x0e2$.public.v1.DeploymentEvent.EventTypeR\x04type\x128\n" +
+	"\ttimestamp\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12\x18\n" +
+	"\amessage\x18\x06 \x01(\tR\amessage\x121\n" +
+	"\adetails\x18\a \x01(\v2\x17.google.protobuf.StructR\adetails\x12\x1a\n" +
+	"\bseverity\x18\b \x01(\tR\bseverity\"\xd4\x04\n" +
+	"\tEventType\x12\x1a\n" +
+	"\x16EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12EVENT_TYPE_CREATED\x10\x01\x12\x16\n" +
+	"\x12EVENT_TYPE_STARTED\x10\x02\x12\x1c\n" +
+	"\x18EVENT_TYPE_BATCH_STARTED\x10\x03\x12\x1e\n" +
+	"\x1aEVENT_TYPE_BATCH_COMPLETED\x10\x04\x12\x1d\n" +
+	"\x19EVENT_TYPE_DEVICE_STARTED\x10\x05\x12\x1e\n" +
+	"\x1aEVENT_TYPE_DEVICE_PROGRESS\x10\x06\x12\x1f\n" +
+	"\x1bEVENT_TYPE_DEVICE_COMPLETED\x10\a\x12\x1c\n" +
+	"\x18EVENT_TYPE_DEVICE_FAILED\x10\b\x12\x15\n" +
+	"\x11EVENT_TYPE_PAUSED\x10\t\x12\x16\n" +
+	"\x12EVENT_TYPE_RESUMED\x10\n" +
+	"\x12\x18\n" +
+	"\x14EVENT_TYPE_CANCELLED\x10\v\x12\x18\n" +
+	"\x14EVENT_TYPE_COMPLETED\x10\f\x12\x15\n" +
+	"\x11EVENT_TYPE_FAILED\x10\r\x12\x1f\n" +
+	"\x1bEVENT_TYPE_ROLLBACK_STARTED\x10\x0e\x12!\n" +
+	"\x1dEVENT_TYPE_ROLLBACK_COMPLETED\x10\x0f\x12 \n" +
+	"\x1cEVENT_TYPE_APPROVAL_REQUIRED\x10\x10\x12\x17\n" +
+	"\x13EVENT_TYPE_APPROVED\x10\x11\x12\"\n" +
+	"\x1eEVENT_TYPE_HEALTH_CHECK_PASSED\x10\x12\x12\"\n" +
+	"\x1eEVENT_TYPE_HEALTH_CHECK_FAILED\x10\x13\"\x86\x06\n" +
+	"\x16DeviceDeploymentStatus\x12\x1b\n" +
+	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x12\x1f\n" +
+	"\vdevice_name\x18\x02 \x01(\tR\n" +
+	"deviceName\x12=\n" +
+	"\x05state\x18\x03 \x01(\x0e2'.public.v1.DeviceDeploymentStatus.StateR\x05state\x12/\n" +
+	"\x13progress_percentage\x18\x04 \x01(\x05R\x12progressPercentage\x12\x18\n" +
+	"\amessage\x18\x05 \x01(\tR\amessage\x129\n" +
+	"\n" +
+	"started_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12=\n" +
+	"\fcompleted_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x12\x1d\n" +
+	"\n" +
+	"error_code\x18\t \x01(\tR\terrorCode\x12#\n" +
+	"\rerror_details\x18\n" +
+	" \x01(\tR\ferrorDetails\x12\x1f\n" +
+	"\vretry_count\x18\v \x01(\x05R\n" +
+	"retryCount\"\x89\x02\n" +
+	"\x05State\x12\x15\n" +
+	"\x11STATE_UNSPECIFIED\x10\x00\x12\x11\n" +
+	"\rSTATE_PENDING\x10\x01\x12\x15\n" +
+	"\x11STATE_DOWNLOADING\x10\x02\x12\x14\n" +
+	"\x10STATE_VALIDATING\x10\x03\x12\x14\n" +
+	"\x10STATE_INSTALLING\x10\x04\x12\x15\n" +
+	"\x11STATE_CONFIGURING\x10\x05\x12\x14\n" +
+	"\x10STATE_RESTARTING\x10\x06\x12\x13\n" +
+	"\x0fSTATE_VERIFYING\x10\a\x12\x13\n" +
+	"\x0fSTATE_COMPLETED\x10\b\x12\x10\n" +
+	"\fSTATE_FAILED\x10\t\x12\x13\n" +
+	"\x0fSTATE_CANCELLED\x10\n" +
+	"\x12\x15\n" +
+	"\x11STATE_ROLLED_BACK\x10\v\"Q\n" +
 	"\x17GetConfigurationRequest\x12\x1b\n" +
 	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x12\x19\n" +
 	"\bgroup_id\x18\x02 \x01(\tR\agroupId\"\xa0\x01\n" +
@@ -3149,25 +8670,161 @@ const file_public_v1_fleet_proto_rawDesc = "" +
 	"\tdevice_id\x18\x03 \x01(\tR\bdeviceId\x128\n" +
 	"\ttimestamp\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12+\n" +
 	"\x04data\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x04data\x12\x18\n" +
-	"\amessage\x18\x06 \x01(\tR\amessage*\xb6\x01\n" +
+	"\amessage\x18\x06 \x01(\tR\amessage\"\x86\x05\n" +
+	"\vApplication\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
+	"\aversion\x18\x03 \x01(\tR\aversion\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x12@\n" +
+	"\bmetadata\x18\x05 \x03(\v2$.public.v1.Application.MetadataEntryR\bmetadata\x12\x12\n" +
+	"\x04args\x18\x06 \x03(\tR\x04args\x12I\n" +
+	"\venvironment\x18\a \x03(\v2'.public.v1.Application.EnvironmentEntryR\venvironment\x12\x1f\n" +
+	"\vworking_dir\x18\b \x01(\tR\n" +
+	"workingDir\x12\x12\n" +
+	"\x04user\x18\t \x01(\tR\x04user\x12\x14\n" +
+	"\x05group\x18\n" +
+	" \x01(\tR\x05group\x12?\n" +
+	"\x0erestart_policy\x18\v \x01(\x0e2\x18.public.v1.RestartPolicyR\rrestartPolicy\x122\n" +
+	"\tresources\x18\f \x01(\v2\x14.public.v1.ResourcesR\tresources\x129\n" +
+	"\fhealth_check\x18\r \x01(\v2\x16.public.v1.HealthCheckR\vhealthCheck\x1a;\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a>\n" +
+	"\x10EnvironmentEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xd4\x03\n" +
+	"\bArtifact\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
+	"\aversion\x18\x03 \x01(\tR\aversion\x12+\n" +
+	"\x04type\x18\x04 \x01(\x0e2\x17.public.v1.ArtifactTypeR\x04type\x12\x10\n" +
+	"\x03url\x18\x05 \x01(\tR\x03url\x12\x1f\n" +
+	"\vstorage_url\x18\x06 \x01(\tR\n" +
+	"storageUrl\x12\x1a\n" +
+	"\bchecksum\x18\a \x01(\tR\bchecksum\x12@\n" +
+	"\tchecksums\x18\b \x03(\v2\".public.v1.Artifact.ChecksumsEntryR\tchecksums\x12\x12\n" +
+	"\x04size\x18\t \x01(\x03R\x04size\x12=\n" +
+	"\bmetadata\x18\n" +
+	" \x03(\v2!.public.v1.Artifact.MetadataEntryR\bmetadata\x1a<\n" +
+	"\x0eChecksumsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a;\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xc8\x02\n" +
+	"\tResources\x12,\n" +
+	"\x12memory_limit_bytes\x18\x01 \x01(\x03R\x10memoryLimitBytes\x120\n" +
+	"\x14memory_request_bytes\x18\x02 \x01(\x03R\x12memoryRequestBytes\x12\x1b\n" +
+	"\tcpu_limit\x18\x03 \x01(\x01R\bcpuLimit\x12\x1f\n" +
+	"\vcpu_request\x18\x04 \x01(\x01R\n" +
+	"cpuRequest\x12(\n" +
+	"\x10disk_limit_bytes\x18\x05 \x01(\x03R\x0ediskLimitBytes\x128\n" +
+	"\x06limits\x18\x06 \x03(\v2 .public.v1.Resources.LimitsEntryR\x06limits\x1a9\n" +
+	"\vLimitsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xc7\x01\n" +
+	"\vHealthCheck\x12\x18\n" +
+	"\acommand\x18\x01 \x01(\tR\acommand\x12)\n" +
+	"\x10interval_seconds\x18\x02 \x01(\x05R\x0fintervalSeconds\x12'\n" +
+	"\x0ftimeout_seconds\x18\x03 \x01(\x05R\x0etimeoutSeconds\x12\x18\n" +
+	"\aretries\x18\x04 \x01(\x05R\aretries\x120\n" +
+	"\x14start_period_seconds\x18\x05 \x01(\x05R\x12startPeriodSeconds\"m\n" +
+	"\x12ListUpdatesRequest\x12\x1b\n" +
+	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x02 \x01(\tR\tpageToken\x12\x1b\n" +
+	"\tdevice_id\x18\x03 \x01(\tR\bdeviceId\"j\n" +
+	"\x13ListUpdatesResponse\x12+\n" +
+	"\aupdates\x18\x01 \x03(\v2\x11.public.v1.UpdateR\aupdates\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xba\x02\n" +
+	"\x06Update\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12/\n" +
+	"\x06status\x18\x04 \x01(\x0e2\x17.public.v1.UpdateStatusR\x06status\x129\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"started_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
+	"\fcompleted_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\xd8\x01\n" +
+	"\x13CreateUpdateRequest\x12\x18\n" +
+	"\aversion\x18\x01 \x01(\tR\aversion\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12H\n" +
+	"\bmetadata\x18\x03 \x03(\v2,.public.v1.CreateUpdateRequest.MetadataEntryR\bmetadata\x1a;\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"A\n" +
+	"\x14CreateUpdateResponse\x12)\n" +
+	"\x06update\x18\x01 \x01(\v2\x11.public.v1.UpdateR\x06update\"Q\n" +
+	"\x13DeployUpdateRequest\x12\x1b\n" +
+	"\tupdate_id\x18\x01 \x01(\tR\bupdateId\x12\x1d\n" +
+	"\n" +
+	"device_ids\x18\x02 \x03(\tR\tdeviceIds\";\n" +
+	"\x14DeployUpdateResponse\x12#\n" +
+	"\rdeployment_id\x18\x01 \x01(\tR\fdeploymentId\"5\n" +
+	"\x16GetUpdateStatusRequest\x12\x1b\n" +
+	"\tupdate_id\x18\x01 \x01(\tR\bupdateId\"\xff\x01\n" +
+	"\x17GetUpdateStatusResponse\x12)\n" +
+	"\x06update\x18\x01 \x01(\v2\x11.public.v1.UpdateR\x06update\x12Y\n" +
+	"\rdevice_status\x18\x02 \x03(\v24.public.v1.GetUpdateStatusResponse.DeviceStatusEntryR\fdeviceStatus\x1a^\n" +
+	"\x11DeviceStatusEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x123\n" +
+	"\x05value\x18\x02 \x01(\v2\x1d.public.v1.DeviceUpdateStatusR\x05value:\x028\x01\"\xb7\x01\n" +
+	"\x12DeviceUpdateStatus\x12\x1b\n" +
+	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x12/\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x17.public.v1.UpdateStatusR\x06status\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\x129\n" +
+	"\n" +
+	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt*\xb6\x01\n" +
 	"\fDeviceStatus\x12\x1d\n" +
 	"\x19DEVICE_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14DEVICE_STATUS_ONLINE\x10\x01\x12\x19\n" +
 	"\x15DEVICE_STATUS_OFFLINE\x10\x02\x12\x1a\n" +
 	"\x16DEVICE_STATUS_UPDATING\x10\x03\x12\x17\n" +
 	"\x13DEVICE_STATUS_ERROR\x10\x04\x12\x1d\n" +
-	"\x19DEVICE_STATUS_MAINTENANCE\x10\x05*\x9d\x01\n" +
+	"\x19DEVICE_STATUS_MAINTENANCE\x10\x05*\xfb\x01\n" +
+	"\x0eDeploymentType\x12\x1f\n" +
+	"\x1bDEPLOYMENT_TYPE_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16DEPLOYMENT_TYPE_BINARY\x10\x01\x12\x1a\n" +
+	"\x16DEPLOYMENT_TYPE_SCRIPT\x10\x02\x12\x1d\n" +
+	"\x19DEPLOYMENT_TYPE_CONTAINER\x10\x03\x12\x1a\n" +
+	"\x16DEPLOYMENT_TYPE_CONFIG\x10\x04\x12\x1c\n" +
+	"\x18DEPLOYMENT_TYPE_FIRMWARE\x10\x05\x12\x1b\n" +
+	"\x17DEPLOYMENT_TYPE_PACKAGE\x10\x06\x12\x1a\n" +
+	"\x16DEPLOYMENT_TYPE_BUNDLE\x10\a*\xa3\x01\n" +
+	"\rRestartPolicy\x12\x1e\n" +
+	"\x1aRESTART_POLICY_UNSPECIFIED\x10\x00\x12\x15\n" +
+	"\x11RESTART_POLICY_NO\x10\x01\x12\x19\n" +
+	"\x15RESTART_POLICY_ALWAYS\x10\x02\x12\x1d\n" +
+	"\x19RESTART_POLICY_ON_FAILURE\x10\x03\x12!\n" +
+	"\x1dRESTART_POLICY_UNLESS_STOPPED\x10\x04*\xe1\x01\n" +
 	"\x12DeploymentStrategy\x12#\n" +
 	"\x1fDEPLOYMENT_STRATEGY_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dDEPLOYMENT_STRATEGY_IMMEDIATE\x10\x01\x12\x1f\n" +
 	"\x1bDEPLOYMENT_STRATEGY_ROLLING\x10\x02\x12\x1e\n" +
-	"\x1aDEPLOYMENT_STRATEGY_CANARY\x10\x03*\xe1\x01\n" +
-	"\x16UpdateDeploymentStatus\x12(\n" +
-	"$UPDATE_DEPLOYMENT_STATUS_UNSPECIFIED\x10\x00\x12(\n" +
-	"$UPDATE_DEPLOYMENT_STATUS_IN_PROGRESS\x10\x01\x12&\n" +
-	"\"UPDATE_DEPLOYMENT_STATUS_COMPLETED\x10\x02\x12#\n" +
-	"\x1fUPDATE_DEPLOYMENT_STATUS_FAILED\x10\x03\x12&\n" +
-	"\"UPDATE_DEPLOYMENT_STATUS_CANCELLED\x10\x04*\xb8\x02\n" +
+	"\x1aDEPLOYMENT_STRATEGY_CANARY\x10\x03\x12\"\n" +
+	"\x1eDEPLOYMENT_STRATEGY_BLUE_GREEN\x10\x04\x12\x1e\n" +
+	"\x1aDEPLOYMENT_STRATEGY_CUSTOM\x10\x05*\x9d\x02\n" +
+	"\x11NotificationEvent\x12\"\n" +
+	"\x1eNOTIFICATION_EVENT_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1aNOTIFICATION_EVENT_STARTED\x10\x01\x12\x1f\n" +
+	"\x1bNOTIFICATION_EVENT_PROGRESS\x10\x02\x12 \n" +
+	"\x1cNOTIFICATION_EVENT_COMPLETED\x10\x03\x12\x1d\n" +
+	"\x19NOTIFICATION_EVENT_FAILED\x10\x04\x12\"\n" +
+	"\x1eNOTIFICATION_EVENT_ROLLED_BACK\x10\x05\x12\x1d\n" +
+	"\x19NOTIFICATION_EVENT_PAUSED\x10\x06\x12\x1f\n" +
+	"\x1bNOTIFICATION_EVENT_APPROVED\x10\a*\xca\x02\n" +
+	"\x0fDeploymentState\x12 \n" +
+	"\x1cDEPLOYMENT_STATE_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16DEPLOYMENT_STATE_DRAFT\x10\x01\x12\x1c\n" +
+	"\x18DEPLOYMENT_STATE_PENDING\x10\x02\x12\x1c\n" +
+	"\x18DEPLOYMENT_STATE_RUNNING\x10\x03\x12\x1b\n" +
+	"\x17DEPLOYMENT_STATE_PAUSED\x10\x04\x12\x1e\n" +
+	"\x1aDEPLOYMENT_STATE_COMPLETED\x10\x05\x12\x1b\n" +
+	"\x17DEPLOYMENT_STATE_FAILED\x10\x06\x12\x1e\n" +
+	"\x1aDEPLOYMENT_STATE_CANCELLED\x10\a\x12!\n" +
+	"\x1dDEPLOYMENT_STATE_ROLLING_BACK\x10\b\x12 \n" +
+	"\x1cDEPLOYMENT_STATE_ROLLED_BACK\x10\t*\xb8\x02\n" +
 	"\tEventType\x12\x1a\n" +
 	"\x16EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bEVENT_TYPE_DEVICE_CONNECTED\x10\x01\x12\"\n" +
@@ -3178,7 +8835,20 @@ const file_public_v1_fleet_proto_rawDesc = "" +
 	"\x1bEVENT_TYPE_UPDATE_COMPLETED\x10\x06\x12\x1c\n" +
 	"\x18EVENT_TYPE_UPDATE_FAILED\x10\a\x12\x1d\n" +
 	"\x19EVENT_TYPE_CONFIG_CHANGED\x10\b\x12\x14\n" +
-	"\x10EVENT_TYPE_ALERT\x10\t2\xe3\t\n" +
+	"\x10EVENT_TYPE_ALERT\x10\t*\xba\x01\n" +
+	"\fArtifactType\x12\x1d\n" +
+	"\x19ARTIFACT_TYPE_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14ARTIFACT_TYPE_BINARY\x10\x01\x12\x19\n" +
+	"\x15ARTIFACT_TYPE_ARCHIVE\x10\x02\x12\x18\n" +
+	"\x14ARTIFACT_TYPE_SCRIPT\x10\x03\x12\x1b\n" +
+	"\x17ARTIFACT_TYPE_CONTAINER\x10\x04\x12\x1f\n" +
+	"\x1bARTIFACT_TYPE_CONFIGURATION\x10\x05*\x9e\x01\n" +
+	"\fUpdateStatus\x12\x1d\n" +
+	"\x19UPDATE_STATUS_UNSPECIFIED\x10\x00\x12\x19\n" +
+	"\x15UPDATE_STATUS_PENDING\x10\x01\x12\x1d\n" +
+	"\x19UPDATE_STATUS_IN_PROGRESS\x10\x02\x12\x1b\n" +
+	"\x17UPDATE_STATUS_COMPLETED\x10\x03\x12\x18\n" +
+	"\x14UPDATE_STATUS_FAILED\x10\x042\xe0\r\n" +
 	"\fFleetService\x12L\n" +
 	"\vListDevices\x12\x1d.public.v1.ListDevicesRequest\x1a\x1e.public.v1.ListDevicesResponse\x12F\n" +
 	"\tGetDevice\x12\x1b.public.v1.GetDeviceRequest\x1a\x1c.public.v1.GetDeviceResponse\x12O\n" +
@@ -3187,11 +8857,16 @@ const file_public_v1_fleet_proto_rawDesc = "" +
 	"\x0eGetDeviceStats\x12 .public.v1.GetDeviceStatsRequest\x1a!.public.v1.GetDeviceStatsResponse\x12X\n" +
 	"\x0fDiscoverDevices\x12!.public.v1.DiscoverDevicesRequest\x1a\".public.v1.DiscoverDevicesResponse\x12O\n" +
 	"\fGetTelemetry\x12\x1e.public.v1.GetTelemetryRequest\x1a\x1f.public.v1.GetTelemetryResponse\x12Q\n" +
-	"\x0fStreamTelemetry\x12!.public.v1.StreamTelemetryRequest\x1a\x19.public.v1.TelemetryEvent0\x01\x12L\n" +
-	"\vListUpdates\x12\x1d.public.v1.ListUpdatesRequest\x1a\x1e.public.v1.ListUpdatesResponse\x12O\n" +
-	"\fCreateUpdate\x12\x1e.public.v1.CreateUpdateRequest\x1a\x1f.public.v1.CreateUpdateResponse\x12O\n" +
-	"\fDeployUpdate\x12\x1e.public.v1.DeployUpdateRequest\x1a\x1f.public.v1.DeployUpdateResponse\x12X\n" +
-	"\x0fGetUpdateStatus\x12!.public.v1.GetUpdateStatusRequest\x1a\".public.v1.GetUpdateStatusResponse\x12[\n" +
+	"\x0fStreamTelemetry\x12!.public.v1.StreamTelemetryRequest\x1a\x19.public.v1.TelemetryEvent0\x01\x12[\n" +
+	"\x10CreateDeployment\x12\".public.v1.CreateDeploymentRequest\x1a#.public.v1.CreateDeploymentResponse\x12X\n" +
+	"\x0fListDeployments\x12!.public.v1.ListDeploymentsRequest\x1a\".public.v1.ListDeploymentsResponse\x12R\n" +
+	"\rGetDeployment\x12\x1f.public.v1.GetDeploymentRequest\x1a .public.v1.GetDeploymentResponse\x12X\n" +
+	"\x0fStartDeployment\x12!.public.v1.StartDeploymentRequest\x1a\".public.v1.StartDeploymentResponse\x12X\n" +
+	"\x0fPauseDeployment\x12!.public.v1.PauseDeploymentRequest\x1a\".public.v1.PauseDeploymentResponse\x12[\n" +
+	"\x10CancelDeployment\x12\".public.v1.CancelDeploymentRequest\x1a#.public.v1.CancelDeploymentResponse\x12a\n" +
+	"\x12RollbackDeployment\x12$.public.v1.RollbackDeploymentRequest\x1a%.public.v1.RollbackDeploymentResponse\x12d\n" +
+	"\x13GetDeploymentStatus\x12%.public.v1.GetDeploymentStatusRequest\x1a&.public.v1.GetDeploymentStatusResponse\x12`\n" +
+	"\x16StreamDeploymentEvents\x12(.public.v1.StreamDeploymentEventsRequest\x1a\x1a.public.v1.DeploymentEvent0\x01\x12[\n" +
 	"\x10GetConfiguration\x12\".public.v1.GetConfigurationRequest\x1a#.public.v1.GetConfigurationResponse\x12d\n" +
 	"\x13UpdateConfiguration\x12%.public.v1.UpdateConfigurationRequest\x1a&.public.v1.UpdateConfigurationResponse\x12B\n" +
 	"\fStreamEvents\x12\x1e.public.v1.StreamEventsRequest\x1a\x10.public.v1.Event0\x01B\x84\x01\n" +
@@ -3212,133 +8887,326 @@ func file_public_v1_fleet_proto_rawDescGZIP() []byte {
 	return file_public_v1_fleet_proto_rawDescData
 }
 
-var file_public_v1_fleet_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_public_v1_fleet_proto_msgTypes = make([]protoimpl.MessageInfo, 41)
+var file_public_v1_fleet_proto_enumTypes = make([]protoimpl.EnumInfo, 15)
+var file_public_v1_fleet_proto_msgTypes = make([]protoimpl.MessageInfo, 114)
 var file_public_v1_fleet_proto_goTypes = []any{
-	(DeviceStatus)(0),                   // 0: public.v1.DeviceStatus
-	(DeploymentStrategy)(0),             // 1: public.v1.DeploymentStrategy
-	(UpdateDeploymentStatus)(0),         // 2: public.v1.UpdateDeploymentStatus
-	(EventType)(0),                      // 3: public.v1.EventType
-	(*Device)(nil),                      // 4: public.v1.Device
-	(*SystemInfo)(nil),                  // 5: public.v1.SystemInfo
-	(*NetworkInterface)(nil),            // 6: public.v1.NetworkInterface
-	(*LoadAverage)(nil),                 // 7: public.v1.LoadAverage
-	(*BiosInfo)(nil),                    // 8: public.v1.BiosInfo
-	(*DeviceCapabilities)(nil),          // 9: public.v1.DeviceCapabilities
-	(*ListDevicesRequest)(nil),          // 10: public.v1.ListDevicesRequest
-	(*ListDevicesResponse)(nil),         // 11: public.v1.ListDevicesResponse
-	(*GetDeviceRequest)(nil),            // 12: public.v1.GetDeviceRequest
-	(*GetDeviceResponse)(nil),           // 13: public.v1.GetDeviceResponse
-	(*UpdateDeviceRequest)(nil),         // 14: public.v1.UpdateDeviceRequest
-	(*UpdateDeviceResponse)(nil),        // 15: public.v1.UpdateDeviceResponse
-	(*DeleteDeviceRequest)(nil),         // 16: public.v1.DeleteDeviceRequest
-	(*GetDeviceStatsRequest)(nil),       // 17: public.v1.GetDeviceStatsRequest
-	(*GetDeviceStatsResponse)(nil),      // 18: public.v1.GetDeviceStatsResponse
-	(*DiscoverDevicesRequest)(nil),      // 19: public.v1.DiscoverDevicesRequest
-	(*DiscoverDevicesResponse)(nil),     // 20: public.v1.DiscoverDevicesResponse
-	(*DiscoveredDevice)(nil),            // 21: public.v1.DiscoveredDevice
-	(*GetTelemetryRequest)(nil),         // 22: public.v1.GetTelemetryRequest
-	(*GetTelemetryResponse)(nil),        // 23: public.v1.GetTelemetryResponse
-	(*TelemetryPoint)(nil),              // 24: public.v1.TelemetryPoint
-	(*StreamTelemetryRequest)(nil),      // 25: public.v1.StreamTelemetryRequest
-	(*TelemetryEvent)(nil),              // 26: public.v1.TelemetryEvent
-	(*Update)(nil),                      // 27: public.v1.Update
-	(*ListUpdatesRequest)(nil),          // 28: public.v1.ListUpdatesRequest
-	(*ListUpdatesResponse)(nil),         // 29: public.v1.ListUpdatesResponse
-	(*CreateUpdateRequest)(nil),         // 30: public.v1.CreateUpdateRequest
-	(*CreateUpdateResponse)(nil),        // 31: public.v1.CreateUpdateResponse
-	(*DeployUpdateRequest)(nil),         // 32: public.v1.DeployUpdateRequest
-	(*DeployUpdateResponse)(nil),        // 33: public.v1.DeployUpdateResponse
-	(*GetUpdateStatusRequest)(nil),      // 34: public.v1.GetUpdateStatusRequest
-	(*GetUpdateStatusResponse)(nil),     // 35: public.v1.GetUpdateStatusResponse
-	(*GetConfigurationRequest)(nil),     // 36: public.v1.GetConfigurationRequest
-	(*GetConfigurationResponse)(nil),    // 37: public.v1.GetConfigurationResponse
-	(*UpdateConfigurationRequest)(nil),  // 38: public.v1.UpdateConfigurationRequest
-	(*UpdateConfigurationResponse)(nil), // 39: public.v1.UpdateConfigurationResponse
-	(*StreamEventsRequest)(nil),         // 40: public.v1.StreamEventsRequest
-	(*Event)(nil),                       // 41: public.v1.Event
-	nil,                                 // 42: public.v1.SystemInfo.ExtraEntry
-	nil,                                 // 43: public.v1.GetDeviceStatsResponse.DevicesByTypeEntry
-	nil,                                 // 44: public.v1.GetDeviceStatsResponse.DevicesByVersionEntry
-	(*timestamppb.Timestamp)(nil),       // 45: google.protobuf.Timestamp
-	(*structpb.Struct)(nil),             // 46: google.protobuf.Struct
-	(*emptypb.Empty)(nil),               // 47: google.protobuf.Empty
+	(DeviceStatus)(0),                     // 0: public.v1.DeviceStatus
+	(DeploymentType)(0),                   // 1: public.v1.DeploymentType
+	(RestartPolicy)(0),                    // 2: public.v1.RestartPolicy
+	(DeploymentStrategy)(0),               // 3: public.v1.DeploymentStrategy
+	(NotificationEvent)(0),                // 4: public.v1.NotificationEvent
+	(DeploymentState)(0),                  // 5: public.v1.DeploymentState
+	(EventType)(0),                        // 6: public.v1.EventType
+	(ArtifactType)(0),                     // 7: public.v1.ArtifactType
+	(UpdateStatus)(0),                     // 8: public.v1.UpdateStatus
+	(LabelRequirement_Operator)(0),        // 9: public.v1.LabelRequirement.Operator
+	(TargetFilter_FilterType)(0),          // 10: public.v1.TargetFilter.FilterType
+	(DeploymentHook_HookType)(0),          // 11: public.v1.DeploymentHook.HookType
+	(ValidationWarning_Severity)(0),       // 12: public.v1.ValidationWarning.Severity
+	(DeploymentEvent_EventType)(0),        // 13: public.v1.DeploymentEvent.EventType
+	(DeviceDeploymentStatus_State)(0),     // 14: public.v1.DeviceDeploymentStatus.State
+	(*Device)(nil),                        // 15: public.v1.Device
+	(*SystemInfo)(nil),                    // 16: public.v1.SystemInfo
+	(*NetworkInterface)(nil),              // 17: public.v1.NetworkInterface
+	(*LoadAverage)(nil),                   // 18: public.v1.LoadAverage
+	(*BiosInfo)(nil),                      // 19: public.v1.BiosInfo
+	(*DeviceCapabilities)(nil),            // 20: public.v1.DeviceCapabilities
+	(*ListDevicesRequest)(nil),            // 21: public.v1.ListDevicesRequest
+	(*ListDevicesResponse)(nil),           // 22: public.v1.ListDevicesResponse
+	(*GetDeviceRequest)(nil),              // 23: public.v1.GetDeviceRequest
+	(*GetDeviceResponse)(nil),             // 24: public.v1.GetDeviceResponse
+	(*UpdateDeviceRequest)(nil),           // 25: public.v1.UpdateDeviceRequest
+	(*UpdateDeviceResponse)(nil),          // 26: public.v1.UpdateDeviceResponse
+	(*DeleteDeviceRequest)(nil),           // 27: public.v1.DeleteDeviceRequest
+	(*GetDeviceStatsRequest)(nil),         // 28: public.v1.GetDeviceStatsRequest
+	(*GetDeviceStatsResponse)(nil),        // 29: public.v1.GetDeviceStatsResponse
+	(*DiscoverDevicesRequest)(nil),        // 30: public.v1.DiscoverDevicesRequest
+	(*DiscoverDevicesResponse)(nil),       // 31: public.v1.DiscoverDevicesResponse
+	(*DiscoveredDevice)(nil),              // 32: public.v1.DiscoveredDevice
+	(*GetTelemetryRequest)(nil),           // 33: public.v1.GetTelemetryRequest
+	(*GetTelemetryResponse)(nil),          // 34: public.v1.GetTelemetryResponse
+	(*TelemetryPoint)(nil),                // 35: public.v1.TelemetryPoint
+	(*StreamTelemetryRequest)(nil),        // 36: public.v1.StreamTelemetryRequest
+	(*TelemetryEvent)(nil),                // 37: public.v1.TelemetryEvent
+	(*Deployment)(nil),                    // 38: public.v1.Deployment
+	(*DeploymentPayload)(nil),             // 39: public.v1.DeploymentPayload
+	(*BinaryPayload)(nil),                 // 40: public.v1.BinaryPayload
+	(*ScriptPayload)(nil),                 // 41: public.v1.ScriptPayload
+	(*ContainerPayload)(nil),              // 42: public.v1.ContainerPayload
+	(*PortMapping)(nil),                   // 43: public.v1.PortMapping
+	(*VolumeMount)(nil),                   // 44: public.v1.VolumeMount
+	(*ConfigPayload)(nil),                 // 45: public.v1.ConfigPayload
+	(*FirmwarePayload)(nil),               // 46: public.v1.FirmwarePayload
+	(*PackagePayload)(nil),                // 47: public.v1.PackagePayload
+	(*BundlePayload)(nil),                 // 48: public.v1.BundlePayload
+	(*DeploymentTarget)(nil),              // 49: public.v1.DeploymentTarget
+	(*DeviceSelector)(nil),                // 50: public.v1.DeviceSelector
+	(*GroupSelector)(nil),                 // 51: public.v1.GroupSelector
+	(*LabelSelector)(nil),                 // 52: public.v1.LabelSelector
+	(*LabelRequirement)(nil),              // 53: public.v1.LabelRequirement
+	(*QuerySelector)(nil),                 // 54: public.v1.QuerySelector
+	(*TargetFilter)(nil),                  // 55: public.v1.TargetFilter
+	(*DeploymentConfig)(nil),              // 56: public.v1.DeploymentConfig
+	(*RolloutConfig)(nil),                 // 57: public.v1.RolloutConfig
+	(*HealthCheckConfig)(nil),             // 58: public.v1.HealthCheckConfig
+	(*RollbackConfig)(nil),                // 59: public.v1.RollbackConfig
+	(*ValidationConfig)(nil),              // 60: public.v1.ValidationConfig
+	(*ValidationRule)(nil),                // 61: public.v1.ValidationRule
+	(*NotificationConfig)(nil),            // 62: public.v1.NotificationConfig
+	(*DeploymentHook)(nil),                // 63: public.v1.DeploymentHook
+	(*DeploymentMetadata)(nil),            // 64: public.v1.DeploymentMetadata
+	(*CreateDeploymentRequest)(nil),       // 65: public.v1.CreateDeploymentRequest
+	(*CreateDeploymentResponse)(nil),      // 66: public.v1.CreateDeploymentResponse
+	(*ValidationWarning)(nil),             // 67: public.v1.ValidationWarning
+	(*DeploymentValidation)(nil),          // 68: public.v1.DeploymentValidation
+	(*SimulatedBatch)(nil),                // 69: public.v1.SimulatedBatch
+	(*ListDeploymentsRequest)(nil),        // 70: public.v1.ListDeploymentsRequest
+	(*ListDeploymentsResponse)(nil),       // 71: public.v1.ListDeploymentsResponse
+	(*GetDeploymentRequest)(nil),          // 72: public.v1.GetDeploymentRequest
+	(*GetDeploymentResponse)(nil),         // 73: public.v1.GetDeploymentResponse
+	(*StartDeploymentRequest)(nil),        // 74: public.v1.StartDeploymentRequest
+	(*StartDeploymentResponse)(nil),       // 75: public.v1.StartDeploymentResponse
+	(*PauseDeploymentRequest)(nil),        // 76: public.v1.PauseDeploymentRequest
+	(*PauseDeploymentResponse)(nil),       // 77: public.v1.PauseDeploymentResponse
+	(*CancelDeploymentRequest)(nil),       // 78: public.v1.CancelDeploymentRequest
+	(*CancelDeploymentResponse)(nil),      // 79: public.v1.CancelDeploymentResponse
+	(*RollbackDeploymentRequest)(nil),     // 80: public.v1.RollbackDeploymentRequest
+	(*RollbackDeploymentResponse)(nil),    // 81: public.v1.RollbackDeploymentResponse
+	(*GetDeploymentStatusRequest)(nil),    // 82: public.v1.GetDeploymentStatusRequest
+	(*GetDeploymentStatusResponse)(nil),   // 83: public.v1.GetDeploymentStatusResponse
+	(*DeploymentProgress)(nil),            // 84: public.v1.DeploymentProgress
+	(*StreamDeploymentEventsRequest)(nil), // 85: public.v1.StreamDeploymentEventsRequest
+	(*DeploymentEvent)(nil),               // 86: public.v1.DeploymentEvent
+	(*DeviceDeploymentStatus)(nil),        // 87: public.v1.DeviceDeploymentStatus
+	(*GetConfigurationRequest)(nil),       // 88: public.v1.GetConfigurationRequest
+	(*GetConfigurationResponse)(nil),      // 89: public.v1.GetConfigurationResponse
+	(*UpdateConfigurationRequest)(nil),    // 90: public.v1.UpdateConfigurationRequest
+	(*UpdateConfigurationResponse)(nil),   // 91: public.v1.UpdateConfigurationResponse
+	(*StreamEventsRequest)(nil),           // 92: public.v1.StreamEventsRequest
+	(*Event)(nil),                         // 93: public.v1.Event
+	(*Application)(nil),                   // 94: public.v1.Application
+	(*Artifact)(nil),                      // 95: public.v1.Artifact
+	(*Resources)(nil),                     // 96: public.v1.Resources
+	(*HealthCheck)(nil),                   // 97: public.v1.HealthCheck
+	(*ListUpdatesRequest)(nil),            // 98: public.v1.ListUpdatesRequest
+	(*ListUpdatesResponse)(nil),           // 99: public.v1.ListUpdatesResponse
+	(*Update)(nil),                        // 100: public.v1.Update
+	(*CreateUpdateRequest)(nil),           // 101: public.v1.CreateUpdateRequest
+	(*CreateUpdateResponse)(nil),          // 102: public.v1.CreateUpdateResponse
+	(*DeployUpdateRequest)(nil),           // 103: public.v1.DeployUpdateRequest
+	(*DeployUpdateResponse)(nil),          // 104: public.v1.DeployUpdateResponse
+	(*GetUpdateStatusRequest)(nil),        // 105: public.v1.GetUpdateStatusRequest
+	(*GetUpdateStatusResponse)(nil),       // 106: public.v1.GetUpdateStatusResponse
+	(*DeviceUpdateStatus)(nil),            // 107: public.v1.DeviceUpdateStatus
+	nil,                                   // 108: public.v1.SystemInfo.ExtraEntry
+	nil,                                   // 109: public.v1.GetDeviceStatsResponse.DevicesByTypeEntry
+	nil,                                   // 110: public.v1.GetDeviceStatsResponse.DevicesByVersionEntry
+	nil,                                   // 111: public.v1.Deployment.LabelsEntry
+	nil,                                   // 112: public.v1.BinaryPayload.EnvVarsEntry
+	nil,                                   // 113: public.v1.ScriptPayload.EnvVarsEntry
+	nil,                                   // 114: public.v1.ContainerPayload.EnvVarsEntry
+	nil,                                   // 115: public.v1.ContainerPayload.LabelsEntry
+	nil,                                   // 116: public.v1.LabelSelector.MatchLabelsEntry
+	nil,                                   // 117: public.v1.NotificationConfig.CustomChannelsEntry
+	nil,                                   // 118: public.v1.DeploymentMetadata.TagsEntry
+	nil,                                   // 119: public.v1.CreateDeploymentRequest.LabelsEntry
+	nil,                                   // 120: public.v1.ListDeploymentsRequest.LabelSelectorEntry
+	nil,                                   // 121: public.v1.DeploymentProgress.DevicesByStateEntry
+	nil,                                   // 122: public.v1.Application.MetadataEntry
+	nil,                                   // 123: public.v1.Application.EnvironmentEntry
+	nil,                                   // 124: public.v1.Artifact.ChecksumsEntry
+	nil,                                   // 125: public.v1.Artifact.MetadataEntry
+	nil,                                   // 126: public.v1.Resources.LimitsEntry
+	nil,                                   // 127: public.v1.CreateUpdateRequest.MetadataEntry
+	nil,                                   // 128: public.v1.GetUpdateStatusResponse.DeviceStatusEntry
+	(*timestamppb.Timestamp)(nil),         // 129: google.protobuf.Timestamp
+	(*structpb.Struct)(nil),               // 130: google.protobuf.Struct
+	(*emptypb.Empty)(nil),                 // 131: google.protobuf.Empty
 }
 var file_public_v1_fleet_proto_depIdxs = []int32{
-	0,  // 0: public.v1.Device.status:type_name -> public.v1.DeviceStatus
-	45, // 1: public.v1.Device.last_seen:type_name -> google.protobuf.Timestamp
-	45, // 2: public.v1.Device.created_at:type_name -> google.protobuf.Timestamp
-	45, // 3: public.v1.Device.updated_at:type_name -> google.protobuf.Timestamp
-	46, // 4: public.v1.Device.metadata:type_name -> google.protobuf.Struct
-	9,  // 5: public.v1.Device.capabilities:type_name -> public.v1.DeviceCapabilities
-	5,  // 6: public.v1.Device.system_info:type_name -> public.v1.SystemInfo
-	42, // 7: public.v1.SystemInfo.extra:type_name -> public.v1.SystemInfo.ExtraEntry
-	6,  // 8: public.v1.SystemInfo.network_interfaces:type_name -> public.v1.NetworkInterface
-	7,  // 9: public.v1.SystemInfo.load_average:type_name -> public.v1.LoadAverage
-	8,  // 10: public.v1.SystemInfo.bios_info:type_name -> public.v1.BiosInfo
-	4,  // 11: public.v1.ListDevicesResponse.devices:type_name -> public.v1.Device
-	4,  // 12: public.v1.GetDeviceResponse.device:type_name -> public.v1.Device
-	46, // 13: public.v1.UpdateDeviceRequest.metadata:type_name -> google.protobuf.Struct
-	4,  // 14: public.v1.UpdateDeviceResponse.device:type_name -> public.v1.Device
-	43, // 15: public.v1.GetDeviceStatsResponse.devices_by_type:type_name -> public.v1.GetDeviceStatsResponse.DevicesByTypeEntry
-	44, // 16: public.v1.GetDeviceStatsResponse.devices_by_version:type_name -> public.v1.GetDeviceStatsResponse.DevicesByVersionEntry
-	21, // 17: public.v1.DiscoverDevicesResponse.devices:type_name -> public.v1.DiscoveredDevice
-	45, // 18: public.v1.GetTelemetryRequest.start_time:type_name -> google.protobuf.Timestamp
-	45, // 19: public.v1.GetTelemetryRequest.end_time:type_name -> google.protobuf.Timestamp
-	24, // 20: public.v1.GetTelemetryResponse.points:type_name -> public.v1.TelemetryPoint
-	45, // 21: public.v1.TelemetryPoint.timestamp:type_name -> google.protobuf.Timestamp
-	46, // 22: public.v1.TelemetryPoint.labels:type_name -> google.protobuf.Struct
-	24, // 23: public.v1.TelemetryEvent.point:type_name -> public.v1.TelemetryPoint
-	45, // 24: public.v1.Update.created_at:type_name -> google.protobuf.Timestamp
-	27, // 25: public.v1.ListUpdatesResponse.updates:type_name -> public.v1.Update
-	27, // 26: public.v1.CreateUpdateResponse.update:type_name -> public.v1.Update
-	1,  // 27: public.v1.DeployUpdateRequest.strategy:type_name -> public.v1.DeploymentStrategy
-	2,  // 28: public.v1.GetUpdateStatusResponse.status:type_name -> public.v1.UpdateDeploymentStatus
-	45, // 29: public.v1.GetUpdateStatusResponse.started_at:type_name -> google.protobuf.Timestamp
-	45, // 30: public.v1.GetUpdateStatusResponse.completed_at:type_name -> google.protobuf.Timestamp
-	46, // 31: public.v1.GetConfigurationResponse.config:type_name -> google.protobuf.Struct
-	45, // 32: public.v1.GetConfigurationResponse.updated_at:type_name -> google.protobuf.Timestamp
-	46, // 33: public.v1.UpdateConfigurationRequest.config:type_name -> google.protobuf.Struct
-	46, // 34: public.v1.UpdateConfigurationResponse.config:type_name -> google.protobuf.Struct
-	3,  // 35: public.v1.StreamEventsRequest.event_types:type_name -> public.v1.EventType
-	3,  // 36: public.v1.Event.type:type_name -> public.v1.EventType
-	45, // 37: public.v1.Event.timestamp:type_name -> google.protobuf.Timestamp
-	46, // 38: public.v1.Event.data:type_name -> google.protobuf.Struct
-	10, // 39: public.v1.FleetService.ListDevices:input_type -> public.v1.ListDevicesRequest
-	12, // 40: public.v1.FleetService.GetDevice:input_type -> public.v1.GetDeviceRequest
-	14, // 41: public.v1.FleetService.UpdateDevice:input_type -> public.v1.UpdateDeviceRequest
-	16, // 42: public.v1.FleetService.DeleteDevice:input_type -> public.v1.DeleteDeviceRequest
-	17, // 43: public.v1.FleetService.GetDeviceStats:input_type -> public.v1.GetDeviceStatsRequest
-	19, // 44: public.v1.FleetService.DiscoverDevices:input_type -> public.v1.DiscoverDevicesRequest
-	22, // 45: public.v1.FleetService.GetTelemetry:input_type -> public.v1.GetTelemetryRequest
-	25, // 46: public.v1.FleetService.StreamTelemetry:input_type -> public.v1.StreamTelemetryRequest
-	28, // 47: public.v1.FleetService.ListUpdates:input_type -> public.v1.ListUpdatesRequest
-	30, // 48: public.v1.FleetService.CreateUpdate:input_type -> public.v1.CreateUpdateRequest
-	32, // 49: public.v1.FleetService.DeployUpdate:input_type -> public.v1.DeployUpdateRequest
-	34, // 50: public.v1.FleetService.GetUpdateStatus:input_type -> public.v1.GetUpdateStatusRequest
-	36, // 51: public.v1.FleetService.GetConfiguration:input_type -> public.v1.GetConfigurationRequest
-	38, // 52: public.v1.FleetService.UpdateConfiguration:input_type -> public.v1.UpdateConfigurationRequest
-	40, // 53: public.v1.FleetService.StreamEvents:input_type -> public.v1.StreamEventsRequest
-	11, // 54: public.v1.FleetService.ListDevices:output_type -> public.v1.ListDevicesResponse
-	13, // 55: public.v1.FleetService.GetDevice:output_type -> public.v1.GetDeviceResponse
-	15, // 56: public.v1.FleetService.UpdateDevice:output_type -> public.v1.UpdateDeviceResponse
-	47, // 57: public.v1.FleetService.DeleteDevice:output_type -> google.protobuf.Empty
-	18, // 58: public.v1.FleetService.GetDeviceStats:output_type -> public.v1.GetDeviceStatsResponse
-	20, // 59: public.v1.FleetService.DiscoverDevices:output_type -> public.v1.DiscoverDevicesResponse
-	23, // 60: public.v1.FleetService.GetTelemetry:output_type -> public.v1.GetTelemetryResponse
-	26, // 61: public.v1.FleetService.StreamTelemetry:output_type -> public.v1.TelemetryEvent
-	29, // 62: public.v1.FleetService.ListUpdates:output_type -> public.v1.ListUpdatesResponse
-	31, // 63: public.v1.FleetService.CreateUpdate:output_type -> public.v1.CreateUpdateResponse
-	33, // 64: public.v1.FleetService.DeployUpdate:output_type -> public.v1.DeployUpdateResponse
-	35, // 65: public.v1.FleetService.GetUpdateStatus:output_type -> public.v1.GetUpdateStatusResponse
-	37, // 66: public.v1.FleetService.GetConfiguration:output_type -> public.v1.GetConfigurationResponse
-	39, // 67: public.v1.FleetService.UpdateConfiguration:output_type -> public.v1.UpdateConfigurationResponse
-	41, // 68: public.v1.FleetService.StreamEvents:output_type -> public.v1.Event
-	54, // [54:69] is the sub-list for method output_type
-	39, // [39:54] is the sub-list for method input_type
-	39, // [39:39] is the sub-list for extension type_name
-	39, // [39:39] is the sub-list for extension extendee
-	0,  // [0:39] is the sub-list for field type_name
+	0,   // 0: public.v1.Device.status:type_name -> public.v1.DeviceStatus
+	129, // 1: public.v1.Device.last_seen:type_name -> google.protobuf.Timestamp
+	129, // 2: public.v1.Device.created_at:type_name -> google.protobuf.Timestamp
+	129, // 3: public.v1.Device.updated_at:type_name -> google.protobuf.Timestamp
+	130, // 4: public.v1.Device.metadata:type_name -> google.protobuf.Struct
+	20,  // 5: public.v1.Device.capabilities:type_name -> public.v1.DeviceCapabilities
+	16,  // 6: public.v1.Device.system_info:type_name -> public.v1.SystemInfo
+	108, // 7: public.v1.SystemInfo.extra:type_name -> public.v1.SystemInfo.ExtraEntry
+	17,  // 8: public.v1.SystemInfo.network_interfaces:type_name -> public.v1.NetworkInterface
+	18,  // 9: public.v1.SystemInfo.load_average:type_name -> public.v1.LoadAverage
+	19,  // 10: public.v1.SystemInfo.bios_info:type_name -> public.v1.BiosInfo
+	15,  // 11: public.v1.ListDevicesResponse.devices:type_name -> public.v1.Device
+	15,  // 12: public.v1.GetDeviceResponse.device:type_name -> public.v1.Device
+	130, // 13: public.v1.UpdateDeviceRequest.metadata:type_name -> google.protobuf.Struct
+	15,  // 14: public.v1.UpdateDeviceResponse.device:type_name -> public.v1.Device
+	109, // 15: public.v1.GetDeviceStatsResponse.devices_by_type:type_name -> public.v1.GetDeviceStatsResponse.DevicesByTypeEntry
+	110, // 16: public.v1.GetDeviceStatsResponse.devices_by_version:type_name -> public.v1.GetDeviceStatsResponse.DevicesByVersionEntry
+	32,  // 17: public.v1.DiscoverDevicesResponse.devices:type_name -> public.v1.DiscoveredDevice
+	129, // 18: public.v1.GetTelemetryRequest.start_time:type_name -> google.protobuf.Timestamp
+	129, // 19: public.v1.GetTelemetryRequest.end_time:type_name -> google.protobuf.Timestamp
+	35,  // 20: public.v1.GetTelemetryResponse.points:type_name -> public.v1.TelemetryPoint
+	129, // 21: public.v1.TelemetryPoint.timestamp:type_name -> google.protobuf.Timestamp
+	130, // 22: public.v1.TelemetryPoint.labels:type_name -> google.protobuf.Struct
+	35,  // 23: public.v1.TelemetryEvent.point:type_name -> public.v1.TelemetryPoint
+	1,   // 24: public.v1.Deployment.type:type_name -> public.v1.DeploymentType
+	39,  // 25: public.v1.Deployment.payload:type_name -> public.v1.DeploymentPayload
+	49,  // 26: public.v1.Deployment.target:type_name -> public.v1.DeploymentTarget
+	3,   // 27: public.v1.Deployment.strategy:type_name -> public.v1.DeploymentStrategy
+	56,  // 28: public.v1.Deployment.config:type_name -> public.v1.DeploymentConfig
+	5,   // 29: public.v1.Deployment.state:type_name -> public.v1.DeploymentState
+	64,  // 30: public.v1.Deployment.metadata:type_name -> public.v1.DeploymentMetadata
+	129, // 31: public.v1.Deployment.created_at:type_name -> google.protobuf.Timestamp
+	129, // 32: public.v1.Deployment.started_at:type_name -> google.protobuf.Timestamp
+	129, // 33: public.v1.Deployment.completed_at:type_name -> google.protobuf.Timestamp
+	111, // 34: public.v1.Deployment.labels:type_name -> public.v1.Deployment.LabelsEntry
+	40,  // 35: public.v1.DeploymentPayload.binary:type_name -> public.v1.BinaryPayload
+	41,  // 36: public.v1.DeploymentPayload.script:type_name -> public.v1.ScriptPayload
+	42,  // 37: public.v1.DeploymentPayload.container:type_name -> public.v1.ContainerPayload
+	45,  // 38: public.v1.DeploymentPayload.config:type_name -> public.v1.ConfigPayload
+	46,  // 39: public.v1.DeploymentPayload.firmware:type_name -> public.v1.FirmwarePayload
+	47,  // 40: public.v1.DeploymentPayload.package:type_name -> public.v1.PackagePayload
+	48,  // 41: public.v1.DeploymentPayload.bundle:type_name -> public.v1.BundlePayload
+	112, // 42: public.v1.BinaryPayload.env_vars:type_name -> public.v1.BinaryPayload.EnvVarsEntry
+	113, // 43: public.v1.ScriptPayload.env_vars:type_name -> public.v1.ScriptPayload.EnvVarsEntry
+	114, // 44: public.v1.ContainerPayload.env_vars:type_name -> public.v1.ContainerPayload.EnvVarsEntry
+	43,  // 45: public.v1.ContainerPayload.ports:type_name -> public.v1.PortMapping
+	44,  // 46: public.v1.ContainerPayload.volumes:type_name -> public.v1.VolumeMount
+	2,   // 47: public.v1.ContainerPayload.restart_policy:type_name -> public.v1.RestartPolicy
+	115, // 48: public.v1.ContainerPayload.labels:type_name -> public.v1.ContainerPayload.LabelsEntry
+	39,  // 49: public.v1.BundlePayload.components:type_name -> public.v1.DeploymentPayload
+	50,  // 50: public.v1.DeploymentTarget.devices:type_name -> public.v1.DeviceSelector
+	51,  // 51: public.v1.DeploymentTarget.groups:type_name -> public.v1.GroupSelector
+	52,  // 52: public.v1.DeploymentTarget.labels:type_name -> public.v1.LabelSelector
+	54,  // 53: public.v1.DeploymentTarget.query:type_name -> public.v1.QuerySelector
+	55,  // 54: public.v1.DeploymentTarget.filters:type_name -> public.v1.TargetFilter
+	116, // 55: public.v1.LabelSelector.match_labels:type_name -> public.v1.LabelSelector.MatchLabelsEntry
+	53,  // 56: public.v1.LabelSelector.match_expressions:type_name -> public.v1.LabelRequirement
+	9,   // 57: public.v1.LabelRequirement.operator:type_name -> public.v1.LabelRequirement.Operator
+	10,  // 58: public.v1.TargetFilter.type:type_name -> public.v1.TargetFilter.FilterType
+	57,  // 59: public.v1.DeploymentConfig.rollout:type_name -> public.v1.RolloutConfig
+	58,  // 60: public.v1.DeploymentConfig.health_check:type_name -> public.v1.HealthCheckConfig
+	59,  // 61: public.v1.DeploymentConfig.rollback:type_name -> public.v1.RollbackConfig
+	60,  // 62: public.v1.DeploymentConfig.validation:type_name -> public.v1.ValidationConfig
+	62,  // 63: public.v1.DeploymentConfig.notifications:type_name -> public.v1.NotificationConfig
+	63,  // 64: public.v1.DeploymentConfig.hooks:type_name -> public.v1.DeploymentHook
+	61,  // 65: public.v1.ValidationConfig.rules:type_name -> public.v1.ValidationRule
+	4,   // 66: public.v1.NotificationConfig.events:type_name -> public.v1.NotificationEvent
+	117, // 67: public.v1.NotificationConfig.custom_channels:type_name -> public.v1.NotificationConfig.CustomChannelsEntry
+	11,  // 68: public.v1.DeploymentHook.type:type_name -> public.v1.DeploymentHook.HookType
+	118, // 69: public.v1.DeploymentMetadata.tags:type_name -> public.v1.DeploymentMetadata.TagsEntry
+	1,   // 70: public.v1.CreateDeploymentRequest.type:type_name -> public.v1.DeploymentType
+	39,  // 71: public.v1.CreateDeploymentRequest.payload:type_name -> public.v1.DeploymentPayload
+	49,  // 72: public.v1.CreateDeploymentRequest.target:type_name -> public.v1.DeploymentTarget
+	3,   // 73: public.v1.CreateDeploymentRequest.strategy:type_name -> public.v1.DeploymentStrategy
+	56,  // 74: public.v1.CreateDeploymentRequest.config:type_name -> public.v1.DeploymentConfig
+	64,  // 75: public.v1.CreateDeploymentRequest.metadata:type_name -> public.v1.DeploymentMetadata
+	119, // 76: public.v1.CreateDeploymentRequest.labels:type_name -> public.v1.CreateDeploymentRequest.LabelsEntry
+	38,  // 77: public.v1.CreateDeploymentResponse.deployment:type_name -> public.v1.Deployment
+	67,  // 78: public.v1.CreateDeploymentResponse.warnings:type_name -> public.v1.ValidationWarning
+	68,  // 79: public.v1.CreateDeploymentResponse.validation:type_name -> public.v1.DeploymentValidation
+	12,  // 80: public.v1.ValidationWarning.severity:type_name -> public.v1.ValidationWarning.Severity
+	67,  // 81: public.v1.DeploymentValidation.errors:type_name -> public.v1.ValidationWarning
+	69,  // 82: public.v1.DeploymentValidation.simulated_batches:type_name -> public.v1.SimulatedBatch
+	129, // 83: public.v1.SimulatedBatch.estimated_start:type_name -> google.protobuf.Timestamp
+	129, // 84: public.v1.SimulatedBatch.estimated_end:type_name -> google.protobuf.Timestamp
+	5,   // 85: public.v1.ListDeploymentsRequest.states:type_name -> public.v1.DeploymentState
+	1,   // 86: public.v1.ListDeploymentsRequest.types:type_name -> public.v1.DeploymentType
+	120, // 87: public.v1.ListDeploymentsRequest.label_selector:type_name -> public.v1.ListDeploymentsRequest.LabelSelectorEntry
+	129, // 88: public.v1.ListDeploymentsRequest.start_time:type_name -> google.protobuf.Timestamp
+	129, // 89: public.v1.ListDeploymentsRequest.end_time:type_name -> google.protobuf.Timestamp
+	38,  // 90: public.v1.ListDeploymentsResponse.deployments:type_name -> public.v1.Deployment
+	38,  // 91: public.v1.GetDeploymentResponse.deployment:type_name -> public.v1.Deployment
+	84,  // 92: public.v1.GetDeploymentResponse.progress:type_name -> public.v1.DeploymentProgress
+	87,  // 93: public.v1.GetDeploymentResponse.device_statuses:type_name -> public.v1.DeviceDeploymentStatus
+	86,  // 94: public.v1.GetDeploymentResponse.events:type_name -> public.v1.DeploymentEvent
+	129, // 95: public.v1.StartDeploymentResponse.estimated_completion:type_name -> google.protobuf.Timestamp
+	5,   // 96: public.v1.GetDeploymentStatusResponse.state:type_name -> public.v1.DeploymentState
+	84,  // 97: public.v1.GetDeploymentStatusResponse.progress:type_name -> public.v1.DeploymentProgress
+	129, // 98: public.v1.GetDeploymentStatusResponse.started_at:type_name -> google.protobuf.Timestamp
+	129, // 99: public.v1.GetDeploymentStatusResponse.updated_at:type_name -> google.protobuf.Timestamp
+	129, // 100: public.v1.GetDeploymentStatusResponse.estimated_completion:type_name -> google.protobuf.Timestamp
+	121, // 101: public.v1.DeploymentProgress.devices_by_state:type_name -> public.v1.DeploymentProgress.DevicesByStateEntry
+	13,  // 102: public.v1.DeploymentEvent.type:type_name -> public.v1.DeploymentEvent.EventType
+	129, // 103: public.v1.DeploymentEvent.timestamp:type_name -> google.protobuf.Timestamp
+	130, // 104: public.v1.DeploymentEvent.details:type_name -> google.protobuf.Struct
+	14,  // 105: public.v1.DeviceDeploymentStatus.state:type_name -> public.v1.DeviceDeploymentStatus.State
+	129, // 106: public.v1.DeviceDeploymentStatus.started_at:type_name -> google.protobuf.Timestamp
+	129, // 107: public.v1.DeviceDeploymentStatus.updated_at:type_name -> google.protobuf.Timestamp
+	129, // 108: public.v1.DeviceDeploymentStatus.completed_at:type_name -> google.protobuf.Timestamp
+	130, // 109: public.v1.GetConfigurationResponse.config:type_name -> google.protobuf.Struct
+	129, // 110: public.v1.GetConfigurationResponse.updated_at:type_name -> google.protobuf.Timestamp
+	130, // 111: public.v1.UpdateConfigurationRequest.config:type_name -> google.protobuf.Struct
+	130, // 112: public.v1.UpdateConfigurationResponse.config:type_name -> google.protobuf.Struct
+	6,   // 113: public.v1.StreamEventsRequest.event_types:type_name -> public.v1.EventType
+	6,   // 114: public.v1.Event.type:type_name -> public.v1.EventType
+	129, // 115: public.v1.Event.timestamp:type_name -> google.protobuf.Timestamp
+	130, // 116: public.v1.Event.data:type_name -> google.protobuf.Struct
+	122, // 117: public.v1.Application.metadata:type_name -> public.v1.Application.MetadataEntry
+	123, // 118: public.v1.Application.environment:type_name -> public.v1.Application.EnvironmentEntry
+	2,   // 119: public.v1.Application.restart_policy:type_name -> public.v1.RestartPolicy
+	96,  // 120: public.v1.Application.resources:type_name -> public.v1.Resources
+	97,  // 121: public.v1.Application.health_check:type_name -> public.v1.HealthCheck
+	7,   // 122: public.v1.Artifact.type:type_name -> public.v1.ArtifactType
+	124, // 123: public.v1.Artifact.checksums:type_name -> public.v1.Artifact.ChecksumsEntry
+	125, // 124: public.v1.Artifact.metadata:type_name -> public.v1.Artifact.MetadataEntry
+	126, // 125: public.v1.Resources.limits:type_name -> public.v1.Resources.LimitsEntry
+	100, // 126: public.v1.ListUpdatesResponse.updates:type_name -> public.v1.Update
+	8,   // 127: public.v1.Update.status:type_name -> public.v1.UpdateStatus
+	129, // 128: public.v1.Update.created_at:type_name -> google.protobuf.Timestamp
+	129, // 129: public.v1.Update.started_at:type_name -> google.protobuf.Timestamp
+	129, // 130: public.v1.Update.completed_at:type_name -> google.protobuf.Timestamp
+	127, // 131: public.v1.CreateUpdateRequest.metadata:type_name -> public.v1.CreateUpdateRequest.MetadataEntry
+	100, // 132: public.v1.CreateUpdateResponse.update:type_name -> public.v1.Update
+	100, // 133: public.v1.GetUpdateStatusResponse.update:type_name -> public.v1.Update
+	128, // 134: public.v1.GetUpdateStatusResponse.device_status:type_name -> public.v1.GetUpdateStatusResponse.DeviceStatusEntry
+	8,   // 135: public.v1.DeviceUpdateStatus.status:type_name -> public.v1.UpdateStatus
+	129, // 136: public.v1.DeviceUpdateStatus.updated_at:type_name -> google.protobuf.Timestamp
+	107, // 137: public.v1.GetUpdateStatusResponse.DeviceStatusEntry.value:type_name -> public.v1.DeviceUpdateStatus
+	21,  // 138: public.v1.FleetService.ListDevices:input_type -> public.v1.ListDevicesRequest
+	23,  // 139: public.v1.FleetService.GetDevice:input_type -> public.v1.GetDeviceRequest
+	25,  // 140: public.v1.FleetService.UpdateDevice:input_type -> public.v1.UpdateDeviceRequest
+	27,  // 141: public.v1.FleetService.DeleteDevice:input_type -> public.v1.DeleteDeviceRequest
+	28,  // 142: public.v1.FleetService.GetDeviceStats:input_type -> public.v1.GetDeviceStatsRequest
+	30,  // 143: public.v1.FleetService.DiscoverDevices:input_type -> public.v1.DiscoverDevicesRequest
+	33,  // 144: public.v1.FleetService.GetTelemetry:input_type -> public.v1.GetTelemetryRequest
+	36,  // 145: public.v1.FleetService.StreamTelemetry:input_type -> public.v1.StreamTelemetryRequest
+	65,  // 146: public.v1.FleetService.CreateDeployment:input_type -> public.v1.CreateDeploymentRequest
+	70,  // 147: public.v1.FleetService.ListDeployments:input_type -> public.v1.ListDeploymentsRequest
+	72,  // 148: public.v1.FleetService.GetDeployment:input_type -> public.v1.GetDeploymentRequest
+	74,  // 149: public.v1.FleetService.StartDeployment:input_type -> public.v1.StartDeploymentRequest
+	76,  // 150: public.v1.FleetService.PauseDeployment:input_type -> public.v1.PauseDeploymentRequest
+	78,  // 151: public.v1.FleetService.CancelDeployment:input_type -> public.v1.CancelDeploymentRequest
+	80,  // 152: public.v1.FleetService.RollbackDeployment:input_type -> public.v1.RollbackDeploymentRequest
+	82,  // 153: public.v1.FleetService.GetDeploymentStatus:input_type -> public.v1.GetDeploymentStatusRequest
+	85,  // 154: public.v1.FleetService.StreamDeploymentEvents:input_type -> public.v1.StreamDeploymentEventsRequest
+	88,  // 155: public.v1.FleetService.GetConfiguration:input_type -> public.v1.GetConfigurationRequest
+	90,  // 156: public.v1.FleetService.UpdateConfiguration:input_type -> public.v1.UpdateConfigurationRequest
+	92,  // 157: public.v1.FleetService.StreamEvents:input_type -> public.v1.StreamEventsRequest
+	22,  // 158: public.v1.FleetService.ListDevices:output_type -> public.v1.ListDevicesResponse
+	24,  // 159: public.v1.FleetService.GetDevice:output_type -> public.v1.GetDeviceResponse
+	26,  // 160: public.v1.FleetService.UpdateDevice:output_type -> public.v1.UpdateDeviceResponse
+	131, // 161: public.v1.FleetService.DeleteDevice:output_type -> google.protobuf.Empty
+	29,  // 162: public.v1.FleetService.GetDeviceStats:output_type -> public.v1.GetDeviceStatsResponse
+	31,  // 163: public.v1.FleetService.DiscoverDevices:output_type -> public.v1.DiscoverDevicesResponse
+	34,  // 164: public.v1.FleetService.GetTelemetry:output_type -> public.v1.GetTelemetryResponse
+	37,  // 165: public.v1.FleetService.StreamTelemetry:output_type -> public.v1.TelemetryEvent
+	66,  // 166: public.v1.FleetService.CreateDeployment:output_type -> public.v1.CreateDeploymentResponse
+	71,  // 167: public.v1.FleetService.ListDeployments:output_type -> public.v1.ListDeploymentsResponse
+	73,  // 168: public.v1.FleetService.GetDeployment:output_type -> public.v1.GetDeploymentResponse
+	75,  // 169: public.v1.FleetService.StartDeployment:output_type -> public.v1.StartDeploymentResponse
+	77,  // 170: public.v1.FleetService.PauseDeployment:output_type -> public.v1.PauseDeploymentResponse
+	79,  // 171: public.v1.FleetService.CancelDeployment:output_type -> public.v1.CancelDeploymentResponse
+	81,  // 172: public.v1.FleetService.RollbackDeployment:output_type -> public.v1.RollbackDeploymentResponse
+	83,  // 173: public.v1.FleetService.GetDeploymentStatus:output_type -> public.v1.GetDeploymentStatusResponse
+	86,  // 174: public.v1.FleetService.StreamDeploymentEvents:output_type -> public.v1.DeploymentEvent
+	89,  // 175: public.v1.FleetService.GetConfiguration:output_type -> public.v1.GetConfigurationResponse
+	91,  // 176: public.v1.FleetService.UpdateConfiguration:output_type -> public.v1.UpdateConfigurationResponse
+	93,  // 177: public.v1.FleetService.StreamEvents:output_type -> public.v1.Event
+	158, // [158:178] is the sub-list for method output_type
+	138, // [138:158] is the sub-list for method input_type
+	138, // [138:138] is the sub-list for extension type_name
+	138, // [138:138] is the sub-list for extension extendee
+	0,   // [0:138] is the sub-list for field type_name
 }
 
 func init() { file_public_v1_fleet_proto_init() }
@@ -3346,13 +9214,28 @@ func file_public_v1_fleet_proto_init() {
 	if File_public_v1_fleet_proto != nil {
 		return
 	}
+	file_public_v1_fleet_proto_msgTypes[24].OneofWrappers = []any{
+		(*DeploymentPayload_Binary)(nil),
+		(*DeploymentPayload_Script)(nil),
+		(*DeploymentPayload_Container)(nil),
+		(*DeploymentPayload_Config)(nil),
+		(*DeploymentPayload_Firmware)(nil),
+		(*DeploymentPayload_Package)(nil),
+		(*DeploymentPayload_Bundle)(nil),
+	}
+	file_public_v1_fleet_proto_msgTypes[34].OneofWrappers = []any{
+		(*DeploymentTarget_Devices)(nil),
+		(*DeploymentTarget_Groups)(nil),
+		(*DeploymentTarget_Labels)(nil),
+		(*DeploymentTarget_Query)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_public_v1_fleet_proto_rawDesc), len(file_public_v1_fleet_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   41,
+			NumEnums:      15,
+			NumMessages:   114,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

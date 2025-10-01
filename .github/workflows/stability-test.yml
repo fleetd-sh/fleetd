@@ -1,0 +1,417 @@
+name: Stability Tests
+
+on:
+  # Run on schedule (daily at 2 AM UTC)
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      duration:
+        description: 'Test duration (e.g., 30m, 2h, 72h)'
+        required: false
+        default: '30m'
+      components:
+        description: 'Components to test (comma-separated)'
+        required: false
+        default: 'memory,connections,database'
+      parallel:
+        description: 'Run parallel test scenarios'
+        required: false
+        type: boolean
+        default: false
+
+  # Run on release
+  release:
+    types: [published]
+
+  # Run on significant changes to core components
+  push:
+    branches: [main]
+    paths:
+      - 'internal/agent/**'
+      - 'internal/control/**'
+      - 'internal/database/**'
+      - 'cmd/**'
+      - 'go.mod'
+      - 'go.sum'
+
+  pull_request:
+    branches: [main]
+    paths:
+      - 'internal/agent/**'
+      - 'internal/control/**'
+      - 'internal/database/**'
+      - 'cmd/**'
+      - 'go.mod'
+      - 'go.sum'
+
+env:
+  GO_VERSION: '1.21'
+  STABILITY_TEST_TIMEOUT: '45m'
+
+jobs:
+  # Quick stability check for PRs
+  quick-stability:
+    name: Quick Stability Check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+        cache: true
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sqlite3
+        go mod download
+
+    - name: Build fleetd
+      run: make build
+
+    - name: Run quick stability test
+      run: |
+        ./scripts/ci-stability-test.sh \
+          --duration 10m \
+          --components memory,connections \
+          --output ./quick-stability-results
+      env:
+        CI: true
+        STABILITY_TEST_TIMEOUT: '15m'
+
+    - name: Upload quick test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: quick-stability-results
+        path: ./quick-stability-results/
+        retention-days: 7
+
+  # Standard stability test for main branch and manual triggers
+  standard-stability:
+    name: Standard Stability Test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        scenario:
+          - name: "memory-focused"
+            components: "memory,goroutines"
+            duration: "30m"
+          - name: "network-focused"
+            components: "connections,tls,network"
+            duration: "30m"
+          - name: "database-focused"
+            components: "database,data_integrity"
+            duration: "30m"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+        cache: true
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sqlite3 jq curl
+
+        # Install system monitoring tools
+        sudo apt-get install -y procps sysstat
+
+    - name: Install Go dependencies
+      run: go mod download
+
+    - name: Build fleetd
+      run: make build
+
+    - name: Run stability test - ${{ matrix.scenario.name }}
+      run: |
+        ./scripts/ci-stability-test.sh \
+          --duration "${{ matrix.scenario.duration }}" \
+          --components "${{ matrix.scenario.components }}" \
+          --output "./stability-results-${{ matrix.scenario.name }}"
+      env:
+        CI: true
+        STABILITY_TEST_TIMEOUT: '45m'
+
+    - name: Generate test summary
+      if: always()
+      run: |
+        echo "## Stability Test Results - ${{ matrix.scenario.name }}" > test-summary.md
+        echo "" >> test-summary.md
+
+        if [[ -f "./stability-results-${{ matrix.scenario.name }}/ci-stability-report.txt" ]]; then
+          echo "\`\`\`" >> test-summary.md
+          cat "./stability-results-${{ matrix.scenario.name }}/ci-stability-report.txt" >> test-summary.md
+          echo "\`\`\`" >> test-summary.md
+        else
+          echo "Test results not available" >> test-summary.md
+        fi
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: stability-results-${{ matrix.scenario.name }}
+        path: ./stability-results-${{ matrix.scenario.name }}/
+        retention-days: 14
+
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('test-summary.md')) {
+            const summary = fs.readFileSync('test-summary.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+          }
+
+  # Long-running stability test for releases and scheduled runs
+  extended-stability:
+    name: Extended Stability Test (72h)
+    if: github.event_name == 'schedule' || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4320  # 72 hours
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+        cache: true
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sqlite3 jq curl procps sysstat
+
+    - name: Install Go dependencies
+      run: go mod download
+
+    - name: Build fleetd
+      run: make build
+
+    - name: Setup extended test environment
+      run: |
+        # Create dedicated directory for 72h test
+        mkdir -p ./extended-stability-results
+
+        # Generate configuration for extended testing
+        go run ./test/stability/main.go \
+          -generate-config ./extended-stability-results/extended-config.json
+
+        # Customize config for extended testing
+        jq '.duration = "72h" | .monitor_interval = "1m" | .validation_interval = "5m"' \
+          ./extended-stability-results/extended-config.json > tmp.json && \
+          mv tmp.json ./extended-stability-results/extended-config.json
+
+    - name: Run 72-hour stability test
+      run: |
+        ./scripts/run-stability-test.sh \
+          --config ./extended-stability-results/extended-config.json \
+          --output ./extended-stability-results \
+          --duration 72h \
+          --background
+      env:
+        CI: true
+
+    - name: Monitor test progress
+      run: |
+        # Monitor the test for the first hour
+        for i in {1..60}; do
+          echo "=== Test Progress (minute $i) ==="
+
+          if [[ -f ./extended-stability-results/stability.log ]]; then
+            tail -n 10 ./extended-stability-results/stability.log
+          fi
+
+          if [[ -f ./extended-stability-results/stability-test.pid ]]; then
+            local pid=$(cat ./extended-stability-results/stability-test.pid)
+            if ! kill -0 "$pid" 2>/dev/null; then
+              echo "Test process has stopped unexpectedly"
+              exit 1
+            fi
+          fi
+
+          sleep 60
+        done
+
+        echo "Initial monitoring complete. Test will continue running..."
+
+    - name: Wait for test completion
+      run: |
+        # Wait for the background test to complete
+        if [[ -f ./extended-stability-results/stability-test.pid ]]; then
+          local pid=$(cat ./extended-stability-results/stability-test.pid)
+
+          echo "Waiting for stability test (PID: $pid) to complete..."
+
+          # Wait with timeout
+          local timeout=$((72 * 60 * 60 + 3600))  # 72h + 1h buffer
+          local elapsed=0
+
+          while kill -0 "$pid" 2>/dev/null && [[ $elapsed -lt $timeout ]]; do
+            sleep 300  # Check every 5 minutes
+            elapsed=$((elapsed + 300))
+
+            # Log progress every hour
+            if [[ $((elapsed % 3600)) -eq 0 ]]; then
+              local hours=$((elapsed / 3600))
+              echo "Test running for $hours hours..."
+            fi
+          done
+
+          if kill -0 "$pid" 2>/dev/null; then
+            echo "Test timed out after 73 hours"
+            kill -TERM "$pid" || true
+            sleep 30
+            kill -KILL "$pid" || true
+            exit 1
+          else
+            echo "Test completed successfully"
+          fi
+        else
+          echo "No test PID file found"
+          exit 1
+        fi
+
+    - name: Generate extended test report
+      if: always()
+      run: |
+        echo "## 72-Hour Stability Test Results" > extended-summary.md
+        echo "" >> extended-summary.md
+        echo "**Test Duration:** 72 hours" >> extended-summary.md
+        echo "**Completion Time:** $(date)" >> extended-summary.md
+        echo "" >> extended-summary.md
+
+        if [[ -f ./extended-stability-results/stability-report.json ]]; then
+          echo "### Test Summary" >> extended-summary.md
+
+          if command -v jq > /dev/null; then
+            local success=$(jq -r '.success' ./extended-stability-results/stability-report.json)
+            local errors=$(jq -r '.errors | length' ./extended-stability-results/stability-report.json)
+            local peak_memory=$(jq -r '.peak_memory_mb' ./extended-stability-results/stability-report.json)
+            local avg_cpu=$(jq -r '.average_cpu_percent' ./extended-stability-results/stability-report.json)
+
+            echo "- **Status:** $(if [[ "$success" == "true" ]]; then echo "✅ PASSED"; else echo "❌ FAILED"; fi)" >> extended-summary.md
+            echo "- **Total Errors:** $errors" >> extended-summary.md
+            echo "- **Peak Memory:** ${peak_memory} MB" >> extended-summary.md
+            echo "- **Average CPU:** ${avg_cpu}%" >> extended-summary.md
+          fi
+
+          echo "" >> extended-summary.md
+          echo "### Detailed Report" >> extended-summary.md
+          echo "\`\`\`" >> extended-summary.md
+          cat ./extended-stability-results/ci-stability-report.txt >> extended-summary.md
+          echo "\`\`\`" >> extended-summary.md
+        else
+          echo "❌ Test results not available" >> extended-summary.md
+        fi
+
+    - name: Upload extended test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: extended-stability-results
+        path: ./extended-stability-results/
+        retention-days: 30
+
+    - name: Create GitHub release comment
+      if: github.event_name == 'release' && always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          if (fs.existsSync('extended-summary.md')) {
+            const summary = fs.readFileSync('extended-summary.md', 'utf8');
+
+            // Find the release
+            const release = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: context.ref.replace('refs/tags/', '')
+            });
+
+            // Add comment to release
+            await github.rest.repos.createReleaseComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release.data.id,
+              body: `## 72-Hour Stability Test Results\n\n${summary}`
+            });
+          }
+
+  # Cleanup and notification
+  notify-results:
+    name: Notify Results
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'release')
+    needs: [standard-stability, extended-stability]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Generate comprehensive report
+      run: |
+        echo "# fleetd Stability Test Summary" > final-report.md
+        echo "" >> final-report.md
+        echo "**Repository:** ${{ github.repository }}" >> final-report.md
+        echo "**Commit:** ${{ github.sha }}" >> final-report.md
+        echo "**Trigger:** ${{ github.event_name }}" >> final-report.md
+        echo "**Date:** $(date)" >> final-report.md
+        echo "" >> final-report.md
+
+        # Process all downloaded artifacts
+        for dir in */; do
+          if [[ -f "$dir/ci-stability-report.txt" ]]; then
+            echo "## Results from $dir" >> final-report.md
+            echo "\`\`\`" >> final-report.md
+            cat "$dir/ci-stability-report.txt" >> final-report.md
+            echo "\`\`\`" >> final-report.md
+            echo "" >> final-report.md
+          fi
+        done
+
+    - name: Upload final report
+      uses: actions/upload-artifact@v4
+      with:
+        name: final-stability-report
+        path: final-report.md
+        retention-days: 90
+
+    # Add notification integrations here (Slack, email, etc.)
+    # Example:
+    # - name: Notify Slack
+    #   if: failure()
+    #   uses: 8398a7/action-slack@v3
+    #   with:
+    #     status: failure
+    #     text: "fleetd 72-hour stability test failed"
+    #   env:
+    #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

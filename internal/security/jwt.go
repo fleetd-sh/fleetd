@@ -224,7 +224,6 @@ func (m *JWTManager) ValidateToken(tokenString string) (*Claims, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		// Return the appropriate key
 		if m.config.RSAPublicKey != nil {
 			return m.config.RSAPublicKey, nil
 		}

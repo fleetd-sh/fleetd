@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"time"
 
-	pb "fleetd.sh/gen/fleetd/v1"
+	pb "fleetd.sh/gen/public/v1"
 	"fleetd.sh/internal/ferrors"
 	"github.com/shirou/gopsutil/v3/process"
 )
@@ -715,7 +715,7 @@ func (mp *ManagedProcess) shouldRestartWithBackoff() bool {
 		return true
 	case pb.RestartPolicy_RESTART_POLICY_ON_FAILURE:
 		return mp.Cmd.ProcessState != nil && !mp.Cmd.ProcessState.Success()
-	case pb.RestartPolicy_RESTART_POLICY_NEVER:
+	case pb.RestartPolicy_RESTART_POLICY_NO:
 		return false
 	default:
 		return false

@@ -1,0 +1,302 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_scope:
+        description: 'Test scope'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - provisioning
+          - telemetry
+          - deployment
+          - multi-device
+
+env:
+  GO_VERSION: '1.21'
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run unit tests
+        run: |
+          go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.txt
+
+  build-artifacts:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            arch: amd64
+          - os: linux
+            arch: arm64
+          - os: linux
+            arch: arm
+            arm: 7
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build agent
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+          GOARM: ${{ matrix.arm }}
+        run: |
+          go build -ldflags="-s -w" -o fleetd-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.arm }} ./cmd/fleetd
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: fleetd-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.arm }}
+          path: fleetd-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.arm }}
+
+  docker-e2e:
+    runs-on: ubuntu-latest
+    needs: build-artifacts
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Download ARM64 artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: fleetd-linux-arm64
+          path: ./bin/
+
+      - name: Make binary executable
+        run: chmod +x ./bin/fleetd-linux-arm64
+
+      - name: Start services
+        run: |
+          cd test/e2e
+          docker-compose -f docker-compose.test.yml up -d
+
+          # Wait for services
+          timeout 60 bash -c 'until docker-compose -f docker-compose.test.yml ps | grep -q "healthy"; do sleep 2; done'
+
+      - name: Run E2E tests
+        run: |
+          cd test/e2e
+          docker-compose -f docker-compose.test.yml run test-runner
+
+      - name: Collect logs
+        if: always()
+        run: |
+          cd test/e2e
+          docker-compose -f docker-compose.test.yml logs > docker-logs.txt
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-logs
+          path: test/e2e/docker-logs.txt
+
+      - name: Cleanup
+        if: always()
+        run: |
+          cd test/e2e
+          docker-compose -f docker-compose.test.yml down -v
+
+  qemu-e2e:
+    runs-on: ubuntu-latest
+    needs: build-artifacts
+    strategy:
+      matrix:
+        pi_version: [pi4, pi5]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-arm qemu-user-static expect sshpass
+
+      - name: Download ARM64 artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: fleetd-linux-arm64
+          path: ./bin/
+
+      - name: Download Raspberry Pi OS image
+        run: |
+          mkdir -p /tmp/raspios
+          cd /tmp/raspios
+
+          # Use lite image for faster testing
+          if [ "${{ matrix.pi_version }}" == "pi5" ]; then
+            wget -q https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-03-15/2024-03-15-raspios-bookworm-arm64-lite.img.xz
+          else
+            wget -q https://downloads.raspberrypi.com/raspios_lite_armhf/images/raspios_lite_armhf-2024-03-15/2024-03-15-raspios-bookworm-armhf-lite.img.xz
+          fi
+
+          xz -d *.img.xz
+
+      - name: Run QEMU tests
+        run: |
+          chmod +x test/e2e/qemu-test.sh
+          USE_QEMU=true RASPIOS_IMAGE=/tmp/raspios/*.img test/e2e/qemu-test.sh
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: qemu-test-results-${{ matrix.pi_version }}
+          path: /tmp/fleetd-e2e-test/
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: build-artifacts
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name postgres \
+            -e POSTGRES_USER=fleetd \
+            -e POSTGRES_PASSWORD=fleetd \
+            -e POSTGRES_DB=fleetd_test \
+            -p 5432:5432 \
+            postgres:17-alpine
+
+      - name: Start Valkey
+        run: |
+          docker run -d \
+            --name valkey \
+            -p 6379:6379 \
+            valkey/valkey:7-alpine
+
+      - name: Wait for services
+        run: |
+          timeout 30 bash -c 'until nc -z localhost 5432; do sleep 1; done'
+          timeout 30 bash -c 'until nc -z localhost 6379; do sleep 1; done'
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgres://fleetd:fleetd@localhost:5432/fleetd_test
+          VALKEY_URL: localhost:6379
+          RUN_INTEGRATION: true
+        run: |
+          go test -v -tags=integration ./test/integration/...
+
+  stress-test:
+    runs-on: ubuntu-latest
+    needs: docker-e2e
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build stress test tool
+        run: |
+          go build -o stress-test ./test/stress/
+
+      - name: Start services
+        run: |
+          docker-compose -f docker/docker-compose.yml up -d
+          sleep 30
+
+      - name: Run stress test (100 devices)
+        run: |
+          ./stress-test --devices=100 --duration=5m --rate=10
+
+      - name: Collect metrics
+        run: |
+          curl -s http://localhost:9090/api/v1/query?query=up | jq '.data.result'
+          docker stats --no-stream
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: stress-test-results
+          path: stress-test-results/
+
+  report:
+    runs-on: ubuntu-latest
+    needs: [unit-tests, docker-e2e, integration-test]
+    if: always()
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate report
+        run: |
+          echo "# E2E Test Report" > report.md
+          echo "Date: $(date)" >> report.md
+          echo "" >> report.md
+
+          echo "## Test Results" >> report.md
+          echo "- Unit Tests: ${{ needs.unit-tests.result }}" >> report.md
+          echo "- Docker E2E: ${{ needs.docker-e2e.result }}" >> report.md
+          echo "- Integration: ${{ needs.integration-test.result }}" >> report.md
+          echo "" >> report.md
+
+          echo "## Artifacts" >> report.md
+          ls -la >> report.md
+
+      - name: Upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: report.md
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });

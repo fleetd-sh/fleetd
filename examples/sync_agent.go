@@ -90,7 +90,6 @@ func main() {
 	// Start metric generation
 	go generateMetrics(deviceStorage, logger)
 
-	// Handle shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 

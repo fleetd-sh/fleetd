@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: postgres:17
         env:
           POSTGRES_USER: fleetd
           POSTGRES_PASSWORD: fleetd
@@ -90,11 +90,20 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
 
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://fleetd:fleetd@localhost:5432/fleetd_test?sslmode=disable
+        run: |
+          for migration in internal/database/migrations/*.up.sql; do
+            psql $DATABASE_URL -f $migration || true
+          done
+
       - name: Run integration tests
         env:
           DATABASE_URL: postgresql://fleetd:fleetd@localhost:5432/fleetd_test?sslmode=disable
           INTEGRATION: true
           FLEETD_INTEGRATION_TESTS: true
+          JWT_SECRET: test-secret-key
         run: go test -v ./test/integration/... ./test/e2e/...
 
   test-web:

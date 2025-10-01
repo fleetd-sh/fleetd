@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { TelemetryService } from "./gen/fleetd/v1/telemetry_connect";
-import { SettingsService } from "./gen/fleetd/v1/settings_connect";
+import { useMemo } from "react";
+import { DeviceService } from "./gen/fleetd/v1/device_pb";
+import { SettingsService } from "./gen/fleetd/v1/settings_pb";
+import { TelemetryService } from "./gen/fleetd/v1/telemetry_pb";
 
 // Get the API URL from environment or use default
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8090";
@@ -23,6 +24,14 @@ function createAuthTransport() {
       },
     ],
   });
+}
+
+// Device client hook
+export function useDeviceClient() {
+  return useMemo(() => {
+    const transport = createAuthTransport();
+    return createClient(DeviceService, transport);
+  }, []);
 }
 
 // Telemetry client hook

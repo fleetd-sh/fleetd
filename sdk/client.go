@@ -9,17 +9,14 @@ import (
 	"connectrpc.com/connect"
 	fleetpb "fleetd.sh/gen/fleetd/v1"
 	"fleetd.sh/gen/fleetd/v1/fleetpbconnect"
-	"fleetd.sh/gen/public/v1/publicv1connect"
 )
 
-// Client is the main FleetD SDK client that provides access to control plane services
+// Client is the main fleetd SDK client that provides access to control plane services
 type Client struct {
 	// Service clients
-	Fleet        fleetpbconnect.FleetServiceClient
-	Deployment   fleetpbconnect.DeploymentServiceClient
-	Analytics    fleetpbconnect.AnalyticsServiceClient
-	Device       fleetpbconnect.DeviceServiceClient
-	Organization publicv1connect.OrganizationServiceClient
+	Fleet      fleetpbconnect.FleetServiceClient
+	Analytics  fleetpbconnect.AnalyticsServiceClient
+	Device     fleetpbconnect.DeviceServiceClient
 
 	// Internal fields
 	httpClient *http.Client
@@ -29,7 +26,7 @@ type Client struct {
 	opts       []connect.ClientOption
 }
 
-// Options configures the FleetD client
+// Options configures the fleetd client
 type Options struct {
 	// APIKey for authentication (required for production)
 	APIKey string
@@ -49,7 +46,7 @@ type Options struct {
 	Insecure bool
 }
 
-// NewClient creates a new FleetD SDK client for the control plane API
+// NewClient creates a new fleetd SDK client for the control plane API
 func NewClient(baseURL string, opts Options) (*Client, error) {
 	if baseURL == "" {
 		baseURL = "https://api.fleetd.sh"
@@ -89,10 +86,8 @@ func NewClient(baseURL string, opts Options) (*Client, error) {
 
 	// Initialize service clients using Connect
 	c.Fleet = fleetpbconnect.NewFleetServiceClient(httpClient, baseURL, c.opts...)
-	c.Deployment = fleetpbconnect.NewDeploymentServiceClient(httpClient, baseURL, c.opts...)
 	c.Analytics = fleetpbconnect.NewAnalyticsServiceClient(httpClient, baseURL, c.opts...)
 	c.Device = fleetpbconnect.NewDeviceServiceClient(httpClient, baseURL, c.opts...)
-	c.Organization = publicv1connect.NewOrganizationServiceClient(httpClient, baseURL, c.opts...)
 
 	return c, nil
 }

@@ -1,0 +1,134 @@
+# Device API Deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-api
+  namespace: fleetd
+  labels:
+    app: device-api
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8081
+      targetPort: 8081
+      name: http
+  selector:
+    app: device-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: device-api
+  namespace: fleetd
+  labels:
+    app: device-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: device-api
+  template:
+    metadata:
+      labels:
+        app: device-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: default
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: device-api
+          # Replace with your registry
+          image: ghcr.io/fleetd-sh/fleetd/device-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fleetd-secrets
+                  key: database-url
+            - name: VALKEY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fleetd-secrets
+                  key: valkey-url
+            - name: SERVER_PORT
+              value: "8081"
+            - name: SERVER_HOST
+              value: "0.0.0.0"
+            - name: PLATFORM_API_URL
+              value: "http://platform-api:8080"
+            - name: LOG_LEVEL
+              value: "info"
+            - name: METRICS_ENABLED
+              value: "true"
+            - name: MTLS_ENABLED
+              value: "false"  # Enable and mount certs for production
+            - name: MAX_DEVICES_PER_FLEET
+              value: "10000"
+            - name: DEVICE_HEARTBEAT_INTERVAL
+              value: "60s"
+            - name: DEVICE_TIMEOUT
+              value: "5m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: artifacts
+              mountPath: /artifacts
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: artifacts
+          emptyDir: {}  # Consider using PVC or object storage for production
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - device-api
+                topologyKey: kubernetes.io/hostname

@@ -1,0 +1,142 @@
+version: '3.8'
+
+# This extends the base test docker-compose with observability stack
+# Usage: docker-compose -f docker-compose.test.yml -f docker-compose.observability.yml up
+
+services:
+  # VictoriaMetrics for metrics storage
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:stable
+    container_name: victoriametrics-test
+    ports:
+      - "8428:8428"
+    volumes:
+      - vm_test_data:/victoria-metrics-data
+    command:
+      - "--storageDataPath=/victoria-metrics-data"
+      - "--httpListenAddr=:8428"
+      - "--retentionPeriod=1d"  # Shorter retention for tests
+      - "--search.latencyOffset=1s"
+      - "--search.maxQueryDuration=30s"
+    networks:
+      - fleetd-test
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8428/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Loki for log aggregation
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki-test
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_test_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - fleetd-test
+    environment:
+      - LOKI_RETENTION_PERIOD=24h
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Update device-api with observability endpoints
+  device-api:
+    environment:
+      - VICTORIAMETRICS_URL=http://victoriametrics:8428
+      - LOKI_URL=http://loki:3100
+      - ENABLE_METRICS=true
+      - ENABLE_LOGS_EXPORT=true
+      - METRICS_PUSH_INTERVAL=5s
+      - LOGS_BATCH_SIZE=100
+      - LOGS_FLUSH_INTERVAL=2s
+
+  # Update platform-api with observability endpoints
+  platform-api:
+    environment:
+      - VICTORIAMETRICS_URL=http://victoriametrics:8428
+      - LOKI_URL=http://loki:3100
+      - ENABLE_METRICS=true
+      - ENABLE_LOGS_EXPORT=true
+
+  # Update agents with metrics and logs export
+  raspios-device-1:
+    environment:
+      - FLEET_SERVER=http://device-api:8080
+      - DEVICE_NAME=test-pi-001
+      - ENABLE_TELEMETRY=true
+      - TELEMETRY_INTERVAL=10s
+      - SEND_LOGS=true
+
+  raspios-device-2:
+    environment:
+      - FLEET_SERVER=http://device-api:8080
+      - DEVICE_NAME=test-pi-002
+      - ENABLE_TELEMETRY=true
+      - TELEMETRY_INTERVAL=10s
+      - SEND_LOGS=true
+
+  # Metrics validator - checks if metrics are being collected
+  metrics-validator:
+    image: curlimages/curl:latest
+    container_name: metrics-validator-test
+    networks:
+      - fleetd-test
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+      device-api:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Waiting for metrics to be collected...'
+      sleep 30
+
+      echo 'Checking device metrics in VictoriaMetrics...'
+      curl -s 'http://victoriametrics:8428/api/v1/query?query=up{job=\"device-api\"}' | grep -q 'result' && echo '✅ Device API metrics found' || echo '❌ No device API metrics'
+
+      curl -s 'http://victoriametrics:8428/api/v1/query?query=fleetd_device_count' | grep -q 'result' && echo '✅ Device count metrics found' || echo '❌ No device count metrics'
+
+      curl -s 'http://victoriametrics:8428/api/v1/query?query=fleetd_telemetry_received_total' | grep -q 'result' && echo '✅ Telemetry metrics found' || echo '❌ No telemetry metrics'
+
+      echo 'Metrics validation complete!'
+      "
+    profiles:
+      - validate
+
+  # Logs validator - checks if logs are being collected
+  logs-validator:
+    image: curlimages/curl:latest
+    container_name: logs-validator-test
+    networks:
+      - fleetd-test
+    depends_on:
+      loki:
+        condition: service_healthy
+      device-api:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Waiting for logs to be collected...'
+      sleep 30
+
+      echo 'Checking device logs in Loki...'
+      curl -s 'http://loki:3100/loki/api/v1/query_range?query={source=\"device-api\"}' | grep -q 'values' && echo '✅ Device API logs found' || echo '❌ No device API logs'
+
+      curl -s 'http://loki:3100/loki/api/v1/query_range?query={device_id=~\".+\"}' | grep -q 'values' && echo '✅ Device logs found' || echo '❌ No device logs'
+
+      echo 'Logs validation complete!'
+      "
+    profiles:
+      - validate
+
+volumes:
+  vm_test_data:
+  loki_test_data:

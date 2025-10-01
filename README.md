@@ -1,16 +1,50 @@
-# FleetD - Edge Device Fleet Management Platform
+# fleetd - Modern IoT Device Management Platform
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://go.dev/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
+[![CI Status](https://github.com/fleetd-sh/fleetd/workflows/CI/badge.svg)](https://github.com/fleetd-sh/fleetd/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/fleetd-sh/fleetd)](https://goreportcard.com/report/github.com/fleetd-sh/fleetd)
+[![Discord](https://img.shields.io/discord/123456789?color=7289da&logo=discord)](https://discord.gg/fleetd)
 
-FleetD is a production-ready edge device fleet management platform that provides centralized control, monitoring, and deployment capabilities for distributed IoT and edge computing infrastructure.
+The fleetd platform is a production-ready IoT device fleet management system that provides centralized control, monitoring, and deployment capabilities for distributed edge computing infrastructure.
+
+## 🎯 Quick Start
+
+### One-Line Installation
+
+```bash
+# Install fleetd CLI
+curl -sSL https://get.fleetd.sh | sh
+
+# Start local platform (requires Docker)
+fleetctl start
+
+# Open the dashboard
+open http://localhost:3000
+```
+
+### 30-Second Demo
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/fleetd-sh/fleetd.git && cd fleetd
+just install
+
+# 2. Start everything
+just dev
+
+# 3. Register a simulated device
+fleetctl device simulate --count 10
+
+# 4. View in dashboard
+open http://localhost:3000
+```
 
 ## 🚀 Features
 
 ### Core Capabilities
 - **Device Management**: Register, monitor, and control edge devices at scale
-- **Fleet Operations**: Organize devices into logical fleets with tags and metadata
+- **Device Fleet Operations**: Organize devices into logical device fleets with tags and metadata
 - **Secure Communication**: JWT-based authentication with refresh tokens and API keys
 - **Real-time Monitoring**: Metrics collection and aggregation with Prometheus/VictoriaMetrics
 - **Deployment Pipeline**: Automated software deployment and rollback capabilities
@@ -34,9 +68,9 @@ FleetD is a production-ready edge device fleet management platform that provides
 ```mermaid
 graph TB
     subgraph "Edge Devices"
-        A[FleetD Agent 1]
-        B[FleetD Agent 2]
-        C[FleetD Agent N]
+        A[fleetd Agent 1]
+        B[fleetd Agent 2]
+        C[fleetd Agent N]
     end
 
     subgraph "Control Plane"
@@ -72,45 +106,58 @@ graph TB
 ## 📦 Installation
 
 ### Prerequisites
-- Go 1.21 or higher
-- PostgreSQL 14+ or SQLite (for development)
-- Docker & Docker Compose (optional)
-- Make or Just (task runner)
+- Go 1.21+ (for development)
+- Docker & Docker Compose
+- [Just](https://just.systems/) task runner
+- [Bun](https://bun.sh/) (for web UI development)
 
-### Quick Start
+### Production Installation
 
-1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/fleetd.git
+# Install fleetd CLI
+curl -sSL https://get.fleetd.sh | sh
+
+# Deploy with Docker Compose
+cd ~/.fleetd
+docker-compose -f docker-compose.production.yml up -d
+
+# Or deploy to Kubernetes
+kubectl apply -f https://raw.githubusercontent.com/fleetd-sh/fleetd/main/deployments/kubernetes/
+```
+
+### Development Setup
+
+```bash
+# Clone repository
+git clone https://github.com/fleetd-sh/fleetd.git
 cd fleetd
+
+# Install dependencies
+just install
+
+# Start development environment
+just dev  # Starts all services with hot reload
+
+# Or start services individually
+just platform-api-dev  # Platform API on :8090
+just device-api-dev    # Device API on :8080
+just web-dev          # Studio UI on :3000
 ```
 
-2. **Install dependencies**
+### Using fleetctl
+
 ```bash
-go mod download
-```
+# Start local platform
+fleetctl start
 
-3. **Run with Docker Compose (recommended)**
-```bash
-docker-compose up -d
-```
+# Check status
+fleetctl status
 
-4. **Or run locally**
-```bash
-# Start PostgreSQL and Valkey
-docker-compose up -d postgres valkey
+# View logs
+fleetctl logs -f
 
-# Run migrations
-just migrate-up
-
-# Start Platform API
-just platform-api-dev
-
-# In another terminal, start Device API
-just device-api-dev
-
-# In another terminal, start an agent
-just agent-dev
+# Stop platform
+fleetctl stop
 ```
 
 ## 🔧 Configuration
@@ -163,40 +210,74 @@ refresh_ttl = "7d"
 
 ```bash
 # Build all binaries
-make build
+just build-all
 
-# Or build individually
-go build -o bin/platform-api ./cmd/platform-api
-go build -o bin/device-api ./cmd/device-api
-go build -o bin/fleetctl ./cmd/fleetctl
-go build -o bin/fleetd ./cmd/agent
+# Build specific components
+just build platform-api
+just build device-api
+just build fleetctl
+
+# Build Docker images
+just docker-build-all
 ```
 
 ### Running Tests
 
 ```bash
-# Unit tests
-go test ./...
+# Run unit tests only
+just test
 
-# Integration tests
-INTEGRATION=1 go test ./test/integration/...
+# Run integration tests (requires database)
+INTEGRATION=1 just test-integration
 
-# With coverage
-go test -cover -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out
+# Run e2e tests
+just test-e2e
+
+# Run all tests (unit + integration + e2e)
+INTEGRATION=1 just test-all
 ```
 
-### Database Migrations
+**Note on Integration Tests**: Following best practices, integration tests use environment variables instead of build tags. Tests will skip with a helpful message if the required environment variable is not set. This approach makes tests more discoverable and prevents hidden build errors.
+
+To run integration tests manually:
+```bash
+# Set the environment variable
+export INTEGRATION=1
+
+# Run specific integration test
+go test ./test/integration/... -v
+
+# Or run a single test
+go test ./test/integration/... -run TestAuthDeviceFlow_RequestDeviceCode -v
+```
+
+### Database Operations
 
 ```bash
-# Apply migrations
-just migrate-up
+# Run migrations
+just db-migrate
 
-# Rollback last migration
-just migrate-down
+# Rollback migration
+just db-rollback
 
 # Create new migration
-just migrate-create add_new_table
+just db-migration add_device_tags
+
+# Reset database
+just db-reset
+```
+
+### Code Quality
+
+```bash
+# Format all code
+just format-all
+
+# Lint all code
+just lint-all
+
+# Run pre-commit checks
+just pre-commit
 ```
 
 ## 🎮 Using fleetctl
@@ -234,16 +315,16 @@ fleetctl devices logs device-001 --follow
 fleetctl devices metrics device-001
 ```
 
-### Fleet Operations
+### Device Fleet Operations
 
 ```bash
-# Create a fleet
+# Create a device fleet
 fleetctl fleet create production --description "Production devices"
 
-# Add devices to fleet
+# Add devices to device fleet
 fleetctl fleet add-device production device-001 device-002
 
-# Deploy software
+# Deploy software to device fleet
 fleetctl deploy create --fleet production --version v1.2.3
 ```
 
@@ -301,37 +382,49 @@ Access Grafana at `http://localhost:3001` (admin/admin) for:
 
 ## 🚢 Deployment
 
-### Docker
+### Docker Compose
 
 ```bash
-# Build images
-docker build -f Dockerfile.platform-api -t fleetd/platform-api .
-docker build -f Dockerfile.device-api -t fleetd/device-api .
+# Production deployment
+cd docker
+docker-compose -f docker-compose.production.yml up -d
 
-# Run with docker-compose
-docker-compose up -d
+# View logs
+docker-compose -f docker-compose.production.yml logs -f
+
+# Scale services
+docker-compose -f docker-compose.production.yml up -d --scale device-api=3
 ```
 
 ### Kubernetes
 
 ```bash
-# Apply manifests
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/secrets.yaml
-kubectl apply -f k8s/deployments/
-kubectl apply -f k8s/services/
+# Create namespace
+kubectl create namespace fleetd
+
+# Apply configurations
+kubectl apply -f deployments/kubernetes/secrets.yaml
+kubectl apply -f deployments/kubernetes/postgres.yaml
+kubectl apply -f deployments/kubernetes/valkey.yaml
+kubectl apply -f deployments/kubernetes/platform-api.yaml
+kubectl apply -f deployments/kubernetes/device-api.yaml
+kubectl apply -f deployments/kubernetes/ingress.yaml
+
+# Check deployment
+kubectl get pods -n fleetd
+kubectl get svc -n fleetd
 ```
 
-### Helm
+### Binary Distribution
 
 ```bash
-# Install with Helm
-helm install fleetd ./charts/fleetd \
-  --namespace fleetd \
-  --create-namespace \
-  --set jwt.secret=your-secret-key \
-  --set postgresql.auth.password=secure-password
+# Download latest release
+curl -LO https://github.com/fleetd-sh/fleetd/releases/latest/download/fleetctl-linux-amd64
+chmod +x fleetctl-linux-amd64
+sudo mv fleetctl-linux-amd64 /usr/local/bin/fleetctl
+
+# Run services directly
+fleetctl start --profile production
 ```
 
 ## 📈 Performance
@@ -342,7 +435,7 @@ helm install fleetd ./charts/fleetd \
 |-----------|-------------|-------------|
 | Device Registration | 5,000 | 25ms |
 | Status Update | 10,000 | 15ms |
-| Fleet Query | 8,000 | 20ms |
+| Device Fleet Query | 8,000 | 20ms |
 | Auth Login | 2,000 | 50ms |
 
 ### Scaling Guidelines
@@ -365,7 +458,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## 📝 License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -376,11 +469,11 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 📞 Support
 
-- 📧 Email: support@fleetd.sh
-- 💬 Discord: [Join our community](https://discord.gg/fleetd)
-- 📖 Documentation: [docs.fleetd.sh](https://docs.fleetd.sh)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/fleetd/issues)
+- 📖 Documentation: [GitHub Wiki](https://github.com/fleetd-sh/fleetd/wiki)
+- 🐛 Issues: [GitHub Issues](https://github.com/fleetd-sh/fleetd/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/fleetd-sh/fleetd/discussions)
+- 📧 Security: security@fleetd.sh
 
 ---
 
-**FleetD** - Enterprise-grade edge device fleet management, simplified.
+**fleetd** - Enterprise-grade edge device fleet management, simplified.

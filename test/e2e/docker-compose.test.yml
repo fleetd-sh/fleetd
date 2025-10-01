@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  # Simulated Raspberry Pi device
+  raspios-device-1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.raspios
+    container_name: raspios-device-1
+    hostname: raspberrypi-001
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - ./test-data:/test-data
+    networks:
+      - fleetd-test
+    ports:
+      - "5022:22"     # SSH
+      - "8088:8088"   # Agent RPC
+    environment:
+      - FLEET_SERVER=http://device-api:8080
+      - DEVICE_NAME=test-pi-001
+    depends_on:
+      - device-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Second simulated device for multi-device testing
+  raspios-device-2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.raspios
+    container_name: raspios-device-2
+    hostname: raspberrypi-002
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    networks:
+      - fleetd-test
+    environment:
+      - FLEET_SERVER=http://device-api:8080
+      - DEVICE_NAME=test-pi-002
+    depends_on:
+      - device-api
+
+  # Device API
+  device-api:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.device-api
+    container_name: device-api-test
+    ports:
+      - "8080:8080"
+    networks:
+      - fleetd-test
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/fleetd_test
+      - LOG_LEVEL=debug
+      - ENABLE_METRICS=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Platform API
+  platform-api:
+    build:
+      context: ../../
+      dockerfile: Dockerfile.platform-api
+    container_name: platform-api-test
+    ports:
+      - "8090:8090"
+    networks:
+      - fleetd-test
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/fleetd_test
+      - DEVICE_API_URL=http://device-api:8080
+      - LOG_LEVEL=debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      device-api:
+        condition: service_healthy
+
+  # Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres-test
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=fleetd_test
+    ports:
+      - "5432:5432"
+    networks:
+      - fleetd-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ../../internal/database/migrations:/docker-entrypoint-initdb.d
+
+  # Valkey (Redis replacement)
+  valkey:
+    image: valkey/valkey:7-alpine
+    container_name: valkey-test
+    ports:
+      - "6379:6379"
+    networks:
+      - fleetd-test
+
+  # Test runner
+  test-runner:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.test-runner
+    container_name: e2e-test-runner
+    networks:
+      - fleetd-test
+    depends_on:
+      device-api:
+        condition: service_healthy
+      raspios-device-1:
+        condition: service_healthy
+    volumes:
+      - ./test-results:/test-results
+      - ../../:/workspace
+    environment:
+      - DEVICE_API_URL=http://device-api:8080
+      - PLATFORM_API_URL=http://platform-api:8090
+      - TEST_DEVICE_1=raspios-device-1
+      - TEST_DEVICE_2=raspios-device-2
+    command: ["/workspace/test/e2e/run-tests.sh"]
+
+networks:
+  fleetd-test:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

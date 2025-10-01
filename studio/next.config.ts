@@ -14,12 +14,27 @@ const nextConfig: NextConfig = {
       fullUrl: true,
     },
   },
+  webpack: (config) => {
+    // Handle .js imports in TypeScript files for protobuf-generated code
+    config.resolve.extensionAlias = {
+      ".js": [".js", ".ts"],
+      ".jsx": [".jsx", ".tsx"],
+    };
+
+    // Also try fallback extensions
+    config.resolve.extensions = [".tsx", ".ts", ".jsx", ".js", ".json"];
+
+    return config;
+  },
   // Proxy API requests to the Go backend during development
   async rewrites() {
     return [
       {
         source: "/api/v1/:path*",
-        destination: process.env.BACKEND_URL || "http://localhost:8080/api/v1/:path*",
+        destination:
+          process.env.DEVICE_API_URL ||
+          process.env.BACKEND_URL ||
+          "http://localhost:8080/api/v1/:path*",
       },
     ];
   },

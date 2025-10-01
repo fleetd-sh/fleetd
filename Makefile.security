@@ -1,0 +1,370 @@
+# Security Testing Makefile for fleetd
+# This makefile provides convenient targets for running security tests
+
+.PHONY: security-help security-install security-test security-test-quick security-test-full
+.PHONY: security-build security-clean security-deps security-report security-ci
+.PHONY: security-auth security-injection security-api security-tls security-compliance
+.PHONY: dependency-check container-scan secret-scan baseline-check
+
+# Configuration
+SECURITY_TARGET ?= http://localhost:8080
+SECURITY_CATEGORIES ?= all
+SECURITY_FORMATS ?= json,html
+SECURITY_OUTPUT ?= ./security-reports
+SECURITY_TIMEOUT ?= 30m
+SECURITY_THRESHOLD ?= High
+SECURITY_PARALLEL ?= 10
+
+# Help target
+security-help:
+	@echo "fleetd Security Testing Targets"
+	@echo "==============================="
+	@echo ""
+	@echo "Main Targets:"
+	@echo "  security-test-quick    - Run essential security tests (15min)"
+	@echo "  security-test-full     - Run comprehensive security tests (30min)"
+	@echo "  security-ci           - Run security tests in CI mode"
+	@echo "  security-report       - Generate security report from existing results"
+	@echo ""
+	@echo "Category-Specific Tests:"
+	@echo "  security-auth         - Authentication and authorization tests"
+	@echo "  security-injection    - SQL, NoSQL, Command injection tests"
+	@echo "  security-api          - API security tests (CORS, XXE, SSRF)"
+	@echo "  security-tls          - TLS/mTLS security tests"
+	@echo "  security-compliance   - Compliance checking (OWASP Top 10)"
+	@echo ""
+	@echo "Supplementary Scans:"
+	@echo "  dependency-check      - Check for vulnerable dependencies"
+	@echo "  container-scan        - Scan Docker images for vulnerabilities"
+	@echo "  secret-scan          - Scan for exposed secrets in code"
+	@echo "  baseline-check       - Basic security baseline check"
+	@echo ""
+	@echo "Utility Targets:"
+	@echo "  security-build        - Build security testing framework"
+	@echo "  security-install      - Install security testing dependencies"
+	@echo "  security-clean        - Clean security test artifacts"
+	@echo "  security-deps         - Update security testing dependencies"
+	@echo ""
+	@echo "Configuration (set via environment or make args):"
+	@echo "  SECURITY_TARGET       - Target URL (default: http://localhost:8080)"
+	@echo "  SECURITY_CATEGORIES   - Test categories (default: all)"
+	@echo "  SECURITY_FORMATS      - Output formats (default: json,html)"
+	@echo "  SECURITY_OUTPUT       - Output directory (default: ./security-reports)"
+	@echo "  SECURITY_TIMEOUT      - Test timeout (default: 30m)"
+	@echo "  SECURITY_THRESHOLD    - CI failure threshold (default: High)"
+	@echo "  SECURITY_PARALLEL     - Parallel workers (default: 10)"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make security-test-quick SECURITY_TARGET=https://api.fleetd.sh"
+	@echo "  make security-auth SECURITY_THRESHOLD=Medium"
+	@echo "  make security-ci SECURITY_CATEGORIES=auth,injection"
+
+# Install security testing dependencies
+security-install:
+	@echo "Installing security testing dependencies..."
+
+	# Install Go security tools
+	@echo "Installing Go security tools..."
+	go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+	go install golang.org/x/vuln/cmd/govulncheck@latest
+
+	# Install Node.js security tools
+	@echo "Installing Node.js security tools..."
+	npm install -g npm-audit-ci-wrapper
+
+	# Install system security tools (Linux/macOS)
+	@echo "Installing system security tools..."
+	@if command -v apt-get >/dev/null 2>&1; then \
+		sudo apt-get update && sudo apt-get install -y nmap sqlmap; \
+	elif command -v brew >/dev/null 2>&1; then \
+		brew install nmap sqlmap; \
+	else \
+		echo "Package manager not found. Please install nmap and sqlmap manually."; \
+	fi
+
+	# Install Trivy for container scanning
+	@echo "Installing Trivy..."
+	@if command -v curl >/dev/null 2>&1; then \
+		curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin; \
+	else \
+		echo "curl not found. Please install Trivy manually."; \
+	fi
+
+	@echo "✅ Security testing dependencies installed"
+
+# Build security testing framework
+security-build:
+	@echo "Building security testing framework..."
+	cd test/security/cmd/security-test && go build -o security-test .
+	@echo "✅ Security testing framework built"
+
+# Update security testing dependencies
+security-deps:
+	@echo "Updating security testing dependencies..."
+	go mod tidy
+	go mod download
+	cd studio && npm audit fix
+	@echo "✅ Security dependencies updated"
+
+# Clean security test artifacts
+security-clean:
+	@echo "Cleaning security test artifacts..."
+	rm -rf $(SECURITY_OUTPUT)
+	rm -f test/security/cmd/security-test/security-test
+	rm -f trivy-*.sarif
+	rm -f security-baseline-*.txt
+	@echo "✅ Security artifacts cleaned"
+
+# Quick security test (essential tests only)
+security-test-quick: security-build
+	@echo "Running quick security tests..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "auth,injection" \
+		-formats "$(SECURITY_FORMATS)" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "15m" \
+		-parallel $(SECURITY_PARALLEL) \
+		-verbose
+
+# Full comprehensive security test
+security-test-full: security-build
+	@echo "Running comprehensive security tests..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "$(SECURITY_CATEGORIES)" \
+		-formats "$(SECURITY_FORMATS),sarif,junit" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "$(SECURITY_TIMEOUT)" \
+		-parallel $(SECURITY_PARALLEL) \
+		-evidence \
+		-verbose
+
+# CI mode security test (with exit codes)
+security-ci: security-build
+	@echo "Running security tests in CI mode..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "$(SECURITY_CATEGORIES)" \
+		-formats "$(SECURITY_FORMATS),junit,sarif" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "$(SECURITY_TIMEOUT)" \
+		-ci \
+		-fail-threshold "$(SECURITY_THRESHOLD)" \
+		-parallel $(SECURITY_PARALLEL) \
+		-verbose
+
+# Authentication and authorization tests
+security-auth: security-build
+	@echo "Running authentication and authorization tests..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "auth,authentication,authorization" \
+		-formats "$(SECURITY_FORMATS)" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "20m" \
+		-verbose
+
+# Injection attack tests
+security-injection: security-build
+	@echo "Running injection attack tests..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "injection" \
+		-formats "$(SECURITY_FORMATS)" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "20m" \
+		-verbose
+
+# API security tests
+security-api: security-build
+	@echo "Running API security tests..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "api" \
+		-formats "$(SECURITY_FORMATS)" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "15m" \
+		-verbose
+
+# TLS/mTLS security tests
+security-tls: security-build
+	@echo "Running TLS/mTLS security tests..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "tls" \
+		-formats "$(SECURITY_FORMATS)" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "15m" \
+		-verbose
+
+# Compliance checking
+security-compliance: security-build
+	@echo "Running compliance checks..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "all" \
+		-formats "$(SECURITY_FORMATS)" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "25m" \
+		-verbose
+
+# Generate security report from existing results
+security-report:
+	@echo "Generating security report..."
+	@if [ ! -d "$(SECURITY_OUTPUT)" ]; then \
+		echo "❌ No security test results found. Run security tests first."; \
+		exit 1; \
+	fi
+	@echo "📊 Security reports available in: $(SECURITY_OUTPUT)"
+	@find $(SECURITY_OUTPUT) -name "*.html" -exec echo "🌐 HTML Report: {}" \;
+	@find $(SECURITY_OUTPUT) -name "*.json" -exec echo "📄 JSON Report: {}" \;
+
+# Check for vulnerable dependencies
+dependency-check:
+	@echo "Checking for vulnerable dependencies..."
+	@mkdir -p $(SECURITY_OUTPUT)
+
+	# Go vulnerability check
+	@echo "Checking Go dependencies..."
+	@if command -v govulncheck >/dev/null 2>&1; then \
+		govulncheck ./... | tee $(SECURITY_OUTPUT)/go-vulnerabilities.txt; \
+	else \
+		echo "⚠️  govulncheck not installed. Run 'make security-install' first."; \
+	fi
+
+	# Node.js vulnerability check
+	@echo "Checking Node.js dependencies..."
+	@if [ -d "studio" ]; then \
+		cd studio && npm audit --json > ../$(SECURITY_OUTPUT)/npm-audit.json 2>/dev/null || true; \
+		cd studio && npm audit | tee ../$(SECURITY_OUTPUT)/npm-audit.txt; \
+	fi
+
+	@echo "✅ Dependency check completed. Results in $(SECURITY_OUTPUT)/"
+
+# Scan Docker containers for vulnerabilities
+container-scan:
+	@echo "Scanning Docker containers for vulnerabilities..."
+	@mkdir -p $(SECURITY_OUTPUT)
+
+	# Build images first
+	@echo "Building Docker images..."
+	@if [ -f "Dockerfile.device-api" ]; then \
+		docker build -f Dockerfile.device-api -t fleetd/device-api:security-test .; \
+	fi
+	@if [ -f "Dockerfile.platform-api" ]; then \
+		docker build -f Dockerfile.platform-api -t fleetd/platform-api:security-test .; \
+	fi
+
+	# Scan with Trivy
+	@echo "Scanning with Trivy..."
+	@if command -v trivy >/dev/null 2>&1; then \
+		trivy image --format json --output $(SECURITY_OUTPUT)/container-scan-device-api.json fleetd/device-api:security-test || true; \
+		trivy image --format json --output $(SECURITY_OUTPUT)/container-scan-platform-api.json fleetd/platform-api:security-test || true; \
+		trivy image fleetd/device-api:security-test | tee $(SECURITY_OUTPUT)/container-scan-device-api.txt; \
+		trivy image fleetd/platform-api:security-test | tee $(SECURITY_OUTPUT)/container-scan-platform-api.txt; \
+	else \
+		echo "⚠️  Trivy not installed. Run 'make security-install' first."; \
+	fi
+
+	@echo "✅ Container scan completed. Results in $(SECURITY_OUTPUT)/"
+
+# Scan for exposed secrets
+secret-scan:
+	@echo "Scanning for exposed secrets..."
+	@mkdir -p $(SECURITY_OUTPUT)
+
+	# Use gitleaks if available
+	@if command -v gitleaks >/dev/null 2>&1; then \
+		gitleaks detect --source . --report-format json --report-path $(SECURITY_OUTPUT)/secrets-scan.json; \
+		gitleaks detect --source . --report-format csv --report-path $(SECURITY_OUTPUT)/secrets-scan.csv; \
+	else \
+		echo "gitleaks not found, using basic secret detection..."; \
+		grep -r -i -E "(password|secret|key|token|api_key)" --include="*.go" --include="*.js" --include="*.ts" --include="*.env" --include="*.yaml" --include="*.yml" --include="*.json" . | grep -v test | grep -v node_modules | grep -v vendor > $(SECURITY_OUTPUT)/basic-secrets-scan.txt || true; \
+	fi
+
+	@echo "✅ Secret scan completed. Results in $(SECURITY_OUTPUT)/"
+
+# Basic security baseline check
+baseline-check:
+	@echo "Running security baseline check..."
+	@mkdir -p $(SECURITY_OUTPUT)
+
+	@echo "Security Baseline Check - $(shell date)" > $(SECURITY_OUTPUT)/baseline-check.txt
+	@echo "========================================" >> $(SECURITY_OUTPUT)/baseline-check.txt
+	@echo "" >> $(SECURITY_OUTPUT)/baseline-check.txt
+
+	@echo "File Permissions Check:" >> $(SECURITY_OUTPUT)/baseline-check.txt
+	@find . -type f -perm /o+w -exec ls -la {} \; >> $(SECURITY_OUTPUT)/baseline-check.txt 2>/dev/null || true
+	@echo "" >> $(SECURITY_OUTPUT)/baseline-check.txt
+
+	@echo "TODO/FIXME Security Items:" >> $(SECURITY_OUTPUT)/baseline-check.txt
+	@grep -r -i -E "(TODO|FIXME).*security" . >> $(SECURITY_OUTPUT)/baseline-check.txt 2>/dev/null || true
+	@echo "" >> $(SECURITY_OUTPUT)/baseline-check.txt
+
+	@echo "Git History Secret Check:" >> $(SECURITY_OUTPUT)/baseline-check.txt
+	@git log --all --full-history --oneline | grep -i -E "(password|secret|key|token)" >> $(SECURITY_OUTPUT)/baseline-check.txt 2>/dev/null || true
+
+	@echo "✅ Baseline check completed. Results in $(SECURITY_OUTPUT)/baseline-check.txt"
+
+# All-in-one comprehensive security assessment
+security-assessment: security-clean security-install security-build
+	@echo "🔒 Starting comprehensive security assessment..."
+	@echo "Target: $(SECURITY_TARGET)"
+	@echo "Categories: $(SECURITY_CATEGORIES)"
+	@echo "Threshold: $(SECURITY_THRESHOLD)"
+	@echo ""
+
+	# Run all security checks
+	$(MAKE) dependency-check
+	$(MAKE) secret-scan
+	$(MAKE) baseline-check
+	$(MAKE) container-scan
+	$(MAKE) security-test-full
+
+	@echo ""
+	@echo "🎉 Comprehensive security assessment completed!"
+	@echo "📊 All results available in: $(SECURITY_OUTPUT)/"
+	@echo ""
+	@echo "Next steps:"
+	@echo "1. Review the HTML reports for detailed findings"
+	@echo "2. Address critical and high-severity vulnerabilities"
+	@echo "3. Update dependencies with known vulnerabilities"
+	@echo "4. Fix any exposed secrets"
+	@echo "5. Re-run tests to verify fixes"
+
+# Development security test (for local development)
+security-dev: security-build
+	@echo "Running development security tests..."
+	@mkdir -p $(SECURITY_OUTPUT)
+	./test/security/cmd/security-test/security-test \
+		-target "$(SECURITY_TARGET)" \
+		-categories "auth,injection,api" \
+		-formats "json,html" \
+		-output "$(SECURITY_OUTPUT)" \
+		-timeout "10m" \
+		-fail-threshold "Critical" \
+		-parallel $(SECURITY_PARALLEL) \
+		-verbose
+
+# Continuous security monitoring (for scheduled runs)
+security-monitor: security-assessment
+	@echo "Security monitoring completed"
+	@if [ -f "$(SECURITY_OUTPUT)/security-report-*.json" ]; then \
+		python3 -c "import json; report=json.load(open('$(shell find $(SECURITY_OUTPUT) -name 'security-report-*.json' | head -1)')); print(f'Security Score: {report[\"summary\"][\"overall_score\"]}%'); exit(1 if report['summary']['critical_count'] > 0 else 0)"; \
+	fi
+
+# Integration with main Makefile
+.PHONY: security
+security: security-test-quick
+
+# Default target shows help
+.DEFAULT_GOAL := security-help

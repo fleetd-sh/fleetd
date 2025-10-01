@@ -1,5 +1,4 @@
 "use client";
-
 import { format } from "date-fns";
 import { RefreshCwIcon, SettingsIcon, TrashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -13,10 +12,8 @@ import { DeviceSystemInfo } from "./device-system-info";
 interface DeviceDetailProps {
   deviceId: string;
 }
-
 export function DeviceDetail({ deviceId }: DeviceDetailProps) {
   const { data: device, isLoading, error, refetch } = useDevice(deviceId);
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -25,7 +22,6 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
       </div>
     );
   }
-
   if (error || !device) {
     return (
       <Card>
@@ -36,7 +32,6 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
       </Card>
     );
   }
-
   return (
     <div className="space-y-6">
       {/* Device Header */}
@@ -84,7 +79,6 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
           </div>
         </CardContent>
       </Card>
-
       {/* Tabbed Content */}
       <Tabs defaultValue="system" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -93,10 +87,8 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
           <TabsTrigger value="updates">Updates</TabsTrigger>
           <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
-
         <TabsContent value="system" className="space-y-4">
           <DeviceSystemInfo systemInfo={device.systemInfo} />
-
           {/* Capabilities */}
           {device.metadata && Object.keys(device.metadata).length > 0 && (
             <Card>
@@ -117,7 +109,6 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
             </Card>
           )}
         </TabsContent>
-
         <TabsContent value="telemetry">
           <Card>
             <CardHeader>
@@ -129,7 +120,6 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="updates">
           <Card>
             <CardHeader>
@@ -141,7 +131,6 @@ export function DeviceDetail({ deviceId }: DeviceDetailProps) {
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="logs">
           <Card>
             <CardHeader>

@@ -41,7 +41,7 @@ type authConfig struct {
 }
 
 func runLogin(cmd *cobra.Command, args []string) error {
-	printHeader("Fleet Platform Login")
+	printHeader("fleetd Platform Login")
 	fmt.Println()
 
 	// Get email

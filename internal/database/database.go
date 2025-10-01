@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"fleetd.sh/internal/ferrors"
-	_ "github.com/lib/pq"           // PostgreSQL driver
-	_ "github.com/mattn/go-sqlite3" // SQLite driver
+	_ "github.com/lib/pq"  // PostgreSQL driver
+	_ "modernc.org/sqlite" // SQLite driver
 )
 
 // Config holds database configuration
@@ -73,6 +73,7 @@ type DB struct {
 	errorHandler   *ferrors.ErrorHandler
 	mu             sync.RWMutex
 	closed         bool
+	healthCancel   context.CancelFunc // Cancel function for health check goroutine
 }
 
 // Metrics tracks database metrics
@@ -151,13 +152,19 @@ func New(config *Config) (*DB, error) {
 	// Run migrations
 	if config.MigrationsPath != "" {
 		if err := db.runMigrations(); err != nil {
-			// Log but don't fail - migrations might already be applied
-			db.logger.Warn("Failed to run migrations", "error", err)
+			// Close the database connection before returning error
+			if db.DB != nil {
+				db.DB.Close()
+			}
+			return nil, ferrors.Wrapf(err, ferrors.ErrCodeInternal,
+				"failed to run database migrations")
 		}
 	}
 
-	// Start health check
-	go db.healthCheck()
+	// Start health check with cancellation support
+	healthCtx, healthCancel := context.WithCancel(context.Background())
+	db.healthCancel = healthCancel
+	go db.healthCheck(healthCtx)
 
 	return db, nil
 }
@@ -484,15 +491,25 @@ func (db *DB) recordError(err error) {
 	db.errorHandler.Handle(err)
 }
 
-func (db *DB) healthCheck() {
+func (db *DB) healthCheck(ctx context.Context) {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
 	for {
 		select {
+		case <-ctx.Done():
+			return // Stop health check when context is cancelled
 		case <-ticker.C:
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			err := db.DB.PingContext(ctx)
+			// Check if database is closed
+			db.mu.RLock()
+			if db.closed {
+				db.mu.RUnlock()
+				return
+			}
+			db.mu.RUnlock()
+
+			pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			err := db.DB.PingContext(pingCtx)
 			cancel()
 
 			if err != nil {
@@ -544,6 +561,11 @@ func (db *DB) Close() error {
 	}
 
 	db.closed = true
+
+	// Cancel health check goroutine
+	if db.healthCancel != nil {
+		db.healthCancel()
+	}
 
 	if db.DB != nil {
 		if err := db.DB.Close(); err != nil {

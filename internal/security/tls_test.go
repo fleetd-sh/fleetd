@@ -339,7 +339,7 @@ func TestTLSManager_DefaultConfig(t *testing.T) {
 
 	assert.Equal(t, "tls", config.Mode)
 	assert.True(t, config.AutoGenerate)
-	assert.Equal(t, "FleetD", config.Organization)
+	assert.Equal(t, "fleetd", config.Organization)
 	assert.Equal(t, "fleetd.local", config.CommonName)
 	assert.Contains(t, config.Hosts, "localhost")
 	assert.Contains(t, config.Hosts, "127.0.0.1")

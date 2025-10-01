@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { DeploymentsContent } from "@/components/deployments-content";
-import { LoadingSkeleton } from "@/components/loading-states";
+import { DashboardLoadingSkeleton } from "@/components/loading-states";
 
 export const metadata = {
   title: "Deployments | fleetd",
@@ -17,7 +17,7 @@ export default function DeploymentsPage() {
         </p>
       </div>
 
-      <Suspense fallback={<LoadingSkeleton />}>
+      <Suspense fallback={<DashboardLoadingSkeleton />}>
         <DeploymentsContent />
       </Suspense>
     </main>

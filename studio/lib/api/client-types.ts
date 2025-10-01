@@ -13,11 +13,9 @@ import type {
   RefreshTokenResponse,
 } from "./gen/public/v1/auth_pb";
 import type {
-  CreateUpdateRequest,
-  CreateUpdateResponse,
+  CreateDeploymentRequest,
+  CreateDeploymentResponse,
   DeleteDeviceRequest,
-  DeployUpdateRequest,
-  DeployUpdateResponse,
   DiscoverDevicesRequest,
   DiscoverDevicesResponse,
   Event,
@@ -29,21 +27,12 @@ import type {
   GetTelemetryResponse,
   ListDevicesRequest,
   ListDevicesResponse,
+  StartDeploymentRequest,
+  StartDeploymentResponse,
   StreamEventsRequest,
   UpdateDeviceRequest,
   UpdateDeviceResponse,
 } from "./gen/public/v1/fleet_pb";
-import type {
-  GetOrganizationRequest,
-  GetOrganizationResponse,
-  InviteMemberRequest,
-  InviteMemberResponse,
-  ListMembersRequest,
-  ListMembersResponse,
-  RemoveMemberRequest,
-  UpdateOrganizationRequest,
-  UpdateOrganizationResponse,
-} from "./gen/public/v1/organization_pb";
 
 export interface FleetClient {
   listDevices(request?: Partial<ListDevicesRequest>): Promise<ListDevicesResponse>;
@@ -54,8 +43,8 @@ export interface FleetClient {
   discoverDevices(request?: Partial<DiscoverDevicesRequest>): Promise<DiscoverDevicesResponse>;
   getTelemetry(request?: Partial<GetTelemetryRequest>): Promise<GetTelemetryResponse>;
   streamEvents(request?: Partial<StreamEventsRequest>): AsyncIterable<Event>;
-  createUpdate(request: Partial<CreateUpdateRequest>): Promise<CreateUpdateResponse>;
-  deployUpdate(request: Partial<DeployUpdateRequest>): Promise<DeployUpdateResponse>;
+  createDeployment(request: Partial<CreateDeploymentRequest>): Promise<CreateDeploymentResponse>;
+  startDeployment(request: Partial<StartDeploymentRequest>): Promise<StartDeploymentResponse>;
 }
 
 export interface AuthClient {
@@ -65,14 +54,4 @@ export interface AuthClient {
   getCurrentUser(): Promise<GetCurrentUserResponse>;
   createAPIKey(request: Partial<CreateAPIKeyRequest>): Promise<CreateAPIKeyResponse>;
   listAPIKeys(request?: Partial<ListAPIKeysRequest>): Promise<ListAPIKeysResponse>;
-}
-
-export interface OrganizationClient {
-  getOrganization(request: Partial<GetOrganizationRequest>): Promise<GetOrganizationResponse>;
-  updateOrganization(
-    request: Partial<UpdateOrganizationRequest>,
-  ): Promise<UpdateOrganizationResponse>;
-  listMembers(request: Partial<ListMembersRequest>): Promise<ListMembersResponse>;
-  inviteMember(request: Partial<InviteMemberRequest>): Promise<InviteMemberResponse>;
-  removeMember(request: Partial<RemoveMemberRequest>): Promise<Empty>;
 }

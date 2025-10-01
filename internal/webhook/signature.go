@@ -80,7 +80,7 @@ func SignatureMiddleware(secret string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Get signature from header
-			signature := r.Header.Get("X-FleetD-Signature")
+			signature := r.Header.Get("X-fleetd-Signature")
 			if signature == "" {
 				http.Error(w, "missing signature", http.StatusUnauthorized)
 				return

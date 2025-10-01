@@ -6,7 +6,10 @@ import type {
   ProvisioningProfile,
 } from "./types/provisioning";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+// For server-side rendering, use the internal Docker network URL
+// For client-side, use the Next.js API route which proxies to the backend
+const API_BASE =
+  typeof window === "undefined" ? process.env.DEVICE_API_URL || "http://device-api:8080" : "";
 const DEFAULT_TIMEOUT = 30000; // 30 seconds
 const DEFAULT_RETRY_COUNT = 3;
 const RETRY_DELAY_BASE = 1000; // 1 second
@@ -139,6 +142,15 @@ class ApiClient {
     });
     if (!response.ok) {
       throw new Error(`Failed to delete device: ${response.status} ${response.statusText}`);
+    }
+  }
+
+  async restartDevice(id: string): Promise<void> {
+    const response = await this.fetchWithRetry(`${API_BASE}/api/v1/devices/${id}/restart`, {
+      method: "POST",
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to restart device: ${response.status} ${response.statusText}`);
     }
   }
 

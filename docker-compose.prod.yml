@@ -17,7 +17,7 @@ version: '3.8'
 services:
   # PostgreSQL database with replication support
   postgres-primary:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     container_name: fleetd-postgres-primary
     environment:
       POSTGRES_USER: ${DB_USER:-fleetd}
@@ -338,7 +338,7 @@ services:
 
   # Backup service
   backup:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     container_name: fleetd-backup
     environment:
       PGHOST: postgres-primary

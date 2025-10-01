@@ -1,22 +1,21 @@
 "use client";
-
-import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
-  RocketIcon,
-  ReloadIcon,
-  PlayIcon,
-  StopIcon,
-  ClockIcon,
   CheckCircledIcon,
+  ClockIcon,
   CrossCircledIcon,
-  UpdateIcon
+  PlayIcon,
+  ReloadIcon,
+  RocketIcon,
+  StopIcon,
+  UpdateIcon,
 } from "@radix-ui/react-icons";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import * as React from "react";
+import { useId } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -26,10 +25,16 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { api } from "@/lib/api";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSonnerToast } from "@/hooks/use-sonner-toast";
-import { format } from "date-fns";
 
 interface Deployment {
   id: string;
@@ -45,12 +50,16 @@ interface Deployment {
   artifact_url?: string;
   rollback_version?: string;
 }
-
 export function DeploymentsContent() {
   const { toast } = useSonnerToast();
   const [showCreateDeployment, setShowCreateDeployment] = React.useState(false);
-  const [selectedDeployment, setSelectedDeployment] = React.useState<Deployment | null>(null);
+  const [_selectedDeployment, setSelectedDeployment] = React.useState<Deployment | null>(null);
 
+  // Generate unique IDs for form elements
+  const deploymentNameId = useId();
+  const artifactId = useId();
+  const targetId = useId();
+  const strategyId = useId();
   // Mock deployments data - replace with real API
   const mockDeployments: Deployment[] = [
     {
@@ -90,51 +99,36 @@ export function DeploymentsContent() {
       updated_at: new Date().toISOString(),
     },
   ];
-
   const { data: deployments = mockDeployments, refetch } = useQuery({
     queryKey: ["deployments"],
     queryFn: async () => mockDeployments, // Replace with: api.getDeployments
     refetchInterval: 10000,
   });
-
-  const handleCreateDeployment = async (data: any) => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-      {
-        loading: "Creating deployment...",
-        success: "Deployment created successfully",
-        error: "Failed to create deployment"
-      }
-    );
+  const handleCreateDeployment = async () => {
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+      loading: "Creating deployment...",
+      success: "Deployment created successfully",
+      error: "Failed to create deployment",
+    });
     setShowCreateDeployment(false);
   };
-
-  const handleCancelDeployment = async (id: string) => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1000)),
-      {
-        loading: "Cancelling deployment...",
-        success: "Deployment cancelled",
-        error: "Failed to cancel deployment"
-      }
-    );
+  const handleCancelDeployment = async (_id: string) => {
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+      loading: "Cancelling deployment...",
+      success: "Deployment cancelled",
+      error: "Failed to cancel deployment",
+    });
   };
-
-  const handleRollback = async (id: string) => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-      {
-        loading: "Initiating rollback...",
-        success: "Rollback initiated",
-        error: "Failed to rollback"
-      }
-    );
+  const handleRollback = async (_id: string) => {
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+      loading: "Initiating rollback...",
+      success: "Rollback initiated",
+      error: "Failed to rollback",
+    });
   };
-
-  const activeDeployments = deployments.filter(d => d.status === "running");
-  const completedDeployments = deployments.filter(d => d.status === "completed");
-  const failedDeployments = deployments.filter(d => d.status === "failed");
-
+  const activeDeployments = deployments.filter((d) => d.status === "running");
+  const completedDeployments = deployments.filter((d) => d.status === "completed");
+  const failedDeployments = deployments.filter((d) => d.status === "failed");
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
@@ -149,7 +143,6 @@ export function DeploymentsContent() {
             <p className="text-xs text-muted-foreground">Currently running</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
@@ -160,7 +153,6 @@ export function DeploymentsContent() {
             <p className="text-xs text-muted-foreground">Last 30 days</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Deployed</CardTitle>
@@ -171,7 +163,6 @@ export function DeploymentsContent() {
             <p className="text-xs text-muted-foreground">This month</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Avg. Duration</CardTitle>
@@ -183,7 +174,6 @@ export function DeploymentsContent() {
           </CardContent>
         </Card>
       </div>
-
       {/* Action Bar */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Deployment History</h2>
@@ -198,7 +188,6 @@ export function DeploymentsContent() {
           </Button>
         </div>
       </div>
-
       {/* Deployments Tabs */}
       <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
@@ -207,7 +196,6 @@ export function DeploymentsContent() {
           <TabsTrigger value="completed">Completed</TabsTrigger>
           <TabsTrigger value="failed">Failed</TabsTrigger>
         </TabsList>
-
         <TabsContent value="all" className="space-y-4">
           {deployments.map((deployment) => (
             <DeploymentCard
@@ -219,7 +207,6 @@ export function DeploymentsContent() {
             />
           ))}
         </TabsContent>
-
         <TabsContent value="active" className="space-y-4">
           {activeDeployments.map((deployment) => (
             <DeploymentCard
@@ -231,7 +218,6 @@ export function DeploymentsContent() {
             />
           ))}
         </TabsContent>
-
         <TabsContent value="completed" className="space-y-4">
           {completedDeployments.map((deployment) => (
             <DeploymentCard
@@ -243,7 +229,6 @@ export function DeploymentsContent() {
             />
           ))}
         </TabsContent>
-
         <TabsContent value="failed" className="space-y-4">
           {failedDeployments.length === 0 ? (
             <Card>
@@ -264,27 +249,24 @@ export function DeploymentsContent() {
           )}
         </TabsContent>
       </Tabs>
-
       {/* Create Deployment Dialog */}
       <Dialog open={showCreateDeployment} onOpenChange={setShowCreateDeployment}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Create New Deployment</DialogTitle>
-            <DialogDescription>
-              Deploy an update to your fleet devices
-            </DialogDescription>
+            <DialogDescription>Deploy an update to your fleet devices</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Deployment Name</Label>
-              <Input id="name" placeholder="e.g., Firmware Update v2.2.0" />
+              <Label htmlFor={deploymentNameId}>Deployment Name</Label>
+              <Input id={deploymentNameId} placeholder="e.g., Firmware Update v2.2.0" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="artifact">Artifact</Label>
-              <Input id="artifact" type="file" />
+              <Label htmlFor={artifactId}>Artifact</Label>
+              <Input id={artifactId} type="file" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="target">Target Devices</Label>
+              <Label htmlFor={targetId}>Target Devices</Label>
               <Select>
                 <SelectTrigger>
                   <SelectValue placeholder="Select target devices" />
@@ -298,7 +280,7 @@ export function DeploymentsContent() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="strategy">Deployment Strategy</Label>
+              <Label htmlFor={strategyId}>Deployment Strategy</Label>
               <Select>
                 <SelectTrigger>
                   <SelectValue placeholder="Select strategy" />
@@ -316,21 +298,18 @@ export function DeploymentsContent() {
             <Button variant="outline" onClick={() => setShowCreateDeployment(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateDeployment}>
-              Deploy
-            </Button>
+            <Button onClick={handleCreateDeployment}>Deploy</Button>
           </div>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-
 function DeploymentCard({
   deployment,
   onCancel,
   onRollback,
-  onSelect
+  onSelect,
 }: {
   deployment: Deployment;
   onCancel: () => void;
@@ -351,13 +330,12 @@ function DeploymentCard({
         return <ClockIcon className="h-4 w-4" />;
     }
   };
-
   const getStatusColor = () => {
     switch (deployment.status) {
       case "running":
         return "default";
       case "completed":
-        return "success";
+        return "outline"; // Changed from "success" which isn't a valid variant
       case "failed":
         return "destructive";
       case "cancelled":
@@ -366,7 +344,6 @@ function DeploymentCard({
         return "outline";
     }
   };
-
   return (
     <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onSelect}>
       <CardHeader>
@@ -374,12 +351,17 @@ function DeploymentCard({
           <div className="space-y-1">
             <CardTitle className="text-lg">{deployment.name}</CardTitle>
             <CardDescription>
-              Version {deployment.version} • Started {format(new Date(deployment.created_at), "PPp")}
+              Version {deployment.version} • Started{" "}
+              {format(new Date(deployment.created_at), "PPp")}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {getStatusIcon()}
-            <Badge variant={getStatusColor() as any}>
+            <Badge
+              variant={
+                getStatusColor() as "default" | "destructive" | "secondary" | "outline"
+              }
+            >
               {deployment.status}
             </Badge>
           </div>
@@ -395,7 +377,6 @@ function DeploymentCard({
             <Progress value={deployment.progress} />
           </div>
         )}
-
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
             <p className="text-muted-foreground">Targeted</p>
@@ -410,9 +391,8 @@ function DeploymentCard({
             <p className="font-medium text-red-600">{deployment.devices_failed}</p>
           </div>
         </div>
-
         {deployment.status === "running" && (
-          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+          <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={onCancel}>
               <StopIcon className="mr-2 h-4 w-4" />
               Cancel

@@ -9,6 +9,8 @@ export const env = createEnv({
   server: {
     // Backend API URL for server-side requests
     BACKEND_URL: z.string().url().default("http://localhost:8080"),
+    DEVICE_API_URL: z.string().url().default("http://localhost:8080"),
+    PLATFORM_API_URL: z.string().url().default("http://localhost:8090"),
 
     // Authentication secrets (future cloud offering)
     AUTH_SECRET: z.string().min(32).optional(),
@@ -52,7 +54,7 @@ export const env = createEnv({
     NEXT_PUBLIC_API_URL: z.string().url().default("http://localhost:8080"),
 
     // App configuration
-    NEXT_PUBLIC_APP_NAME: z.string().default("FleetD"),
+    NEXT_PUBLIC_APP_NAME: z.string().default("fleetd"),
     NEXT_PUBLIC_APP_VERSION: z.string().default("0.1.0"),
 
     // Feature flags (client-visible)
@@ -84,6 +86,8 @@ export const env = createEnv({
   runtimeEnv: {
     // Server
     BACKEND_URL: process.env.BACKEND_URL,
+    DEVICE_API_URL: process.env.DEVICE_API_URL,
+    PLATFORM_API_URL: process.env.PLATFORM_API_URL,
     AUTH_SECRET: process.env.AUTH_SECRET,
     JWT_SECRET: process.env.JWT_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,

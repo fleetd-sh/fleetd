@@ -1,5 +1,4 @@
 "use client";
-
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -7,38 +6,31 @@ interface Props {
   children: ReactNode;
   fallback?: ReactNode;
 }
-
 interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
 }
-
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
   }
-
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error, errorInfo: null };
   }
-
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
     this.setState({ error, errorInfo });
   }
-
   handleReset = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
   };
-
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return <>{this.props.fallback}</>;
       }
-
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] p-8">
           <div className="text-center space-y-4 max-w-md">
@@ -68,7 +60,6 @@ export class ErrorBoundary extends Component<Props, State> {
         </div>
       );
     }
-
     return this.props.children;
   }
 }

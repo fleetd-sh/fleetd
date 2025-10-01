@@ -171,12 +171,12 @@ func (s *DefaultWebhookSender) Send(ctx context.Context, config WebhookConfig, e
 
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "FleetD-Webhook/1.0")
-	req.Header.Set("X-FleetD-Event", string(event.Type))
-	req.Header.Set("X-FleetD-Delivery", delivery.ID)
+	req.Header.Set("User-Agent", "fleetd-Webhook/1.0")
+	req.Header.Set("X-fleetd-Event", string(event.Type))
+	req.Header.Set("X-fleetd-Delivery", delivery.ID)
 	if config.Secret != "" {
 		signature := generateSignature(body, config.Secret, time.Now())
-		req.Header.Set("X-FleetD-Signature", signature)
+		req.Header.Set("X-fleetd-Signature", signature)
 	}
 	for k, v := range config.Headers {
 		req.Header.Set(k, v)

@@ -1,0 +1,189 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: fleetd-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fleetd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fleetdpass}
+      POSTGRES_DB: ${POSTGRES_DB:-fleetd}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fleetd-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fleetd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: fleetd-valkey
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    networks:
+      - fleetd-network
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: fleetd-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki_data:/loki
+    networks:
+      - fleetd-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: fleetd-victoriametrics
+    ports:
+      - "8428:8428"
+    volumes:
+      - victoria_data:/victoria-metrics-data
+    command:
+      - "-storageDataPath=/victoria-metrics-data"
+      - "-httpListenAddr=:8428"
+    networks:
+      - fleetd-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8428/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  traefik:
+    image: traefik:v3.0
+    container_name: fleetd-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--ping=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - fleetd-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:80 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  platform-api:
+    image: fleetd.sh/platform-api:latest
+    container_name: fleetd-platform-api
+    ports:
+      - "8090:8090"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+      REDIS_URL: redis://valkey:6379
+      JWT_SECRET: ${JWT_SECRET:-defaultsecret}
+      API_KEY: ${API_KEY:-defaultapikey}
+      PORT: 8090
+      TLS_MODE: none
+      DEVICE_API_URL: http://device-api:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - fleetd-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.platform-api.rule=PathPrefix(`/api/platform`)"
+      - "traefik.http.routers.platform-api.entrypoints=web"
+      - "traefik.http.services.platform-api.loadbalancer.server.port=8090"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8090/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  device-api:
+    image: fleetd.sh/device-api:latest
+    container_name: fleetd-device-api
+    ports:
+      - "8082:8080"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+      REDIS_URL: redis://valkey:6379
+      JWT_SECRET: ${JWT_SECRET:-defaultsecret}
+      API_KEY: ${API_KEY:-defaultapikey}
+      PORT: 8080
+      TLS_MODE: none
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - fleetd-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.device-api.rule=PathPrefix(`/api/device`)"
+      - "traefik.http.routers.device-api.entrypoints=web"
+      - "traefik.http.services.device-api.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  studio:
+    image: fleetd.sh/studio:latest
+    container_name: fleetd-studio
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_PLATFORM_API_URL: http://platform-api:8090
+      NEXT_PUBLIC_DEVICE_API_URL: http://device-api:8080
+      PLATFORM_API_URL: http://platform-api:8090
+      DEVICE_API_URL: http://device-api:8080
+    depends_on:
+      platform-api:
+        condition: service_healthy
+      device-api:
+        condition: service_healthy
+    networks:
+      - fleetd-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.studio.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.studio.entrypoints=web"
+      - "traefik.http.services.studio.loadbalancer.server.port=3000"
+
+networks:
+  fleetd-network:
+    name: fleetd-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: fleetd_postgres_data
+  valkey_data:
+    name: fleetd_valkey_data
+  loki_data:
+    name: fleetd_loki_data
+  victoria_data:
+    name: fleetd_victoria_data

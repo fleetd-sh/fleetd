@@ -1,13 +1,12 @@
 "use client";
-
-import * as React from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import { ChevronDownIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { DataTable } from "@/components/ui/data-table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DataTable } from "@/components/ui/data-table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +22,6 @@ interface DeviceDataTableProps {
   devices: Device[];
   onSelectDevice?: (device: Device) => void;
 }
-
 export function DeviceDataTable({ devices, onSelectDevice }: DeviceDataTableProps) {
   const columns: ColumnDef<Device>[] = React.useMemo(
     () => [
@@ -59,7 +57,7 @@ export function DeviceDataTable({ devices, onSelectDevice }: DeviceDataTableProp
               <div
                 className={cn(
                   "h-2 w-2 rounded-full",
-                  status === "online" ? "bg-green-500" : "bg-gray-400"
+                  status === "online" ? "bg-green-500" : "bg-gray-400",
                 )}
               />
               <span className="capitalize">{status}</span>
@@ -83,12 +81,12 @@ export function DeviceDataTable({ devices, onSelectDevice }: DeviceDataTableProp
         cell: ({ row }) => {
           const device = row.original;
           return (
-            <button
+            <Button
               onClick={() => onSelectDevice?.(device)}
               className="font-medium hover:underline text-left"
             >
               {device.name}
-            </button>
+            </Button>
           );
         },
       },
@@ -111,9 +109,7 @@ export function DeviceDataTable({ devices, onSelectDevice }: DeviceDataTableProp
         header: "Device ID",
         cell: ({ row }) => {
           const id = row.getValue<string>("id");
-          return (
-            <code className="text-xs text-muted-foreground">{id.slice(0, 8)}...</code>
-          );
+          return <code className="text-xs text-muted-foreground">{id.slice(0, 8)}...</code>;
         },
       },
       {
@@ -159,17 +155,14 @@ export function DeviceDataTable({ devices, onSelectDevice }: DeviceDataTableProp
                 <DropdownMenuItem>Deploy application</DropdownMenuItem>
                 <DropdownMenuItem>View telemetry</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
-                  Remove device
-                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive">Remove device</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           );
         },
       },
     ],
-    [onSelectDevice]
+    [onSelectDevice],
   );
-
   return <DataTable columns={columns} data={devices} searchKey="name" />;
 }

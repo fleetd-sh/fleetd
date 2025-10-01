@@ -314,7 +314,7 @@ func (m *DockerManager) GetContainerStats(ctx context.Context, nameOrID string) 
 // ExecInContainer implements ContainerManager
 func (m *DockerManager) ExecInContainer(ctx context.Context, nameOrID string, cmd []string, attachStdio bool) (int, error) {
 	// Create exec instance
-	exec, err := m.client.ContainerExecCreate(ctx, nameOrID, types.ExecConfig{
+	exec, err := m.client.ContainerExecCreate(ctx, nameOrID, container.ExecOptions{
 		Cmd:          cmd,
 		AttachStdout: attachStdio,
 		AttachStderr: attachStdio,
@@ -339,7 +339,7 @@ func (m *DockerManager) ExecInContainer(ctx context.Context, nameOrID string, cm
 
 // CopyToContainer implements ContainerManager
 func (m *DockerManager) CopyToContainer(ctx context.Context, nameOrID, path string, content io.Reader) error {
-	if err := m.client.CopyToContainer(ctx, nameOrID, path, content, types.CopyToContainerOptions{}); err != nil {
+	if err := m.client.CopyToContainer(ctx, nameOrID, path, content, container.CopyToContainerOptions{}); err != nil {
 		return fmt.Errorf("failed to copy to container: %v", err)
 	}
 	return nil
@@ -505,7 +505,7 @@ func dockerResources(res Resources) container.Resources {
 	}
 }
 
-func calculateCPUPercentage(stats *types.StatsJSON) float64 {
+func calculateCPUPercentage(stats *container.StatsResponse) float64 {
 	cpuPercent := 0.0
 	cpuDelta := float64(stats.CPUStats.CPUUsage.TotalUsage - stats.PreCPUStats.CPUUsage.TotalUsage)
 	systemDelta := float64(stats.CPUStats.SystemUsage - stats.PreCPUStats.SystemUsage)

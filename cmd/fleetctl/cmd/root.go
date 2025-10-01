@@ -75,6 +75,7 @@ func init() {
 		newMigrateCmd(),
 		newVersionCmd(),
 		newSecurityCmd(),
+		newDocsCmd(),
 	)
 
 	// Disable color if requested

@@ -1,37 +1,36 @@
 "use client";
-
+import { CheckIcon, CopyIcon, LockClosedIcon as KeyIcon } from "@radix-ui/react-icons";
+import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
-import {
-  BellIcon,
-  CheckIcon,
-  CodeIcon,
-  CopyIcon,
-  GearIcon,
-  GlobeIcon,
-  KeyIcon,
-  PersonIcon,
-  ShieldCheckIcon,
-} from "@radix-ui/react-icons";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useId } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 import { useSonnerToast } from "@/hooks/use-sonner-toast";
 import { useSettingsClient } from "@/lib/api/connect-hooks";
-import { useQuery, useMutation } from "@tanstack/react-query";
-
 export function SettingsContent() {
   const { toast } = useSonnerToast();
   const settingsClient = useSettingsClient();
   const [apiKey, setApiKey] = React.useState("fleetd_sk_test_4242424242424242");
   const [copiedKey, setCopiedKey] = React.useState(false);
 
-  // Fetch organization settings
+  // Generate unique IDs for form elements
+  const orgNameId = useId();
+  const orgEmailId = useId();
+  const timezoneId = useId();
+  const languageId = useId();
+  const webhookUrlId = useId();
   const { data: orgSettings } = useQuery({
     queryKey: ["org-settings"],
     queryFn: async () => {
@@ -39,18 +38,14 @@ export function SettingsContent() {
       return response.settings;
     },
   });
-
-  // Fetch security settings
-  const { data: securitySettings } = useQuery({
+  useQuery({
     queryKey: ["security-settings"],
     queryFn: async () => {
       const response = await settingsClient.getSecuritySettings({});
       return response.settings;
     },
   });
-
-  // Fetch API settings
-  const { data: apiSettings, refetch: refetchApiSettings } = useQuery({
+  const { refetch: refetchApiSettings } = useQuery({
     queryKey: ["api-settings"],
     queryFn: async () => {
       const response = await settingsClient.getAPISettings({});
@@ -60,25 +55,19 @@ export function SettingsContent() {
       return response.settings;
     },
   });
-
   const handleSaveSettings = () => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1000)),
-      {
-        loading: "Saving settings...",
-        success: "Settings saved successfully",
-        error: "Failed to save settings"
-      }
-    );
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+      loading: "Saving settings...",
+      success: "Settings saved successfully",
+      error: "Failed to save settings",
+    });
   };
-
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(apiKey);
     setCopiedKey(true);
     toast.success("API key copied to clipboard");
     setTimeout(() => setCopiedKey(false), 2000);
   };
-
   const handleRegenerateApiKey = () => {
     toast.promise(
       (async () => {
@@ -92,11 +81,10 @@ export function SettingsContent() {
       {
         loading: "Regenerating API key...",
         success: "New API key generated",
-        error: "Failed to regenerate API key"
-      }
+        error: "Failed to regenerate API key",
+      },
     );
   };
-
   return (
     <div className="space-y-6">
       <Tabs defaultValue="general" className="space-y-4">
@@ -107,7 +95,6 @@ export function SettingsContent() {
           <TabsTrigger value="api">API</TabsTrigger>
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
-
         <TabsContent value="general" className="space-y-4">
           <Card>
             <CardHeader>
@@ -116,17 +103,19 @@ export function SettingsContent() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="org-name">Organization Name</Label>
-                <Input id="org-name" defaultValue={orgSettings?.name || "Acme Corporation"} />
+                <Label htmlFor={orgNameId}>Organization Name</Label>
+                <Input id={orgNameId} defaultValue={orgSettings?.name || "Acme Corporation"} />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="org-email">Contact Email</Label>
-                <Input id="org-email" type="email" defaultValue={orgSettings?.contactEmail || "admin@acme.com"} />
+                <Label htmlFor={orgEmailId}>Contact Email</Label>
+                <Input
+                  id={orgEmailId}
+                  type="email"
+                  defaultValue={orgSettings?.contactEmail || "admin@acme.com"}
+                />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
+                <Label htmlFor={timezoneId}>Timezone</Label>
                 <Select defaultValue={orgSettings?.timezone?.toLowerCase() || "utc"}>
                   <SelectTrigger>
                     <SelectValue />
@@ -140,9 +129,8 @@ export function SettingsContent() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
+                <Label htmlFor={languageId}>Language</Label>
                 <Select defaultValue="en">
                   <SelectTrigger>
                     <SelectValue />
@@ -156,16 +144,13 @@ export function SettingsContent() {
                   </SelectContent>
                 </Select>
               </div>
-
               <Separator />
-
               <div className="flex justify-end">
                 <Button onClick={handleSaveSettings}>Save Changes</Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="security" className="space-y-4">
           <Card>
             <CardHeader>
@@ -182,7 +167,6 @@ export function SettingsContent() {
                 </div>
                 <Switch defaultChecked />
               </div>
-
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label>Session Timeout</Label>
@@ -202,7 +186,6 @@ export function SettingsContent() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label>IP Whitelist</Label>
@@ -212,19 +195,14 @@ export function SettingsContent() {
                 </div>
                 <Switch />
               </div>
-
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label>Audit Logging</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Log all administrative actions
-                  </p>
+                  <p className="text-sm text-muted-foreground">Log all administrative actions</p>
                 </div>
                 <Switch defaultChecked />
               </div>
-
               <Separator />
-
               <div className="space-y-2">
                 <Label>Password Policy</Label>
                 <div className="space-y-3">
@@ -246,16 +224,13 @@ export function SettingsContent() {
                   </div>
                 </div>
               </div>
-
               <Separator />
-
               <div className="flex justify-end">
                 <Button onClick={handleSaveSettings}>Save Security Settings</Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
@@ -284,15 +259,13 @@ export function SettingsContent() {
                   </div>
                 </div>
               </div>
-
               <Separator />
-
               <div className="space-y-4">
                 <h4 className="text-sm font-medium">Webhook Notifications</h4>
                 <div className="space-y-2">
-                  <Label htmlFor="webhook-url">Webhook URL</Label>
+                  <Label htmlFor={webhookUrlId}>Webhook URL</Label>
                   <Input
-                    id="webhook-url"
+                    id={webhookUrlId}
                     placeholder="https://your-domain.com/webhook"
                     defaultValue=""
                   />
@@ -302,9 +275,7 @@ export function SettingsContent() {
                   <Label className="font-normal">Enable webhook notifications</Label>
                 </div>
               </div>
-
               <Separator />
-
               <div className="space-y-4">
                 <h4 className="text-sm font-medium">Alert Thresholds</h4>
                 <div className="space-y-3">
@@ -322,16 +293,13 @@ export function SettingsContent() {
                   </div>
                 </div>
               </div>
-
               <Separator />
-
               <div className="flex justify-end">
                 <Button onClick={handleSaveSettings}>Save Notification Settings</Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="api" className="space-y-4">
           <Card>
             <CardHeader>
@@ -343,16 +311,8 @@ export function SettingsContent() {
                 <div className="space-y-2">
                   <Label>API Key</Label>
                   <div className="flex gap-2">
-                    <Input
-                      value={apiKey}
-                      readOnly
-                      className="font-mono text-sm"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleCopyApiKey}
-                    >
+                    <Input value={apiKey} readOnly className="font-mono text-sm" />
+                    <Button variant="outline" size="icon" onClick={handleCopyApiKey}>
                       {copiedKey ? (
                         <CheckIcon className="h-4 w-4" />
                       ) : (
@@ -364,19 +324,12 @@ export function SettingsContent() {
                     Use this key to authenticate API requests
                   </p>
                 </div>
-
-                <Button
-                  variant="outline"
-                  onClick={handleRegenerateApiKey}
-                  className="w-full"
-                >
+                <Button variant="outline" onClick={handleRegenerateApiKey} className="w-full">
                   <KeyIcon className="mr-2 h-4 w-4" />
                   Regenerate API Key
                 </Button>
               </div>
-
               <Separator />
-
               <div className="space-y-4">
                 <h4 className="text-sm font-medium">API Rate Limits</h4>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -390,9 +343,7 @@ export function SettingsContent() {
                   </div>
                 </div>
               </div>
-
               <Separator />
-
               <div className="space-y-4">
                 <h4 className="text-sm font-medium">CORS Settings</h4>
                 <div className="space-y-2">
@@ -407,16 +358,13 @@ export function SettingsContent() {
                   <Label className="font-normal">Allow credentials</Label>
                 </div>
               </div>
-
               <Separator />
-
               <div className="flex justify-end">
                 <Button onClick={handleSaveSettings}>Save API Settings</Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="advanced" className="space-y-4">
           <Card>
             <CardHeader>
@@ -459,9 +407,7 @@ export function SettingsContent() {
                   </div>
                 </div>
               </div>
-
               <Separator />
-
               <div className="space-y-4">
                 <h4 className="text-sm font-medium">Experimental Features</h4>
                 <div className="space-y-3">
@@ -485,9 +431,7 @@ export function SettingsContent() {
                   </div>
                 </div>
               </div>
-
               <Separator />
-
               <div className="space-y-4">
                 <h4 className="text-sm font-medium">Danger Zone</h4>
                 <div className="rounded-lg border border-destructive p-4 space-y-4">

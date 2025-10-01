@@ -108,53 +108,65 @@ func main() {
 	}
 
 	// Database configuration from environment
-	dbDriver := os.Getenv("DB_DRIVER")
-	if dbDriver == "" {
-		dbDriver = "sqlite3"
-	}
+	// Platform API should always use PostgreSQL, never SQLite
+	dbDriver := "postgres" // Default to PostgreSQL for platform services
+	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
+		// Parse DATABASE_URL - always assume PostgreSQL for platform
+		if strings.HasPrefix(databaseURL, "postgres://") || strings.HasPrefix(databaseURL, "postgresql://") {
+			serverDBPath = databaseURL
+		} else {
+			// Assume it's a PostgreSQL connection string
+			serverDBPath = databaseURL
+		}
+	} else {
+		// Fall back to individual environment variables
+		// Platform services always use PostgreSQL
+		dbDriver = "postgres"
 
-	// PostgreSQL connection string
-	if dbDriver == "postgres" {
-		dbHost := os.Getenv("DB_HOST")
-		dbPort := os.Getenv("DB_PORT")
-		dbName := os.Getenv("DB_NAME")
-		dbUser := os.Getenv("DB_USER")
-		dbPassword := os.Getenv("DB_PASSWORD")
-		dbSSLMode := os.Getenv("DB_SSLMODE")
+		// PostgreSQL connection string from individual vars
+		if true { // Always build PostgreSQL connection string for platform
+			dbHost := os.Getenv("DB_HOST")
+			dbPort := os.Getenv("DB_PORT")
+			dbName := os.Getenv("DB_NAME")
+			dbUser := os.Getenv("DB_USER")
+			dbPassword := os.Getenv("DB_PASSWORD")
+			dbSSLMode := os.Getenv("DB_SSLMODE")
 
-		if dbHost != "" && dbName != "" && dbUser != "" {
-			if dbPort == "" {
-				dbPort = "5432"
+			if dbHost != "" && dbName != "" && dbUser != "" {
+				if dbPort == "" {
+					dbPort = "5432"
+				}
+				if dbSSLMode == "" {
+					dbSSLMode = "require"
+				}
+				serverDBPath = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+					dbHost, dbPort, dbUser, dbPassword, dbName, dbSSLMode)
 			}
-			if dbSSLMode == "" {
-				dbSSLMode = "require"
-			}
-			serverDBPath = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-				dbHost, dbPort, dbUser, dbPassword, dbName, dbSSLMode)
 		}
 	}
 
 	// TLS Configuration
-	tlsMode := os.Getenv("FLEETD_TLS_MODE")
+	tlsMode := os.Getenv("TLS_MODE")
 	if tlsMode == "" {
 		tlsMode = "tls" // Default to TLS enabled
 	}
-	tlsCertFile := os.Getenv("FLEETD_TLS_CERT")
-	tlsKeyFile := os.Getenv("FLEETD_TLS_KEY")
-	tlsCAFile := os.Getenv("FLEETD_TLS_CA")
+	tlsCertFile := os.Getenv("TLS_CERT")
+	tlsKeyFile := os.Getenv("TLS_KEY")
+	tlsCAFile := os.Getenv("TLS_CA")
 
 	config := &control.Config{
-		Port:         serverPort,
-		DatabasePath: serverDBPath,
-		SecretKey:    secretKey,
-		DeviceAPIURL: deviceAPIURL,
-		ValkeyAddr:   valkeyAddr,
-		RateLimitReq: rateLimitReq,
-		RateLimitWin: rateLimitWindow,
-		TLSMode:      tlsMode,
-		TLSCert:      tlsCertFile,
-		TLSKey:       tlsKeyFile,
-		TLSCA:        tlsCAFile,
+		Port:           serverPort,
+		DatabaseDriver: dbDriver,
+		DatabasePath:   serverDBPath,
+		SecretKey:      secretKey,
+		DeviceAPIURL:   deviceAPIURL,
+		ValkeyAddr:     valkeyAddr,
+		RateLimitReq:   rateLimitReq,
+		RateLimitWin:   rateLimitWindow,
+		TLSMode:        tlsMode,
+		TLSCert:        tlsCertFile,
+		TLSKey:         tlsKeyFile,
+		TLSCA:          tlsCAFile,
 	}
 
 	s, err := control.NewServer(config)

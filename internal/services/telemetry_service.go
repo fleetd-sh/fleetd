@@ -31,7 +31,7 @@ func (s *TelemetryService) GetTelemetry(
 ) (*connect.Response[fleetpb.GetTelemetryResponse], error) {
 	// For now, return mock data
 	data := generateMockTelemetryData(req.Msg.DeviceId, 20)
-	
+
 	// Apply time filtering if provided
 	if req.Msg.StartTime != nil || req.Msg.EndTime != nil {
 		var filtered []*fleetpb.TelemetryData
@@ -46,12 +46,12 @@ func (s *TelemetryService) GetTelemetry(
 		}
 		data = filtered
 	}
-	
+
 	// Apply limit
 	if req.Msg.Limit > 0 && int(req.Msg.Limit) < len(data) {
 		data = data[:req.Msg.Limit]
 	}
-	
+
 	return connect.NewResponse(&fleetpb.GetTelemetryResponse{
 		Data: data,
 	}), nil
@@ -64,17 +64,17 @@ func (s *TelemetryService) GetMetrics(
 ) (*connect.Response[fleetpb.GetMetricsResponse], error) {
 	// Generate mock aggregated metrics
 	var metrics []*fleetpb.MetricData
-	
+
 	deviceIds := req.Msg.DeviceIds
 	if len(deviceIds) == 0 {
 		deviceIds = []string{"device-001", "device-002", "device-003"}
 	}
-	
+
 	metricNames := req.Msg.MetricNames
 	if len(metricNames) == 0 {
 		metricNames = []string{"cpu", "memory", "disk", "network"}
 	}
-	
+
 	for _, deviceId := range deviceIds {
 		for _, metricName := range metricNames {
 			metrics = append(metrics, &fleetpb.MetricData{
@@ -88,7 +88,7 @@ func (s *TelemetryService) GetMetrics(
 			})
 		}
 	}
-	
+
 	return connect.NewResponse(&fleetpb.GetMetricsResponse{
 		Metrics: metrics,
 	}), nil
@@ -104,10 +104,10 @@ func (s *TelemetryService) StreamTelemetry(
 	if len(deviceIds) == 0 {
 		deviceIds = []string{"device-001"}
 	}
-	
+
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -124,7 +124,7 @@ func (s *TelemetryService) StreamTelemetry(
 					Temperature:   35 + rand.Float64()*15,
 					CustomMetrics: map[string]float64{},
 				}
-				
+
 				if err := stream.Send(data); err != nil {
 					return err
 				}
@@ -140,7 +140,7 @@ func (s *TelemetryService) GetLogs(
 ) (*connect.Response[fleetpb.GetLogsResponse], error) {
 	// Generate mock logs
 	logs := generateMockLogs(req.Msg.DeviceIds, 50)
-	
+
 	// Apply filtering
 	var filtered []*fleetpb.TelemetryLogEntry
 	for _, log := range logs {
@@ -157,7 +157,7 @@ func (s *TelemetryService) GetLogs(
 				continue
 			}
 		}
-		
+
 		// Filter by text
 		if req.Msg.Filter != "" {
 			// Simple text matching
@@ -166,15 +166,15 @@ func (s *TelemetryService) GetLogs(
 				continue
 			}
 		}
-		
+
 		filtered = append(filtered, log)
 	}
-	
+
 	// Apply limit
 	if req.Msg.Limit > 0 && int(req.Msg.Limit) < len(filtered) {
 		filtered = filtered[:req.Msg.Limit]
 	}
-	
+
 	return connect.NewResponse(&fleetpb.GetLogsResponse{
 		Logs: filtered,
 	}), nil
@@ -190,10 +190,10 @@ func (s *TelemetryService) StreamLogs(
 	if len(deviceIds) == 0 {
 		deviceIds = []string{"device-001", "device-002"}
 	}
-	
+
 	ticker := time.NewTicker(3 * time.Second)
 	defer ticker.Stop()
-	
+
 	logMessages := []string{
 		"System health check passed",
 		"Configuration updated successfully",
@@ -204,7 +204,7 @@ func (s *TelemetryService) StreamLogs(
 		"Deployment initiated",
 		"Update check completed",
 	}
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -219,7 +219,7 @@ func (s *TelemetryService) StreamLogs(
 				Message:   logMessages[rand.Intn(len(logMessages))],
 				Metadata:  map[string]string{},
 			}
-			
+
 			if err := stream.Send(log); err != nil {
 				return err
 			}
@@ -238,9 +238,9 @@ func (s *TelemetryService) ConfigureAlert(
 		alert.CreatedAt = timestamppb.Now()
 	}
 	alert.UpdatedAt = timestamppb.Now()
-	
+
 	// In production, this would save to database
-	
+
 	return connect.NewResponse(&fleetpb.ConfigureAlertResponse{
 		Alert: alert,
 	}), nil
@@ -251,7 +251,6 @@ func (s *TelemetryService) ListAlerts(
 	ctx context.Context,
 	req *connect.Request[fleetpb.ListAlertsRequest],
 ) (*connect.Response[fleetpb.ListAlertsResponse], error) {
-	// Return mock alerts
 	alerts := []*fleetpb.Alert{
 		{
 			Id:          "alert-cpu",
@@ -290,7 +289,7 @@ func (s *TelemetryService) ListAlerts(
 			UpdatedAt:   timestamppb.Now(),
 		},
 	}
-	
+
 	if req.Msg.EnabledOnly {
 		var enabled []*fleetpb.Alert
 		for _, alert := range alerts {
@@ -300,7 +299,7 @@ func (s *TelemetryService) ListAlerts(
 		}
 		alerts = enabled
 	}
-	
+
 	return connect.NewResponse(&fleetpb.ListAlertsResponse{
 		Alerts: alerts,
 	}), nil
@@ -320,7 +319,7 @@ func (s *TelemetryService) DeleteAlert(
 func generateMockTelemetryData(deviceId string, count int) []*fleetpb.TelemetryData {
 	data := make([]*fleetpb.TelemetryData, count)
 	now := time.Now()
-	
+
 	for i := 0; i < count; i++ {
 		data[i] = &fleetpb.TelemetryData{
 			DeviceId:     deviceId,
@@ -336,7 +335,7 @@ func generateMockTelemetryData(deviceId string, count int) []*fleetpb.TelemetryD
 			},
 		}
 	}
-	
+
 	return data
 }
 
@@ -344,7 +343,7 @@ func generateMockLogs(deviceIds []string, count int) []*fleetpb.TelemetryLogEntr
 	if len(deviceIds) == 0 {
 		deviceIds = []string{"device-001", "device-002", "device-003"}
 	}
-	
+
 	messages := []string{
 		"Device connected successfully",
 		"Telemetry data transmitted",
@@ -356,10 +355,10 @@ func generateMockLogs(deviceIds []string, count int) []*fleetpb.TelemetryLogEntr
 		"Cache cleared",
 		"Service restarted",
 	}
-	
+
 	logs := make([]*fleetpb.TelemetryLogEntry, count)
 	now := time.Now()
-	
+
 	for i := 0; i < count; i++ {
 		logs[i] = &fleetpb.TelemetryLogEntry{
 			Id:        fmt.Sprintf("log-%d", i),
@@ -370,7 +369,7 @@ func generateMockLogs(deviceIds []string, count int) []*fleetpb.TelemetryLogEntr
 			Metadata:  map[string]string{},
 		}
 	}
-	
+
 	return logs
 }
 
@@ -387,7 +386,7 @@ func randomLogLevel() fleetpb.LogLevel {
 }
 
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(substr) == 0 || 
-		(len(s) > 0 && len(substr) > 0 && s[0:len(substr)] == substr) || 
+	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
+		(len(s) > 0 && len(substr) > 0 && s[0:len(substr)] == substr) ||
 		(len(s) > len(substr) && contains(s[1:], substr)))
 }

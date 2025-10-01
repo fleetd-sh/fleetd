@@ -7,12 +7,6 @@ interface TokenPair {
   refreshToken: string;
 }
 
-interface StorageOptions {
-  secure?: boolean; // Use secure cookies in production
-  sameSite?: "strict" | "lax" | "none";
-  domain?: string;
-}
-
 /**
  * AuthStorage provides a unified interface for auth token storage
  * that works in both server and client environments

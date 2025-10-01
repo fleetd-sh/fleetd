@@ -1,5 +1,4 @@
 "use client";
-
 import {
   ActivityIcon,
   CpuIcon,
@@ -24,12 +23,10 @@ interface FleetOverviewProps {
   devices: Device[];
   onDeviceSelect: (deviceId: string) => void;
 }
-
 export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, _setSelectedType] = useState<string>("all");
   const [selectedStatus, _setSelectedStatus] = useState<string>("all");
-
   // Group devices by type and status
   const deviceStats = useMemo(() => {
     const stats = {
@@ -42,21 +39,17 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
       criticalAlerts: 0,
       warnings: 0,
     };
-
     for (const device of devices) {
       // Status counts
       if (device.status === 1) stats.online++;
       else if (device.status === 2) stats.offline++;
       else if (device.status === 3) stats.updating++;
-
       // Type counts
       const type = device.systemInfo?.os || device.type || "unknown";
       stats.byType.set(type, (stats.byType.get(type) || 0) + 1);
-
       // OS distribution
       const os = device.systemInfo?.os || "unknown";
       stats.byOS.set(os, (stats.byOS.get(os) || 0) + 1);
-
       // Check for alerts (high load, low memory, etc.)
       if (device.systemInfo?.loadAverage?.load1 && device.systemInfo.loadAverage.load1 > 5) {
         stats.criticalAlerts++;
@@ -69,10 +62,8 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
         stats.warnings++;
       }
     }
-
     return stats;
   }, [devices]);
-
   // Filter devices
   const filteredDevices = useMemo(() => {
     return devices.filter((device) => {
@@ -85,23 +76,19 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
       ) {
         return false;
       }
-
       // Type filter
       if (selectedType !== "all" && device.type !== selectedType) {
         return false;
       }
-
       // Status filter
       if (selectedStatus !== "all") {
         if (selectedStatus === "online" && device.status !== 1) return false;
         if (selectedStatus === "offline" && device.status !== 2) return false;
         if (selectedStatus === "updating" && device.status !== 3) return false;
       }
-
       return true;
     });
   }, [devices, searchQuery, selectedType, selectedStatus]);
-
   // Get device health color
   const getHealthColor = (device: Device) => {
     if (device.status !== 1) return "text-gray-400";
@@ -111,7 +98,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
       return "text-yellow-500";
     return "text-green-500";
   };
-
   // Get device icon based on type
   const getDeviceIcon = (device: Device) => {
     const type = device.type?.toLowerCase() || "";
@@ -121,7 +107,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
     if (type.includes("sensor")) return <ThermometerIcon className="h-4 w-4" />;
     return <ServerIcon className="h-4 w-4" />;
   };
-
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
@@ -137,7 +122,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Online</CardTitle>
@@ -147,7 +131,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
             <Progress value={(deviceStats.online / deviceStats.total) * 100} className="mt-2 h-1" />
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Alerts</CardTitle>
@@ -160,7 +143,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
             <div className="text-xs text-muted-foreground mt-1">Critical / Warnings</div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Updates</CardTitle>
@@ -171,7 +153,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
           </CardContent>
         </Card>
       </div>
-
       {/* Filters and Search */}
       <Card>
         <CardHeader>
@@ -205,7 +186,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
               <TabsTrigger value="map">Map View</TabsTrigger>
               <TabsTrigger value="metrics">Metrics</TabsTrigger>
             </TabsList>
-
             <TabsContent value="grid" className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 {filteredDevices.map((device) => (
@@ -246,7 +226,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                           <span>{formatBytes(device.systemInfo?.memoryTotal || 0)}</span>
                         </div>
                       </div>
-
                       {/* Real-time Metrics */}
                       {device.systemInfo?.loadAverage && (
                         <div className="space-y-1">
@@ -260,7 +239,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                           />
                         </div>
                       )}
-
                       {/* Network Status */}
                       {device.systemInfo?.networkInterfaces && (
                         <div className="flex items-center gap-1">
@@ -275,7 +253,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                           </span>
                         </div>
                       )}
-
                       {/* Tags/Status */}
                       <div className="flex flex-wrap gap-1">
                         <Badge
@@ -304,7 +281,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                 ))}
               </div>
             </TabsContent>
-
             <TabsContent value="list">
               <div className="space-y-2">
                 {filteredDevices.map((device) => (
@@ -344,7 +320,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                 ))}
               </div>
             </TabsContent>
-
             <TabsContent value="map">
               <div className="h-96 flex items-center justify-center border rounded-lg bg-muted/10">
                 <div className="text-center">
@@ -356,7 +331,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                 </div>
               </div>
             </TabsContent>
-
             <TabsContent value="metrics">
               <div className="grid grid-cols-2 gap-4">
                 {/* OS Distribution */}
@@ -381,7 +355,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
                     </div>
                   </CardContent>
                 </Card>
-
                 {/* Average System Load */}
                 <Card>
                   <CardHeader>
@@ -428,7 +401,6 @@ export function FleetOverview({ devices, onDeviceSelect }: FleetOverviewProps) {
     </div>
   );
 }
-
 function formatBytes(bytes: bigint | number): string {
   const b = typeof bytes === "bigint" ? Number(bytes) : bytes;
   const sizes = ["B", "KB", "MB", "GB", "TB"];

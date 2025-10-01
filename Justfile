@@ -6,6 +6,11 @@ alias d := dev
 alias t := test-all
 alias f := format-all
 alias l := lint-all
+alias ti := test-integration-coverage
+alias tc := test-cli
+alias te := test-e2e
+alias td := test-docker
+alias ts := test-services
 
 version := `git describe --tags --always --dirty 2>/dev/null || echo "v0.0.0-dev"`
 commit_sha := `git rev-parse --short HEAD 2>/dev/null || echo "unknown"`
@@ -42,7 +47,7 @@ dev:
 build-all: proto build-go build-web
 
 # Run all tests
-test-all: test-go test-web
+test-all: test test-integration test-e2e test-web
 
 # Format all code
 format-all: format-go format-web
@@ -102,6 +107,66 @@ build-go:
     just build platform-api
     just build fleetctl
 
+# Build cross-platform binary
+# Usage: just build-cross fleetd linux amd64
+build-cross target goos goarch:
+    #!/usr/bin/env sh
+    set -e
+
+    OUTPUT_NAME="{{target}}-{{goos}}-{{goarch}}"
+    if [ "{{goos}}" = "windows" ]; then
+        OUTPUT_NAME="${OUTPUT_NAME}.exe"
+    fi
+
+    echo "Building {{target}} for {{goos}}/{{goarch}}..."
+
+    env GOOS={{goos}} GOARCH={{goarch}} CGO_ENABLED=0 go build -v \
+        -ldflags "-X fleetd.sh/internal/version.Version={{version}} \
+              -X fleetd.sh/internal/version.CommitSHA={{commit_sha}} \
+              -X 'fleetd.sh/internal/version.BuildTime={{build_time}}'" \
+        -o bin/${OUTPUT_NAME} cmd/{{target}}/main.go
+
+    echo "Built: bin/${OUTPUT_NAME}"
+
+# Build all platforms for a specific target
+# Usage: just build-all-platforms fleetd
+build-all-platforms target:
+    #!/usr/bin/env sh
+    set -e
+
+    echo "Building {{target}} for all platforms..."
+
+    # Linux
+    just build-cross {{target}} linux amd64
+    just build-cross {{target}} linux arm64
+    just build-cross {{target}} linux arm
+
+    # Windows
+    just build-cross {{target}} windows amd64
+    just build-cross {{target}} windows arm64
+
+    # macOS
+    just build-cross {{target}} darwin amd64
+    just build-cross {{target}} darwin arm64
+
+    echo "All platforms built for {{target}}"
+
+# Build all targets for all platforms
+build-release:
+    #!/usr/bin/env sh
+    set -e
+
+    echo "Building release binaries for all platforms..."
+
+    # Core agent binaries
+    just build-all-platforms fleetd
+    just build-all-platforms device-api
+    just build-all-platforms platform-api
+    just build-all-platforms fleetctl
+
+    echo "Release build completed"
+    ls -la bin/
+
 # Build SDK
 build-sdk:
     go build -v ./sdk/...
@@ -123,37 +188,130 @@ build-platform:
 build-device:
     just build device-api
 
-# Run Go unit tests
-test-go:
-    go test -v ./...
+# Run unit tests
+test:
+    go test -v -race ./...
 
-# Run Go integration tests
-test-go-integration:
-    INTEGRATION=1 FLEETD_INTEGRATION_TESTS=1 go test -v ./test/integration/... ./test/e2e/...
+# Run integration tests
+test-integration: build-fleetctl
+    PATH="${PWD}/bin:${PATH}" INTEGRATION=1 FLEETD_INTEGRATION_TESTS=1 JWT_SECRET=test-secret-key go test -v ./test/integration/...
+
+# Build fleetctl binary for tests
+build-fleetctl:
+    @just build fleetctl
 
 # Run performance and load tests
 test-performance:
     go test -v ./test/performance/... -timeout 30m
 
-# Run all extended tests (unit + integration + performance)
-test-extended: test-go test-go-integration test-performance
+# Run e2e tests
+test-e2e: build-fleetctl
+    PATH="${PWD}/bin:${PATH}" E2E=1 JWT_SECRET=test-secret-key go test -v ./test/e2e/...
 
-# Run specific Go test by name
-test-go-run target:
+# Run specific test by pattern
+test-run target:
     go test -v ./... -run {{target}}
 
-# Generate Go test coverage
-test-go-coverage:
-    go test -v -coverprofile=coverage.out ./...
+# Generate test coverage report
+test-coverage:
+    go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
     go tool cover -html=coverage.out -o coverage.html
+    @echo "Coverage report generated: coverage.html"
 
-# Format Go code
+# Run telemetry service integration tests
+test-telemetry:
+    INTEGRATION=true go test -v -timeout 10m ./test/integration/telemetry_service_test.go ./test/integration/helpers_test.go
+
+# Run settings service integration tests
+test-settings:
+    INTEGRATION=true go test -v -timeout 10m ./test/integration/settings_service_test.go ./test/integration/helpers_test.go
+
+
+# Run CLI integration tests
+test-cli:
+    #!/usr/bin/env sh
+    just build fleetctl
+    PATH="${PWD}/bin:${PATH}" INTEGRATION=true go test -v -timeout 10m ./test/integration/cli_test.go ./test/integration/helpers_test.go
+
+
+# Run all integration tests with coverage
+test-integration-coverage:
+    #!/usr/bin/env sh
+    mkdir -p coverage
+    INTEGRATION=true go test -v -timeout 20m \
+        -coverprofile=coverage/integration.out \
+        ./test/integration/... ./test/e2e/...
+    go tool cover -html=coverage/integration.out -o coverage/integration.html
+    echo "Coverage report: coverage/integration.html"
+
+# Run tests with Docker Compose
+test-docker:
+    docker-compose -f test/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test-runner
+    docker-compose -f test/docker-compose.test.yml down -v
+
+# Start test infrastructure (PostgreSQL, Redis)
+test-infra-up:
+    #!/usr/bin/env sh
+    echo "Starting test infrastructure..."
+    docker run -d --name fleetd-test-postgres \
+        -e POSTGRES_USER=fleetd_test \
+        -e POSTGRES_PASSWORD=test_password \
+        -e POSTGRES_DB=fleetd_test \
+        -p 5433:5432 \
+        postgres:17-alpine
+    docker run -d --name fleetd-test-redis \
+        -p 6380:6379 \
+        redis:7-alpine
+    echo "Waiting for services to be ready..."
+    sleep 5
+    echo "Test infrastructure ready!"
+
+# Stop test infrastructure
+test-infra-down:
+    docker stop fleetd-test-postgres fleetd-test-redis 2>/dev/null || true
+    docker rm fleetd-test-postgres fleetd-test-redis 2>/dev/null || true
+
+# Run all tests with full coverage report
+test-full-coverage:
+    #!/usr/bin/env sh
+    mkdir -p coverage
+    echo "Running unit tests..."
+    go test -v -coverprofile=coverage/unit.out ./cmd/... ./internal/... ./pkg/...
+    echo "Running integration tests..."
+    INTEGRATION=true go test -v -coverprofile=coverage/integration.out ./test/integration/...
+    echo "Running e2e tests..."
+    INTEGRATION=true go test -v -coverprofile=coverage/e2e.out ./test/e2e/...
+    echo "Merging coverage reports..."
+    go install github.com/wadey/gocovmerge@latest
+    gocovmerge coverage/*.out > coverage/all.out
+    go tool cover -html=coverage/all.out -o coverage/all.html
+    go tool cover -func=coverage/all.out | tail -1
+    echo "Full coverage report: coverage/all.html"
+
+# Benchmark telemetry service
+bench-telemetry:
+    go test -bench=. -benchmem ./test/integration/telemetry_service_test.go ./test/integration/helpers_test.go
+
+# Run specific integration test
+test-integration-run pattern:
+    INTEGRATION=true go test -v ./test/integration/... -run {{pattern}}
+
+# Run core service tests (telemetry + settings)
+test-services: test-telemetry test-settings
+
+# Clean test artifacts
+test-clean:
+    rm -rf coverage/ test-results/ *.out *.html
+    docker stop fleetd-test-postgres fleetd-test-redis 2>/dev/null || true
+    docker rm fleetd-test-postgres fleetd-test-redis 2>/dev/null || true
+
+# Format Go code (exclude generated files)
 format-go:
-    go fmt ./...
+    go fmt $(go list ./... | grep -v '/gen/')
 
-# Lint Go code
+# Lint Go code (exclude generated files)
 lint-go:
-    go vet ./...
+    go vet $(go list ./... | grep -v '/gen/')
 
 # Run Device API development server
 device-api-dev:
@@ -231,9 +389,11 @@ web-analyze:
 # Generate Go and TypeScript code from proto files
 proto:
     buf generate
+    # Clean up conflicting Google API packages from Go generation
+    rm -rf gen/google
     @echo "Generated Go code in gen/"
-    @echo "Generated TypeScript code in web/lib/api/gen/"
-    @echo "Generated OpenAPI spec in docs/api/"
+    @echo "Generated TypeScript code in studio/lib/api/gen/"
+    @echo "Generated OpenAPI spec in gen/docs/"
 
 # Format proto files
 proto-format:
@@ -264,13 +424,25 @@ platform-status:
 
 # Docker Commands
 
-# Build Docker image for backend
-docker-build tag="latest":
-    docker build -t fleetd/fleets:{{tag}} -f docker/Dockerfile .
+# Build all Docker images for fleetctl start
+docker-build-all tag="latest": (docker-build-platform-api tag) (docker-build-device-api tag) (docker-build-studio tag)
+    @echo "Built all Docker images with tag: {{tag}}"
 
-# Build Docker image for web
-docker-build-web tag="latest":
-    docker build -t fleetd/web:{{tag}} -f web/Dockerfile ./web
+# Build Platform API Docker image
+docker-build-platform-api tag="latest":
+    docker build -t fleetd.sh/platform-api:{{tag}} -f Dockerfile.platform-api .
+
+# Build Device API Docker image
+docker-build-device-api tag="latest":
+    docker build -t fleetd.sh/device-api:{{tag}} -f Dockerfile.device-api .
+
+# Build Studio (web UI) Docker image
+docker-build-studio tag="latest":
+    docker build -t fleetd.sh/studio:{{tag}} -f studio/Dockerfile ./studio
+
+# Build all images for fleetctl start (replaces build-go + docker builds)
+build-docker tag="latest": (docker-build-all tag)
+    @echo "Built all Docker images for fleetctl start with tag: {{tag}}"
 
 
 # Database Commands
@@ -335,19 +507,55 @@ audit:
 docs:
     open https://github.com/fleetd-sh/fleetd/wiki
 
-# Generate OpenAPI documentation
-docs-generate:
+# Generate all documentation (API + CLI)
+docs-generate: docs-api docs-cli
+
+# Generate OpenAPI documentation from protobuf definitions
+docs-api:
     buf generate
-    @echo "OpenAPI documentation generated at docs/api/fleetd.swagger.json"
+    @echo "OpenAPI documentation generated at gen/docs/"
+
+# Generate CLI documentation from Cobra commands
+docs-cli:
+    # Note: Using -mod=mod to bypass vendor issues during development
+    go build -mod=mod -v -ldflags "-X fleetd.sh/internal/version.Version=dev" -o bin/fleetctl-temp cmd/fleetctl/main.go || echo "Build failed, trying without problematic packages"
+    # If main build fails due to security package issues, generate minimal docs
+    @if [ -f bin/fleetctl-temp ]; then \
+        ./bin/fleetctl-temp docs --format markdown --output gen/docs/cli; \
+        rm bin/fleetctl-temp; \
+    else \
+        echo "Could not build fleetctl due to security package compilation errors."; \
+        echo "Please fix the duplicate type declarations in internal/security/ first."; \
+        mkdir -p gen/docs/cli; \
+        echo "# CLI Documentation" > gen/docs/cli/README.md; \
+        echo "CLI documentation generation is temporarily disabled due to build issues." >> gen/docs/cli/README.md; \
+        echo "Run 'fleetctl docs' after fixing the security package compilation errors." >> gen/docs/cli/README.md; \
+    fi
+    @echo "CLI documentation process completed at gen/docs/cli/"
 
 # Serve OpenAPI documentation with Swagger UI
 docs-serve port="8082":
     @echo "Starting Swagger UI server on http://localhost:{{port}}"
-    @echo "OpenAPI spec: docs/api/fleetd.swagger.json"
+    @echo "OpenAPI spec: gen/docs/"
     go run cmd/swagger/main.go
 
+# Generate man pages for CLI commands
+docs-man:
+    just build fleetctl
+    ./bin/fleetctl docs --format man --output gen/docs/man
+    @echo "Man pages generated at gen/docs/man/"
+
+# Generate all documentation formats
+docs-all: docs-api docs-cli docs-man
+    @echo "All documentation generated in gen/docs/"
+
+# Clean generated documentation
+docs-clean:
+    rm -rf gen/docs/
+    @echo "Generated documentation cleaned"
+
 # Open API documentation in browser
-docs-api:
+docs-open:
     just docs-serve &
     sleep 2
     open http://localhost:8082

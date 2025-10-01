@@ -521,11 +521,11 @@ func createSampleSeedData(db *sql.DB) error {
 	seedSQL := `
 	-- Sample seed data for Fleet
 
-	-- Insert sample devices (if table exists)
-	INSERT INTO devices (id, name, status)
+	-- Insert sample device (if table exists)
+	INSERT INTO device (id, name, status)
 	SELECT 'device-001', 'Test Device 1', 'online'
-	WHERE EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'devices')
-	AND NOT EXISTS (SELECT 1 FROM devices WHERE id = 'device-001');
+	WHERE EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'device')
+	AND NOT EXISTS (SELECT 1 FROM device WHERE id = 'device-001');
 	`
 
 	_, err := db.Exec(seedSQL)

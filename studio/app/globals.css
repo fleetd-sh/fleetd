@@ -191,4 +191,112 @@
       transform: translateY(0.25rem);
     }
   }
+
+  /* Typography utilities - baseline grid aligned (6px unit) */
+  .text-xs-atlas {
+    font-size: 0.75rem;    /* 12px */
+    line-height: 1.125rem; /* 18px */
+    letter-spacing: 0.025em;
+  }
+
+  .text-sm-atlas {
+    font-size: 0.875rem;   /* 14px */
+    line-height: 1.375rem; /* 22px */
+    letter-spacing: 0.01em;
+  }
+
+  .text-base-atlas {
+    font-size: 1rem;       /* 16px */
+    line-height: 1.625rem; /* 26px */
+    letter-spacing: 0;
+  }
+
+  .text-md-atlas {
+    font-size: 1.125rem;   /* 18px */
+    line-height: 1.875rem; /* 30px */
+    letter-spacing: -0.01em;
+  }
+
+  .text-lg-atlas {
+    font-size: 1.5rem;     /* 24px */
+    line-height: 2.25rem;  /* 36px */
+    letter-spacing: -0.02em;
+  }
+
+  .text-xl-atlas {
+    font-size: 2rem;       /* 32px */
+    line-height: 2.75rem;  /* 44px */
+    letter-spacing: -0.03em;
+  }
+
+  .text-display-atlas {
+    font-size: 2.5rem;     /* 40px */
+    line-height: 3rem;     /* 48px */
+    letter-spacing: -0.04em;
+  }
+
+  /* Baseline-aligned spacing utilities */
+  .space-y-baseline-1 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.375rem; /* 6px */
+  }
+
+  .space-y-baseline-2 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.75rem; /* 12px */
+  }
+
+  .space-y-baseline-3 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.125rem; /* 18px */
+  }
+
+  .space-y-baseline-4 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.5rem; /* 24px */
+  }
+
+  .space-y-baseline-5 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.875rem; /* 30px */
+  }
+
+  .space-y-baseline-6 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 2.25rem; /* 36px */
+  }
+
+  /* Baseline-aligned padding utilities */
+  .p-baseline-1 { padding: 0.375rem; }  /* 6px */
+  .p-baseline-2 { padding: 0.75rem; }   /* 12px */
+  .p-baseline-3 { padding: 1.125rem; }  /* 18px */
+  .p-baseline-4 { padding: 1.5rem; }    /* 24px */
+  .p-baseline-5 { padding: 1.875rem; }  /* 30px */
+  .p-baseline-6 { padding: 2.25rem; }   /* 36px */
+  .p-baseline-7 { padding: 2.625rem; }  /* 42px */
+  .p-baseline-8 { padding: 3rem; }      /* 48px */
+
+  .px-baseline-1 { padding-left: 0.375rem; padding-right: 0.375rem; }
+  .px-baseline-2 { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .px-baseline-3 { padding-left: 1.125rem; padding-right: 1.125rem; }
+  .px-baseline-4 { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .px-baseline-5 { padding-left: 1.875rem; padding-right: 1.875rem; }
+  .px-baseline-6 { padding-left: 2.25rem; padding-right: 2.25rem; }
+
+  .py-baseline-1 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+  .py-baseline-2 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .py-baseline-3 { padding-top: 1.125rem; padding-bottom: 1.125rem; }
+  .py-baseline-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .py-baseline-5 { padding-top: 1.875rem; padding-bottom: 1.875rem; }
+  .py-baseline-6 { padding-top: 2.25rem; padding-bottom: 2.25rem; }
+
+  .pt-baseline-0 { padding-top: 0; }
+  .pt-baseline-1 { padding-top: 0.375rem; }
+  .pt-baseline-2 { padding-top: 0.75rem; }
+  .pt-baseline-3 { padding-top: 1.125rem; }
+  .pt-baseline-4 { padding-top: 1.5rem; }
+  .pt-baseline-5 { padding-top: 1.875rem; }
+  .pt-baseline-6 { padding-top: 2.25rem; }
+
+  /* Gap utilities for baseline alignment */
+  .gap-baseline-1 { gap: 0.375rem; }    /* 6px */
+  .gap-baseline-2 { gap: 0.75rem; }     /* 12px */
+  .gap-baseline-3 { gap: 1.125rem; }    /* 18px */
+  .gap-baseline-4 { gap: 1.5rem; }      /* 24px */
+  .gap-baseline-5 { gap: 1.875rem; }    /* 30px */
+  .gap-baseline-6 { gap: 2.25rem; }     /* 36px */
 }
