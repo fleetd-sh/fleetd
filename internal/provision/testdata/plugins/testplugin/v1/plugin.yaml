@@ -1,0 +1,44 @@
+name: testplugin
+version: 1.0.0
+description: Test plugin for unit tests
+author: fleetd
+platforms:
+- linux
+architectures:
+- amd64
+- arm64
+- arm
+options:
+  role:
+    type: enum
+    description: Test role
+    values:
+    - server
+    - agent
+    required: true
+  server:
+    type: string
+    description: Server URL (required for agent)
+    required_if: role=agent
+    example: https://192.168.1.10:6443
+  version:
+    type: string
+    description: Version to install
+files:
+- source: install.sh
+  destination: /boot/firmware/plugins/test-install.sh
+  permissions: '0755'
+  template: false
+- source: test.env.tmpl
+  destination: /boot/firmware/plugins/test.env
+  permissions: '0644'
+  template: true
+hooks:
+  firstrun:
+    enabled: true
+    script: /boot/firmware/plugins/test-install.sh
+    order: 100
+resources:
+  min_memory_mb: 512
+  min_disk_mb: 1024
+  requires_network: true
