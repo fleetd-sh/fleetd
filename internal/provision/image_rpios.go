@@ -67,6 +67,16 @@ func (p *RaspberryPiOSProvider) GetRootPartitionLabel() string {
 	return "rootfs"
 }
 
+// GetPlatform returns the target platform
+func (p *RaspberryPiOSProvider) GetPlatform() string {
+	return "linux"
+}
+
+// GetSupportedArchitectures returns supported architectures
+func (p *RaspberryPiOSProvider) GetSupportedArchitectures() []string {
+	return []string{"arm64", "arm"}
+}
+
 // PostWriteSetup performs Raspberry Pi OS specific setup
 func (p *RaspberryPiOSProvider) PostWriteSetup(bootPath, rootPath string, config *Config) error {
 	fmt.Printf("RaspiOS PostWriteSetup called with bootPath: %s, rootPath: %s\n", bootPath, rootPath)
@@ -137,8 +147,8 @@ You should change the password after first login.
 	fmt.Printf("   Password: %s\n", password)
 	fmt.Printf("   (Also saved to /boot/firmware/DEVICE_CREDENTIALS.txt)\n\n")
 
-	// 3a. For newer Raspberry Pi OS, we should avoid conflicting with their firstrun
-	// The built-in firstrun.sh handles user creation from userconf.txt
+	// 3a. For newer Raspberry Pi OS, avoid conflicting with their firstrun
+	// Built-in firstrun.sh handles user creation from userconf.txt
 
 	// 4. Create systemd service file
 	systemdService := `[Unit]

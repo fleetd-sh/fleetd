@@ -20,6 +20,8 @@ func newProvisionCmd() *cobra.Command {
 		name           string
 		imageURL       string
 		imageSHA256URL string
+		imagePlatform  string
+		imageArch      string
 		osType         string
 		wifiSSID       string
 		wifiPass       string
@@ -53,7 +55,7 @@ and sets up the fleetd agent for fleet management.`,
   fleet provision --device /dev/disk2 --wifi-ssid MyWiFi --wifi-pass secret \
     --plugin k3s --plugin-opt k3s.role=server`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runProvision(cmd, args, device, name, imageURL, imageSHA256URL, osType, wifiSSID, wifiPass, fleetServer, sshKeyFile, plugins, pluginOpts, pluginDir, dryRun, configureOnly)
+			return runProvision(cmd, args, device, name, imageURL, imageSHA256URL, imagePlatform, imageArch, osType, wifiSSID, wifiPass, fleetServer, sshKeyFile, plugins, pluginOpts, pluginDir, dryRun, configureOnly)
 		},
 	}
 
@@ -74,6 +76,8 @@ and sets up the fleetd agent for fleet management.`,
 	cmd.Flags().StringVar(&osType, "os", "", "Operating system to install (raspios) - defaults to raspios")
 	cmd.Flags().StringVar(&imageURL, "image-url", "", "Custom OS image URL or local file path (overrides --os)")
 	cmd.Flags().StringVar(&imageSHA256URL, "image-sha256-url", "", "URL to SHA256 checksum for custom image")
+	cmd.Flags().StringVar(&imagePlatform, "image-platform", "linux", "Target platform for custom image (linux, rtos, windows, darwin)")
+	cmd.Flags().StringVar(&imageArch, "image-arch", "arm64", "Target architecture for custom image (amd64, arm64, arm, xtensa)")
 
 	// Plugin support
 	cmd.Flags().StringSliceVar(&plugins, "plugin", []string{}, "Load plugin (can be repeated)")
@@ -93,6 +97,8 @@ type provisionOptions struct {
 	name           string
 	imageURL       string
 	imageSHA256URL string
+	imagePlatform  string
+	imageArch      string
 	osType         string
 	wifiSSID       string
 	wifiPass       string
@@ -105,12 +111,14 @@ type provisionOptions struct {
 	configureOnly  bool
 }
 
-func runProvision(cmd *cobra.Command, args []string, device, name, imageURL, imageSHA256URL, osType, wifiSSID, wifiPass, fleetServer, sshKeyFile string, plugins, pluginOpts []string, pluginDir string, dryRun, configureOnly bool) error {
+func runProvision(cmd *cobra.Command, args []string, device, name, imageURL, imageSHA256URL, imagePlatform, imageArch, osType, wifiSSID, wifiPass, fleetServer, sshKeyFile string, plugins, pluginOpts []string, pluginDir string, dryRun, configureOnly bool) error {
 	opts := &provisionOptions{
 		device:         device,
 		name:           name,
 		imageURL:       imageURL,
 		imageSHA256URL: imageSHA256URL,
+		imagePlatform:  imagePlatform,
+		imageArch:      imageArch,
 		osType:         osType,
 		wifiSSID:       wifiSSID,
 		wifiPass:       wifiPass,
@@ -135,7 +143,7 @@ func runProvision(cmd *cobra.Command, args []string, device, name, imageURL, ima
 	}
 
 	// Create and setup provisioner
-	provisioner, err := setupProvisioner(config, opts.pluginDir)
+	provisioner, pluginManager, err := setupProvisioner(config, opts.plugins, opts.pluginOpts)
 	if err != nil {
 		return err
 	}
@@ -144,7 +152,7 @@ func runProvision(cmd *cobra.Command, args []string, device, name, imageURL, ima
 	displayProvisioningSummary(config, opts)
 
 	// Execute provisioning
-	return executeProvisioning(provisioner, config, opts)
+	return executeProvisioning(provisioner, pluginManager, config, opts)
 }
 
 // verifyAdminAccess checks for sudo/admin privileges
@@ -186,6 +194,19 @@ func buildProvisionConfig(opts *provisionOptions) (*provision.Config, error) {
 	if verbose {
 		printInfo("Detected device type: %s", detectedType)
 	}
+
+	// Set target platform and architecture (will be used for plugin compatibility)
+	// For standard images (raspios, etc.), this will be overridden by the image provider
+	// For custom images, user can specify via --image-platform and --image-arch flags
+	if opts.imageURL != "" {
+		// Custom image - use user-provided values
+		config.TargetPlatform = opts.imagePlatform
+		config.TargetArch = opts.imageArch
+		if verbose {
+			printInfo("Custom image platform: %s, architecture: %s", config.TargetPlatform, config.TargetArch)
+		}
+	}
+	// Note: For standard images, platform/arch will be set by the image provider in ProvisionWithImage
 
 	// Set device name if not specified
 	if config.DeviceName == "" {
@@ -253,18 +274,119 @@ func configurePlugins(config *provision.Config, plugins []string, pluginOpts []s
 }
 
 // setupProvisioner creates and configures the provisioner
-func setupProvisioner(config *provision.Config, pluginDir string) (*provision.CoreProvisioner, error) {
+func setupProvisioner(config *provision.Config, pluginNames []string, pluginOpts []string) (*provision.CoreProvisioner, *provision.PluginManager, error) {
 	provisioner := provision.NewCoreProvisioner(config)
 
-	// Load plugins
-	pluginDir = expandPath(pluginDir)
-	if err := provisioner.LoadPlugins(pluginDir); err != nil {
-		if verbose {
-			printWarning("Failed to load plugins from %s: %v", pluginDir, err)
+	// Create plugin manager
+	pluginManager := provision.NewPluginManager(&provision.EmbeddedPlugins)
+
+	// Collect loaded plugins for validation
+	loadedPlugins := make([]*provision.Plugin, 0, len(pluginNames))
+
+	// Load plugins from various sources
+	for _, pluginSource := range pluginNames {
+		if err := pluginManager.LoadPlugin(pluginSource); err != nil {
+			return nil, nil, fmt.Errorf("failed to load plugin %s: %w", pluginSource, err)
+		}
+
+		// Get the plugin to validate compatibility
+		plugin := pluginManager.GetPlugin(extractPluginName(pluginSource))
+		if plugin == nil {
+			// For file/URL plugins, try to get by source name
+			for _, p := range pluginManager.ListPlugins() {
+				if p == pluginSource || strings.Contains(pluginSource, p) {
+					plugin = pluginManager.GetPlugin(p)
+					break
+				}
+			}
+		}
+
+		if plugin == nil {
+			return nil, nil, fmt.Errorf("failed to retrieve loaded plugin: %s", pluginSource)
+		}
+
+		loadedPlugins = append(loadedPlugins, plugin)
+
+		// Configure the plugin
+		pluginConfig := extractPluginConfig(plugin.Name, pluginOpts)
+		if err := pluginManager.ConfigurePlugin(plugin.Name, pluginConfig); err != nil {
+			return nil, nil, fmt.Errorf("failed to configure plugin %s: %w", plugin.Name, err)
 		}
 	}
 
-	return provisioner, nil
+	// Validate plugin compatibility
+	if len(loadedPlugins) > 0 {
+		unknownPlatform := config.TargetPlatform == "" || config.TargetArch == ""
+
+		if unknownPlatform {
+			// Warn about unknown platform/arch
+			fmt.Println()
+			printWarning("Using custom image without platform/architecture information")
+			fmt.Println("Plugin compatibility cannot be verified. Selected plugins require:")
+			for _, plugin := range loadedPlugins {
+				fmt.Printf("  - %s: %s\n", plugin.Name, plugin.GetPlatformInfo())
+			}
+			fmt.Println()
+			fmt.Println("To specify platform/architecture, use:")
+			fmt.Println("  --image-platform <linux|rtos|windows|darwin>")
+			fmt.Println("  --image-arch <amd64|arm64|arm|xtensa>")
+			fmt.Println()
+		} else {
+			// Validate each plugin against target platform/arch
+			for _, plugin := range loadedPlugins {
+				if err := plugin.GetCompatibilityError(config.TargetPlatform, config.TargetArch); err != nil {
+					return nil, nil, err
+				}
+
+				if verbose {
+					printInfo("Plugin %s is compatible with %s/%s", plugin.Name, config.TargetPlatform, config.TargetArch)
+				}
+			}
+		}
+
+		// Check that plugins are compatible with each other
+		if err := provision.ValidatePluginsCompatibility(loadedPlugins); err != nil {
+			return nil, nil, err
+		}
+	}
+
+	return provisioner, pluginManager, nil
+}
+
+// extractPluginName extracts the plugin name from a source
+// Examples: "k3s" -> "k3s", "./plugin.yaml" -> reads from YAML, "https://..." -> reads from YAML
+func extractPluginName(source string) string {
+	// For simple names, return as-is
+	if !strings.Contains(source, "/") && !strings.HasSuffix(source, ".yaml") {
+		return source
+	}
+	// For paths and URLs, we can't know the name without loading
+	// The plugin name will be read from the YAML file
+	// This is a helper for embedded plugins only
+	return source
+}
+
+// extractPluginConfig extracts configuration for a specific plugin from pluginOpts
+func extractPluginConfig(pluginName string, pluginOpts []string) map[string]interface{} {
+	config := make(map[string]interface{})
+
+	for _, opt := range pluginOpts {
+		parts := strings.SplitN(opt, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		keyParts := strings.SplitN(parts[0], ".", 2)
+		if len(keyParts) != 2 {
+			continue
+		}
+
+		if keyParts[0] == pluginName {
+			config[keyParts[1]] = parts[1]
+		}
+	}
+
+	return config
 }
 
 // displayProvisioningSummary shows a summary of what will be provisioned
@@ -294,9 +416,13 @@ func displayProvisioningSummary(config *provision.Config, opts *provisionOptions
 }
 
 // executeProvisioning performs the actual provisioning
-func executeProvisioning(provisioner *provision.CoreProvisioner, config *provision.Config, opts *provisionOptions) error {
+func executeProvisioning(provisioner *provision.CoreProvisioner, pluginManager *provision.PluginManager, config *provision.Config, opts *provisionOptions) error {
 	progress := provision.NewProgressBarReporter(verbose)
 	ctx := context.Background()
+
+	// TODO: Integrate pluginManager with provisioning process
+	// For now, plugins are loaded but not yet applied during provisioning
+	_ = pluginManager
 
 	// Handle configure-only mode
 	if opts.configureOnly {

@@ -15,6 +15,8 @@ import (
 type CustomImageProvider struct {
 	imageURL       string
 	imageSHA256URL string
+	platform       string   // Target platform (e.g., "linux", "rtos")
+	architectures  []string // Supported architectures
 }
 
 // NewCustomImageProvider creates a new custom image provider
@@ -22,6 +24,18 @@ func NewCustomImageProvider(imageURL, imageSHA256URL string) *CustomImageProvide
 	return &CustomImageProvider{
 		imageURL:       imageURL,
 		imageSHA256URL: imageSHA256URL,
+		platform:       "",  // Unknown platform by default
+		architectures:  nil, // Unknown architectures by default
+	}
+}
+
+// SetPlatformInfo sets the platform and architecture information for the custom image
+func (p *CustomImageProvider) SetPlatformInfo(platform string, architectures []string) {
+	if platform != "" {
+		p.platform = platform
+	}
+	if len(architectures) > 0 {
+		p.architectures = architectures
 	}
 }
 
@@ -94,6 +108,16 @@ func (p *CustomImageProvider) GetBootPartitionLabel() string {
 func (p *CustomImageProvider) GetRootPartitionLabel() string {
 	// Common labels for root partitions
 	return "rootfs"
+}
+
+// GetPlatform returns the target platform
+func (p *CustomImageProvider) GetPlatform() string {
+	return p.platform
+}
+
+// GetSupportedArchitectures returns supported architectures
+func (p *CustomImageProvider) GetSupportedArchitectures() []string {
+	return p.architectures
 }
 
 // PostWriteSetup performs OS-specific setup

@@ -27,6 +27,10 @@ type Config struct {
 	DeviceName string     `json:"device_name"`
 	DeviceID   string     `json:"device_id"`
 
+	// Target platform/architecture for plugin compatibility
+	TargetPlatform string `json:"target_platform,omitempty"` // e.g., "linux", "rtos"
+	TargetArch     string `json:"target_arch,omitempty"`     // e.g., "arm64", "arm", "amd64", "xtensa"
+
 	// Network configuration (essential for connectivity)
 	Network NetworkConfig `json:"network"`
 

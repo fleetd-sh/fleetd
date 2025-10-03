@@ -31,6 +31,12 @@ type ImageProvider interface {
 
 	// PostWriteSetup performs any OS-specific setup after writing to SD card
 	PostWriteSetup(bootPath, rootPath string, config *Config) error
+
+	// GetPlatform returns the target platform (e.g., "linux", "rtos")
+	GetPlatform() string
+
+	// GetSupportedArchitectures returns supported architectures (e.g., ["arm64", "amd64"])
+	GetSupportedArchitectures() []string
 }
 
 // ImageManager handles OS image downloads and caching

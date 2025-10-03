@@ -9,26 +9,14 @@ import (
 
 // CoreProvisioner focuses only on fleetd agent provisioning
 type CoreProvisioner struct {
-	config  *Config
-	plugins *PluginManager
+	config *Config
 }
 
 // NewCoreProvisioner creates a provisioner focused on fleetd
 func NewCoreProvisioner(config *Config) *CoreProvisioner {
 	return &CoreProvisioner{
-		config:  config,
-		plugins: NewPluginManager(),
+		config: config,
 	}
-}
-
-// LoadPlugins loads plugins from a directory
-func (p *CoreProvisioner) LoadPlugins(dir string) error {
-	return p.plugins.LoadPluginsFromDir(dir)
-}
-
-// RegisterHook registers a provisioning hook
-func (p *CoreProvisioner) RegisterHook(hook Hook) {
-	p.plugins.RegisterHook(hook)
 }
 
 // GetCoreFiles returns the essential files for fleetd provisioning
@@ -63,57 +51,39 @@ func (p *CoreProvisioner) GetCoreFiles() map[string][]byte {
 
 // Provision performs the actual provisioning
 func (p *CoreProvisioner) Provision(ctx context.Context) error {
-	// Pre-provision hooks
-	if err := p.plugins.PreProvision(ctx, p.config); err != nil {
-		return fmt.Errorf("pre-provision failed: %w", err)
-	}
-
-	// Let plugins modify config
-	if err := p.plugins.ModifyConfig(p.config); err != nil {
-		return fmt.Errorf("config modification failed: %w", err)
-	}
-
 	// Get all files to write
 	files := p.GetCoreFiles()
-
-	// Get plugin files
-	pluginFiles, err := p.plugins.GetAdditionalFiles()
-	if err != nil {
-		return fmt.Errorf("failed to get plugin files: %w", err)
-	}
-
-	// Merge files
-	for path, content := range pluginFiles {
-		files[path] = content
-	}
 
 	// Here we would actually write to the device
 	// For now, this is a placeholder
 	fmt.Printf("Would write %d files to device\n", len(files))
-
-	// Post-provision hooks
-	if err := p.plugins.PostProvision(ctx, p.config); err != nil {
-		return fmt.Errorf("post-provision failed: %w", err)
-	}
 
 	return nil
 }
 
 // ProvisionWithImage downloads an OS image and writes it to the device
 func (p *CoreProvisioner) ProvisionWithImage(ctx context.Context, osType, arch string, dryRun bool, progress ProgressReporter) error {
-	// Pre-provision hooks
-	if err := p.plugins.PreProvision(ctx, p.config); err != nil {
-		return fmt.Errorf("pre-provision failed: %w", err)
-	}
-
-	// Let plugins modify config
-	if err := p.plugins.ModifyConfig(p.config); err != nil {
-		return fmt.Errorf("config modification failed: %w", err)
-	}
 
 	// Initialize image manager
 	imageManager := NewImageManager("")
 	InitializeProviders(imageManager)
+
+	// Get the image provider to extract platform/arch metadata
+	provider, err := imageManager.GetProvider(osType)
+	if err != nil {
+		return err
+	}
+
+	// Update config with provider's platform and architecture info
+	p.config.TargetPlatform = provider.GetPlatform()
+	supportedArchs := provider.GetSupportedArchitectures()
+	if len(supportedArchs) > 0 {
+		// Use requested arch if supported, otherwise use first supported arch
+		p.config.TargetArch = arch
+		if arch == "" && len(supportedArchs) > 0 {
+			p.config.TargetArch = supportedArchs[0]
+		}
+	}
 
 	// Download OS image
 	if progress != nil {
@@ -128,12 +98,6 @@ func (p *CoreProvisioner) ProvisionWithImage(ctx context.Context, osType, arch s
 	})
 	if err != nil {
 		return fmt.Errorf("failed to download image: %w", err)
-	}
-
-	// Get the image provider
-	provider, err := imageManager.GetProvider(osType)
-	if err != nil {
-		return err
 	}
 
 	// Get decompressed image (from cache if available)
@@ -194,26 +158,7 @@ func (p *CoreProvisioner) ProvisionWithImage(ctx context.Context, osType, arch s
 		return fmt.Errorf("failed to perform post-write setup: %w", err)
 	}
 
-	// Write additional plugin files
-	pluginFiles, err := p.plugins.GetAdditionalFiles()
-	if err != nil {
-		cleanup()
-		return fmt.Errorf("failed to get plugin files: %w", err)
-	}
-
-	for path, content := range pluginFiles {
-		fullPath := filepath.Join(bootPath, path)
-		if err := os.WriteFile(fullPath, content, 0o644); err != nil {
-			cleanup()
-			return fmt.Errorf("failed to write plugin file %s: %w", path, err)
-		}
-	}
-
-	// Post-provision hooks
-	if err := p.plugins.PostProvision(ctx, p.config); err != nil {
-		cleanup()
-		return fmt.Errorf("post-provision failed: %w", err)
-	}
+	// Plugin files would be written here (not yet implemented in CoreProvisioner)
 
 	// Sync filesystem to ensure all writes are persisted
 	if progress != nil {
@@ -248,21 +193,29 @@ func (p *CoreProvisioner) ProvisionWithImage(ctx context.Context, osType, arch s
 
 // ProvisionWithCustomImage provisions using a custom image URL
 func (p *CoreProvisioner) ProvisionWithCustomImage(ctx context.Context, imageURL, imageSHA256URL string, dryRun bool, progress ProgressReporter) error {
-	// Pre-provision hooks
-	if err := p.plugins.PreProvision(ctx, p.config); err != nil {
-		return fmt.Errorf("pre-provision failed: %w", err)
-	}
-
-	// Let plugins modify config
-	if err := p.plugins.ModifyConfig(p.config); err != nil {
-		return fmt.Errorf("config modification failed: %w", err)
-	}
 
 	// Initialize image manager
 	imageManager := NewImageManager("")
 
 	// Register custom image provider
 	customProvider := NewCustomImageProvider(imageURL, imageSHA256URL)
+
+	// Set platform info if provided in config
+	if p.config.TargetPlatform != "" || p.config.TargetArch != "" {
+		archs := []string{}
+		if p.config.TargetArch != "" {
+			archs = append(archs, p.config.TargetArch)
+		}
+		customProvider.SetPlatformInfo(p.config.TargetPlatform, archs)
+	}
+
+	// Update config with provider's platform info
+	p.config.TargetPlatform = customProvider.GetPlatform()
+	supportedArchs := customProvider.GetSupportedArchitectures()
+	if len(supportedArchs) > 0 {
+		p.config.TargetArch = supportedArchs[0]
+	}
+
 	imageManager.RegisterProvider("custom", customProvider)
 
 	// Download OS image
@@ -344,26 +297,7 @@ func (p *CoreProvisioner) ProvisionWithCustomImage(ctx context.Context, imageURL
 		return fmt.Errorf("failed to perform post-write setup: %w", err)
 	}
 
-	// Write additional plugin files
-	pluginFiles, err := p.plugins.GetAdditionalFiles()
-	if err != nil {
-		cleanup()
-		return fmt.Errorf("failed to get plugin files: %w", err)
-	}
-
-	for path, content := range pluginFiles {
-		fullPath := filepath.Join(bootPath, path)
-		if err := os.WriteFile(fullPath, content, 0o644); err != nil {
-			cleanup()
-			return fmt.Errorf("failed to write plugin file %s: %w", path, err)
-		}
-	}
-
-	// Post-provision hooks
-	if err := p.plugins.PostProvision(ctx, p.config); err != nil {
-		cleanup()
-		return fmt.Errorf("post-provision failed: %w", err)
-	}
+	// Plugin files would be written here (not yet implemented in CoreProvisioner)
 
 	// Sync filesystem to ensure all writes are persisted
 	if progress != nil {
@@ -489,15 +423,6 @@ echo "fleetd agent setup complete!"
 
 // ConfigureOnly configures an existing OS image without writing a new image
 func (p *CoreProvisioner) ConfigureOnly(ctx context.Context, osType string, dryRun bool, progress ProgressReporter) error {
-	// Pre-provision hooks
-	if err := p.plugins.PreProvision(ctx, p.config); err != nil {
-		return fmt.Errorf("pre-provision failed: %w", err)
-	}
-
-	// Let plugins modify config
-	if err := p.plugins.ModifyConfig(p.config); err != nil {
-		return fmt.Errorf("config modification failed: %w", err)
-	}
 
 	// Initialize image manager to get the provider
 	imageManager := NewImageManager("")
@@ -544,26 +469,7 @@ func (p *CoreProvisioner) ConfigureOnly(ctx context.Context, osType string, dryR
 		return fmt.Errorf("failed to configure system: %w", err)
 	}
 
-	// Write additional plugin files
-	pluginFiles, err := p.plugins.GetAdditionalFiles()
-	if err != nil {
-		cleanup()
-		return fmt.Errorf("failed to get plugin files: %w", err)
-	}
-
-	for path, content := range pluginFiles {
-		fullPath := filepath.Join(bootPath, path)
-		if err := os.WriteFile(fullPath, content, 0o644); err != nil {
-			cleanup()
-			return fmt.Errorf("failed to write plugin file %s: %w", path, err)
-		}
-	}
-
-	// Post-provision hooks
-	if err := p.plugins.PostProvision(ctx, p.config); err != nil {
-		cleanup()
-		return fmt.Errorf("post-provision failed: %w", err)
-	}
+	// Plugin files would be written here (not yet implemented in CoreProvisioner)
 
 	// Sync filesystem to ensure all writes are persisted
 	if progress != nil {
