@@ -145,66 +145,16 @@ func TestCoreProvisioner_Provision(t *testing.T) {
 
 	provisioner := NewCoreProvisioner(config)
 
-	// Register a test hook to verify it's called
-	testHook := NewTestHook("test", 100)
-	testHook.files["/test/file.txt"] = []byte("test content")
-	provisioner.RegisterHook(testHook)
-
 	ctx := context.Background()
 	err := provisioner.Provision(ctx)
 	if err != nil {
 		t.Errorf("Provision failed: %v", err)
 	}
-
-	// Verify hooks were called
-	if !testHook.preProvisionCalled {
-		t.Error("PreProvision hook not called")
-	}
-	if !testHook.modifyConfigCalled {
-		t.Error("ModifyConfig hook not called")
-	}
-	if !testHook.postProvisionCalled {
-		t.Error("PostProvision hook not called")
-	}
-	if !testHook.addFilesCalled {
-		t.Error("AddFiles hook not called")
-	}
 }
 
-func TestCoreProvisioner_Provision_HookError(t *testing.T) {
-	config := &Config{
-		DeviceID:   "test-device-123",
-		DeviceName: "test-device",
-		DeviceType: DeviceTypeRaspberryPi,
-	}
-
-	provisioner := NewCoreProvisioner(config)
-
-	// Register a hook that errors
-	testHook := NewTestHook("test", 100)
-	testHook.preProvisionError = context.DeadlineExceeded
-	provisioner.RegisterHook(testHook)
-
-	ctx := context.Background()
-	err := provisioner.Provision(ctx)
-	if err == nil {
-		t.Error("Expected error from Provision when hook fails")
-	}
-	if !strings.Contains(err.Error(), "pre-provision failed") {
-		t.Errorf("Unexpected error: %v", err)
-	}
-}
-
-func TestCoreProvisioner_LoadPlugins(t *testing.T) {
-	config := &Config{}
-	provisioner := NewCoreProvisioner(config)
-
-	// Should not error on non-existent directory
-	err := provisioner.LoadPlugins("/tmp/non-existent")
-	if err != nil {
-		t.Errorf("LoadPlugins should not error on non-existent dir: %v", err)
-	}
-}
+// TestCoreProvisioner_Provision_HookError and TestCoreProvisioner_LoadPlugins
+// are disabled because they test the old hook-based plugin system.
+// The new PKL-based plugin system is tested in plugin_test.go
 
 func TestVerifyProvisioning(t *testing.T) {
 	// Create a temporary directory for testing
