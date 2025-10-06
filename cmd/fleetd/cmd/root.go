@@ -24,6 +24,5 @@ func Execute() {
 func init() {
 	// Add subcommands
 	rootCmd.AddCommand(agentCmd)
-	rootCmd.AddCommand(serviceCmd)
 	rootCmd.AddCommand(versionCmd)
 }

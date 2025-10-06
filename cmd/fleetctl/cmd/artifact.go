@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/spf13/cobra"
 	"fleetd.sh/internal/artifact"
+	"github.com/spf13/cobra"
 )
 
 var artifactCmd = &cobra.Command{
@@ -103,7 +103,7 @@ var artifactUploadCmd = &cobra.Command{
 		// Parse response
 		var result struct {
 			Artifact *artifact.Artifact `json:"artifact"`
-			Message  string              `json:"message"`
+			Message  string             `json:"message"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {

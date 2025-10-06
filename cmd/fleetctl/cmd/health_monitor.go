@@ -58,8 +58,8 @@ var healthCheckCmd = &cobra.Command{
 
 		// Parse response
 		var result struct {
-			Status  string `json:"status"` // healthy, degraded, unhealthy
-			Checks  []struct {
+			Status string `json:"status"` // healthy, degraded, unhealthy
+			Checks []struct {
 				Name     string        `json:"name"`
 				Status   string        `json:"status"`
 				Message  string        `json:"message"`
@@ -266,15 +266,15 @@ var healthAlertsListCmd = &cobra.Command{
 		// Parse response
 		var result struct {
 			Alerts []struct {
-				ID           string    `json:"id"`
-				Type         string    `json:"type"`
-				Severity     string    `json:"severity"`
-				Source       string    `json:"source"`
-				SourceID     string    `json:"source_id"`
-				Message      string    `json:"message"`
-				Acknowledged bool      `json:"acknowledged"`
-				Resolved     bool      `json:"resolved"`
-				CreatedAt    time.Time `json:"created_at"`
+				ID           string     `json:"id"`
+				Type         string     `json:"type"`
+				Severity     string     `json:"severity"`
+				Source       string     `json:"source"`
+				SourceID     string     `json:"source_id"`
+				Message      string     `json:"message"`
+				Acknowledged bool       `json:"acknowledged"`
+				Resolved     bool       `json:"resolved"`
+				CreatedAt    time.Time  `json:"created_at"`
 				ResolvedAt   *time.Time `json:"resolved_at,omitempty"`
 			} `json:"alerts"`
 		}

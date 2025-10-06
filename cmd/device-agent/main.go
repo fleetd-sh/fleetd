@@ -127,8 +127,10 @@ func main() {
 	}()
 
 	// Start systemd watchdog if available (Linux only)
-	if runtime.GOOS == "linux" && daemon.SdWatchdogEnabled(false) {
-		go systemdWatchdog(ctx)
+	if runtime.GOOS == "linux" {
+		if interval, err := daemon.SdWatchdogEnabled(false); err == nil && interval > 0 {
+			go systemdWatchdog(ctx)
+		}
 	}
 
 	// Notify systemd we're ready (Linux only)

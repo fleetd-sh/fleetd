@@ -154,15 +154,15 @@ var deviceListCmd = &cobra.Command{
 		// Parse response
 		var result struct {
 			Devices []struct {
-				ID            string            `json:"id"`
-				Name          string            `json:"name"`
-				Type          string            `json:"type"`
-				Status        string            `json:"status"`
-				Version       string            `json:"version"`
-				Labels        map[string]string `json:"labels"`
-				LastSeen      time.Time         `json:"last_seen"`
-				RegisteredAt  time.Time         `json:"registered_at"`
-				HealthStatus  string            `json:"health_status"`
+				ID           string            `json:"id"`
+				Name         string            `json:"name"`
+				Type         string            `json:"type"`
+				Status       string            `json:"status"`
+				Version      string            `json:"version"`
+				Labels       map[string]string `json:"labels"`
+				LastSeen     time.Time         `json:"last_seen"`
+				RegisteredAt time.Time         `json:"registered_at"`
+				HealthStatus string            `json:"health_status"`
 			} `json:"devices"`
 		}
 

@@ -74,4 +74,3 @@ func getConfigDir() (string, error) {
 
 	return configDir, nil
 }
-

@@ -242,7 +242,6 @@ For custom plugins, update your local files or use the latest URL.`,
 	return cmd
 }
 
-
 func truncate(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s
