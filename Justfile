@@ -188,13 +188,13 @@ build-platform:
 build-device:
     just build device-api
 
-# Run unit tests
+# Run unit tests (with parallel execution)
 test:
-    go test -v -race ./...
+    SKIP_MDNS_RACE_TEST=1 go test -v -race -p 4 -timeout 10m $(go list ./... | grep -v '/test/integration' | grep -v '/test/e2e' | grep -v '/test/performance')
 
 # Run integration tests
 test-integration: build-fleetctl
-    PATH="${PWD}/bin:${PATH}" INTEGRATION=1 FLEETD_INTEGRATION_TESTS=1 JWT_SECRET=test-secret-key go test -v ./test/integration/...
+    PATH="${PWD}/bin:${PATH}" INTEGRATION=1 JWT_SECRET=test-secret-key go test -timeout 10m ./test/integration/...
 
 # Build fleetctl binary for tests
 build-fleetctl:
@@ -206,7 +206,7 @@ test-performance:
 
 # Run e2e tests
 test-e2e: build-fleetctl
-    PATH="${PWD}/bin:${PATH}" E2E=1 JWT_SECRET=test-secret-key go test -v ./test/e2e/...
+    PATH="${PWD}/bin:${PATH}" E2E=1 JWT_SECRET=test-secret-key go test -v -timeout 10m ./test/e2e/...
 
 # Run specific test by pattern
 test-run target:

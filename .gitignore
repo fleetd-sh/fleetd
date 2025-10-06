@@ -16,8 +16,11 @@ Thumbs.db
 # Build
 dist/
 build/
+bin/
 *.exe
+*.bak
 fleetd
+device-agent
 
 # Generated documentation (auto-generated, should not be committed)
 gen/docs/

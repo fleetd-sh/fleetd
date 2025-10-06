@@ -102,7 +102,6 @@ jobs:
         env:
           DATABASE_URL: postgresql://fleetd:fleetd@localhost:5432/fleetd_test?sslmode=disable
           INTEGRATION: true
-          FLEETD_INTEGRATION_TESTS: true
           JWT_SECRET: test-secret-key
         run: go test -v ./test/integration/... ./test/e2e/...
 
