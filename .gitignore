@@ -19,8 +19,13 @@ build/
 bin/
 *.exe
 *.bak
+*.so
 fleetd
 device-agent
+device-api
+fleetctl
+platform-api
+fleet
 
 # Generated documentation (auto-generated, should not be committed)
 gen/docs/
@@ -37,7 +42,13 @@ coverage/
 # Development mock data
 dev/mock-data.db
 dev/mock-generator
+dev/mock-generator-prod
 dev/*.db
 dev/data/
 *.mock.json
 *.seed.sql
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
