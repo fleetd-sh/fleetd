@@ -15,13 +15,13 @@ import (
 )
 
 var (
-	serverURL        string
-	storageDir       string
-	rpcPort          int
-	mdnsPort         int
-	disableMDNS      bool
-	requireSudo      bool
-	deviceName       string
+	serverURL         string
+	storageDir        string
+	rpcPort           int
+	mdnsPort          int
+	disableMDNS       bool
+	requireSudo       bool
+	deviceName        string
 	telemetryInterval int
 )
 

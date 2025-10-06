@@ -1,6 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
-import { type TypographySize, typography } from "@/lib/typography";
 import { cn } from "@/lib/utils";
 
 // Text component with Atlas typography system

@@ -1,23 +1,19 @@
 "use client";
 
 import {
-  ActivityLogIcon,
   ArrowDownIcon,
   ArrowUpIcon,
   BarChartIcon,
   CheckCircledIcon,
   CrossCircledIcon,
-  DashboardIcon,
   DownloadIcon,
-  ExclamationTriangleIcon,
-  InfoCircledIcon,
   MagnifyingGlassIcon,
   MixerHorizontalIcon,
   ReloadIcon,
 } from "@radix-ui/react-icons";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { format, subDays, subHours, subMinutes } from "date-fns";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -25,13 +21,9 @@ import {
   BarChart,
   Brush,
   CartesianGrid,
-  Cell,
   Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
-  ReferenceArea,
   ReferenceLine,
   ResponsiveContainer,
   Scatter,
@@ -40,7 +32,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -52,7 +43,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -61,25 +51,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-  Tooltip as UITooltip,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // VictoriaMetrics API client
@@ -356,8 +329,6 @@ function MetricsPanel({
             ))}
           </ScatterChart>
         );
-
-      case "line":
       default:
         return (
           <LineChart {...commonProps}>
@@ -433,7 +404,7 @@ function LogBrowser({ timeRange, height = 500 }: LogBrowserProps) {
     data.data.result.forEach((stream: any) => {
       stream.values.forEach(([timestamp, line]: [string, string]) => {
         allLogs.push({
-          timestamp: new Date(parseInt(timestamp) / 1000000), // nanoseconds to ms
+          timestamp: new Date(parseInt(timestamp, 10) / 1000000), // nanoseconds to ms
           ...stream.stream,
           message: line,
         });

@@ -674,10 +674,10 @@ func (s *Server) updateDeviceVersion(w http.ResponseWriter, r *http.Request, dev
 	}
 
 	var req struct {
-		Version    string `json:"version"`
-		BinaryURL  string `json:"binary_url"`
-		Checksum   string `json:"checksum"`
-		ForceUpdate bool  `json:"force_update"`
+		Version     string `json:"version"`
+		BinaryURL   string `json:"binary_url"`
+		Checksum    string `json:"checksum"`
+		ForceUpdate bool   `json:"force_update"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

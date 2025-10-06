@@ -47,7 +47,7 @@ function DeviceAuthContent() {
           window.close();
         }
       }, 3000);
-    } catch (error) {
+    } catch (_error) {
       setStatus("error");
       setErrorMessage("Failed to verify code. Please try again.");
     }
