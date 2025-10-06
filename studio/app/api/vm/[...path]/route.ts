@@ -1,12 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 const VICTORIA_METRICS_URL = process.env.VICTORIA_METRICS_URL || "http://localhost:8428";
 
 // Proxy requests to VictoriaMetrics
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ path: string[] }> }
-) {
+export async function GET(req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   try {
     const params = await context.params;
     const path = params.path.join("/");
@@ -15,14 +12,14 @@ export async function GET(
 
     const response = await fetch(url, {
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
       },
     });
 
     if (!response.ok) {
       return NextResponse.json(
         { error: `VictoriaMetrics returned ${response.status}` },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -30,18 +27,12 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     console.error("VictoriaMetrics proxy error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch metrics" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch metrics" }, { status: 500 });
   }
 }
 
 // Support POST for certain endpoints (e.g., /api/v1/import)
-export async function POST(
-  req: NextRequest,
-  context: { params: Promise<{ path: string[] }> }
-) {
+export async function POST(req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   try {
     const params = await context.params;
     const path = params.path.join("/");
@@ -59,7 +50,7 @@ export async function POST(
     if (!response.ok) {
       return NextResponse.json(
         { error: `VictoriaMetrics returned ${response.status}` },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -72,9 +63,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("VictoriaMetrics proxy error:", error);
-    return NextResponse.json(
-      { error: "Failed to send metrics" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to send metrics" }, { status: 500 });
   }
 }

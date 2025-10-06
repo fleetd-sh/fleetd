@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Platform API URL - uses Docker DNS when running server-side
 const PLATFORM_API_URL = process.env.PLATFORM_API_URL || "http://platform-api:8080";
@@ -8,33 +8,27 @@ const DEVICE_API_URL = process.env.DEVICE_API_URL || "http://device-api:8081";
  * API Proxy Route
  * Proxies all /api/* requests to the appropriate backend service
  */
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ proxy: string[] }> }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ proxy: string[] }> }) {
   const params = await context.params;
   return handleRequest(request, params.proxy, "GET");
 }
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ proxy: string[] }> }
+  context: { params: Promise<{ proxy: string[] }> },
 ) {
   const params = await context.params;
   return handleRequest(request, params.proxy, "POST");
 }
 
-export async function PUT(
-  request: NextRequest,
-  context: { params: Promise<{ proxy: string[] }> }
-) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ proxy: string[] }> }) {
   const params = await context.params;
   return handleRequest(request, params.proxy, "PUT");
 }
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ proxy: string[] }> }
+  context: { params: Promise<{ proxy: string[] }> },
 ) {
   const params = await context.params;
   return handleRequest(request, params.proxy, "DELETE");
@@ -42,17 +36,13 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ proxy: string[] }> }
+  context: { params: Promise<{ proxy: string[] }> },
 ) {
   const params = await context.params;
   return handleRequest(request, params.proxy, "PATCH");
 }
 
-async function handleRequest(
-  request: NextRequest,
-  pathSegments: string[],
-  method: string
-) {
+async function handleRequest(request: NextRequest, pathSegments: string[], method: string) {
   try {
     // Determine which backend service to proxy to
     const path = pathSegments.join("/");
@@ -144,9 +134,9 @@ async function handleRequest(
     return NextResponse.json(
       {
         error: "Failed to proxy request",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

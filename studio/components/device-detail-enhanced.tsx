@@ -118,7 +118,9 @@ export function DeviceDetailEnhanced({
                 <GlobeIcon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl-atlas font-bold">{systemMetrics.network.toFixed(1)} Mb/s</div>
+                <div className="text-xl-atlas font-bold">
+                  {systemMetrics.network.toFixed(1)} Mb/s
+                </div>
                 <Progress value={systemMetrics.network} className="mt-2" />
               </CardContent>
             </Card>
@@ -141,7 +143,9 @@ export function DeviceDetailEnhanced({
                 </div>
                 <div>
                   <dt className="text-sm-atlas font-medium text-muted-foreground">IP Address</dt>
-                  <dd className="text-sm-atlas font-mono">192.168.1.{Math.floor(Math.random() * 255)}</dd>
+                  <dd className="text-sm-atlas font-mono">
+                    192.168.1.{Math.floor(Math.random() * 255)}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm-atlas font-medium text-muted-foreground">MAC Address</dt>

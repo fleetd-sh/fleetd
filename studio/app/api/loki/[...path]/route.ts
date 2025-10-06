@@ -1,12 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 const LOKI_URL = process.env.LOKI_URL || "http://localhost:3100";
 
 // Proxy requests to Loki
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ path: string[] }> }
-) {
+export async function GET(req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   try {
     const params = await context.params;
     const path = params.path.join("/");
@@ -15,14 +12,14 @@ export async function GET(
 
     const response = await fetch(url, {
       headers: {
-        "Accept": "application/json",
+        Accept: "application/json",
       },
     });
 
     if (!response.ok) {
       return NextResponse.json(
         { error: `Loki returned ${response.status}` },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -30,18 +27,12 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Loki proxy error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch logs" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch logs" }, { status: 500 });
   }
 }
 
 // Support POST for push endpoint
-export async function POST(
-  req: NextRequest,
-  context: { params: Promise<{ path: string[] }> }
-) {
+export async function POST(req: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   try {
     const params = await context.params;
     const path = params.path.join("/");
@@ -59,7 +50,7 @@ export async function POST(
     if (!response.ok) {
       return NextResponse.json(
         { error: `Loki returned ${response.status}` },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -72,9 +63,6 @@ export async function POST(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Loki proxy error:", error);
-    return NextResponse.json(
-      { error: "Failed to send logs" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to send logs" }, { status: 500 });
   }
 }

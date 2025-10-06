@@ -127,7 +127,9 @@ export function TelemetryContent() {
         // Transform the response data to match our log format
         return response.logs.map((log: any) => ({
           id: log.id || `log-${Date.now()}`,
-          timestamp: new Date(log.timestamp?.seconds ? Number(log.timestamp.seconds) * 1000 : Date.now()),
+          timestamp: new Date(
+            log.timestamp?.seconds ? Number(log.timestamp.seconds) * 1000 : Date.now(),
+          ),
           level: log.level?.toString() || "INFO",
           device: log.deviceId || "unknown",
           message: log.message || "",

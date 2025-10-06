@@ -1,7 +1,7 @@
-import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
+import { type TypographySize, typography } from "@/lib/typography";
 import { cn } from "@/lib/utils";
-import { typography, type TypographySize } from "@/lib/typography";
 
 // Text component with Atlas typography system
 const textVariants = cva("", {
@@ -46,14 +46,11 @@ export interface TextProps
 
 export const Text = React.forwardRef<HTMLElement, TextProps>(
   ({ className, size, variant, weight, as: Component = "p", ...props }, ref) => {
-    return React.createElement(
-      Component,
-      {
-        className: cn(textVariants({ size, variant, weight, className })),
-        ref,
-        ...props
-      }
-    );
+    return React.createElement(Component, {
+      className: cn(textVariants({ size, variant, weight, className })),
+      ref,
+      ...props,
+    });
   },
 );
 Text.displayName = "Text";
@@ -112,27 +109,25 @@ export const Metric = React.forwardRef<HTMLDivElement, MetricProps>(
   ({ className, value, label, sublabel, variant = "default", ...props }, ref) => {
     const getValueColor = () => {
       switch (variant) {
-        case "success": return "text-success-foreground";
-        case "warning": return "text-warning-foreground";
-        case "destructive": return "text-destructive";
-        default: return "text-foreground";
+        case "success":
+          return "text-success-foreground";
+        case "warning":
+          return "text-warning-foreground";
+        case "destructive":
+          return "text-destructive";
+        default:
+          return "text-foreground";
       }
     };
 
     return (
-      <div
-        ref={ref}
-        className={cn("space-y-baseline-1", className)}
-        {...props}
-      >
+      <div ref={ref} className={cn("space-y-baseline-1", className)} {...props}>
         {label && (
           <Text size="sm" variant="muted" weight="medium">
             {label}
           </Text>
         )}
-        <div className={cn("text-xl-atlas font-bold", getValueColor())}>
-          {value}
-        </div>
+        <div className={cn("text-xl-atlas font-bold", getValueColor())}>{value}</div>
         {sublabel && (
           <Text size="xs" variant="subtle">
             {sublabel}
@@ -145,8 +140,7 @@ export const Metric = React.forwardRef<HTMLDivElement, MetricProps>(
 Metric.displayName = "Metric";
 
 // Code/Mono component for technical text
-export interface CodeProps
-  extends React.HTMLAttributes<HTMLElement> {
+export interface CodeProps extends React.HTMLAttributes<HTMLElement> {
   inline?: boolean;
   size?: "xs" | "sm" | "base";
 }
@@ -165,7 +159,7 @@ export const Code = React.forwardRef<HTMLElement, CodeProps>(
           inline
             ? "relative rounded px-[0.3rem] py-[0.2rem] bg-muted text-muted-foreground"
             : "rounded-md bg-muted p-baseline-3 text-muted-foreground overflow-x-auto",
-          className
+          className,
         )}
         {...props}
       >

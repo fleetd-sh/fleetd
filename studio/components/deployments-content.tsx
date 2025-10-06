@@ -358,9 +358,7 @@ function DeploymentCard({
           <div className="flex items-center gap-2">
             {getStatusIcon()}
             <Badge
-              variant={
-                getStatusColor() as "default" | "destructive" | "secondary" | "outline"
-              }
+              variant={getStatusColor() as "default" | "destructive" | "secondary" | "outline"}
             >
               {deployment.status}
             </Badge>

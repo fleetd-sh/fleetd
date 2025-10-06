@@ -1,12 +1,12 @@
 "use client";
 
+import { AlertCircle, CheckCircle2, Loader2, Monitor } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, Loader2, AlertCircle, Monitor } from "lucide-react";
 
 function DeviceAuthContent() {
   const searchParams = useSearchParams();
@@ -36,7 +36,7 @@ function DeviceAuthContent() {
     try {
       // TODO: Replace with actual API call
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // For now, always succeed
       setStatus("success");
@@ -63,7 +63,10 @@ function DeviceAuthContent() {
   };
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = e.target.value.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 8);
+    const formatted = e.target.value
+      .replace(/[^A-Z0-9]/gi, "")
+      .toUpperCase()
+      .slice(0, 8);
     setUserCode(formatted);
   };
 
@@ -145,17 +148,19 @@ function DeviceAuthContent() {
 
 export default function DeviceAuthPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-        <Card className="w-full max-w-md shadow-xl">
-          <CardContent className="py-8">
-            <div className="flex justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+          <Card className="w-full max-w-md shadow-xl">
+            <CardContent className="py-8">
+              <div className="flex justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
       <DeviceAuthContent />
     </Suspense>
   );

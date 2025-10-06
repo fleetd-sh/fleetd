@@ -1,60 +1,48 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { format, subHours, subDays, subMinutes } from "date-fns";
 import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  ScatterChart,
-  Scatter,
-  PieChart,
-  Pie,
-  Cell,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Brush,
-  ReferenceLine,
-  ReferenceArea,
-} from "recharts";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
+  ActivityLogIcon,
   ArrowDownIcon,
   ArrowUpIcon,
-  ReloadIcon,
-  DownloadIcon,
-  MixerHorizontalIcon,
-  MagnifyingGlassIcon,
-  DashboardIcon,
-  ActivityLogIcon,
   BarChartIcon,
-  ExclamationTriangleIcon,
   CheckCircledIcon,
   CrossCircledIcon,
+  DashboardIcon,
+  DownloadIcon,
+  ExclamationTriangleIcon,
   InfoCircledIcon,
+  MagnifyingGlassIcon,
+  MixerHorizontalIcon,
+  ReloadIcon,
 } from "@radix-ui/react-icons";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Slider } from "@/components/ui/slider";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format, subDays, subHours, subMinutes } from "date-fns";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Brush,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ReferenceArea,
+  ReferenceLine,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -63,9 +51,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -74,11 +72,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Tooltip as UITooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  Tooltip as UITooltip,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -95,12 +95,7 @@ class VictoriaMetricsClient {
     return response.json();
   }
 
-  async queryRange(
-    query: string,
-    start: Date,
-    end: Date,
-    step: string = "60s"
-  ): Promise<any> {
+  async queryRange(query: string, start: Date, end: Date, step: string = "60s"): Promise<any> {
     const params = new URLSearchParams({
       query,
       start: Math.floor(start.getTime() / 1000).toString(),
@@ -136,12 +131,7 @@ class VictoriaMetricsClient {
 class LokiClient {
   constructor(private baseUrl = "/api/loki") {}
 
-  async queryRange(
-    query: string,
-    start: Date,
-    end: Date,
-    limit = 1000
-  ): Promise<any> {
+  async queryRange(query: string, start: Date, end: Date, limit = 1000): Promise<any> {
     const params = new URLSearchParams({
       query,
       start: (start.getTime() * 1000000).toString(), // nanoseconds
@@ -218,10 +208,11 @@ function MetricsPanel({
     const series = new Map<string, Map<number, number>>();
 
     data.data.result.forEach((result: any) => {
-      const name = Object.entries(result.metric)
-        .filter(([k]) => k !== "__name__")
-        .map(([k, v]) => `${k}="${v}"`)
-        .join(",") || "value";
+      const name =
+        Object.entries(result.metric)
+          .filter(([k]) => k !== "__name__")
+          .map(([k, v]) => `${k}="${v}"`)
+          .join(",") || "value";
 
       const seriesData = new Map<number, number>();
       result.values.forEach(([timestamp, value]: [number, string]) => {
@@ -233,7 +224,7 @@ function MetricsPanel({
 
     return Array.from(allTimestamps)
       .sort((a, b) => a - b)
-      .map(timestamp => {
+      .map((timestamp) => {
         const point: any = { time: format(new Date(timestamp * 1000), "HH:mm") };
         series.forEach((data, name) => {
           point[name] = data.get(timestamp) || 0;
@@ -243,12 +234,20 @@ function MetricsPanel({
   }, [data]);
 
   const seriesNames = useMemo(() => {
-    return Object.keys(chartData[0] || {}).filter(k => k !== "time");
+    return Object.keys(chartData[0] || {}).filter((k) => k !== "time");
   }, [chartData]);
 
   const colors = [
-    "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6",
-    "#ec4899", "#14b8a6", "#f97316", "#6366f1", "#84cc16"
+    "#3b82f6",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#ec4899",
+    "#14b8a6",
+    "#f97316",
+    "#6366f1",
+    "#84cc16",
   ];
 
   if (isLoading) {
@@ -397,11 +396,7 @@ function MetricsPanel({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">{title}</CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => refetch()}
-          >
+          <Button variant="ghost" size="icon" onClick={() => refetch()}>
             <ReloadIcon className="h-4 w-4" />
           </Button>
         </div>
@@ -447,19 +442,22 @@ function LogBrowser({ timeRange, height = 500 }: LogBrowserProps) {
 
     return allLogs
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .filter(log =>
-        !filter || log.message.toLowerCase().includes(filter.toLowerCase())
-      );
+      .filter((log) => !filter || log.message.toLowerCase().includes(filter.toLowerCase()));
   }, [data, filter]);
 
   const getLevelColor = (level: string) => {
     switch (level?.toLowerCase()) {
-      case "error": return "text-red-600 dark:text-red-400";
+      case "error":
+        return "text-red-600 dark:text-red-400";
       case "warn":
-      case "warning": return "text-yellow-600 dark:text-yellow-400";
-      case "info": return "text-blue-600 dark:text-blue-400";
-      case "debug": return "text-gray-600 dark:text-gray-400";
-      default: return "text-gray-600 dark:text-gray-400";
+      case "warning":
+        return "text-yellow-600 dark:text-yellow-400";
+      case "info":
+        return "text-blue-600 dark:text-blue-400";
+      case "debug":
+        return "text-gray-600 dark:text-gray-400";
+      default:
+        return "text-gray-600 dark:text-gray-400";
     }
   };
 
@@ -494,9 +492,7 @@ function LogBrowser({ timeRange, height = 500 }: LogBrowserProps) {
                 <ReloadIcon className="animate-spin" />
               </div>
             ) : logs.length === 0 ? (
-              <div className="text-center text-muted-foreground">
-                No logs found
-              </div>
+              <div className="text-center text-muted-foreground">No logs found</div>
             ) : (
               <div className="space-y-1">
                 {logs.map((log, idx) => (
@@ -508,9 +504,7 @@ function LogBrowser({ timeRange, height = 500 }: LogBrowserProps) {
                       [{log.level || "INFO"}]
                     </span>
                     {log.device_id && (
-                      <span className="text-muted-foreground min-w-[100px]">
-                        {log.device_id}
-                      </span>
+                      <span className="text-muted-foreground min-w-[100px]">{log.device_id}</span>
                     )}
                     <span className="flex-1 break-all">{log.message}</span>
                   </div>
@@ -565,7 +559,7 @@ export function MetricsDashboard() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.keys(timeRanges).map(range => (
+                  {Object.keys(timeRanges).map((range) => (
                     <SelectItem key={range} value={range}>
                       Last {range}
                     </SelectItem>
@@ -684,7 +678,7 @@ export function MetricsDashboard() {
           <div className="grid grid-cols-2 gap-4">
             <MetricsPanel
               title="Request Rate"
-              query='rate(fleetd_api_requests_total[5m])'
+              query="rate(fleetd_api_requests_total[5m])"
               type="area"
               timeRange={currentTimeRange}
               unit=" req/s"
@@ -698,13 +692,13 @@ export function MetricsDashboard() {
               unit=" errors/s"
               thresholds={[
                 { value: 0.1, color: "orange", label: "Warning" },
-                { value: 0.5, color: "red", label: "Critical" }
+                { value: 0.5, color: "red", label: "Critical" },
               ]}
             />
 
             <MetricsPanel
               title="CPU Usage by Device"
-              query='avg(device_cpu_usage) by (device_id)'
+              query="avg(device_cpu_usage) by (device_id)"
               type="area"
               timeRange={currentTimeRange}
               unit="%"
@@ -713,7 +707,7 @@ export function MetricsDashboard() {
 
             <MetricsPanel
               title="Memory Usage"
-              query='avg(device_memory_usage) by (device_id)'
+              query="avg(device_memory_usage) by (device_id)"
               type="line"
               timeRange={currentTimeRange}
               unit=" MB"
@@ -723,7 +717,7 @@ export function MetricsDashboard() {
           {/* Response Time Distribution */}
           <MetricsPanel
             title="Response Time Distribution"
-            query='histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))'
+            query="histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
             type="bar"
             timeRange={currentTimeRange}
             height={250}
@@ -735,7 +729,7 @@ export function MetricsDashboard() {
           <div className="grid grid-cols-2 gap-4">
             <MetricsPanel
               title="Devices by Status"
-              query='count(up) by (status)'
+              query="count(up) by (status)"
               type="bar"
               timeRange={currentTimeRange}
               stacked
@@ -743,14 +737,14 @@ export function MetricsDashboard() {
 
             <MetricsPanel
               title="Device Registrations"
-              query='rate(fleetd_device_registrations_total[1h])'
+              query="rate(fleetd_device_registrations_total[1h])"
               type="area"
               timeRange={currentTimeRange}
             />
 
             <MetricsPanel
               title="Telemetry Data Rate"
-              query='rate(fleetd_telemetry_received_total[5m])'
+              query="rate(fleetd_telemetry_received_total[5m])"
               type="line"
               timeRange={currentTimeRange}
               unit=" msgs/s"
@@ -758,7 +752,7 @@ export function MetricsDashboard() {
 
             <MetricsPanel
               title="Device Heartbeats"
-              query='rate(fleetd_device_heartbeats_total[5m])'
+              query="rate(fleetd_device_heartbeats_total[5m])"
               type="area"
               timeRange={currentTimeRange}
             />
@@ -769,7 +763,7 @@ export function MetricsDashboard() {
           <div className="grid grid-cols-2 gap-4">
             <MetricsPanel
               title="P95 Latency"
-              query='histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))'
+              query="histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
               type="line"
               timeRange={currentTimeRange}
               unit=" ms"
@@ -777,7 +771,7 @@ export function MetricsDashboard() {
 
             <MetricsPanel
               title="P99 Latency"
-              query='histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))'
+              query="histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))"
               type="line"
               timeRange={currentTimeRange}
               unit=" ms"
@@ -785,7 +779,7 @@ export function MetricsDashboard() {
 
             <MetricsPanel
               title="Database Query Time"
-              query='rate(database_query_duration_seconds_sum[5m])'
+              query="rate(database_query_duration_seconds_sum[5m])"
               type="area"
               timeRange={currentTimeRange}
               unit=" s"
@@ -793,7 +787,7 @@ export function MetricsDashboard() {
 
             <MetricsPanel
               title="Cache Hit Rate"
-              query='rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m]))'
+              query="rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m]))"
               type="line"
               timeRange={currentTimeRange}
               unit="%"
