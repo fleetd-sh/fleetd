@@ -94,7 +94,7 @@ func (s *FleetService) ListDevices(ctx context.Context, req *connect.Request[pb.
 	}
 
 	return connect.NewResponse(&pb.ListDevicesResponse{
-		Devices: devices,
+		Devices:       devices,
 		NextPageToken: nextToken,
 	}), nil
 }
@@ -139,7 +139,7 @@ func (s *FleetService) UpdateDevice(ctx context.Context, req *connect.Request[pb
 	// Update device fields
 	if req.Msg.Name != "" {
 		_, err = tx.ExecContext(ctx,
-			"UPDATE device SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+			"UPDATE device SET name = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
 			req.Msg.Name, req.Msg.DeviceId)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -150,7 +150,7 @@ func (s *FleetService) UpdateDevice(ctx context.Context, req *connect.Request[pb
 	// if req.Msg.Labels != nil {
 	//	labelsJSON, _ := json.Marshal(req.Msg.Labels)
 	//	_, err = tx.ExecContext(ctx,
-	//		"UPDATE device SET labels = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+	//		"UPDATE device SET labels = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
 	//		string(labelsJSON), req.Msg.DeviceId)
 	//	if err != nil {
 	//		return nil, connect.NewError(connect.CodeInternal, err)
@@ -166,7 +166,7 @@ func (s *FleetService) UpdateDevice(ctx context.Context, req *connect.Request[pb
 	var labelsJSON sql.NullString
 
 	err = s.db.QueryRowContext(ctx,
-		"SELECT id, name, status, labels FROM device WHERE id = ?",
+		"SELECT id, name, status, labels FROM device WHERE id = $1",
 		req.Msg.DeviceId,
 	).Scan(&device.Id, &device.Name, &device.Status, &labelsJSON)
 
@@ -187,7 +187,7 @@ func (s *FleetService) UpdateDevice(ctx context.Context, req *connect.Request[pb
 
 func (s *FleetService) DeleteDevice(ctx context.Context, req *connect.Request[pb.DeleteDeviceRequest]) (*connect.Response[emptypb.Empty], error) {
 	result, err := s.db.ExecContext(ctx,
-		"DELETE FROM device WHERE id = ?",
+		"DELETE FROM device WHERE id = $1",
 		req.Msg.DeviceId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -499,7 +499,7 @@ func (s *FleetService) CreateDeployment(ctx context.Context, req *connect.Reques
 			requireApproval = req.Msg.Config.Rollout.RequireApproval
 		}
 		strategyStruct.Canary = &fleet.Canary{
-			Steps: steps,
+			Steps:           steps,
 			RequireApproval: requireApproval,
 		}
 	case pb.DeploymentStrategy_DEPLOYMENT_STRATEGY_BLUE_GREEN:
@@ -531,7 +531,7 @@ func (s *FleetService) CreateDeployment(ctx context.Context, req *connect.Reques
 		INSERT INTO deployment (
 			id, name, namespace, manifest, status, strategy, selector,
 			created_by, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 		deployment.ID,
 		deployment.Name,
 		deployment.Namespace,
@@ -608,7 +608,7 @@ func (s *FleetService) CreateDeployment(ctx context.Context, req *connect.Reques
 	for _, deviceID := range targetDevices {
 		_, err = tx.ExecContext(ctx, `
 			INSERT INTO device_deployment (deployment_id, device_id, status)
-			VALUES (?, ?, ?)`,
+			VALUES ($1, $2, $3)`,
 			deployment.ID, deviceID, "pending")
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -644,7 +644,7 @@ func (s *FleetService) ListDeployments(ctx context.Context, req *connect.Request
 		SELECT id, name, status, created_at
 		FROM deployment
 		ORDER BY created_at DESC
-		LIMIT ?
+		LIMIT $1
 	`
 
 	limit := req.Msg.PageSize
@@ -700,16 +700,16 @@ func (s *FleetService) ListDeployments(ctx context.Context, req *connect.Request
 func (s *FleetService) GetDeployment(ctx context.Context, req *connect.Request[pb.GetDeploymentRequest]) (*connect.Response[pb.GetDeploymentResponse], error) {
 	// Query deployment from database
 	var (
-		id, name, status, namespace, createdBy string
+		id, name, status, namespace, createdBy   string
 		manifestJSON, strategyJSON, selectorJSON []byte
-		createdAt, updatedAt time.Time
+		createdAt, updatedAt                     time.Time
 	)
 
 	err := s.db.QueryRowContext(ctx, `
 		SELECT id, name, namespace, manifest, status, strategy, selector,
 			   created_by, created_at, updated_at
 		FROM deployment
-		WHERE id = ?`,
+		WHERE id = $1`,
 		req.Msg.DeploymentId).Scan(
 		&id, &name, &namespace, &manifestJSON, &status,
 		&strategyJSON, &selectorJSON, &createdBy, &createdAt, &updatedAt,
@@ -800,7 +800,7 @@ func (s *FleetService) GetDeploymentStatus(ctx context.Context, req *connect.Req
 	var updatedAt time.Time
 
 	err := s.db.QueryRowContext(ctx, `
-		SELECT status, updated_at FROM deployment WHERE id = ?`,
+		SELECT status, updated_at FROM deployment WHERE id = $1`,
 		req.Msg.DeploymentId).Scan(&status, &updatedAt)
 
 	if err == sql.ErrNoRows {

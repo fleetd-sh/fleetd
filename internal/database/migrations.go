@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
-	"fleetd.sh/internal/ferrors"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -69,7 +69,7 @@ func (m *Migrator) Initialize(db *sql.DB, driver string) error {
 	// Create source from embedded filesystem
 	source, err := iofs.New(migrationsFS, "migrations")
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to create migration source")
+		return fmt.Errorf("failed to create migration source: %w", err)
 	}
 
 	// Create database driver
@@ -84,17 +84,17 @@ func (m *Migrator) Initialize(db *sql.DB, driver string) error {
 			MigrationsTable: m.config.TableName,
 		})
 	default:
-		return ferrors.Newf(ferrors.ErrCodeInvalidInput, "unsupported database driver: %s", driver)
+		return fmt.Errorf("unsupported database driver: %s", driver)
 	}
 
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to create database driver")
+		return fmt.Errorf("failed to create database driver: %w", err)
 	}
 
 	// Create migrator
 	m.migrate, err = migrate.NewWithInstance("iofs", source, driver, dbDriver)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to create migrator")
+		return fmt.Errorf("failed to create migrator: %w", err)
 	}
 
 	return nil
@@ -103,22 +103,23 @@ func (m *Migrator) Initialize(db *sql.DB, driver string) error {
 // Up runs all pending migrations
 func (m *Migrator) Up(ctx context.Context) error {
 	if m.migrate == nil {
-		return ferrors.New(ferrors.ErrCodeInternal, "migrator not initialized")
+		return errors.New("migrator not initialized")
 	}
 
 	// Get current version
 	version, dirty, err := m.migrate.Version()
 	if err != nil && err != migrate.ErrNilVersion {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get migration version")
+		return fmt.Errorf("failed to get migration version: %w", err)
 	}
 
 	if dirty {
-		m.logger.Warn("Database is in dirty state, attempting to fix",
+		m.logger.Warn("Database is in dirty state, marking as clean to continue",
 			"version", version)
 
-		// Force version to clean state
+		// When dirty, Force() just marks the current version as clean without running migrations
+		// This allows Up() to determine if there's anything left to do
 		if err := m.migrate.Force(int(version)); err != nil {
-			return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to force migration version")
+			return fmt.Errorf("failed to clean dirty state: %w", err)
 		}
 	}
 
@@ -132,7 +133,7 @@ func (m *Migrator) Up(ctx context.Context) error {
 			m.logger.Info("No migrations to run")
 			return nil
 		}
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to run migrations")
+		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
 	// Get new version
@@ -151,18 +152,17 @@ func (m *Migrator) Up(ctx context.Context) error {
 // Down rolls back one migration
 func (m *Migrator) Down(ctx context.Context) error {
 	if m.migrate == nil {
-		return ferrors.New(ferrors.ErrCodeInternal, "migrator not initialized")
+		return errors.New("migrator not initialized")
 	}
 
 	// Get current version
 	version, dirty, err := m.migrate.Version()
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get migration version")
+		return fmt.Errorf("failed to get migration version: %w", err)
 	}
 
 	if dirty {
-		return ferrors.Newf(ferrors.ErrCodePreconditionFailed,
-			"cannot rollback: database is in dirty state at version %d", version)
+		return fmt.Errorf("cannot rollback: database is in dirty state at version %d", version)
 	}
 
 	m.logger.Info("Rolling back migration", "current_version", version)
@@ -170,7 +170,7 @@ func (m *Migrator) Down(ctx context.Context) error {
 	// Rollback one migration
 	startTime := time.Now()
 	if err := m.migrate.Steps(-1); err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to rollback migration")
+		return fmt.Errorf("failed to rollback migration: %w", err)
 	}
 
 	// Get new version
@@ -189,18 +189,17 @@ func (m *Migrator) Down(ctx context.Context) error {
 // Migrate runs migrations to a specific version
 func (m *Migrator) Migrate(ctx context.Context, targetVersion uint) error {
 	if m.migrate == nil {
-		return ferrors.New(ferrors.ErrCodeInternal, "migrator not initialized")
+		return errors.New("migrator not initialized")
 	}
 
 	// Get current version
 	currentVersion, dirty, err := m.migrate.Version()
 	if err != nil && err != migrate.ErrNilVersion {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get migration version")
+		return fmt.Errorf("failed to get migration version: %w", err)
 	}
 
 	if dirty {
-		return ferrors.Newf(ferrors.ErrCodePreconditionFailed,
-			"cannot migrate: database is in dirty state at version %d", currentVersion)
+		return fmt.Errorf("cannot migrate: database is in dirty state at version %d", currentVersion)
 	}
 
 	m.logger.Info("Migrating to version",
@@ -215,7 +214,7 @@ func (m *Migrator) Migrate(ctx context.Context, targetVersion uint) error {
 			m.logger.Info("Already at target version")
 			return nil
 		}
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to migrate to version")
+		return fmt.Errorf("failed to migrate to version: %w", err)
 	}
 
 	duration := time.Since(startTime)
@@ -232,19 +231,19 @@ func (m *Migrator) Migrate(ctx context.Context, targetVersion uint) error {
 // Reset drops all tables and reruns all migrations
 func (m *Migrator) Reset(ctx context.Context) error {
 	if m.migrate == nil {
-		return ferrors.New(ferrors.ErrCodeInternal, "migrator not initialized")
+		return errors.New("migrator not initialized")
 	}
 
 	m.logger.Warn("Resetting database - all data will be lost")
 
 	// Drop all tables
 	if err := m.migrate.Drop(); err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to drop database")
+		return fmt.Errorf("failed to drop database: %w", err)
 	}
 
 	// Run all migrations
 	if err := m.Up(ctx); err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to run migrations after reset")
+		return fmt.Errorf("failed to run migrations after reset: %w", err)
 	}
 
 	m.logger.Info("Database reset completed")
@@ -254,7 +253,7 @@ func (m *Migrator) Reset(ctx context.Context) error {
 // Version returns the current migration version
 func (m *Migrator) Version() (uint, bool, error) {
 	if m.migrate == nil {
-		return 0, false, ferrors.New(ferrors.ErrCodeInternal, "migrator not initialized")
+		return 0, false, errors.New("migrator not initialized")
 	}
 
 	version, dirty, err := m.migrate.Version()
@@ -262,7 +261,7 @@ func (m *Migrator) Version() (uint, bool, error) {
 		if err == migrate.ErrNilVersion {
 			return 0, false, nil
 		}
-		return 0, false, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get migration version")
+		return 0, false, fmt.Errorf("failed to get migration version: %w", err)
 	}
 
 	return version, dirty, nil
@@ -271,13 +270,13 @@ func (m *Migrator) Version() (uint, bool, error) {
 // Force sets the migration version without running migrations
 func (m *Migrator) Force(version int) error {
 	if m.migrate == nil {
-		return ferrors.New(ferrors.ErrCodeInternal, "migrator not initialized")
+		return errors.New("migrator not initialized")
 	}
 
 	m.logger.Warn("Forcing migration version", "version", version)
 
 	if err := m.migrate.Force(version); err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to force migration version")
+		return fmt.Errorf("failed to force migration version: %w", err)
 	}
 
 	m.logger.Info("Migration version forced", "version", version)
@@ -294,10 +293,10 @@ func (m *Migrator) Close() error {
 	if m.migrate != nil {
 		sourceErr, dbErr := m.migrate.Close()
 		if sourceErr != nil {
-			return ferrors.Wrap(sourceErr, ferrors.ErrCodeInternal, "failed to close migration source")
+			return fmt.Errorf("failed to close migration source: %w", sourceErr)
 		}
 		if dbErr != nil {
-			return ferrors.Wrap(dbErr, ferrors.ErrCodeInternal, "failed to close migration database")
+			return fmt.Errorf("failed to close migration database: %w", dbErr)
 		}
 	}
 	return nil

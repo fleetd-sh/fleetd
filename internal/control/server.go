@@ -28,6 +28,7 @@ import (
 	_ "github.com/lib/pq" // PostgreSQL driver
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	_ "modernc.org/sqlite"
 )
 
@@ -49,7 +50,8 @@ type Config struct {
 	TLSCA   string // Path to CA certificate (for mTLS)
 
 	// ACME/Certificate Management
-	ACMEConfig *security.ACMEConfig // ACME configuration for auto-certificates
+	// TODO: Add ACME support when implemented
+	// ACMEConfig *security.ACMEConfig // ACME configuration for auto-certificates
 }
 
 // Server represents the control plane API server
@@ -62,8 +64,9 @@ type Server struct {
 	valkeyLimiter   *middleware.ValkeyRateLimiter
 	inMemoryLimiter *middleware.RateLimiter
 	tlsManager      *security.TLSManager
-	acmeManager     *security.ACMEManager
-	certManager     *security.CertificateManager
+	// TODO: Add when ACME support is implemented
+	// acmeManager     *security.ACMEManager
+	// certManager     *security.CertificateManager
 }
 
 // DeviceAPIClient wraps communication with the device API
@@ -139,37 +142,27 @@ func NewServer(config *Config) (*Server, error) {
 		if err != nil {
 			slog.Warn("Failed to initialize Valkey rate limiter", "error", err)
 			// Fall back to in-memory rate limiting
-			rate := float64(config.RateLimitReq) / float64(config.RateLimitWin)
-			rl, rlErr := middleware.NewRateLimiter(middleware.RateLimiterConfig{
-				Rate:       rate,
-				Burst:      config.RateLimitReq,
-				Expiration: 1 * time.Hour,
-			})
-			if rlErr != nil {
-				return nil, fmt.Errorf("failed to create in-memory rate limiter: %w", rlErr)
-			}
-			inMemoryLimiter = rl
+			logger, _ := zap.NewProduction()
+			inMemoryLimiter = middleware.NewRateLimiter(middleware.RateLimitConfig{
+				RequestsPerSecond: config.RateLimitReq,
+				BurstSize:         config.RateLimitReq * 2,
+			}, logger)
 			slog.Info("Falling back to in-memory rate limiting",
-				"rate_per_second", rate,
-				"burst", config.RateLimitReq)
+				"requests_per_second", config.RateLimitReq,
+				"burst", config.RateLimitReq*2)
 		} else {
 			slog.Info("Valkey rate limiter initialized", "addr", config.ValkeyAddr)
 		}
 	} else {
 		// Use in-memory rate limiting when Valkey is not configured
-		rate := float64(config.RateLimitReq) / float64(config.RateLimitWin)
-		rl, err := middleware.NewRateLimiter(middleware.RateLimiterConfig{
-			Rate:       rate,
-			Burst:      config.RateLimitReq,
-			Expiration: 1 * time.Hour,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to create in-memory rate limiter: %w", err)
-		}
-		inMemoryLimiter = rl
+		logger, _ := zap.NewProduction()
+		inMemoryLimiter = middleware.NewRateLimiter(middleware.RateLimitConfig{
+			RequestsPerSecond: config.RateLimitReq,
+			BurstSize:         config.RateLimitReq * 2,
+		}, logger)
 		slog.Info("Using in-memory rate limiting",
-			"rate_per_second", rate,
-			"burst", config.RateLimitReq)
+			"requests_per_second", config.RateLimitReq,
+			"burst", config.RateLimitReq*2)
 	}
 
 	// Initialize certificate management
@@ -181,69 +174,38 @@ func NewServer(config *Config) (*Server, error) {
 	}
 
 	var tlsManager *security.TLSManager
-	var acmeManager *security.ACMEManager
-	var certManager *security.CertificateManager
+	// 	var acmeManager *security.ACMEManager
+	// 	var certManager *security.CertificateManager
 
 	// Initialize certificate manager based on configuration
-	if config.ACMEConfig != nil {
-		// Use ACME manager for automatic certificates
-		slog.Info("Initializing ACME certificate manager")
-		acmeManager, err = security.NewACMEManager(config.ACMEConfig, slog.Default())
+	// TODO: Add ACME support when implemented
+	// if config.ACMEConfig != nil {
+	// 	acmeManager, err = security.NewACMEManager(config.ACMEConfig, slog.Default())
+	// 	...
+	// }
+
+	if config.TLSMode != "none" && config.TLSMode != "" {
+		// Initialize TLS manager
+		tlsConfig := &security.TLSConfig{
+			Mode:         config.TLSMode,
+			CertFile:     config.TLSCert,
+			KeyFile:      config.TLSKey,
+			CAFile:       config.TLSCA,
+			CertDir:      certDir,
+			AutoGenerate: true, // Auto-generate if certs not provided
+			Organization: "fleetd",
+			CommonName:   "platform-api.fleetd.local",
+			Hosts:        []string{"localhost", "127.0.0.1", "platform-api", "*.fleetd.local"},
+			ValidDays:    365,
+		}
+
+		var err error
+		tlsManager, err = security.NewTLSManager(tlsConfig)
 		if err != nil {
-			slog.Error("Failed to initialize ACME manager", "error", err)
-			// Fall back to TLS manager
+			slog.Warn("Failed to initialize TLS manager", "error", err, "mode", config.TLSMode)
+			tlsManager = nil
 		} else {
-			slog.Info("ACME manager initialized successfully")
-		}
-	} else if config.TLSMode != "none" && config.TLSMode != "" {
-		// Check if we should use the new certificate manager
-		certConfig := &security.CertConfig{
-			Mode:          "auto", // Default to auto mode
-			StorageDir:    certDir,
-			EnableRenewal: true,
-			RenewalDays:   30,
-		}
-
-		// Set certificate files if provided
-		if config.TLSCert != "" && config.TLSKey != "" {
-			certConfig.Mode = "provided"
-			certConfig.CertFile = config.TLSCert
-			certConfig.KeyFile = config.TLSKey
-			certConfig.CAFile = config.TLSCA
-		}
-
-		// Try to use new certificate manager first
-		certManager, err = security.NewCertificateManager(certConfig)
-		if err != nil {
-			slog.Warn("Failed to initialize certificate manager, falling back to TLS manager", "error", err)
-
-			// Fall back to legacy TLS manager
-			tlsConfig := &security.TLSConfig{
-				Mode:         config.TLSMode,
-				CertFile:     config.TLSCert,
-				KeyFile:      config.TLSKey,
-				CAFile:       config.TLSCA,
-				CertDir:      certDir,
-				AutoGenerate: true, // Auto-generate if certs not provided
-				Organization: "fleetd",
-				CommonName:   "platform-api.fleetd.local",
-				Hosts:        []string{"localhost", "127.0.0.1", "platform-api", "*.fleetd.local"},
-				ValidDays:    365,
-			}
-
-			tlsManager, err = security.NewTLSManager(tlsConfig)
-			if err != nil {
-				slog.Warn("Failed to initialize TLS manager", "error", err, "mode", config.TLSMode)
-				tlsManager = nil
-			}
-		} else {
-			// Initialize the certificate manager
-			if err := certManager.Initialize(); err != nil {
-				slog.Error("Failed to initialize certificates", "error", err)
-				certManager = nil
-			} else {
-				slog.Info("Certificate manager initialized successfully")
-			}
+			slog.Info("TLS manager initialized successfully")
 		}
 	}
 
@@ -255,8 +217,9 @@ func NewServer(config *Config) (*Server, error) {
 		valkeyLimiter:   valkeyLimiter,
 		inMemoryLimiter: inMemoryLimiter,
 		tlsManager:      tlsManager,
-		acmeManager:     acmeManager,
-		certManager:     certManager,
+		// TODO: Add when ACME/Certificate manager support is implemented
+		// acmeManager:     acmeManager,
+		// certManager:     certManager,
 	}, nil
 }
 
@@ -411,7 +374,7 @@ func (s *Server) Run() error {
 
 	// Apply rate limiting middleware
 	if s.inMemoryLimiter != nil {
-		handler = middleware.RateLimitMiddleware(s.inMemoryLimiter)(handler)
+		handler = s.inMemoryLimiter.Middleware(handler)
 	}
 
 	// Apply CORS
@@ -427,27 +390,18 @@ func (s *Server) Run() error {
 	}
 
 	// Apply TLS configuration based on available managers
-	if s.acmeManager != nil {
-		// Use ACME manager for TLS config
-		s.httpServer.TLSConfig = s.acmeManager.TLSConfig()
-		slog.Info("TLS enabled with ACME manager",
-			"domains", s.acmeManager.GetCertificateInfo())
-
-		// Start ACME manager
-		if err := s.acmeManager.Start(ctx); err != nil {
-			slog.Error("Failed to start ACME manager", "error", err)
-		}
-	} else if s.certManager != nil {
-		// Use certificate manager for TLS config
-		s.httpServer.TLSConfig = s.certManager.GetTLSConfig()
-		slog.Info("TLS enabled with certificate manager")
-
-		// Start auto-renewal if enabled
-		s.certManager.StartAutoRenewal(ctx)
-	} else if s.tlsManager != nil && s.tlsManager.IsEnabled() {
-		// Use legacy TLS manager
+	// TODO: Add ACME and Certificate manager support
+	// if s.acmeManager != nil {
+	// 	s.httpServer.TLSConfig = s.acmeManager.TLSConfig()
+	// 	if err := s.acmeManager.Start(ctx); err != nil { ... }
+	// } else if s.certManager != nil {
+	// 	s.httpServer.TLSConfig = s.certManager.GetTLSConfig()
+	// 	s.certManager.StartAutoRenewal(ctx)
+	// } else
+	if s.tlsManager != nil && s.tlsManager.IsEnabled() {
+		// Use TLS manager
 		s.httpServer.TLSConfig = s.tlsManager.GetServerTLSConfig()
-		slog.Info("TLS enabled with legacy TLS manager",
+		slog.Info("TLS enabled with TLS manager",
 			"mode", s.tlsManager.GetMode(),
 			"info", s.tlsManager.GetCertificateInfo())
 	}
@@ -469,12 +423,14 @@ func (s *Server) Run() error {
 			}
 
 			managerType := "unknown"
-			if s.acmeManager != nil {
-				managerType = "ACME"
-			} else if s.certManager != nil {
-				managerType = "certificate"
-			} else if s.tlsManager != nil {
-				managerType = "legacy TLS"
+			// TODO: Add ACME and Certificate manager support
+			// if s.acmeManager != nil {
+			// 	managerType = "ACME"
+			// } else if s.certManager != nil {
+			// 	managerType = "certificate"
+			// } else
+			if s.tlsManager != nil {
+				managerType = "TLS"
 			}
 
 			slog.Info("Control plane server listening",
@@ -504,13 +460,13 @@ func (s *Server) Run() error {
 
 	slog.Info("Shutting down control plane server...")
 
-	// Stop certificate managers
-	if s.acmeManager != nil {
-		s.acmeManager.Stop()
-	}
-	if s.certManager != nil {
-		s.certManager.Stop()
-	}
+	// TODO: Add ACME and Certificate manager support
+	// if s.acmeManager != nil {
+	// 	s.acmeManager.Stop()
+	// }
+	// if s.certManager != nil {
+	// 	s.certManager.Stop()
+	// }
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
