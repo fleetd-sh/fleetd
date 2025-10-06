@@ -75,7 +75,7 @@ func TestNewClient(t *testing.T) {
 
 				assert.Equal(t, tt.opts.APIKey, client.apiKey)
 
-						assert.NotNil(t, client.Fleet)
+				assert.NotNil(t, client.Fleet)
 				assert.NotNil(t, client.Analytics)
 				assert.NotNil(t, client.Device)
 

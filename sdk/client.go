@@ -14,9 +14,9 @@ import (
 // Client is the main fleetd SDK client that provides access to control plane services
 type Client struct {
 	// Service clients
-	Fleet      fleetpbconnect.FleetServiceClient
-	Analytics  fleetpbconnect.AnalyticsServiceClient
-	Device     fleetpbconnect.DeviceServiceClient
+	Fleet     fleetpbconnect.FleetServiceClient
+	Analytics fleetpbconnect.AnalyticsServiceClient
+	Device    fleetpbconnect.DeviceServiceClient
 
 	// Internal fields
 	httpClient *http.Client

@@ -31,14 +31,14 @@ func NewFleetClient(baseURL, apiKey string) *FleetClient {
 
 // Fleet represents a fleet entity
 type Fleet struct {
-	ID           string                 `json:"id"`
-	Name         string                 `json:"name"`
-	Description  string                 `json:"description"`
-	DeviceCount  int                    `json:"device_count"`
-	OnlineCount  int                    `json:"online_count"`
-	Tags         map[string]string      `json:"tags"`
-	CreatedAt    time.Time              `json:"created_at"`
-	UpdatedAt    time.Time              `json:"updated_at"`
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	DeviceCount int               `json:"device_count"`
+	OnlineCount int               `json:"online_count"`
+	Tags        map[string]string `json:"tags"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
 }
 
 // Device represents a device entity
@@ -55,20 +55,20 @@ type Device struct {
 
 // Deployment represents a deployment entity
 type Deployment struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	FleetID  string    `json:"fleet_id"`
-	Status   string    `json:"status"`
-	Progress Progress  `json:"progress"`
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	FleetID  string   `json:"fleet_id"`
+	Status   string   `json:"status"`
+	Progress Progress `json:"progress"`
 }
 
 // Progress represents deployment progress
 type Progress struct {
-	Total      int `json:"total"`
-	Pending    int `json:"pending"`
-	Running    int `json:"running"`
-	Succeeded  int `json:"succeeded"`
-	Failed     int `json:"failed"`
+	Total      int     `json:"total"`
+	Pending    int     `json:"pending"`
+	Running    int     `json:"running"`
+	Succeeded  int     `json:"succeeded"`
+	Failed     int     `json:"failed"`
 	Percentage float64 `json:"percentage"`
 }
 
@@ -300,8 +300,8 @@ func main() {
 
 	// Example: Create a deployment
 	deployment, err := client.CreateDeployment(ctx, "Firmware v2.0.0", fleet.ID, map[string]interface{}{
-		"version": "2.0.0",
-		"url":     "https://updates.example.com/firmware-v2.0.0.bin",
+		"version":  "2.0.0",
+		"url":      "https://updates.example.com/firmware-v2.0.0.bin",
 		"checksum": "sha256:abcdef1234567890",
 	})
 	if err != nil {
