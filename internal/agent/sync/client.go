@@ -10,6 +10,7 @@ import (
 	"connectrpc.com/connect"
 	pb "fleetd.sh/gen/fleetd/v1"
 	"fleetd.sh/gen/fleetd/v1/fleetpbconnect"
+	"fleetd.sh/internal/retry"
 )
 
 // SyncClient handles communication with the fleet server
@@ -164,47 +165,24 @@ func (c *ConnectSyncClient) authInterceptor() connect.UnaryInterceptorFunc {
 func (c *ConnectSyncClient) retryInterceptor() connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			var lastErr error
-			backoff := NewBackoff(1*time.Second, 30*time.Second, 2.0)
+			var resp connect.AnyResponse
 
-			for attempt := 0; attempt <= c.maxRetries; attempt++ {
-				resp, err := next(ctx, req)
-				if err == nil {
-					return resp, nil
-				}
-
-				lastErr = err
-
-				// Check if error is retryable
-				if !isRetryable(err) {
-					return nil, err
-				}
-
-				// Check context
-				if ctx.Err() != nil {
-					return nil, ctx.Err()
-				}
-
-				// Log retry
-				if attempt < c.maxRetries {
-					wait := backoff.Next()
+			err := retry.DoWithRetryable(ctx, retry.RPCConfig(), retry.ConnectRetryable, func(ctx context.Context) error {
+				var err error
+				resp, err = next(ctx, req)
+				if err != nil {
 					c.logger.Warn("Request failed, retrying",
-						"attempt", attempt+1,
 						"max_retries", c.maxRetries,
-						"wait", wait,
 						"error", err,
 					)
-
-					select {
-					case <-time.After(wait):
-						// Continue to next attempt
-					case <-ctx.Done():
-						return nil, ctx.Err()
-					}
 				}
-			}
+				return err
+			})
 
-			return nil, fmt.Errorf("max retries exceeded: %w", lastErr)
+			if err != nil {
+				return nil, err
+			}
+			return resp, nil
 		}
 	}
 }
