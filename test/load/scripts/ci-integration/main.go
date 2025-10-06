@@ -7,70 +7,69 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
 
 // CIMetrics represents metrics exported for CI/CD systems
 type CIMetrics struct {
-	TestName        string            `json:"test_name"`
-	Timestamp       time.Time         `json:"timestamp"`
-	Duration        time.Duration     `json:"duration"`
-	Passed          bool              `json:"passed"`
-	Grade           string            `json:"grade"`
-	OverallScore    float64           `json:"overall_score"`
-	SuccessRate     float64           `json:"success_rate"`
-	ErrorRate       float64           `json:"error_rate"`
-	AvgThroughput   float64           `json:"avg_throughput"`
-	PeakThroughput  float64           `json:"peak_throughput"`
-	P50Latency      time.Duration     `json:"p50_latency"`
-	P95Latency      time.Duration     `json:"p95_latency"`
-	P99Latency      time.Duration     `json:"p99_latency"`
-	CPUPeak         float64           `json:"cpu_peak"`
-	MemoryPeak      float64           `json:"memory_peak"`
-	TotalRequests   int64             `json:"total_requests"`
-	FailedRequests  int64             `json:"failed_requests"`
-	Recommendations []string          `json:"recommendations"`
-	CriticalIssues  []string          `json:"critical_issues"`
-	Thresholds      ThresholdResults  `json:"thresholds"`
-	Environment     EnvironmentInfo   `json:"environment"`
+	TestName        string           `json:"test_name"`
+	Timestamp       time.Time        `json:"timestamp"`
+	Duration        time.Duration    `json:"duration"`
+	Passed          bool             `json:"passed"`
+	Grade           string           `json:"grade"`
+	OverallScore    float64          `json:"overall_score"`
+	SuccessRate     float64          `json:"success_rate"`
+	ErrorRate       float64          `json:"error_rate"`
+	AvgThroughput   float64          `json:"avg_throughput"`
+	PeakThroughput  float64          `json:"peak_throughput"`
+	P50Latency      time.Duration    `json:"p50_latency"`
+	P95Latency      time.Duration    `json:"p95_latency"`
+	P99Latency      time.Duration    `json:"p99_latency"`
+	CPUPeak         float64          `json:"cpu_peak"`
+	MemoryPeak      float64          `json:"memory_peak"`
+	TotalRequests   int64            `json:"total_requests"`
+	FailedRequests  int64            `json:"failed_requests"`
+	Recommendations []string         `json:"recommendations"`
+	CriticalIssues  []string         `json:"critical_issues"`
+	Thresholds      ThresholdResults `json:"thresholds"`
+	Environment     EnvironmentInfo  `json:"environment"`
 }
 
 // ThresholdResults contains pass/fail results for various thresholds
 type ThresholdResults struct {
-	SuccessRatePass     bool `json:"success_rate_pass"`
-	ErrorRatePass       bool `json:"error_rate_pass"`
-	LatencyPass         bool `json:"latency_pass"`
-	ThroughputPass      bool `json:"throughput_pass"`
-	ResourceUsagePass   bool `json:"resource_usage_pass"`
+	SuccessRatePass   bool `json:"success_rate_pass"`
+	ErrorRatePass     bool `json:"error_rate_pass"`
+	LatencyPass       bool `json:"latency_pass"`
+	ThroughputPass    bool `json:"throughput_pass"`
+	ResourceUsagePass bool `json:"resource_usage_pass"`
 }
 
 // EnvironmentInfo contains information about the test environment
 type EnvironmentInfo struct {
-	Platform        string `json:"platform"`
-	GoVersion       string `json:"go_version"`
-	TestFramework   string `json:"test_framework"`
-	ServerURL       string `json:"server_url"`
-	DeviceCount     int    `json:"device_count"`
-	TestDuration    string `json:"test_duration"`
-	CISystem        string `json:"ci_system"`
-	Branch          string `json:"branch"`
-	Commit          string `json:"commit"`
+	Platform      string `json:"platform"`
+	GoVersion     string `json:"go_version"`
+	TestFramework string `json:"test_framework"`
+	ServerURL     string `json:"server_url"`
+	DeviceCount   int    `json:"device_count"`
+	TestDuration  string `json:"test_duration"`
+	CISystem      string `json:"ci_system"`
+	Branch        string `json:"branch"`
+	Commit        string `json:"commit"`
 }
 
 // CIConfig holds configuration for CI integration
 type CIConfig struct {
-	ReportPath         string
-	OutputFormat       string
-	ExitOnFailure      bool
-	SuccessRateMin     float64
-	ErrorRateMax       float64
-	P95LatencyMax      time.Duration
-	ThroughputMin      float64
-	CPUUsageMax        float64
-	MemoryUsageMax     float64
-	Verbose            bool
+	ReportPath     string
+	OutputFormat   string
+	ExitOnFailure  bool
+	SuccessRateMin float64
+	ErrorRateMax   float64
+	P95LatencyMax  time.Duration
+	ThroughputMin  float64
+	CPUUsageMax    float64
+	MemoryUsageMax float64
+	Verbose        bool
 }
 
 func main() {

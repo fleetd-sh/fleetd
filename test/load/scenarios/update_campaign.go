@@ -20,63 +20,63 @@ type UpdateCampaignScenario struct {
 
 // UpdateCampaignConfig defines the configuration for the update campaign scenario
 type UpdateCampaignConfig struct {
-	TotalDevices         int
-	ProfileDistribution  map[framework.DeviceProfile]float64
-	ServerURL            string
-	TestDuration         time.Duration
-	UpdateBatchSize      int           // Number of devices to update in parallel
-	UpdateBatchInterval  time.Duration // Delay between update batches
-	UpdateSuccessRate    float64       // Expected update success rate
-	UpdateDuration       time.Duration // How long each update takes
-	RollbackThreshold    float64       // Failure rate that triggers rollback
-	CanaryPercentage     float64       // Percentage of devices for canary deployment
-	AuthToken            string
-	TLSEnabled           bool
+	TotalDevices        int
+	ProfileDistribution map[framework.DeviceProfile]float64
+	ServerURL           string
+	TestDuration        time.Duration
+	UpdateBatchSize     int           // Number of devices to update in parallel
+	UpdateBatchInterval time.Duration // Delay between update batches
+	UpdateSuccessRate   float64       // Expected update success rate
+	UpdateDuration      time.Duration // How long each update takes
+	RollbackThreshold   float64       // Failure rate that triggers rollback
+	CanaryPercentage    float64       // Percentage of devices for canary deployment
+	AuthToken           string
+	TLSEnabled          bool
 }
 
 // UpdateCampaignMetrics tracks metrics for the update campaign scenario
 type UpdateCampaignMetrics struct {
-	StartTime               time.Time
-	EndTime                 time.Time
-	TotalDevices            int64
-	DevicesUpdating         int64
-	DevicesUpdated          int64
-	DevicesFailed           int64
-	DevicesRolledBack       int64
-	UpdatesInitiated        int64
-	UpdatesCompleted        int64
-	UpdateFailures          int64
-	CanarySuccessRate       float64
-	OverallSuccessRate      float64
-	AverageUpdateDuration   time.Duration
-	UpdateDurations         []time.Duration
-	BatchMetrics            []BatchMetrics
-	RollbackTriggered       bool
-	CampaignPhase           CampaignPhase
-	mu                      sync.RWMutex
+	StartTime             time.Time
+	EndTime               time.Time
+	TotalDevices          int64
+	DevicesUpdating       int64
+	DevicesUpdated        int64
+	DevicesFailed         int64
+	DevicesRolledBack     int64
+	UpdatesInitiated      int64
+	UpdatesCompleted      int64
+	UpdateFailures        int64
+	CanarySuccessRate     float64
+	OverallSuccessRate    float64
+	AverageUpdateDuration time.Duration
+	UpdateDurations       []time.Duration
+	BatchMetrics          []BatchMetrics
+	RollbackTriggered     bool
+	CampaignPhase         CampaignPhase
+	mu                    sync.RWMutex
 }
 
 // BatchMetrics tracks metrics for each update batch
 type BatchMetrics struct {
-	BatchNumber   int
-	StartTime     time.Time
-	EndTime       time.Time
-	DeviceCount   int
-	SuccessCount  int
-	FailureCount  int
-	SuccessRate   float64
-	Duration      time.Duration
+	BatchNumber  int
+	StartTime    time.Time
+	EndTime      time.Time
+	DeviceCount  int
+	SuccessCount int
+	FailureCount int
+	SuccessRate  float64
+	Duration     time.Duration
 }
 
 // CampaignPhase represents the current phase of the update campaign
 type CampaignPhase string
 
 const (
-	PhaseCanary     CampaignPhase = "canary"
-	PhaseRollout    CampaignPhase = "rollout"
-	PhaseCompleted  CampaignPhase = "completed"
-	PhaseRollback   CampaignPhase = "rollback"
-	PhaseFailed     CampaignPhase = "failed"
+	PhaseCanary    CampaignPhase = "canary"
+	PhaseRollout   CampaignPhase = "rollout"
+	PhaseCompleted CampaignPhase = "completed"
+	PhaseRollback  CampaignPhase = "rollback"
+	PhaseFailed    CampaignPhase = "failed"
 )
 
 // NewUpdateCampaignScenario creates a new update campaign scenario
@@ -468,7 +468,7 @@ func (s *UpdateCampaignScenario) simulateDeviceUpdate(ctx context.Context, devic
 	var successProbability float64
 	var updateDuration time.Duration
 
-	switch device.config.Profile {
+	switch device.Config.Profile {
 	case framework.ProfileFull:
 		successProbability = s.config.UpdateSuccessRate + 0.02 // Slightly higher success rate
 		updateDuration = s.config.UpdateDuration
@@ -476,7 +476,7 @@ func (s *UpdateCampaignScenario) simulateDeviceUpdate(ctx context.Context, devic
 		successProbability = s.config.UpdateSuccessRate
 		updateDuration = time.Duration(float64(s.config.UpdateDuration) * 1.2) // 20% longer
 	case framework.ProfileMinimal:
-		successProbability = s.config.UpdateSuccessRate - 0.05 // Lower success rate
+		successProbability = s.config.UpdateSuccessRate - 0.05                 // Lower success rate
 		updateDuration = time.Duration(float64(s.config.UpdateDuration) * 1.5) // 50% longer
 	}
 
@@ -538,7 +538,7 @@ func (s *UpdateCampaignScenario) executeRollback(ctx context.Context, devices []
 			s.metrics.DevicesRolledBack++
 			s.mu.Unlock()
 
-			s.logger.Debug("Device rolled back", "device_id", d.config.DeviceID)
+			s.logger.Debug("Device rolled back", "device_id", d.Config.DeviceID)
 		}(device)
 	}
 
@@ -697,21 +697,39 @@ func (s *UpdateCampaignScenario) GetMetrics() UpdateCampaignMetrics {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	// Deep copy
-	metrics := *s.metrics
-
 	// Copy slices
+	var updateDurations []time.Duration
 	if s.metrics.UpdateDurations != nil {
-		metrics.UpdateDurations = make([]time.Duration, len(s.metrics.UpdateDurations))
-		copy(metrics.UpdateDurations, s.metrics.UpdateDurations)
+		updateDurations = make([]time.Duration, len(s.metrics.UpdateDurations))
+		copy(updateDurations, s.metrics.UpdateDurations)
 	}
 
+	var batchMetrics []BatchMetrics
 	if s.metrics.BatchMetrics != nil {
-		metrics.BatchMetrics = make([]BatchMetrics, len(s.metrics.BatchMetrics))
-		copy(metrics.BatchMetrics, s.metrics.BatchMetrics)
+		batchMetrics = make([]BatchMetrics, len(s.metrics.BatchMetrics))
+		copy(batchMetrics, s.metrics.BatchMetrics)
 	}
 
-	return metrics
+	// Deep copy without mutex
+	return UpdateCampaignMetrics{
+		StartTime:             s.metrics.StartTime,
+		EndTime:               s.metrics.EndTime,
+		TotalDevices:          s.metrics.TotalDevices,
+		DevicesUpdating:       s.metrics.DevicesUpdating,
+		DevicesUpdated:        s.metrics.DevicesUpdated,
+		DevicesFailed:         s.metrics.DevicesFailed,
+		DevicesRolledBack:     s.metrics.DevicesRolledBack,
+		UpdatesInitiated:      s.metrics.UpdatesInitiated,
+		UpdatesCompleted:      s.metrics.UpdatesCompleted,
+		UpdateFailures:        s.metrics.UpdateFailures,
+		CanarySuccessRate:     s.metrics.CanarySuccessRate,
+		OverallSuccessRate:    s.metrics.OverallSuccessRate,
+		AverageUpdateDuration: s.metrics.AverageUpdateDuration,
+		UpdateDurations:       updateDurations,
+		BatchMetrics:          batchMetrics,
+		RollbackTriggered:     s.metrics.RollbackTriggered,
+		CampaignPhase:         s.metrics.CampaignPhase,
+	}
 }
 
 // GetName returns the scenario name

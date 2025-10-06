@@ -3,13 +3,13 @@ package framework
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/net"
 	"github.com/shirou/gopsutil/v3/process"
@@ -17,13 +17,13 @@ import (
 
 // MetricsCollector collects and aggregates performance metrics
 type MetricsCollector struct {
-	mu               sync.RWMutex
-	ctx              context.Context
-	cancel           context.CancelFunc
-	wg               sync.WaitGroup
-	logger           *slog.Logger
+	mu                 sync.RWMutex
+	ctx                context.Context
+	cancel             context.CancelFunc
+	wg                 sync.WaitGroup
+	logger             *slog.Logger
 	collectionInterval time.Duration
-	retentionPeriod   time.Duration
+	retentionPeriod    time.Duration
 
 	// Metrics storage
 	performanceMetrics []PerformanceMetrics
@@ -33,134 +33,134 @@ type MetricsCollector struct {
 	errorMetrics       []ErrorMetrics
 
 	// Aggregated metrics
-	summaryMetrics     MetricsSummary
+	summaryMetrics MetricsSummary
 
 	// Real-time metrics
-	realTimeMetrics    RealTimeMetrics
+	realTimeMetrics RealTimeMetrics
 
 	// Callbacks for metrics events
-	metricsCallbacks   []MetricsCallback
+	metricsCallbacks []MetricsCallback
 }
 
 // PerformanceMetrics represents system performance at a point in time
 type PerformanceMetrics struct {
-	Timestamp          time.Time              `json:"timestamp"`
-	CPUUsage           float64                `json:"cpu_usage"`
-	MemoryUsage        float64                `json:"memory_usage"`
-	MemoryUsedBytes    uint64                 `json:"memory_used_bytes"`
-	MemoryTotalBytes   uint64                 `json:"memory_total_bytes"`
-	NetworkBytesIn     uint64                 `json:"network_bytes_in"`
-	NetworkBytesOut    uint64                 `json:"network_bytes_out"`
-	NetworkPacketsIn   uint64                 `json:"network_packets_in"`
-	NetworkPacketsOut  uint64                 `json:"network_packets_out"`
-	ProcessCount       int                    `json:"process_count"`
-	ThreadCount        int                    `json:"thread_count"`
-	OpenConnections    int64                  `json:"open_connections"`
-	Custom             map[string]interface{} `json:"custom,omitempty"`
+	Timestamp         time.Time              `json:"timestamp"`
+	CPUUsage          float64                `json:"cpu_usage"`
+	MemoryUsage       float64                `json:"memory_usage"`
+	MemoryUsedBytes   uint64                 `json:"memory_used_bytes"`
+	MemoryTotalBytes  uint64                 `json:"memory_total_bytes"`
+	NetworkBytesIn    uint64                 `json:"network_bytes_in"`
+	NetworkBytesOut   uint64                 `json:"network_bytes_out"`
+	NetworkPacketsIn  uint64                 `json:"network_packets_in"`
+	NetworkPacketsOut uint64                 `json:"network_packets_out"`
+	ProcessCount      int                    `json:"process_count"`
+	ThreadCount       int                    `json:"thread_count"`
+	OpenConnections   int64                  `json:"open_connections"`
+	Custom            map[string]interface{} `json:"custom,omitempty"`
 }
 
 // LatencyMetrics tracks latency measurements
 type LatencyMetrics struct {
-	Timestamp         time.Time     `json:"timestamp"`
-	OperationType     string        `json:"operation_type"`
-	Latency           time.Duration `json:"latency"`
-	P50Latency        time.Duration `json:"p50_latency"`
-	P95Latency        time.Duration `json:"p95_latency"`
-	P99Latency        time.Duration `json:"p99_latency"`
-	MaxLatency        time.Duration `json:"max_latency"`
-	MinLatency        time.Duration `json:"min_latency"`
-	MeasurementCount  int64         `json:"measurement_count"`
+	Timestamp        time.Time     `json:"timestamp"`
+	OperationType    string        `json:"operation_type"`
+	Latency          time.Duration `json:"latency"`
+	P50Latency       time.Duration `json:"p50_latency"`
+	P95Latency       time.Duration `json:"p95_latency"`
+	P99Latency       time.Duration `json:"p99_latency"`
+	MaxLatency       time.Duration `json:"max_latency"`
+	MinLatency       time.Duration `json:"min_latency"`
+	MeasurementCount int64         `json:"measurement_count"`
 }
 
 // ThroughputMetrics tracks throughput measurements
 type ThroughputMetrics struct {
-	Timestamp           time.Time `json:"timestamp"`
-	RequestsPerSecond   float64   `json:"requests_per_second"`
-	MetricsPerSecond    float64   `json:"metrics_per_second"`
-	HeartbeatsPerSecond float64   `json:"heartbeats_per_second"`
-	BytesPerSecond      uint64    `json:"bytes_per_second"`
-	TransactionsPerSecond float64 `json:"transactions_per_second"`
+	Timestamp             time.Time `json:"timestamp"`
+	RequestsPerSecond     float64   `json:"requests_per_second"`
+	MetricsPerSecond      float64   `json:"metrics_per_second"`
+	HeartbeatsPerSecond   float64   `json:"heartbeats_per_second"`
+	BytesPerSecond        uint64    `json:"bytes_per_second"`
+	TransactionsPerSecond float64   `json:"transactions_per_second"`
 }
 
 // SystemMetrics tracks system-level metrics
 type SystemMetrics struct {
-	Timestamp        time.Time `json:"timestamp"`
-	LoadAverage1     float64   `json:"load_average_1"`
-	LoadAverage5     float64   `json:"load_average_5"`
-	LoadAverage15    float64   `json:"load_average_15"`
-	DiskUsage        float64   `json:"disk_usage"`
-	DiskIOPS         float64   `json:"disk_iops"`
-	NetworkIOPS      float64   `json:"network_iops"`
-	ContextSwitches  uint64    `json:"context_switches"`
-	SystemCalls      uint64    `json:"system_calls"`
+	Timestamp       time.Time `json:"timestamp"`
+	LoadAverage1    float64   `json:"load_average_1"`
+	LoadAverage5    float64   `json:"load_average_5"`
+	LoadAverage15   float64   `json:"load_average_15"`
+	DiskUsage       float64   `json:"disk_usage"`
+	DiskIOPS        float64   `json:"disk_iops"`
+	NetworkIOPS     float64   `json:"network_iops"`
+	ContextSwitches uint64    `json:"context_switches"`
+	SystemCalls     uint64    `json:"system_calls"`
 }
 
 // ErrorMetrics tracks error rates and types
 type ErrorMetrics struct {
-	Timestamp         time.Time         `json:"timestamp"`
-	TotalErrors       int64             `json:"total_errors"`
-	ErrorRate         float64           `json:"error_rate"`
-	ErrorsByType      map[string]int64  `json:"errors_by_type"`
-	TimeoutErrors     int64             `json:"timeout_errors"`
-	ConnectionErrors  int64             `json:"connection_errors"`
-	AuthErrors        int64             `json:"auth_errors"`
-	ServerErrors      int64             `json:"server_errors"`
-	ClientErrors      int64             `json:"client_errors"`
+	Timestamp        time.Time        `json:"timestamp"`
+	TotalErrors      int64            `json:"total_errors"`
+	ErrorRate        float64          `json:"error_rate"`
+	ErrorsByType     map[string]int64 `json:"errors_by_type"`
+	TimeoutErrors    int64            `json:"timeout_errors"`
+	ConnectionErrors int64            `json:"connection_errors"`
+	AuthErrors       int64            `json:"auth_errors"`
+	ServerErrors     int64            `json:"server_errors"`
+	ClientErrors     int64            `json:"client_errors"`
 }
 
 // MetricsSummary provides aggregated metrics over time periods
 type MetricsSummary struct {
-	StartTime         time.Time                    `json:"start_time"`
-	EndTime           time.Time                    `json:"end_time"`
-	Duration          time.Duration                `json:"duration"`
+	StartTime time.Time     `json:"start_time"`
+	EndTime   time.Time     `json:"end_time"`
+	Duration  time.Duration `json:"duration"`
 
 	// Performance summary
-	AvgCPUUsage       float64                      `json:"avg_cpu_usage"`
-	MaxCPUUsage       float64                      `json:"max_cpu_usage"`
-	AvgMemoryUsage    float64                      `json:"avg_memory_usage"`
-	MaxMemoryUsage    float64                      `json:"max_memory_usage"`
-	PeakConnections   int64                        `json:"peak_connections"`
+	AvgCPUUsage     float64 `json:"avg_cpu_usage"`
+	MaxCPUUsage     float64 `json:"max_cpu_usage"`
+	AvgMemoryUsage  float64 `json:"avg_memory_usage"`
+	MaxMemoryUsage  float64 `json:"max_memory_usage"`
+	PeakConnections int64   `json:"peak_connections"`
 
 	// Latency summary
-	AvgLatency        time.Duration                `json:"avg_latency"`
-	P50Latency        time.Duration                `json:"p50_latency"`
-	P95Latency        time.Duration                `json:"p95_latency"`
-	P99Latency        time.Duration                `json:"p99_latency"`
-	MaxLatency        time.Duration                `json:"max_latency"`
+	AvgLatency time.Duration `json:"avg_latency"`
+	P50Latency time.Duration `json:"p50_latency"`
+	P95Latency time.Duration `json:"p95_latency"`
+	P99Latency time.Duration `json:"p99_latency"`
+	MaxLatency time.Duration `json:"max_latency"`
 
 	// Throughput summary
-	AvgThroughput     float64                      `json:"avg_throughput"`
-	PeakThroughput    float64                      `json:"peak_throughput"`
-	TotalRequests     int64                        `json:"total_requests"`
+	AvgThroughput  float64 `json:"avg_throughput"`
+	PeakThroughput float64 `json:"peak_throughput"`
+	TotalRequests  int64   `json:"total_requests"`
 
 	// Error summary
-	TotalErrors       int64                        `json:"total_errors"`
-	OverallErrorRate  float64                      `json:"overall_error_rate"`
-	ErrorDistribution map[string]int64             `json:"error_distribution"`
+	TotalErrors       int64            `json:"total_errors"`
+	OverallErrorRate  float64          `json:"overall_error_rate"`
+	ErrorDistribution map[string]int64 `json:"error_distribution"`
 
 	// Resource utilization
-	ResourceUsage     ResourceUsageSummary         `json:"resource_usage"`
+	ResourceUsage ResourceUsageSummary `json:"resource_usage"`
 }
 
 // ResourceUsageSummary summarizes resource utilization
 type ResourceUsageSummary struct {
-	CPUEfficiency     float64 `json:"cpu_efficiency"`
-	MemoryEfficiency  float64 `json:"memory_efficiency"`
+	CPUEfficiency      float64 `json:"cpu_efficiency"`
+	MemoryEfficiency   float64 `json:"memory_efficiency"`
 	NetworkUtilization float64 `json:"network_utilization"`
-	IOUtilization     float64 `json:"io_utilization"`
+	IOUtilization      float64 `json:"io_utilization"`
 }
 
 // RealTimeMetrics provides current real-time metrics
 type RealTimeMetrics struct {
 	mu                sync.RWMutex
-	LastUpdated       time.Time `json:"last_updated"`
-	CurrentCPU        float64   `json:"current_cpu"`
-	CurrentMemory     float64   `json:"current_memory"`
-	CurrentThroughput float64   `json:"current_throughput"`
+	LastUpdated       time.Time     `json:"last_updated"`
+	CurrentCPU        float64       `json:"current_cpu"`
+	CurrentMemory     float64       `json:"current_memory"`
+	CurrentThroughput float64       `json:"current_throughput"`
 	CurrentLatency    time.Duration `json:"current_latency"`
-	CurrentErrors     int64     `json:"current_errors"`
-	ConnectionCount   int64     `json:"connection_count"`
-	ActiveDevices     int64     `json:"active_devices"`
+	CurrentErrors     int64         `json:"current_errors"`
+	ConnectionCount   int64         `json:"connection_count"`
+	ActiveDevices     int64         `json:"active_devices"`
 }
 
 // MetricsCallback is called when metrics are collected
@@ -350,7 +350,7 @@ func (mc *MetricsCollector) gatherSystemMetrics() SystemMetrics {
 	}
 
 	// Load averages (Linux/macOS)
-	if loadInfo, err := cpu.Load(); err == nil {
+	if loadInfo, err := load.Avg(); err == nil {
 		metrics.LoadAverage1 = loadInfo.Load1
 		metrics.LoadAverage5 = loadInfo.Load5
 		metrics.LoadAverage15 = loadInfo.Load15
@@ -769,10 +769,19 @@ func (mc *MetricsCollector) calculateResourceUsageSummary(summary *MetricsSummar
 }
 
 // GetRealTimeMetrics returns current real-time metrics
-func (mc *MetricsCollector) GetRealTimeMetrics() RealTimeMetrics {
+func (mc *MetricsCollector) GetRealTimeMetrics() *RealTimeMetrics {
 	mc.realTimeMetrics.mu.RLock()
 	defer mc.realTimeMetrics.mu.RUnlock()
-	return mc.realTimeMetrics
+	return &RealTimeMetrics{
+		LastUpdated:       mc.realTimeMetrics.LastUpdated,
+		CurrentCPU:        mc.realTimeMetrics.CurrentCPU,
+		CurrentMemory:     mc.realTimeMetrics.CurrentMemory,
+		CurrentThroughput: mc.realTimeMetrics.CurrentThroughput,
+		CurrentLatency:    mc.realTimeMetrics.CurrentLatency,
+		CurrentErrors:     mc.realTimeMetrics.CurrentErrors,
+		ConnectionCount:   mc.realTimeMetrics.ConnectionCount,
+		ActiveDevices:     mc.realTimeMetrics.ActiveDevices,
+	}
 }
 
 // ExportMetrics exports all metrics to JSON
@@ -781,14 +790,14 @@ func (mc *MetricsCollector) ExportMetrics() ([]byte, error) {
 	defer mc.mu.RUnlock()
 
 	export := struct {
-		Summary           MetricsSummary       `json:"summary"`
+		Summary            MetricsSummary       `json:"summary"`
 		PerformanceMetrics []PerformanceMetrics `json:"performance_metrics"`
 		LatencyMetrics     []LatencyMetrics     `json:"latency_metrics"`
 		ThroughputMetrics  []ThroughputMetrics  `json:"throughput_metrics"`
 		SystemMetrics      []SystemMetrics      `json:"system_metrics"`
 		ErrorMetrics       []ErrorMetrics       `json:"error_metrics"`
 	}{
-		Summary:           mc.GetSummary(),
+		Summary:            mc.GetSummary(),
 		PerformanceMetrics: mc.performanceMetrics,
 		LatencyMetrics:     mc.latencyMetrics,
 		ThroughputMetrics:  mc.throughputMetrics,

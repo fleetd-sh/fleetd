@@ -41,7 +41,7 @@ type TestEnvironment struct {
 
 	// gRPC clients
 	// Note: DeploymentClient removed - proto was deleted as unused
-	FleetClient      publicv1connect.FleetServiceClient
+	FleetClient publicv1connect.FleetServiceClient
 	// Note: HealthClient import removed as it causes compilation errors
 }
 
@@ -183,53 +183,6 @@ type TestArtifact struct {
 	Checksum string
 	Metadata map[string]string
 }
-
-// Upload uploads the artifact to the control service
-// NOTE: Commented out - DeploymentServiceClient no longer exists after proto cleanup
-/*
-func (a *TestArtifact) Upload(t *testing.T, client publicpb.DeploymentServiceClient) string {
-	ctx := context.Background()
-
-	stream, err := client.UploadArtifact(ctx)
-	require.NoError(t, err)
-
-	// Send metadata
-	err = stream.Send(&publicpb.UploadArtifactRequest{
-		Data: &publicpb.UploadArtifactRequest_Metadata{
-			Metadata: &publicpb.ArtifactMetadata{
-				Name:      a.Name,
-				Version:   a.Version,
-				Type:      a.Type,
-				SizeBytes: int64(len(a.Data)),
-				Checksum:  a.Checksum,
-				Metadata:  a.Metadata,
-			},
-		},
-	})
-	require.NoError(t, err)
-
-	// Send data in chunks
-	chunkSize := 64 * 1024 // 64KB chunks
-	for offset := 0; offset < len(a.Data); offset += chunkSize {
-		end := offset + chunkSize
-		if end > len(a.Data) {
-			end = len(a.Data)
-		}
-
-		err = stream.Send(&publicpb.UploadArtifactRequest{
-			Data: &publicpb.UploadArtifactRequest_Chunk{
-				Chunk: a.Data[offset:end],
-			},
-		})
-		require.NoError(t, err)
-	}
-
-	resp, err := stream.CloseAndRecv()
-	require.NoError(t, err)
-
-	return resp.ArtifactId
-}
-*/
 
 // SaveToFile saves the artifact to a file
 func (a *TestArtifact) SaveToFile(t *testing.T, path string) {
@@ -387,88 +340,6 @@ func (b *TestDeploymentBuilder) WithHealthCheck(timeout int32) *TestDeploymentBu
 func (b *TestDeploymentBuilder) Build() *publicpb.CreateDeploymentRequest {
 	return b.deployment
 }
-
-// Monitoring utilities
-
-// NOTE: DeploymentMonitor commented out - DeploymentServiceClient no longer exists after proto cleanup
-/*
-// DeploymentMonitor monitors deployment progress
-type DeploymentMonitor struct {
-	client       publicpb.DeploymentServiceClient
-	deploymentID string
-	interval     time.Duration
-	timeout      time.Duration
-}
-
-// NewDeploymentMonitor creates a new deployment monitor
-func NewDeploymentMonitor(client publicpb.DeploymentServiceClient, deploymentID string) *DeploymentMonitor {
-	return &DeploymentMonitor{
-		client:       client,
-		deploymentID: deploymentID,
-		interval:     100 * time.Millisecond,
-		timeout:      30 * time.Second,
-	}
-}
-*/
-
-// NOTE: DeploymentMonitor methods commented out - DeploymentServiceClient no longer exists
-/*
-// WaitForCompletion waits for the deployment to complete
-func (m *DeploymentMonitor) WaitForCompletion(t *testing.T) *publicpb.GetDeploymentStatusResponse {
-	ctx := context.Background()
-	deadline := time.Now().Add(m.timeout)
-
-	for time.Now().Before(deadline) {
-		resp, err := m.client.GetDeploymentStatus(ctx, &publicpb.GetDeploymentStatusRequest{
-			DeploymentId: m.deploymentID,
-		})
-		require.NoError(t, err)
-
-		// Check if deployment is complete
-		if resp.Status.UpdatedDevices+resp.Status.FailedDevices == resp.Status.TotalDevices {
-			return resp.Status
-		}
-
-		time.Sleep(m.interval)
-	}
-
-	t.Fatalf("deployment %s did not complete within timeout", m.deploymentID)
-	return nil
-}
-
-// WaitForState waits for the deployment to reach a specific state
-func (m *DeploymentMonitor) WaitForState(t *testing.T, state publicpb.DeploymentState) {
-	ctx := context.Background()
-	deadline := time.Now().Add(m.timeout)
-
-	for time.Now().Before(deadline) {
-		resp, err := m.client.GetDeployment(ctx, &publicpb.GetDeploymentRequest{
-			DeploymentId: m.deploymentID,
-		})
-		require.NoError(t, err)
-
-		if resp.Deployment.State == state {
-			return
-		}
-
-		time.Sleep(m.interval)
-	}
-
-	t.Fatalf("deployment %s did not reach state %v within timeout", m.deploymentID, state)
-}
-
-// GetProgress returns current deployment progress
-func (m *DeploymentMonitor) GetProgress(t *testing.T) float64 {
-	ctx := context.Background()
-
-	resp, err := m.client.GetDeploymentStatus(ctx, &publicpb.GetDeploymentStatusRequest{
-		DeploymentId: m.deploymentID,
-	})
-	require.NoError(t, err)
-
-	return resp.Status.ProgressPercentage
-}
-*/
 
 // Helper functions
 

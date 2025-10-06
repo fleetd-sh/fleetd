@@ -54,7 +54,7 @@ func setupBinaryServer(t *testing.T) (*http.Server, *httptest.Server, func()) {
 
 	cleanup := func() {
 		server.Close()
-		db.Close()
+		safeCloseDB(db)
 		os.RemoveAll(tmpDir)
 	}
 

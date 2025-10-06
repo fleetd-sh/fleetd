@@ -20,7 +20,7 @@ func TestTelemetryService(t *testing.T) {
 	requireIntegrationMode(t)
 	// Create test database
 	db := setupTestDatabase(t)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Create service
 	dbWrapper := &database.DB{DB: db}
@@ -177,7 +177,7 @@ func TestTelemetryService(t *testing.T) {
 func BenchmarkTelemetryService(b *testing.B) {
 	// Create test database
 	db := setupBenchDatabase(b)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Create service
 	dbWrapper := &database.DB{DB: db}

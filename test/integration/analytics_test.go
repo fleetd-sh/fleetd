@@ -49,7 +49,7 @@ func setupAnalyticsServer(t *testing.T) (*http.Server, *httptest.Server, *sql.DB
 
 	cleanup := func() {
 		server.Close()
-		db.Close()
+		safeCloseDB(db)
 		os.RemoveAll(dir)
 	}
 

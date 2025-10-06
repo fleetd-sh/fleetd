@@ -1,13 +1,11 @@
 package integration
 
 import (
-	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -144,7 +142,7 @@ func testTransactionRollback(t *testing.T) {
 	// Open database directly for transaction testing
 	db, err := sql.Open("sqlite3", dbPath)
 	require.NoError(t, err)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Create test table
 	_, err = db.Exec(`
@@ -272,8 +270,8 @@ func testConcurrentWriteSafety(t *testing.T) {
 			for j := 0; j < writesPerWriter; j++ {
 				// Write state
 				state := &device.State{
-					Status:        fmt.Sprintf("writer_%d_op_%d", writerID, j),
-					LastHeartbeat: time.Now(),
+					Status:         fmt.Sprintf("writer_%d_op_%d", writerID, j),
+					LastHeartbeat:  time.Now(),
 					UpdateProgress: j,
 				}
 
@@ -447,7 +445,7 @@ func testDataMigrationIntegrity(t *testing.T) {
 	// Create v1 database schema
 	db, err := sql.Open("sqlite3", dbPath)
 	require.NoError(t, err)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Create v1 schema
 	_, err = db.Exec(`
@@ -566,7 +564,7 @@ func testCheckpointRecovery(t *testing.T) {
 
 	db, err := sql.Open("sqlite3", dbPath)
 	require.NoError(t, err)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Enable WAL mode
 	_, err = db.Exec("PRAGMA journal_mode=WAL")
@@ -618,7 +616,7 @@ func testCheckpointRecovery(t *testing.T) {
 	assert.Equal(t, 200, count)
 
 	// Simulate crash by closing without checkpoint
-	db.Close()
+	safeCloseDB(db)
 
 	// Reopen and verify recovery
 	db, err = sql.Open("sqlite3", dbPath)
@@ -680,7 +678,7 @@ func testWriteAheadLogRecovery(t *testing.T) {
 	}
 
 	// Close database
-	db.Close()
+	safeCloseDB(db)
 
 	// Corrupt WAL by truncating it (simulate crash during write)
 	if walData != nil && len(walData) > 100 {
@@ -691,7 +689,7 @@ func testWriteAheadLogRecovery(t *testing.T) {
 	// Reopen database - should recover from WAL
 	db, err = sql.Open("sqlite3", dbPath)
 	require.NoError(t, err)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Check recovered data
 	var count int

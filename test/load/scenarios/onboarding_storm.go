@@ -20,18 +20,18 @@ type OnboardingStormScenario struct {
 
 // OnboardingStormConfig defines the configuration for the onboarding storm scenario
 type OnboardingStormConfig struct {
-	TotalDevices          int
-	DevicesPerSecond      int
-	BurstSize             int
-	BurstInterval         time.Duration
-	ProfileDistribution   map[framework.DeviceProfile]float64
-	ServerURL             string
-	TestDuration          time.Duration
-	SuccessThreshold      float64 // Minimum success rate required
-	LatencyThreshold      time.Duration
-	ConcurrencyLimit      int
-	AuthToken             string
-	TLSEnabled            bool
+	TotalDevices        int
+	DevicesPerSecond    int
+	BurstSize           int
+	BurstInterval       time.Duration
+	ProfileDistribution map[framework.DeviceProfile]float64
+	ServerURL           string
+	TestDuration        time.Duration
+	SuccessThreshold    float64 // Minimum success rate required
+	LatencyThreshold    time.Duration
+	ConcurrencyLimit    int
+	AuthToken           string
+	TLSEnabled          bool
 }
 
 // OnboardingStormMetrics tracks metrics specific to the onboarding storm scenario
@@ -338,10 +338,18 @@ func (s *OnboardingStormScenario) GetMetrics() OnboardingStormMetrics {
 	latencies := make([]time.Duration, len(s.metrics.RegistrationLatencies))
 	copy(latencies, s.metrics.RegistrationLatencies)
 
-	metrics := *s.metrics
-	metrics.RegistrationLatencies = latencies
-
-	return metrics
+	// Return copy without mutex
+	return OnboardingStormMetrics{
+		DevicesStarted:        s.metrics.DevicesStarted,
+		DevicesSuccessful:     s.metrics.DevicesSuccessful,
+		DevicesFailed:         s.metrics.DevicesFailed,
+		RegistrationLatencies: latencies,
+		StartTime:             s.metrics.StartTime,
+		EndTime:               s.metrics.EndTime,
+		PeakConcurrency:       s.metrics.PeakConcurrency,
+		TotalRequests:         s.metrics.TotalRequests,
+		FailedRequests:        s.metrics.FailedRequests,
+	}
 }
 
 // GetName returns the scenario name

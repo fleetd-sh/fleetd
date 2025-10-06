@@ -33,70 +33,70 @@ type NetworkResilienceConfig struct {
 
 // NetworkEvent represents a network disruption event
 type NetworkEvent struct {
-	Type             NetworkEventType
-	StartTime        time.Duration // Time from test start
-	Duration         time.Duration
-	AffectedPercent  float64 // Percentage of devices affected
-	Severity         NetworkSeverity
-	Description      string
+	Type            NetworkEventType
+	StartTime       time.Duration // Time from test start
+	Duration        time.Duration
+	AffectedPercent float64 // Percentage of devices affected
+	Severity        NetworkSeverity
+	Description     string
 }
 
 // NetworkEventType defines different types of network events
 type NetworkEventType string
 
 const (
-	EventPartition       NetworkEventType = "partition"        // Complete network partition
-	EventLatency         NetworkEventType = "latency"          // High latency
-	EventPacketLoss      NetworkEventType = "packet_loss"     // Packet loss
-	EventBandwidthLimit  NetworkEventType = "bandwidth_limit" // Bandwidth limitation
-	EventDNSFailure      NetworkEventType = "dns_failure"     // DNS resolution failure
-	EventIntermittent    NetworkEventType = "intermittent"    // Intermittent connectivity
+	EventPartition      NetworkEventType = "partition"       // Complete network partition
+	EventLatency        NetworkEventType = "latency"         // High latency
+	EventPacketLoss     NetworkEventType = "packet_loss"     // Packet loss
+	EventBandwidthLimit NetworkEventType = "bandwidth_limit" // Bandwidth limitation
+	EventDNSFailure     NetworkEventType = "dns_failure"     // DNS resolution failure
+	EventIntermittent   NetworkEventType = "intermittent"    // Intermittent connectivity
 )
 
 // NetworkSeverity defines the severity of network events
 type NetworkSeverity string
 
 const (
-	SeverityLow    NetworkSeverity = "low"
-	SeverityMedium NetworkSeverity = "medium"
-	SeverityHigh   NetworkSeverity = "high"
+	SeverityLow      NetworkSeverity = "low"
+	SeverityMedium   NetworkSeverity = "medium"
+	SeverityHigh     NetworkSeverity = "high"
 	SeverityCritical NetworkSeverity = "critical"
 )
 
 // NetworkResilienceMetrics tracks metrics for the network resilience scenario
 type NetworkResilienceMetrics struct {
-	StartTime                 time.Time
-	EndTime                   time.Time
-	TotalDevices              int64
-	DevicesAffected           int64
-	DevicesRecovered          int64
-	DevicesFailedToRecover    int64
-	NetworkEventsExecuted     int64
-	ReconnectionAttempts      int64
-	SuccessfulReconnections   int64
-	FailedReconnections       int64
-	AverageRecoveryTime       time.Duration
-	P95RecoveryTime           time.Duration
-	P99RecoveryTime           time.Duration
-	RecoveryTimes             []time.Duration
-	EventMetrics              []NetworkEventMetrics
-	ReconnectionStorms        []ReconnectionStormMetrics
-	MaxConcurrentReconnects   int64
-	NetworkHealthScore        float64
-	mu                        sync.RWMutex
+	StartTime               time.Time
+	EndTime                 time.Time
+	TotalDevices            int64
+	DevicesAffected         int64
+	DevicesRecovered        int64
+	DevicesFailedToRecover  int64
+	NetworkEventsExecuted   int64
+	ReconnectionAttempts    int64
+	SuccessfulReconnections int64
+	FailedReconnections     int64
+	AverageRecoveryTime     time.Duration
+	P95RecoveryTime         time.Duration
+	P99RecoveryTime         time.Duration
+	RecoveryTimes           []time.Duration
+	EventMetrics            []NetworkEventMetrics
+	ReconnectionStorms      []ReconnectionStormMetrics
+	MaxConcurrentReconnects int64
+	NetworkHealthScore      float64
+	mu                      sync.RWMutex
 }
 
 // NetworkEventMetrics tracks metrics for individual network events
 type NetworkEventMetrics struct {
-	Event                  NetworkEvent
-	StartTime              time.Time
-	EndTime                time.Time
-	DevicesAffected        int64
-	DevicesRecoveredQuickly int64  // Recovered within target time
-	DevicesRecoveredSlow   int64   // Recovered after target time
-	DevicesFailedToRecover int64
-	AverageRecoveryTime    time.Duration
-	ReconnectionStormPeak  int64   // Peak concurrent reconnections
+	Event                   NetworkEvent
+	StartTime               time.Time
+	EndTime                 time.Time
+	DevicesAffected         int64
+	DevicesRecoveredQuickly int64 // Recovered within target time
+	DevicesRecoveredSlow    int64 // Recovered after target time
+	DevicesFailedToRecover  int64
+	AverageRecoveryTime     time.Duration
+	ReconnectionStormPeak   int64 // Peak concurrent reconnections
 }
 
 // ReconnectionStormMetrics tracks reconnection storm characteristics
@@ -112,12 +112,12 @@ type ReconnectionStormMetrics struct {
 
 // ServerLoadMetrics tracks server load during reconnection storms
 type ServerLoadMetrics struct {
-	CPUUsage          float64
-	MemoryUsage       float64
-	ConnectionCount   int64
-	RequestRate       float64
-	ErrorRate         float64
-	ResponseTime      time.Duration
+	CPUUsage        float64
+	MemoryUsage     float64
+	ConnectionCount int64
+	RequestRate     float64
+	ErrorRate       float64
+	ResponseTime    time.Duration
 }
 
 // NewNetworkResilienceScenario creates a new network resilience scenario
@@ -291,8 +291,6 @@ func (s *NetworkResilienceScenario) calculateDeviceProfiles() map[framework.Devi
 
 // executeNetworkEvents runs all configured network events
 func (s *NetworkResilienceScenario) executeNetworkEvents(ctx context.Context, fleet *framework.FleetSimulator) error {
-	testStartTime := time.Now()
-
 	// Schedule network events
 	for i, event := range s.config.NetworkEvents {
 		eventIndex := i
@@ -372,7 +370,6 @@ func (s *NetworkResilienceScenario) executeNetworkEvent(ctx context.Context, fle
 			}
 
 			// Start recovery
-			recoveryStart := time.Now()
 			recovered := s.simulateNetworkRecovery(ctx, d, event)
 
 			if recovered {
@@ -393,7 +390,7 @@ func (s *NetworkResilienceScenario) executeNetworkEvent(ctx context.Context, fle
 				recoveryMu.Unlock()
 
 				s.logger.Debug("Device recovered from network event",
-					"device_id", d.config.DeviceID,
+					"device_id", d.Config.DeviceID,
 					"recovery_time", recoveryTime,
 					"event_type", event.Type,
 				)
@@ -405,7 +402,7 @@ func (s *NetworkResilienceScenario) executeNetworkEvent(ctx context.Context, fle
 				recoveryMu.Unlock()
 
 				s.logger.Warn("Device failed to recover from network event",
-					"device_id", d.config.DeviceID,
+					"device_id", d.Config.DeviceID,
 					"event_type", event.Type,
 				)
 			}
@@ -448,17 +445,17 @@ func (s *NetworkResilienceScenario) simulateNetworkDisruption(ctx context.Contex
 	case EventPartition:
 		// Complete network partition - stop the device
 		if err := device.Stop(); err != nil {
-			s.logger.Error("Failed to stop device for partition simulation", "device_id", device.config.DeviceID, "error", err)
+			s.logger.Error("Failed to stop device for partition simulation", "device_id", device.Config.DeviceID, "error", err)
 		}
 
 	case EventLatency, EventPacketLoss, EventBandwidthLimit:
 		// These would typically be simulated by modifying network behavior
 		// For this simulation, we'll introduce delays in device operations
-		s.logger.Debug("Simulating network degradation", "device_id", device.config.DeviceID, "type", event.Type)
+		s.logger.Debug("Simulating network degradation", "device_id", device.Config.DeviceID, "type", event.Type)
 
 	case EventDNSFailure:
 		// DNS failure simulation
-		s.logger.Debug("Simulating DNS failure", "device_id", device.config.DeviceID)
+		s.logger.Debug("Simulating DNS failure", "device_id", device.Config.DeviceID)
 
 	case EventIntermittent:
 		// Intermittent connectivity - stop and start device randomly
@@ -481,12 +478,12 @@ func (s *NetworkResilienceScenario) simulateIntermittentConnectivity(ctx context
 		if s.randomFloat() < 0.3 { // 30% chance of disconnection
 			if device.IsStarted() {
 				device.Stop()
-				s.logger.Debug("Device disconnected (intermittent)", "device_id", device.config.DeviceID)
+				s.logger.Debug("Device disconnected (intermittent)", "device_id", device.Config.DeviceID)
 			}
 		} else {
 			if !device.IsStarted() {
 				device.Start()
-				s.logger.Debug("Device reconnected (intermittent)", "device_id", device.config.DeviceID)
+				s.logger.Debug("Device reconnected (intermittent)", "device_id", device.Config.DeviceID)
 			}
 		}
 
@@ -516,14 +513,14 @@ func (s *NetworkResilienceScenario) simulateNetworkRecovery(ctx context.Context,
 
 		// Simulate reconnection attempt
 		s.logger.Debug("Attempting device reconnection",
-			"device_id", device.config.DeviceID,
+			"device_id", device.Config.DeviceID,
 			"attempt", attempt,
 			"max_attempts", maxAttempts,
 		)
 
 		// Different profiles have different recovery characteristics
 		var successProbability float64
-		switch device.config.Profile {
+		switch device.Config.Profile {
 		case framework.ProfileFull:
 			successProbability = 0.8 // 80% success rate per attempt
 		case framework.ProfileConstrained:
@@ -544,7 +541,7 @@ func (s *NetworkResilienceScenario) simulateNetworkRecovery(ctx context.Context,
 			// Successful reconnection
 			if !device.IsStarted() {
 				if err := device.Start(); err != nil {
-					s.logger.Error("Failed to restart device during recovery", "device_id", device.config.DeviceID, "error", err)
+					s.logger.Error("Failed to restart device during recovery", "device_id", device.Config.DeviceID, "error", err)
 				} else {
 					return true
 				}
@@ -743,26 +740,46 @@ func (s *NetworkResilienceScenario) GetMetrics() NetworkResilienceMetrics {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	// Deep copy
-	metrics := *s.metrics
-
 	// Copy slices
+	var recoveryTimes []time.Duration
 	if s.metrics.RecoveryTimes != nil {
-		metrics.RecoveryTimes = make([]time.Duration, len(s.metrics.RecoveryTimes))
-		copy(metrics.RecoveryTimes, s.metrics.RecoveryTimes)
+		recoveryTimes = make([]time.Duration, len(s.metrics.RecoveryTimes))
+		copy(recoveryTimes, s.metrics.RecoveryTimes)
 	}
 
+	var eventMetrics []NetworkEventMetrics
 	if s.metrics.EventMetrics != nil {
-		metrics.EventMetrics = make([]NetworkEventMetrics, len(s.metrics.EventMetrics))
-		copy(metrics.EventMetrics, s.metrics.EventMetrics)
+		eventMetrics = make([]NetworkEventMetrics, len(s.metrics.EventMetrics))
+		copy(eventMetrics, s.metrics.EventMetrics)
 	}
 
+	var reconnectionStorms []ReconnectionStormMetrics
 	if s.metrics.ReconnectionStorms != nil {
-		metrics.ReconnectionStorms = make([]ReconnectionStormMetrics, len(s.metrics.ReconnectionStorms))
-		copy(metrics.ReconnectionStorms, s.metrics.ReconnectionStorms)
+		reconnectionStorms = make([]ReconnectionStormMetrics, len(s.metrics.ReconnectionStorms))
+		copy(reconnectionStorms, s.metrics.ReconnectionStorms)
 	}
 
-	return metrics
+	// Deep copy without mutex
+	return NetworkResilienceMetrics{
+		StartTime:               s.metrics.StartTime,
+		EndTime:                 s.metrics.EndTime,
+		TotalDevices:            s.metrics.TotalDevices,
+		DevicesAffected:         s.metrics.DevicesAffected,
+		DevicesRecovered:        s.metrics.DevicesRecovered,
+		DevicesFailedToRecover:  s.metrics.DevicesFailedToRecover,
+		NetworkEventsExecuted:   s.metrics.NetworkEventsExecuted,
+		ReconnectionAttempts:    s.metrics.ReconnectionAttempts,
+		SuccessfulReconnections: s.metrics.SuccessfulReconnections,
+		FailedReconnections:     s.metrics.FailedReconnections,
+		AverageRecoveryTime:     s.metrics.AverageRecoveryTime,
+		P95RecoveryTime:         s.metrics.P95RecoveryTime,
+		P99RecoveryTime:         s.metrics.P99RecoveryTime,
+		RecoveryTimes:           recoveryTimes,
+		EventMetrics:            eventMetrics,
+		ReconnectionStorms:      reconnectionStorms,
+		MaxConcurrentReconnects: s.metrics.MaxConcurrentReconnects,
+		NetworkHealthScore:      s.metrics.NetworkHealthScore,
+	}
 }
 
 // GetName returns the scenario name

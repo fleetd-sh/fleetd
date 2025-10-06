@@ -13,15 +13,15 @@ import (
 
 // FleetSimulator manages multiple virtual devices
 type FleetSimulator struct {
-	devices        map[string]*VirtualDevice
-	mu             sync.RWMutex
-	ctx            context.Context
-	cancel         context.CancelFunc
-	wg             sync.WaitGroup
-	config         *FleetConfig
-	metrics        *FleetMetrics
-	eventChan      chan Event
-	logger         *slog.Logger
+	devices   map[string]*VirtualDevice
+	mu        sync.RWMutex
+	ctx       context.Context
+	cancel    context.CancelFunc
+	wg        sync.WaitGroup
+	config    *FleetConfig
+	metrics   *FleetMetrics
+	eventChan chan Event
+	logger    *slog.Logger
 }
 
 // FleetConfig defines the configuration for fleet simulation
@@ -41,18 +41,18 @@ type FleetConfig struct {
 
 // FleetMetrics tracks overall fleet performance
 type FleetMetrics struct {
-	TotalDevices      int64
-	OnlineDevices     int64
-	OfflineDevices    int64
-	ErrorDevices      int64
-	UpdatingDevices   int64
-	TotalRequests     int64
+	TotalDevices       int64
+	OnlineDevices      int64
+	OfflineDevices     int64
+	ErrorDevices       int64
+	UpdatingDevices    int64
+	TotalRequests      int64
 	SuccessfulRequests int64
-	FailedRequests    int64
-	TotalMetricsSent  int64
-	TotalErrors       int64
-	StartTime         time.Time
-	mu                sync.RWMutex
+	FailedRequests     int64
+	TotalMetricsSent   int64
+	TotalErrors        int64
+	StartTime          time.Time
+	mu                 sync.RWMutex
 }
 
 // Event represents a fleet simulation event
@@ -158,7 +158,7 @@ func (fs *FleetSimulator) Stop() error {
 			defer func() { <-sem }()
 
 			if err := d.Stop(); err != nil {
-				fs.logger.Error("Failed to stop device", "device_id", d.config.DeviceID, "error", err)
+				fs.logger.Error("Failed to stop device", "device_id", d.Config.DeviceID, "error", err)
 			}
 		}(device)
 	}
@@ -183,13 +183,13 @@ func (fs *FleetSimulator) createDevices() []*VirtualDevice {
 		for i := 0; i < count; i++ {
 			deviceID := uuid.New().String()
 			deviceConfig := &DeviceConfig{
-				Profile:   profile,
-				DeviceID:  deviceID,
-				Name:      fmt.Sprintf("device-%s-%d", profile, i),
-				Type:      string(profile),
-				ServerURL: fs.config.ServerURL,
+				Profile:    profile,
+				DeviceID:   deviceID,
+				Name:       fmt.Sprintf("device-%s-%d", profile, i),
+				Type:       string(profile),
+				ServerURL:  fs.config.ServerURL,
 				TLSEnabled: fs.config.TLSEnabled,
-				AuthToken: fs.config.AuthToken,
+				AuthToken:  fs.config.AuthToken,
 			}
 
 			device := NewVirtualDevice(deviceConfig)
@@ -252,11 +252,11 @@ func (fs *FleetSimulator) startDevicesInBatches(devices []*VirtualDevice) error 
 				defer func() { <-sem }()
 
 				if err := d.Start(); err != nil {
-					fs.logger.Error("Failed to start device", "device_id", d.config.DeviceID, "error", err)
+					fs.logger.Error("Failed to start device", "device_id", d.Config.DeviceID, "error", err)
 					atomic.AddInt64(&fs.metrics.FailedRequests, 1)
 					fs.emitEvent(Event{
 						Type:      EventDeviceError,
-						DeviceID:  d.config.DeviceID,
+						DeviceID:  d.Config.DeviceID,
 						Message:   fmt.Sprintf("Failed to start device: %v", err),
 						Timestamp: time.Now(),
 					})
@@ -265,7 +265,7 @@ func (fs *FleetSimulator) startDevicesInBatches(devices []*VirtualDevice) error 
 					atomic.AddInt64(&fs.metrics.SuccessfulRequests, 1)
 					fs.emitEvent(Event{
 						Type:      EventDeviceStarted,
-						DeviceID:  d.config.DeviceID,
+						DeviceID:  d.Config.DeviceID,
 						Message:   "Device started successfully",
 						Timestamp: time.Now(),
 					})
@@ -326,7 +326,7 @@ func (fs *FleetSimulator) collectMetrics() {
 	fs.mu.RUnlock()
 
 	var online, offline, error_count, updating int64
-	var totalRequests, successfulRequests, failedRequests, metricsSent, totalErrors int64
+	var totalRequests, metricsSent, totalErrors int64
 
 	for _, device := range devices {
 		state := device.GetState()
@@ -370,10 +370,22 @@ func (fs *FleetSimulator) emitEvent(event Event) {
 }
 
 // GetMetrics returns a copy of current fleet metrics
-func (fs *FleetSimulator) GetMetrics() FleetMetrics {
+func (fs *FleetSimulator) GetMetrics() *FleetMetrics {
 	fs.metrics.mu.RLock()
 	defer fs.metrics.mu.RUnlock()
-	return *fs.metrics
+	return &FleetMetrics{
+		TotalDevices:       fs.metrics.TotalDevices,
+		OnlineDevices:      fs.metrics.OnlineDevices,
+		OfflineDevices:     fs.metrics.OfflineDevices,
+		ErrorDevices:       fs.metrics.ErrorDevices,
+		UpdatingDevices:    fs.metrics.UpdatingDevices,
+		TotalRequests:      fs.metrics.TotalRequests,
+		SuccessfulRequests: fs.metrics.SuccessfulRequests,
+		FailedRequests:     fs.metrics.FailedRequests,
+		TotalMetricsSent:   fs.metrics.TotalMetricsSent,
+		TotalErrors:        fs.metrics.TotalErrors,
+		StartTime:          fs.metrics.StartTime,
+	}
 }
 
 // GetEvents returns the event channel for consuming simulation events
@@ -415,7 +427,7 @@ func (fs *FleetSimulator) ScaleFleet(profileCounts map[DeviceProfile]int) error 
 	currentCounts := make(map[DeviceProfile]int)
 	fs.mu.RLock()
 	for _, device := range fs.devices {
-		currentCounts[device.config.Profile]++
+		currentCounts[device.Config.Profile]++
 	}
 	fs.mu.RUnlock()
 
@@ -430,13 +442,13 @@ func (fs *FleetSimulator) ScaleFleet(profileCounts map[DeviceProfile]int) error 
 			for i := 0; i < toAdd; i++ {
 				deviceID := uuid.New().String()
 				deviceConfig := &DeviceConfig{
-					Profile:   profile,
-					DeviceID:  deviceID,
-					Name:      fmt.Sprintf("device-%s-scaled-%d", profile, i),
-					Type:      string(profile),
-					ServerURL: fs.config.ServerURL,
+					Profile:    profile,
+					DeviceID:   deviceID,
+					Name:       fmt.Sprintf("device-%s-scaled-%d", profile, i),
+					Type:       string(profile),
+					ServerURL:  fs.config.ServerURL,
 					TLSEnabled: fs.config.TLSEnabled,
-					AuthToken: fs.config.AuthToken,
+					AuthToken:  fs.config.AuthToken,
 				}
 
 				device := NewVirtualDevice(deviceConfig)
@@ -466,7 +478,7 @@ func (fs *FleetSimulator) ScaleFleet(profileCounts map[DeviceProfile]int) error 
 			removed := 0
 			fs.mu.RLock()
 			for _, device := range fs.devices {
-				if device.config.Profile == profile && removed < toRemove {
+				if device.Config.Profile == profile && removed < toRemove {
 					devicesToRemove = append(devicesToRemove, device)
 					removed++
 				}
@@ -477,11 +489,11 @@ func (fs *FleetSimulator) ScaleFleet(profileCounts map[DeviceProfile]int) error 
 			for _, device := range devicesToRemove {
 				go func(d *VirtualDevice) {
 					if err := d.Stop(); err != nil {
-						fs.logger.Error("Failed to stop device during scaling", "device_id", d.config.DeviceID, "error", err)
+						fs.logger.Error("Failed to stop device during scaling", "device_id", d.Config.DeviceID, "error", err)
 					}
 
 					fs.mu.Lock()
-					delete(fs.devices, d.config.DeviceID)
+					delete(fs.devices, d.Config.DeviceID)
 					fs.mu.Unlock()
 
 					atomic.AddInt64(&fs.metrics.TotalDevices, -1)
@@ -507,7 +519,7 @@ func (fs *FleetSimulator) SimulateNetworkPartition(percentage float64, duration 
 		go func(d *VirtualDevice) {
 			// Simulate by stopping the device temporarily
 			if err := d.Stop(); err != nil {
-				fs.logger.Error("Failed to stop device for partition simulation", "device_id", d.config.DeviceID, "error", err)
+				fs.logger.Error("Failed to stop device for partition simulation", "device_id", d.Config.DeviceID, "error", err)
 				return
 			}
 
@@ -519,7 +531,7 @@ func (fs *FleetSimulator) SimulateNetworkPartition(percentage float64, duration 
 
 			// Restart the device
 			if err := d.Start(); err != nil {
-				fs.logger.Error("Failed to restart device after partition", "device_id", d.config.DeviceID, "error", err)
+				fs.logger.Error("Failed to restart device after partition", "device_id", d.Config.DeviceID, "error", err)
 				return
 			}
 
@@ -536,7 +548,7 @@ func (fs *FleetSimulator) GetDevicesByProfile(profile DeviceProfile) []*VirtualD
 
 	var devices []*VirtualDevice
 	for _, device := range fs.devices {
-		if device.config.Profile == profile {
+		if device.Config.Profile == profile {
 			devices = append(devices, device)
 		}
 	}

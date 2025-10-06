@@ -184,7 +184,7 @@ func TestCLIProgrammatic(t *testing.T) {
 		output := captureOutput(func() {
 			cmd.Execute()
 		})
-		assert.Contains(t, output, "Fleet device management")
+		assert.Contains(t, output, "fleetctl is a unified CLI for managing fleetd infrastructure")
 	})
 
 	t.Run("VersionCommand", func(t *testing.T) {
@@ -192,7 +192,8 @@ func TestCLIProgrammatic(t *testing.T) {
 			os.Args = []string{"fleetctl", "version"}
 			cmd.Execute()
 		})
-		assert.Contains(t, output, "fleetctl version")
+		assert.Contains(t, output, "fleetctl")
+		assert.Contains(t, output, "Version:")
 	})
 }
 
@@ -201,7 +202,7 @@ func TestCLIProgrammatic(t *testing.T) {
 func startTestServer(t *testing.T) (*httptest.Server, string) {
 	// Create test database
 	db := setupTestDatabase(t)
-	t.Cleanup(func() { db.Close() })
+	t.Cleanup(func() { safeCloseDB(db) })
 
 	// Create services
 	dbWrapper := &database.DB{DB: db}

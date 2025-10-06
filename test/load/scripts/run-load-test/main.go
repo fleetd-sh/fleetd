@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -21,10 +20,10 @@ import (
 // TestConfig holds the configuration for a load test
 type TestConfig struct {
 	// Basic configuration
-	ServerURL        string
-	TotalDevices     int
-	TestDuration     time.Duration
-	OutputDir        string
+	ServerURL    string
+	TotalDevices int
+	TestDuration time.Duration
+	OutputDir    string
 
 	// Device profiles
 	FullDevices        int
@@ -32,24 +31,24 @@ type TestConfig struct {
 	MinimalDevices     int
 
 	// Scenario selection
-	RunOnboarding     bool
-	RunSteadyState    bool
-	RunUpdateCampaign bool
+	RunOnboarding        bool
+	RunSteadyState       bool
+	RunUpdateCampaign    bool
 	RunNetworkResilience bool
 
 	// Advanced options
-	DashboardPort    int
-	EnableDashboard  bool
-	ReportFormats    []reports.ReportFormat
-	MetricsInterval  time.Duration
-	Verbose          bool
-	AuthToken        string
-	TLSEnabled       bool
+	DashboardPort   int
+	EnableDashboard bool
+	ReportFormats   []reports.ReportFormat
+	MetricsInterval time.Duration
+	Verbose         bool
+	AuthToken       string
+	TLSEnabled      bool
 
 	// Performance targets
-	TargetRPS        float64
-	MaxLatency       time.Duration
-	MinSuccessRate   float64
+	TargetRPS      float64
+	MaxLatency     time.Duration
+	MinSuccessRate float64
 }
 
 func main() {
@@ -326,7 +325,7 @@ func runOnboardingScenario(ctx context.Context, config *TestConfig, fleet *frame
 		"description": scenario.GetDescription(),
 		"duration":    duration,
 		"success":     err == nil,
-		"metrics":     metrics,
+		"metrics":     &metrics,
 		"error":       err,
 	}
 
@@ -341,16 +340,16 @@ func runOnboardingScenario(ctx context.Context, config *TestConfig, fleet *frame
 
 func runSteadyStateScenario(ctx context.Context, config *TestConfig, fleet *framework.FleetSimulator, results map[string]interface{}) error {
 	scenarioConfig := &scenarios.SteadyStateConfig{
-		TotalDevices:       config.TotalDevices,
-		ServerURL:          config.ServerURL,
-		TestDuration:       config.TestDuration / 2, // Use 1/2 of total time
-		WarmupDuration:     1 * time.Minute,
-		MetricsTargetRate:  int64(config.TargetRPS / 2), // Metrics are subset of total requests
+		TotalDevices:        config.TotalDevices,
+		ServerURL:           config.ServerURL,
+		TestDuration:        config.TestDuration / 2, // Use 1/2 of total time
+		WarmupDuration:      1 * time.Minute,
+		MetricsTargetRate:   int64(config.TargetRPS / 2), // Metrics are subset of total requests
 		HeartbeatTargetRate: int64(config.TargetRPS / 4), // Heartbeats are less frequent
-		MaxErrorRate:       1.0 - config.MinSuccessRate,
-		MaxLatency:         config.MaxLatency,
-		AuthToken:          config.AuthToken,
-		TLSEnabled:         config.TLSEnabled,
+		MaxErrorRate:        1.0 - config.MinSuccessRate,
+		MaxLatency:          config.MaxLatency,
+		AuthToken:           config.AuthToken,
+		TLSEnabled:          config.TLSEnabled,
 	}
 
 	scenario := scenarios.NewSteadyStateScenario(scenarioConfig)
@@ -365,7 +364,7 @@ func runSteadyStateScenario(ctx context.Context, config *TestConfig, fleet *fram
 		"description": scenario.GetDescription(),
 		"duration":    duration,
 		"success":     err == nil,
-		"metrics":     metrics,
+		"metrics":     &metrics,
 		"error":       err,
 	}
 
@@ -380,17 +379,17 @@ func runSteadyStateScenario(ctx context.Context, config *TestConfig, fleet *fram
 
 func runUpdateCampaignScenario(ctx context.Context, config *TestConfig, fleet *framework.FleetSimulator, results map[string]interface{}) error {
 	scenarioConfig := &scenarios.UpdateCampaignConfig{
-		TotalDevices:     config.TotalDevices,
-		ServerURL:        config.ServerURL,
-		TestDuration:     config.TestDuration / 3, // Use 1/3 of total time
-		UpdateBatchSize:  25,
+		TotalDevices:        config.TotalDevices,
+		ServerURL:           config.ServerURL,
+		TestDuration:        config.TestDuration / 3, // Use 1/3 of total time
+		UpdateBatchSize:     25,
 		UpdateBatchInterval: 1 * time.Minute,
-		UpdateSuccessRate: config.MinSuccessRate,
-		UpdateDuration:   2 * time.Minute,
-		RollbackThreshold: 0.2,
-		CanaryPercentage: 0.05,
-		AuthToken:        config.AuthToken,
-		TLSEnabled:       config.TLSEnabled,
+		UpdateSuccessRate:   config.MinSuccessRate,
+		UpdateDuration:      2 * time.Minute,
+		RollbackThreshold:   0.2,
+		CanaryPercentage:    0.05,
+		AuthToken:           config.AuthToken,
+		TLSEnabled:          config.TLSEnabled,
 	}
 
 	scenario := scenarios.NewUpdateCampaignScenario(scenarioConfig)
@@ -405,7 +404,7 @@ func runUpdateCampaignScenario(ctx context.Context, config *TestConfig, fleet *f
 		"description": scenario.GetDescription(),
 		"duration":    duration,
 		"success":     err == nil,
-		"metrics":     metrics,
+		"metrics":     &metrics,
 		"error":       err,
 	}
 
@@ -420,13 +419,13 @@ func runUpdateCampaignScenario(ctx context.Context, config *TestConfig, fleet *f
 
 func runNetworkResilienceScenario(ctx context.Context, config *TestConfig, fleet *framework.FleetSimulator, results map[string]interface{}) error {
 	scenarioConfig := &scenarios.NetworkResilienceConfig{
-		TotalDevices:        config.TotalDevices,
-		ServerURL:           config.ServerURL,
-		TestDuration:        config.TestDuration / 3, // Use 1/3 of total time
-		RecoveryTargetTime:  30 * time.Second,
+		TotalDevices:         config.TotalDevices,
+		ServerURL:            config.ServerURL,
+		TestDuration:         config.TestDuration / 3, // Use 1/3 of total time
+		RecoveryTargetTime:   30 * time.Second,
 		MaxReconnectAttempts: 5,
-		AuthToken:           config.AuthToken,
-		TLSEnabled:          config.TLSEnabled,
+		AuthToken:            config.AuthToken,
+		TLSEnabled:           config.TLSEnabled,
 	}
 
 	scenario := scenarios.NewNetworkResilienceScenario(scenarioConfig)
@@ -441,7 +440,7 @@ func runNetworkResilienceScenario(ctx context.Context, config *TestConfig, fleet
 		"description": scenario.GetDescription(),
 		"duration":    duration,
 		"success":     err == nil,
-		"metrics":     metrics,
+		"metrics":     &metrics,
 		"error":       err,
 	}
 

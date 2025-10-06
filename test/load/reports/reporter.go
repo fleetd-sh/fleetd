@@ -7,10 +7,8 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log/slog"
-	"math"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
@@ -19,9 +17,9 @@ import (
 
 // Reporter generates performance reports from load test results
 type Reporter struct {
-	logger     *slog.Logger
-	outputDir  string
-	templates  map[string]*template.Template
+	logger    *slog.Logger
+	outputDir string
+	templates map[string]*template.Template
 }
 
 // ReportConfig configures report generation
@@ -44,131 +42,131 @@ const (
 
 // TestReport represents a comprehensive test report
 type TestReport struct {
-	Metadata        ReportMetadata        `json:"metadata"`
-	ExecutiveSummary ExecutiveSummary     `json:"executive_summary"`
+	Metadata          ReportMetadata      `json:"metadata"`
+	ExecutiveSummary  ExecutiveSummary    `json:"executive_summary"`
 	TestConfiguration TestConfiguration   `json:"test_configuration"`
-	Results         TestResults          `json:"results"`
-	Performance     PerformanceAnalysis  `json:"performance"`
-	Scenarios       []ScenarioReport     `json:"scenarios"`
-	SystemMetrics   SystemMetricsReport  `json:"system_metrics"`
-	Recommendations []Recommendation     `json:"recommendations"`
-	RawData         *RawDataReport       `json:"raw_data,omitempty"`
+	Results           TestResults         `json:"results"`
+	Performance       PerformanceAnalysis `json:"performance"`
+	Scenarios         []ScenarioReport    `json:"scenarios"`
+	SystemMetrics     SystemMetricsReport `json:"system_metrics"`
+	Recommendations   []Recommendation    `json:"recommendations"`
+	RawData           *RawDataReport      `json:"raw_data,omitempty"`
 }
 
 // ReportMetadata contains report metadata
 type ReportMetadata struct {
-	GeneratedAt    time.Time `json:"generated_at"`
-	Generator      string    `json:"generator"`
-	Version        string    `json:"version"`
-	TestName       string    `json:"test_name"`
-	TestDuration   time.Duration `json:"test_duration"`
-	ReportFormat   string    `json:"report_format"`
+	GeneratedAt  time.Time     `json:"generated_at"`
+	Generator    string        `json:"generator"`
+	Version      string        `json:"version"`
+	TestName     string        `json:"test_name"`
+	TestDuration time.Duration `json:"test_duration"`
+	ReportFormat string        `json:"report_format"`
 }
 
 // ExecutiveSummary provides a high-level overview
 type ExecutiveSummary struct {
-	TestPassed       bool      `json:"test_passed"`
-	OverallScore     float64   `json:"overall_score"`
-	KeyMetrics       []Metric  `json:"key_metrics"`
-	CriticalIssues   []Issue   `json:"critical_issues"`
-	PerformanceGrade string    `json:"performance_grade"`
-	Summary          string    `json:"summary"`
+	TestPassed       bool     `json:"test_passed"`
+	OverallScore     float64  `json:"overall_score"`
+	KeyMetrics       []Metric `json:"key_metrics"`
+	CriticalIssues   []Issue  `json:"critical_issues"`
+	PerformanceGrade string   `json:"performance_grade"`
+	Summary          string   `json:"summary"`
 }
 
 // TestConfiguration describes the test setup
 type TestConfiguration struct {
-	TotalDevices      int                                    `json:"total_devices"`
-	DeviceProfiles    map[framework.DeviceProfile]int       `json:"device_profiles"`
-	TestScenarios     []string                              `json:"test_scenarios"`
-	TestDuration      time.Duration                         `json:"test_duration"`
-	ServerConfig      ServerConfiguration                   `json:"server_config"`
-	LoadParameters    LoadParameters                        `json:"load_parameters"`
+	TotalDevices   int                             `json:"total_devices"`
+	DeviceProfiles map[framework.DeviceProfile]int `json:"device_profiles"`
+	TestScenarios  []string                        `json:"test_scenarios"`
+	TestDuration   time.Duration                   `json:"test_duration"`
+	ServerConfig   ServerConfiguration             `json:"server_config"`
+	LoadParameters LoadParameters                  `json:"load_parameters"`
 }
 
 // ServerConfiguration describes the server under test
 type ServerConfiguration struct {
-	URL           string            `json:"url"`
-	TLSEnabled    bool             `json:"tls_enabled"`
-	Resources     ResourceLimits   `json:"resources"`
-	Environment   map[string]string `json:"environment"`
+	URL         string            `json:"url"`
+	TLSEnabled  bool              `json:"tls_enabled"`
+	Resources   ResourceLimits    `json:"resources"`
+	Environment map[string]string `json:"environment"`
 }
 
 // ResourceLimits describes resource constraints
 type ResourceLimits struct {
-	CPUCores    int    `json:"cpu_cores"`
-	MemoryGB    int    `json:"memory_gb"`
-	NetworkMbps int    `json:"network_mbps"`
+	CPUCores    int `json:"cpu_cores"`
+	MemoryGB    int `json:"memory_gb"`
+	NetworkMbps int `json:"network_mbps"`
 }
 
 // LoadParameters describes load test parameters
 type LoadParameters struct {
-	RampUpDuration   time.Duration `json:"ramp_up_duration"`
+	RampUpDuration      time.Duration `json:"ramp_up_duration"`
 	SteadyStateDuration time.Duration `json:"steady_state_duration"`
-	RampDownDuration time.Duration `json:"ramp_down_duration"`
-	TargetRPS        float64       `json:"target_rps"`
-	MaxConcurrency   int           `json:"max_concurrency"`
+	RampDownDuration    time.Duration `json:"ramp_down_duration"`
+	TargetRPS           float64       `json:"target_rps"`
+	MaxConcurrency      int           `json:"max_concurrency"`
 }
 
 // TestResults contains overall test results
 type TestResults struct {
-	TotalRequests      int64         `json:"total_requests"`
-	SuccessfulRequests int64         `json:"successful_requests"`
-	FailedRequests     int64         `json:"failed_requests"`
-	SuccessRate        float64       `json:"success_rate"`
-	AverageThroughput  float64       `json:"average_throughput"`
-	PeakThroughput     float64       `json:"peak_throughput"`
-	TotalDataTransfer  uint64        `json:"total_data_transfer"`
-	TestOutcome        TestOutcome   `json:"test_outcome"`
+	TotalRequests      int64       `json:"total_requests"`
+	SuccessfulRequests int64       `json:"successful_requests"`
+	FailedRequests     int64       `json:"failed_requests"`
+	SuccessRate        float64     `json:"success_rate"`
+	AverageThroughput  float64     `json:"average_throughput"`
+	PeakThroughput     float64     `json:"peak_throughput"`
+	TotalDataTransfer  uint64      `json:"total_data_transfer"`
+	TestOutcome        TestOutcome `json:"test_outcome"`
 }
 
 // TestOutcome describes the overall test result
 type TestOutcome struct {
-	Status           string   `json:"status"`           // "passed", "failed", "warning"
-	PassedChecks     int      `json:"passed_checks"`
-	FailedChecks     int      `json:"failed_checks"`
-	WarningChecks    int      `json:"warning_checks"`
-	FailureReasons   []string `json:"failure_reasons"`
+	Status         string   `json:"status"` // "passed", "failed", "warning"
+	PassedChecks   int      `json:"passed_checks"`
+	FailedChecks   int      `json:"failed_checks"`
+	WarningChecks  int      `json:"warning_checks"`
+	FailureReasons []string `json:"failure_reasons"`
 }
 
 // PerformanceAnalysis contains detailed performance analysis
 type PerformanceAnalysis struct {
-	LatencyAnalysis     LatencyAnalysis    `json:"latency_analysis"`
-	ThroughputAnalysis  ThroughputAnalysis `json:"throughput_analysis"`
-	ErrorAnalysis       ErrorAnalysis      `json:"error_analysis"`
-	ResourceAnalysis    ResourceAnalysis   `json:"resource_analysis"`
+	LatencyAnalysis     LatencyAnalysis     `json:"latency_analysis"`
+	ThroughputAnalysis  ThroughputAnalysis  `json:"throughput_analysis"`
+	ErrorAnalysis       ErrorAnalysis       `json:"error_analysis"`
+	ResourceAnalysis    ResourceAnalysis    `json:"resource_analysis"`
 	ScalabilityAnalysis ScalabilityAnalysis `json:"scalability_analysis"`
 }
 
 // LatencyAnalysis contains latency performance analysis
 type LatencyAnalysis struct {
-	Mean         time.Duration `json:"mean"`
-	Median       time.Duration `json:"median"`
-	P95          time.Duration `json:"p95"`
-	P99          time.Duration `json:"p99"`
-	P999         time.Duration `json:"p999"`
-	Max          time.Duration `json:"max"`
-	Min          time.Duration `json:"min"`
-	StdDev       time.Duration `json:"std_dev"`
+	Mean         time.Duration   `json:"mean"`
+	Median       time.Duration   `json:"median"`
+	P95          time.Duration   `json:"p95"`
+	P99          time.Duration   `json:"p99"`
+	P999         time.Duration   `json:"p999"`
+	Max          time.Duration   `json:"max"`
+	Min          time.Duration   `json:"min"`
+	StdDev       time.Duration   `json:"std_dev"`
 	Distribution []LatencyBucket `json:"distribution"`
 }
 
 // LatencyBucket represents a latency distribution bucket
 type LatencyBucket struct {
-	Range string  `json:"range"`
-	Count int64   `json:"count"`
+	Range      string  `json:"range"`
+	Count      int64   `json:"count"`
 	Percentage float64 `json:"percentage"`
 }
 
 // ThroughputAnalysis contains throughput performance analysis
 type ThroughputAnalysis struct {
-	Mean         float64            `json:"mean"`
-	Median       float64            `json:"median"`
-	P95          float64            `json:"p95"`
-	Max          float64            `json:"max"`
-	Min          float64            `json:"min"`
-	Stability    float64            `json:"stability"`    // Coefficient of variation
-	Trend        string             `json:"trend"`        // "increasing", "decreasing", "stable"
-	TimeSeries   []ThroughputPoint  `json:"time_series"`
+	Mean       float64           `json:"mean"`
+	Median     float64           `json:"median"`
+	P95        float64           `json:"p95"`
+	Max        float64           `json:"max"`
+	Min        float64           `json:"min"`
+	Stability  float64           `json:"stability"` // Coefficient of variation
+	Trend      string            `json:"trend"`     // "increasing", "decreasing", "stable"
+	TimeSeries []ThroughputPoint `json:"time_series"`
 }
 
 // ThroughputPoint represents a throughput measurement point
@@ -179,12 +177,12 @@ type ThroughputPoint struct {
 
 // ErrorAnalysis contains error analysis
 type ErrorAnalysis struct {
-	TotalErrors      int64                  `json:"total_errors"`
-	ErrorRate        float64                `json:"error_rate"`
-	ErrorsByType     map[string]int64       `json:"errors_by_type"`
-	ErrorsByTime     []ErrorTimePoint       `json:"errors_by_time"`
-	TopErrors        []ErrorSummary         `json:"top_errors"`
-	ErrorTrend       string                 `json:"error_trend"`
+	TotalErrors  int64            `json:"total_errors"`
+	ErrorRate    float64          `json:"error_rate"`
+	ErrorsByType map[string]int64 `json:"errors_by_type"`
+	ErrorsByTime []ErrorTimePoint `json:"errors_by_time"`
+	TopErrors    []ErrorSummary   `json:"top_errors"`
+	ErrorTrend   string           `json:"error_trend"`
 }
 
 // ErrorTimePoint represents errors at a point in time
@@ -196,31 +194,31 @@ type ErrorTimePoint struct {
 
 // ErrorSummary summarizes a specific error type
 type ErrorSummary struct {
-	Type        string  `json:"type"`
-	Count       int64   `json:"count"`
-	Percentage  float64 `json:"percentage"`
+	Type        string    `json:"type"`
+	Count       int64     `json:"count"`
+	Percentage  float64   `json:"percentage"`
 	FirstSeen   time.Time `json:"first_seen"`
 	LastSeen    time.Time `json:"last_seen"`
-	Description string  `json:"description"`
+	Description string    `json:"description"`
 }
 
 // ResourceAnalysis contains system resource analysis
 type ResourceAnalysis struct {
-	CPU         ResourceMetric `json:"cpu"`
-	Memory      ResourceMetric `json:"memory"`
-	Network     ResourceMetric `json:"network"`
-	Disk        ResourceMetric `json:"disk"`
-	Efficiency  EfficiencyMetrics `json:"efficiency"`
+	CPU        ResourceMetric    `json:"cpu"`
+	Memory     ResourceMetric    `json:"memory"`
+	Network    ResourceMetric    `json:"network"`
+	Disk       ResourceMetric    `json:"disk"`
+	Efficiency EfficiencyMetrics `json:"efficiency"`
 }
 
 // ResourceMetric represents resource utilization metrics
 type ResourceMetric struct {
-	Average     float64  `json:"average"`
-	Peak        float64  `json:"peak"`
-	P95         float64  `json:"p95"`
-	Efficiency  float64  `json:"efficiency"`
-	Bottleneck  bool     `json:"bottleneck"`
-	TimeSeries  []DataPoint `json:"time_series"`
+	Average    float64     `json:"average"`
+	Peak       float64     `json:"peak"`
+	P95        float64     `json:"p95"`
+	Efficiency float64     `json:"efficiency"`
+	Bottleneck bool        `json:"bottleneck"`
+	TimeSeries []DataPoint `json:"time_series"`
 }
 
 // DataPoint represents a single metric data point
@@ -231,17 +229,17 @@ type DataPoint struct {
 
 // EfficiencyMetrics contains resource efficiency metrics
 type EfficiencyMetrics struct {
-	Overall        float64 `json:"overall"`
-	CPUEfficiency  float64 `json:"cpu_efficiency"`
-	MemoryEfficiency float64 `json:"memory_efficiency"`
+	Overall           float64 `json:"overall"`
+	CPUEfficiency     float64 `json:"cpu_efficiency"`
+	MemoryEfficiency  float64 `json:"memory_efficiency"`
 	NetworkEfficiency float64 `json:"network_efficiency"`
 }
 
 // ScalabilityAnalysis contains scalability analysis
 type ScalabilityAnalysis struct {
-	MaxDevicesSupported  int     `json:"max_devices_supported"`
-	ScalabilityFactor    float64 `json:"scalability_factor"`
-	BottleneckComponents []string `json:"bottleneck_components"`
+	MaxDevicesSupported    int      `json:"max_devices_supported"`
+	ScalabilityFactor      float64  `json:"scalability_factor"`
+	BottleneckComponents   []string `json:"bottleneck_components"`
 	ScalingRecommendations []string `json:"scaling_recommendations"`
 }
 
@@ -259,12 +257,12 @@ type ScenarioReport struct {
 
 // ScenarioResults contains scenario-specific results
 type ScenarioResults struct {
-	Passed          bool      `json:"passed"`
-	SuccessRate     float64   `json:"success_rate"`
-	AverageLatency  time.Duration `json:"average_latency"`
-	ThroughputRate  float64   `json:"throughput_rate"`
-	ErrorCount      int64     `json:"error_count"`
-	KeyMetrics      []Metric  `json:"key_metrics"`
+	Passed         bool          `json:"passed"`
+	SuccessRate    float64       `json:"success_rate"`
+	AverageLatency time.Duration `json:"average_latency"`
+	ThroughputRate float64       `json:"throughput_rate"`
+	ErrorCount     int64         `json:"error_count"`
+	KeyMetrics     []Metric      `json:"key_metrics"`
 }
 
 // SystemMetricsReport contains system-level metrics
@@ -276,30 +274,30 @@ type SystemMetricsReport struct {
 
 // ServerMetrics contains server performance metrics
 type ServerMetrics struct {
-	CPUUsage      ResourceMetric `json:"cpu_usage"`
-	MemoryUsage   ResourceMetric `json:"memory_usage"`
-	DiskUsage     ResourceMetric `json:"disk_usage"`
-	LoadAverage   []float64      `json:"load_average"`
-	ProcessCount  int            `json:"process_count"`
-	ThreadCount   int            `json:"thread_count"`
+	CPUUsage     ResourceMetric `json:"cpu_usage"`
+	MemoryUsage  ResourceMetric `json:"memory_usage"`
+	DiskUsage    ResourceMetric `json:"disk_usage"`
+	LoadAverage  []float64      `json:"load_average"`
+	ProcessCount int            `json:"process_count"`
+	ThreadCount  int            `json:"thread_count"`
 }
 
 // NetworkMetrics contains network performance metrics
 type NetworkMetrics struct {
-	ThroughputIn   ResourceMetric `json:"throughput_in"`
-	ThroughputOut  ResourceMetric `json:"throughput_out"`
-	PacketsIn      int64          `json:"packets_in"`
-	PacketsOut     int64          `json:"packets_out"`
-	Connections    int64          `json:"connections"`
-	Latency        time.Duration  `json:"latency"`
+	ThroughputIn  ResourceMetric `json:"throughput_in"`
+	ThroughputOut ResourceMetric `json:"throughput_out"`
+	PacketsIn     int64          `json:"packets_in"`
+	PacketsOut    int64          `json:"packets_out"`
+	Connections   int64          `json:"connections"`
+	Latency       time.Duration  `json:"latency"`
 }
 
 // DatabaseMetrics contains database performance metrics (if applicable)
 type DatabaseMetrics struct {
-	ConnectionPool  int     `json:"connection_pool"`
-	QueryLatency    time.Duration `json:"query_latency"`
-	Transactions    int64   `json:"transactions"`
-	DeadLocks       int64   `json:"deadlocks"`
+	ConnectionPool int           `json:"connection_pool"`
+	QueryLatency   time.Duration `json:"query_latency"`
+	Transactions   int64         `json:"transactions"`
+	DeadLocks      int64         `json:"deadlocks"`
 }
 
 // Metric represents a key performance metric
@@ -314,19 +312,19 @@ type Metric struct {
 
 // Issue represents a performance issue or concern
 type Issue struct {
-	Level       string    `json:"level"`       // "info", "warning", "error", "critical"
-	Component   string    `json:"component"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Impact      string    `json:"impact"`
-	Recommendation string `json:"recommendation"`
-	Timestamp   time.Time `json:"timestamp"`
+	Level          string    `json:"level"` // "info", "warning", "error", "critical"
+	Component      string    `json:"component"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	Impact         string    `json:"impact"`
+	Recommendation string    `json:"recommendation"`
+	Timestamp      time.Time `json:"timestamp"`
 }
 
 // Recommendation provides performance improvement recommendations
 type Recommendation struct {
 	Category    string   `json:"category"`
-	Priority    string   `json:"priority"`   // "high", "medium", "low"
+	Priority    string   `json:"priority"` // "high", "medium", "low"
 	Title       string   `json:"title"`
 	Description string   `json:"description"`
 	Actions     []string `json:"actions"`
@@ -335,10 +333,10 @@ type Recommendation struct {
 
 // RawDataReport contains raw test data (optional)
 type RawDataReport struct {
-	MetricsData    interface{} `json:"metrics_data,omitempty"`
+	MetricsData    interface{}     `json:"metrics_data,omitempty"`
 	LatencyData    []time.Duration `json:"latency_data,omitempty"`
-	ThroughputData []float64   `json:"throughput_data,omitempty"`
-	ErrorData      []ErrorEvent `json:"error_data,omitempty"`
+	ThroughputData []float64       `json:"throughput_data,omitempty"`
+	ErrorData      []ErrorEvent    `json:"error_data,omitempty"`
 }
 
 // ErrorEvent represents a single error event
@@ -482,8 +480,8 @@ func (r *Reporter) generateTestConfiguration(report *TestReport, fleetSimulator 
 		ServerConfig: ServerConfiguration{
 			TLSEnabled: true,
 			Resources: ResourceLimits{
-				CPUCores: 4,
-				MemoryGB: 8,
+				CPUCores:    4,
+				MemoryGB:    8,
 				NetworkMbps: 1000,
 			},
 			Environment: make(map[string]string),
@@ -557,27 +555,27 @@ func (r *Reporter) generatePerformanceAnalysis(report *TestReport, metricsCollec
 
 		// Latency analysis
 		analysis.LatencyAnalysis = LatencyAnalysis{
-			Mean:   summary.AvgLatency,
-			P95:    summary.P95Latency,
-			P99:    summary.P99Latency,
-			Max:    summary.MaxLatency,
-			Min:    time.Millisecond, // Placeholder
+			Mean: summary.AvgLatency,
+			P95:  summary.P95Latency,
+			P99:  summary.P99Latency,
+			Max:  summary.MaxLatency,
+			Min:  time.Millisecond, // Placeholder
 		}
 
 		// Throughput analysis
 		analysis.ThroughputAnalysis = ThroughputAnalysis{
-			Mean:   summary.AvgThroughput,
-			Max:    summary.PeakThroughput,
-			Min:    summary.AvgThroughput * 0.8, // Placeholder
-			Trend:  "stable",
+			Mean:  summary.AvgThroughput,
+			Max:   summary.PeakThroughput,
+			Min:   summary.AvgThroughput * 0.8, // Placeholder
+			Trend: "stable",
 		}
 
 		// Error analysis
 		analysis.ErrorAnalysis = ErrorAnalysis{
-			TotalErrors: summary.TotalErrors,
-			ErrorRate:   summary.OverallErrorRate,
+			TotalErrors:  summary.TotalErrors,
+			ErrorRate:    summary.OverallErrorRate,
 			ErrorsByType: summary.ErrorDistribution,
-			ErrorTrend:  "stable",
+			ErrorTrend:   "stable",
 		}
 
 		// Resource analysis
@@ -616,7 +614,7 @@ func (r *Reporter) generateScenarioReports(report *TestReport, scenarioResults m
 	var scenarios []ScenarioReport
 
 	// For each scenario result, create a scenario report
-	for name, result := range scenarioResults {
+	for name := range scenarioResults {
 		scenario := ScenarioReport{
 			Name:        name,
 			Description: fmt.Sprintf("Load test scenario: %s", name),
@@ -1069,7 +1067,8 @@ func (r *Reporter) getHTMLTemplate() *template.Template {
 
 	if err != nil {
 		r.logger.Error("Failed to parse HTML template", "error", err)
-		return template.New("fallback").Parse("<html><body><h1>Error: Could not generate report</h1></body></html>")
+		fallback, _ := template.New("fallback").Parse("<html><body><h1>Error: Could not generate report</h1></body></html>")
+		return fallback
 	}
 
 	r.templates["html"] = tmpl

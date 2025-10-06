@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
+	"go.uber.org/zap"
 
 	"fleetd.sh/internal/middleware"
 	"fleetd.sh/internal/security"
@@ -63,18 +64,21 @@ func (s *APITestSuite) setupTestHandler(cfg *server.Config) http.Handler {
 	// Register test endpoints first
 	s.registerEndpoints(mux)
 
-	// Create rate limiter
-	rateLimiter, _ := middleware.NewRateLimiter(middleware.RateLimiterConfig{
-		Rate:       10, // 10 requests per second
-		Burst:      20, // Allow burst of 20
-		Expiration: 60 * time.Second,
-	})
+	// Create logger for rate limiter
+	logger, _ := zap.NewDevelopment()
+
+	// Create rate limiter with very short ban duration for tests
+	rateLimiter := middleware.NewRateLimiter(middleware.RateLimitConfig{
+		RequestsPerSecond: 10,                   // 10 requests per second
+		BurstSize:         20,                   // Allow burst of 20
+		BanDuration:       1 * time.Millisecond, // Very short ban duration for tests
+	}, logger)
 
 	// Apply middleware in reverse order (innermost first)
 	// Note: We handle auth validation in test handlers themselves
 	handler := http.Handler(mux)
 	handler = middleware.NewLoggingMiddleware()(handler)
-	handler = middleware.RateLimitMiddleware(rateLimiter)(handler)
+	handler = rateLimiter.Middleware(handler)
 	handler = middleware.CORS(
 		[]string{"http://localhost:3000", "http://localhost:3001"},
 		nil, // Use default methods
@@ -482,13 +486,48 @@ func (s *APITestSuite) TestRateLimiting() {
 	})
 
 	s.Run("Authenticated users higher limit", func() {
+		// Create a fresh server with API key configuration for differentiated rate limits
+		// Create logger for rate limiter
+		logger, _ := zap.NewDevelopment()
+
+		// Configure rate limiter with API key-based limits and very short ban duration for tests
+		rateLimiter := middleware.NewRateLimiter(middleware.RateLimitConfig{
+			RequestsPerSecond: 10,                   // Base limit: 10 req/s
+			BurstSize:         20,                   // Base burst: 20
+			BanDuration:       1 * time.Millisecond, // Very short ban duration for tests
+			APIKeyLimits: map[string]middleware.APIKeyLimit{
+				s.apiKey: {
+					Key:               s.apiKey,
+					RequestsPerSecond: 100, // API key gets 100 req/s
+					BurstSize:         200, // API key gets burst of 200
+					Role:              "admin",
+				},
+			},
+		}, logger)
+
+		// Setup handler with configured rate limiter
+		mux := http.NewServeMux()
+		s.registerEndpoints(mux)
+		handler := http.Handler(mux)
+		handler = middleware.NewLoggingMiddleware()(handler)
+		handler = rateLimiter.Middleware(handler)
+		handler = middleware.CORS(
+			[]string{"http://localhost:3000", "http://localhost:3001"},
+			nil,
+			nil,
+		)(handler)
+		handler = middleware.SecurityHeaders()(handler)
+
+		testServer := httptest.NewServer(handler)
+		defer testServer.Close()
+
 		endpoint := "/api/v1/devices"
 		rateLimited := false
 
-		// Authenticated users should have higher rate limit (e.g., 1000/hour vs 60/hour)
+		// Authenticated users with API key should have higher rate limit
 		for i := 0; i < 100; i++ {
-			req, _ := http.NewRequest("GET", s.baseURL+endpoint, nil)
-			req.Header.Set("Authorization", "Bearer "+s.jwtToken)
+			req, _ := http.NewRequest("GET", testServer.URL+endpoint, nil)
+			req.Header.Set("X-API-Key", s.apiKey)
 
 			resp, err := s.client.Do(req)
 			s.NoError(err)

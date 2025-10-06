@@ -19,7 +19,7 @@ func TestSettingsService(t *testing.T) {
 	requireIntegrationMode(t)
 	// Create test database
 	db := setupTestDatabase(t)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Create service
 	dbWrapper := &database.DB{DB: db}

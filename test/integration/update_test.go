@@ -57,7 +57,7 @@ func setupUpdateServer(t *testing.T) (*http.Server, *httptest.Server, *sql.DB, f
 
 	cleanup := func() {
 		server.Close()
-		db.Close()
+		safeCloseDB(db)
 		os.RemoveAll(tmpDir)
 	}
 

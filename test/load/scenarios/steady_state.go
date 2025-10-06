@@ -20,19 +20,19 @@ type SteadyStateScenario struct {
 
 // SteadyStateConfig defines the configuration for the steady state scenario
 type SteadyStateConfig struct {
-	TotalDevices          int
-	ProfileDistribution   map[framework.DeviceProfile]float64
-	ServerURL             string
-	TestDuration          time.Duration
-	WarmupDuration        time.Duration
-	MetricsTargetRate     int64 // metrics per second target
-	HeartbeatTargetRate   int64 // heartbeats per second target
-	MaxErrorRate          float64
-	MaxLatency            time.Duration
-	DeviceChurnRate       float64 // percentage of devices that go offline/online
-	ChurnInterval         time.Duration
-	AuthToken             string
-	TLSEnabled            bool
+	TotalDevices        int
+	ProfileDistribution map[framework.DeviceProfile]float64
+	ServerURL           string
+	TestDuration        time.Duration
+	WarmupDuration      time.Duration
+	MetricsTargetRate   int64 // metrics per second target
+	HeartbeatTargetRate int64 // heartbeats per second target
+	MaxErrorRate        float64
+	MaxLatency          time.Duration
+	DeviceChurnRate     float64 // percentage of devices that go offline/online
+	ChurnInterval       time.Duration
+	AuthToken           string
+	TLSEnabled          bool
 }
 
 // SteadyStateMetrics tracks metrics for the steady state scenario
@@ -65,18 +65,18 @@ type ResourceUtilization struct {
 
 // NetworkIO tracks network I/O metrics
 type NetworkIO struct {
-	BytesSent    uint64
-	BytesRecv    uint64
-	PacketsSent  uint64
-	PacketsRecv  uint64
+	BytesSent   uint64
+	BytesRecv   uint64
+	PacketsSent uint64
+	PacketsRecv uint64
 }
 
 // ThroughputMeasurement represents a point-in-time throughput measurement
 type ThroughputMeasurement struct {
-	Timestamp       time.Time
-	MetricsPerSec   float64
+	Timestamp        time.Time
+	MetricsPerSec    float64
 	HeartbeatsPerSec float64
-	ErrorsPerSec    float64
+	ErrorsPerSec     float64
 }
 
 // NewSteadyStateScenario creates a new steady state scenario
@@ -256,7 +256,7 @@ func (s *SteadyStateScenario) monitorMetrics(ctx context.Context, fleet *framewo
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
-	var lastMetricsSent, lastHeartbeatsSent, lastErrors int64
+	var lastMetricsSent, lastHeartbeatsSent int64
 	var lastTime time.Time
 
 	for {
@@ -286,7 +286,6 @@ func (s *SteadyStateScenario) monitorMetrics(ctx context.Context, fleet *framewo
 
 			lastMetricsSent = fleetMetrics.TotalMetricsSent
 			lastHeartbeatsSent = fleetMetrics.TotalRequests
-			lastErrors = fleetMetrics.TotalErrors
 			lastTime = now
 			s.mu.Unlock()
 
@@ -506,21 +505,38 @@ func (s *SteadyStateScenario) GetMetrics() SteadyStateMetrics {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	// Deep copy
-	metrics := *s.metrics
-
 	// Copy slices
+	var latencyMeasurements []time.Duration
 	if s.metrics.LatencyMeasurements != nil {
-		metrics.LatencyMeasurements = make([]time.Duration, len(s.metrics.LatencyMeasurements))
-		copy(metrics.LatencyMeasurements, s.metrics.LatencyMeasurements)
+		latencyMeasurements = make([]time.Duration, len(s.metrics.LatencyMeasurements))
+		copy(latencyMeasurements, s.metrics.LatencyMeasurements)
 	}
 
+	var throughputMeasurements []ThroughputMeasurement
 	if s.metrics.ThroughputMeasurements != nil {
-		metrics.ThroughputMeasurements = make([]ThroughputMeasurement, len(s.metrics.ThroughputMeasurements))
-		copy(metrics.ThroughputMeasurements, s.metrics.ThroughputMeasurements)
+		throughputMeasurements = make([]ThroughputMeasurement, len(s.metrics.ThroughputMeasurements))
+		copy(throughputMeasurements, s.metrics.ThroughputMeasurements)
 	}
 
-	return metrics
+	// Deep copy without mutex
+	return SteadyStateMetrics{
+		StartTime:              s.metrics.StartTime,
+		EndTime:                s.metrics.EndTime,
+		DevicesOnline:          s.metrics.DevicesOnline,
+		DevicesOffline:         s.metrics.DevicesOffline,
+		TotalMetricsSent:       s.metrics.TotalMetricsSent,
+		TotalHeartbeatsSent:    s.metrics.TotalHeartbeatsSent,
+		TotalErrors:            s.metrics.TotalErrors,
+		MetricsRate:            s.metrics.MetricsRate,
+		HeartbeatRate:          s.metrics.HeartbeatRate,
+		ErrorRate:              s.metrics.ErrorRate,
+		AverageLatency:         s.metrics.AverageLatency,
+		P95Latency:             s.metrics.P95Latency,
+		P99Latency:             s.metrics.P99Latency,
+		ResourceUtilization:    s.metrics.ResourceUtilization,
+		LatencyMeasurements:    latencyMeasurements,
+		ThroughputMeasurements: throughputMeasurements,
+	}
 }
 
 // GetName returns the scenario name

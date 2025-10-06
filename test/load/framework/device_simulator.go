@@ -3,7 +3,6 @@ package framework
 import (
 	"context"
 	"crypto/rand"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math"
@@ -15,14 +14,7 @@ import (
 
 	"fleetd.sh/gen/public/v1"
 	"fleetd.sh/gen/public/v1/publicv1connect"
-	"fleetd.sh/internal/agent/metrics"
-	"github.com/google/uuid"
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/host"
-	"github.com/shirou/gopsutil/v3/mem"
 	"golang.org/x/time/rate"
-	"google.golang.org/protobuf/types/known/structpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // DeviceProfile defines the characteristics of a simulated device
@@ -36,66 +28,66 @@ const (
 
 // DeviceConfig holds configuration for a simulated device
 type DeviceConfig struct {
-	Profile            DeviceProfile
-	DeviceID           string
-	Name               string
-	Type               string
-	MetricsInterval    time.Duration
-	HeartbeatInterval  time.Duration
-	ReconnectDelay     time.Duration
-	MaxReconnectDelay  time.Duration
-	JitterPercent      float64
-	ErrorRate          float64
-	ServerURL          string
-	TLSEnabled         bool
-	AuthToken          string
+	Profile           DeviceProfile
+	DeviceID          string
+	Name              string
+	Type              string
+	MetricsInterval   time.Duration
+	HeartbeatInterval time.Duration
+	ReconnectDelay    time.Duration
+	MaxReconnectDelay time.Duration
+	JitterPercent     float64
+	ErrorRate         float64
+	ServerURL         string
+	TLSEnabled        bool
+	AuthToken         string
 }
 
 // VirtualDevice represents a simulated fleetd device
 type VirtualDevice struct {
-	config     *DeviceConfig
-	ctx        context.Context
-	cancel     context.CancelFunc
-	client     publicv1connect.FleetServiceClient
-	metrics    *DeviceMetrics
-	state      DeviceState
-	mu         sync.RWMutex
-	wg         sync.WaitGroup
-	started    bool
-	limiter    *rate.Limiter
-	logger     *slog.Logger
+	Config  *DeviceConfig
+	ctx     context.Context
+	cancel  context.CancelFunc
+	client  publicv1connect.FleetServiceClient
+	metrics *DeviceMetrics
+	state   DeviceState
+	mu      sync.RWMutex
+	wg      sync.WaitGroup
+	started bool
+	limiter *rate.Limiter
+	logger  *slog.Logger
 }
 
 // DeviceState tracks the current state of a virtual device
 type DeviceState struct {
-	Status        publicv1.DeviceStatus
-	LastSeen      time.Time
-	Registered    bool
-	Updating      bool
-	ErrorCount    int64
-	MessagesSent  int64
-	MetricsSent   int64
-	Uptime        time.Duration
-	StartTime     time.Time
+	Status       publicv1.DeviceStatus
+	LastSeen     time.Time
+	Registered   bool
+	Updating     bool
+	ErrorCount   int64
+	MessagesSent int64
+	MetricsSent  int64
+	Uptime       time.Duration
+	StartTime    time.Time
 }
 
 // DeviceMetrics holds metrics for a virtual device
 type DeviceMetrics struct {
-	CPU        CPUMetrics
-	Memory     MemoryMetrics
-	Disk       DiskMetrics
-	Network    NetworkMetrics
-	System     SystemMetrics
-	Custom     map[string]interface{}
-	mu         sync.RWMutex
+	CPU     CPUMetrics
+	Memory  MemoryMetrics
+	Disk    DiskMetrics
+	Network NetworkMetrics
+	System  DeviceSystemInfo
+	Custom  map[string]interface{}
+	mu      sync.RWMutex
 }
 
 type CPUMetrics struct {
-	UsagePercent  float64
-	LoadAvg1      float64
-	LoadAvg5      float64
-	LoadAvg15     float64
-	Cores         int
+	UsagePercent float64
+	LoadAvg1     float64
+	LoadAvg5     float64
+	LoadAvg15    float64
+	Cores        int
 }
 
 type MemoryMetrics struct {
@@ -113,22 +105,22 @@ type DiskMetrics struct {
 }
 
 type NetworkMetrics struct {
-	BytesSent     uint64
-	BytesRecv     uint64
-	PacketsSent   uint64
-	PacketsRecv   uint64
-	ErrorsIn      uint64
-	ErrorsOut     uint64
+	BytesSent   uint64
+	BytesRecv   uint64
+	PacketsSent uint64
+	PacketsRecv uint64
+	ErrorsIn    uint64
+	ErrorsOut   uint64
 }
 
-type SystemMetrics struct {
-	Hostname      string
-	OS            string
-	Platform      string
-	Arch          string
-	Uptime        time.Duration
-	ProcessCount  int32
-	Temperature   float64
+type DeviceSystemInfo struct {
+	Hostname     string
+	OS           string
+	Platform     string
+	Arch         string
+	Uptime       time.Duration
+	ProcessCount int32
+	Temperature  float64
 }
 
 // NewVirtualDevice creates a new virtual device
@@ -144,9 +136,9 @@ func NewVirtualDevice(config *DeviceConfig) *VirtualDevice {
 	case ProfileFull:
 		rps = 100 // 100 requests per second
 	case ProfileConstrained:
-		rps = 50  // 50 requests per second
+		rps = 50 // 50 requests per second
 	case ProfileMinimal:
-		rps = 10  // 10 requests per second
+		rps = 10 // 10 requests per second
 	}
 
 	logger := slog.Default().With(
@@ -155,9 +147,9 @@ func NewVirtualDevice(config *DeviceConfig) *VirtualDevice {
 	)
 
 	return &VirtualDevice{
-		config:  config,
-		ctx:     ctx,
-		cancel:  cancel,
+		Config: config,
+		ctx:    ctx,
+		cancel: cancel,
 		metrics: &DeviceMetrics{
 			Custom: make(map[string]interface{}),
 		},
@@ -232,9 +224,9 @@ func (d *VirtualDevice) Start() error {
 	}
 
 	d.logger.Info("Starting virtual device",
-		"profile", d.config.Profile,
-		"metrics_interval", d.config.MetricsInterval,
-		"heartbeat_interval", d.config.HeartbeatInterval,
+		"profile", d.Config.Profile,
+		"metrics_interval", d.Config.MetricsInterval,
+		"heartbeat_interval", d.Config.HeartbeatInterval,
 	)
 
 	// Initialize metrics based on profile
@@ -280,8 +272,8 @@ func (d *VirtualDevice) initializeMetrics() {
 	defer d.metrics.mu.Unlock()
 
 	// Base system info
-	d.metrics.System = SystemMetrics{
-		Hostname:     fmt.Sprintf("device-%s", d.config.DeviceID[:8]),
+	d.metrics.System = DeviceSystemInfo{
+		Hostname:     fmt.Sprintf("device-%s", d.Config.DeviceID[:8]),
 		OS:           "linux",
 		Platform:     "ubuntu",
 		Arch:         runtime.GOARCH,
@@ -289,7 +281,7 @@ func (d *VirtualDevice) initializeMetrics() {
 	}
 
 	// Profile-specific resource allocation
-	switch d.config.Profile {
+	switch d.Config.Profile {
 	case ProfileFull:
 		d.metrics.CPU.Cores = 8
 		d.metrics.Memory.Total = 16 * 1024 * 1024 * 1024 // 16GB
@@ -300,7 +292,7 @@ func (d *VirtualDevice) initializeMetrics() {
 		d.metrics.Disk.Total = 256 * 1024 * 1024 * 1024 // 256GB
 	case ProfileMinimal:
 		d.metrics.CPU.Cores = 2
-		d.metrics.Memory.Total = 1024 * 1024 * 1024 // 1GB
+		d.metrics.Memory.Total = 1024 * 1024 * 1024    // 1GB
 		d.metrics.Disk.Total = 32 * 1024 * 1024 * 1024 // 32GB
 	}
 }
@@ -309,7 +301,7 @@ func (d *VirtualDevice) initializeMetrics() {
 func (d *VirtualDevice) metricsLoop() {
 	defer d.wg.Done()
 
-	ticker := time.NewTicker(d.addJitter(d.config.MetricsInterval))
+	ticker := time.NewTicker(d.addJitter(d.Config.MetricsInterval))
 	defer ticker.Stop()
 
 	for {
@@ -336,7 +328,7 @@ func (d *VirtualDevice) metricsLoop() {
 			}
 
 			// Reset ticker with jitter
-			ticker.Reset(d.addJitter(d.config.MetricsInterval))
+			ticker.Reset(d.addJitter(d.Config.MetricsInterval))
 		}
 	}
 }
@@ -345,7 +337,7 @@ func (d *VirtualDevice) metricsLoop() {
 func (d *VirtualDevice) heartbeatLoop() {
 	defer d.wg.Done()
 
-	ticker := time.NewTicker(d.addJitter(d.config.HeartbeatInterval))
+	ticker := time.NewTicker(d.addJitter(d.Config.HeartbeatInterval))
 	defer ticker.Stop()
 
 	for {
@@ -372,7 +364,7 @@ func (d *VirtualDevice) heartbeatLoop() {
 			}
 
 			// Reset ticker with jitter
-			ticker.Reset(d.addJitter(d.config.HeartbeatInterval))
+			ticker.Reset(d.addJitter(d.Config.HeartbeatInterval))
 		}
 	}
 }
@@ -442,7 +434,7 @@ func (d *VirtualDevice) generateMetrics() {
 	d.metrics.System.Uptime = time.Since(d.state.StartTime)
 
 	// Temperature simulation (for devices that support it)
-	if d.config.Profile != ProfileMinimal {
+	if d.Config.Profile != ProfileMinimal {
 		d.metrics.System.Temperature = 35 + 25*d.metrics.CPU.UsagePercent/100 + 10*d.randomFloat()
 	}
 
@@ -452,7 +444,7 @@ func (d *VirtualDevice) generateMetrics() {
 
 // getBaseLoad returns the base load factor for the device
 func (d *VirtualDevice) getBaseLoad() float64 {
-	switch d.config.Profile {
+	switch d.Config.Profile {
 	case ProfileFull:
 		return 0.2 + 0.3*math.Sin(float64(time.Now().Unix())/3600) // Hourly cycles
 	case ProfileConstrained:
@@ -492,7 +484,7 @@ func (d *VirtualDevice) updateNetworkMetrics() {
 	// Simulate data transfer based on activity
 	baseTransfer := uint64(1024 * 1024) // 1MB base
 
-	switch d.config.Profile {
+	switch d.Config.Profile {
 	case ProfileFull:
 		baseTransfer *= 10
 	case ProfileConstrained:
@@ -520,7 +512,7 @@ func (d *VirtualDevice) updateNetworkMetrics() {
 
 // generateCustomMetrics creates profile-specific custom metrics
 func (d *VirtualDevice) generateCustomMetrics(timestamp time.Time) {
-	switch d.config.Profile {
+	switch d.Config.Profile {
 	case ProfileFull:
 		d.metrics.Custom["gpu_usage"] = 20 + 60*d.randomFloat()
 		d.metrics.Custom["power_consumption"] = 50 + 100*d.randomFloat()
@@ -607,12 +599,12 @@ func (d *VirtualDevice) simulateRandomErrors() {
 
 // shouldSimulateError determines if an error should be simulated
 func (d *VirtualDevice) shouldSimulateError() bool {
-	return d.randomFloat() < d.config.ErrorRate
+	return d.randomFloat() < d.Config.ErrorRate
 }
 
 // addJitter adds random jitter to a duration
 func (d *VirtualDevice) addJitter(duration time.Duration) time.Duration {
-	jitter := float64(duration) * d.config.JitterPercent * (d.randomFloat() - 0.5) * 2
+	jitter := float64(duration) * d.Config.JitterPercent * (d.randomFloat() - 0.5) * 2
 	return duration + time.Duration(jitter)
 }
 
@@ -634,14 +626,20 @@ func (d *VirtualDevice) GetMetrics() DeviceMetrics {
 	d.metrics.mu.RLock()
 	defer d.metrics.mu.RUnlock()
 
-	// Deep copy
-	metrics := *d.metrics
-	metrics.Custom = make(map[string]interface{})
+	// Deep copy without mutex
+	custom := make(map[string]interface{})
 	for k, v := range d.metrics.Custom {
-		metrics.Custom[k] = v
+		custom[k] = v
 	}
 
-	return metrics
+	return DeviceMetrics{
+		CPU:     d.metrics.CPU,
+		Memory:  d.metrics.Memory,
+		Disk:    d.metrics.Disk,
+		Network: d.metrics.Network,
+		System:  d.metrics.System,
+		Custom:  custom,
+	}
 }
 
 // IsStarted returns whether the device is currently running

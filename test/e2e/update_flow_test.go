@@ -20,9 +20,9 @@ import (
 	"fleetd.sh/internal/control"
 	"fleetd.sh/internal/database"
 	"fleetd.sh/internal/fleet"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 // TestCompleteUpdateFlow tests the entire update flow from manifest creation to device update
@@ -93,6 +93,11 @@ func setupTestEnvironment(t *testing.T) *testEnvironment {
 
 	// The DB embeds sql.DB, so we can use it directly
 	db := dbWrapper.DB
+
+	// Run migrations to create tables
+	ctx := context.Background()
+	err = database.RunMigrations(ctx, db, "sqlite3")
+	require.NoError(t, err, "Failed to run database migrations")
 
 	// Create test directories
 	artifactDir, err := os.MkdirTemp("", "fleetd-artifacts-*")
@@ -650,8 +655,8 @@ func TestDeploymentLifecycle(t *testing.T) {
 	t.Logf("Final deployment state: %v", finalState)
 	assert.True(t,
 		finalState == publicv1.DeploymentState_DEPLOYMENT_STATE_CANCELLED ||
-		finalState == publicv1.DeploymentState_DEPLOYMENT_STATE_COMPLETED ||
-		finalState == publicv1.DeploymentState_DEPLOYMENT_STATE_FAILED, // Allow failed state due to cancellation
+			finalState == publicv1.DeploymentState_DEPLOYMENT_STATE_COMPLETED ||
+			finalState == publicv1.DeploymentState_DEPLOYMENT_STATE_FAILED, // Allow failed state due to cancellation
 		"Deployment should be either cancelled, completed, or failed")
 }
 
@@ -683,7 +688,7 @@ func TestArtifactDownloadAndVerification(t *testing.T) {
 	// Test checksum verification
 	// In real implementation, would calculate SHA256 and verify
 	expectedChecksum := "sha256:abc123" // Would be actual SHA256
-	_ = expectedChecksum // Placeholder for checksum verification logic
+	_ = expectedChecksum                // Placeholder for checksum verification logic
 }
 
 // Benchmark tests

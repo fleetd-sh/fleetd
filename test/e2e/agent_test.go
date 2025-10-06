@@ -21,8 +21,8 @@ import (
 )
 
 func TestAgentInContainer(t *testing.T) {
-	if os.Getenv("INTEGRATION") != "1" && os.Getenv("FLEETD_INTEGRATION_TESTS") != "1" {
-		t.Skip("set INTEGRATION=1 or FLEETD_INTEGRATION_TESTS=1 to run integration tests")
+	if os.Getenv("INTEGRATION") != "1" {
+		t.Skip("set INTEGRATION=1 to run integration tests")
 	}
 
 	ctx := context.Background()

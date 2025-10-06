@@ -56,7 +56,7 @@ func TestWithPostgresContainer(t *testing.T) {
 	// Connect to the database
 	db, err := sql.Open("postgres", connStr)
 	require.NoError(t, err)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Create schema
 	err = createPostgresSchema(db)
@@ -190,7 +190,7 @@ func TestFullStackWithContainers(t *testing.T) {
 	// Connect to PostgreSQL
 	db, err := sql.Open("postgres", pgConnStr)
 	require.NoError(t, err)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Setup database
 	err = createPostgresSchema(db)
@@ -274,7 +274,7 @@ func TestDockerComposeWithExec(t *testing.T) {
 	t.Run("PostgreSQLConnectivity", func(t *testing.T) {
 		db, err := sql.Open("postgres", "postgres://fleetd_test:test_password@localhost:5433/fleetd_test?sslmode=disable")
 		require.NoError(t, err)
-		defer db.Close()
+		defer safeCloseDB(db)
 
 		err = db.Ping()
 		assert.NoError(t, err)
@@ -298,7 +298,7 @@ func TestDockerComposeWithExec(t *testing.T) {
 
 func createPostgresSchema(db *sql.DB) error {
 	schema := `
-	CREATE TABLE IF NOT EXISTS devices (
+	CREATE TABLE IF NOT EXISTS device (
 		id TEXT PRIMARY KEY,
 		name TEXT NOT NULL,
 		status TEXT DEFAULT 'offline',
@@ -308,7 +308,7 @@ func createPostgresSchema(db *sql.DB) error {
 
 	CREATE TABLE IF NOT EXISTS telemetry (
 		id SERIAL PRIMARY KEY,
-		device_id TEXT NOT NULL REFERENCES devices(id),
+		device_id TEXT NOT NULL REFERENCES device(id),
 		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		cpu_usage REAL,
 		memory_usage REAL,
@@ -319,7 +319,7 @@ func createPostgresSchema(db *sql.DB) error {
 
 	CREATE TABLE IF NOT EXISTS logs (
 		id SERIAL PRIMARY KEY,
-		device_id TEXT NOT NULL REFERENCES devices(id),
+		device_id TEXT NOT NULL REFERENCES device(id),
 		timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		level TEXT,
 		message TEXT,

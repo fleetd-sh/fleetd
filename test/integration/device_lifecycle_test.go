@@ -61,7 +61,7 @@ func (s *DeviceLifecycleTestSuite) TearDownSuite() {
 	if s.server != nil {
 		s.server.Close()
 	}
-	if s.db != nil {
+	if s.db != nil && s.db != sharedDB {
 		s.db.Close()
 	}
 }

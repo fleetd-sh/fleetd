@@ -18,7 +18,7 @@ import (
 func TestFleetServiceDeployment(t *testing.T) {
 	// Setup test database
 	db := setupTestDatabase(t)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Create UpdateClient adapter
 	deviceAPI := &control.DeviceAPIClient{}
@@ -247,7 +247,7 @@ spec:
 func TestDeploymentOrchestrator(t *testing.T) {
 	// Setup test database
 	db := setupTestDatabase(t)
-	defer db.Close()
+	defer safeCloseDB(db)
 
 	// Create mock update client
 	updateClient := &mockUpdateClient{}
@@ -257,6 +257,9 @@ func TestDeploymentOrchestrator(t *testing.T) {
 
 	// Setup test context
 	ctx := context.Background()
+
+	// Seed database with test devices first (required for foreign key constraints)
+	seedTestDevices(t, db)
 
 	// Seed database with test deployment
 	deploymentID := seedTestDeployment(t, db)
@@ -270,7 +273,7 @@ func TestDeploymentOrchestrator(t *testing.T) {
 
 		// Check deployment status was updated
 		var status string
-		err = db.QueryRow("SELECT status FROM deployment WHERE id = ?", deploymentID).Scan(&status)
+		err = db.QueryRow("SELECT status FROM deployment WHERE id = $1", deploymentID).Scan(&status)
 		require.NoError(t, err)
 		assert.Equal(t, "running", status)
 	})
@@ -348,13 +351,13 @@ func seedTestDevices(t *testing.T, db *sql.DB) {
 
 	for _, d := range devices {
 		labelsJSON, _ := json.Marshal(d.labels)
-		_, err := db.Exec("INSERT INTO device (id, name, status, labels) VALUES (?, ?, ?, ?)", d.id, d.id, d.status, string(labelsJSON))
+		_, err := db.Exec("INSERT INTO device (id, name, status, labels) VALUES ($1, $2, $3, $4)", d.id, d.id, d.status, string(labelsJSON))
 		require.NoError(t, err)
 
 		// Note: device_label table may not exist in test schema
 		// Skip label insertion for now
 		// for key, value := range d.labels {
-		// 	_, err := db.Exec("INSERT INTO device_label (device_id, label_key, label_value) VALUES (?, ?, ?)",
+		// 	_, err := db.Exec("INSERT INTO device_label (device_id, label_key, label_value) VALUES ($1, $2, $3)",
 		// 		d.id, key, value)
 		// 	require.NoError(t, err)
 		// }
@@ -384,7 +387,7 @@ func seedTestDeployment(t *testing.T, db *sql.DB) string {
 		INSERT INTO deployment (
 			id, name, namespace, manifest, status, strategy, selector,
 			created_by, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
 		deployment.ID,
 		deployment.Name,
 		deployment.Namespace,
@@ -401,8 +404,8 @@ func seedTestDeployment(t *testing.T, db *sql.DB) string {
 	// Add device deployments
 	_, err = db.Exec(`
 		INSERT INTO device_deployment (device_id, deployment_id, status, progress)
-		VALUES ('device-1', ?, 'pending', 0), ('device-2', ?, 'pending', 0)`,
-		deployment.ID, deployment.ID)
+		VALUES ('device-1', $1, 'pending', 0), ('device-2', $1, 'pending', 0)`,
+		deployment.ID)
 	require.NoError(t, err)
 
 	return deployment.ID

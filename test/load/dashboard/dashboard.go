@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -17,17 +16,17 @@ import (
 
 // Dashboard provides a real-time web interface for load testing metrics
 type Dashboard struct {
-	server          *http.Server
+	server           *http.Server
 	metricsCollector *framework.MetricsCollector
-	fleetSimulator  *framework.FleetSimulator
-	clients         map[*websocket.Conn]bool
-	clientsMu       sync.RWMutex
-	upgrader        websocket.Upgrader
-	logger          *slog.Logger
-	port            int
-	ctx             context.Context
-	cancel          context.CancelFunc
-	wg              sync.WaitGroup
+	fleetSimulator   *framework.FleetSimulator
+	clients          map[*websocket.Conn]bool
+	clientsMu        sync.RWMutex
+	upgrader         websocket.Upgrader
+	logger           *slog.Logger
+	port             int
+	ctx              context.Context
+	cancel           context.CancelFunc
+	wg               sync.WaitGroup
 }
 
 // DashboardConfig configures the dashboard
@@ -40,40 +39,40 @@ type DashboardConfig struct {
 
 // DashboardData represents the data sent to the dashboard
 type DashboardData struct {
-	Timestamp        time.Time                        `json:"timestamp"`
-	Summary          framework.MetricsSummary         `json:"summary"`
-	RealTime         framework.RealTimeMetrics        `json:"realtime"`
-	FleetMetrics     framework.FleetMetrics           `json:"fleet_metrics"`
-	Scenarios        []ScenarioStatus                 `json:"scenarios"`
-	SystemHealth     SystemHealthData                 `json:"system_health"`
-	Charts           ChartData                        `json:"charts"`
+	Timestamp    time.Time                  `json:"timestamp"`
+	Summary      framework.MetricsSummary   `json:"summary"`
+	RealTime     *framework.RealTimeMetrics `json:"realtime"`
+	FleetMetrics *framework.FleetMetrics    `json:"fleet_metrics"`
+	Scenarios    []ScenarioStatus           `json:"scenarios"`
+	SystemHealth SystemHealthData           `json:"system_health"`
+	Charts       ChartData                  `json:"charts"`
 }
 
 // ScenarioStatus represents the status of a running scenario
 type ScenarioStatus struct {
-	Name        string    `json:"name"`
-	Status      string    `json:"status"`
-	Progress    float64   `json:"progress"`
-	StartTime   time.Time `json:"start_time"`
-	Duration    time.Duration `json:"duration"`
-	DevicesCount int64    `json:"devices_count"`
-	ErrorCount  int64     `json:"error_count"`
-	SuccessRate float64   `json:"success_rate"`
+	Name         string        `json:"name"`
+	Status       string        `json:"status"`
+	Progress     float64       `json:"progress"`
+	StartTime    time.Time     `json:"start_time"`
+	Duration     time.Duration `json:"duration"`
+	DevicesCount int64         `json:"devices_count"`
+	ErrorCount   int64         `json:"error_count"`
+	SuccessRate  float64       `json:"success_rate"`
 }
 
 // SystemHealthData represents system health information
 type SystemHealthData struct {
-	CPUHealth      HealthStatus `json:"cpu_health"`
-	MemoryHealth   HealthStatus `json:"memory_health"`
-	NetworkHealth  HealthStatus `json:"network_health"`
-	OverallHealth  HealthStatus `json:"overall_health"`
-	HealthScore    float64      `json:"health_score"`
-	Alerts         []Alert      `json:"alerts"`
+	CPUHealth     HealthStatus `json:"cpu_health"`
+	MemoryHealth  HealthStatus `json:"memory_health"`
+	NetworkHealth HealthStatus `json:"network_health"`
+	OverallHealth HealthStatus `json:"overall_health"`
+	HealthScore   float64      `json:"health_score"`
+	Alerts        []Alert      `json:"alerts"`
 }
 
 // HealthStatus represents the health status of a system component
 type HealthStatus struct {
-	Status      string  `json:"status"`      // "healthy", "warning", "critical"
+	Status      string  `json:"status"` // "healthy", "warning", "critical"
 	Value       float64 `json:"value"`
 	Threshold   float64 `json:"threshold"`
 	Description string  `json:"description"`
@@ -81,22 +80,22 @@ type HealthStatus struct {
 
 // Alert represents a system alert
 type Alert struct {
-	Level       string    `json:"level"`       // "info", "warning", "error", "critical"
-	Message     string    `json:"message"`
-	Timestamp   time.Time `json:"timestamp"`
-	Component   string    `json:"component"`
-	Resolved    bool      `json:"resolved"`
+	Level     string    `json:"level"` // "info", "warning", "error", "critical"
+	Message   string    `json:"message"`
+	Timestamp time.Time `json:"timestamp"`
+	Component string    `json:"component"`
+	Resolved  bool      `json:"resolved"`
 }
 
 // ChartData contains data for various charts
 type ChartData struct {
-	CPUUsage         []DataPoint `json:"cpu_usage"`
-	MemoryUsage      []DataPoint `json:"memory_usage"`
-	Throughput       []DataPoint `json:"throughput"`
-	Latency          []DataPoint `json:"latency"`
-	ErrorRate        []DataPoint `json:"error_rate"`
-	DeviceCount      []DataPoint `json:"device_count"`
-	NetworkIO        []DataPoint `json:"network_io"`
+	CPUUsage    []DataPoint `json:"cpu_usage"`
+	MemoryUsage []DataPoint `json:"memory_usage"`
+	Throughput  []DataPoint `json:"throughput"`
+	Latency     []DataPoint `json:"latency"`
+	ErrorRate   []DataPoint `json:"error_rate"`
+	DeviceCount []DataPoint `json:"device_count"`
+	NetworkIO   []DataPoint `json:"network_io"`
 }
 
 // DataPoint represents a single data point for charts
@@ -127,13 +126,13 @@ func NewDashboard(config *DashboardConfig) *Dashboard {
 
 	dashboard := &Dashboard{
 		metricsCollector: config.MetricsCollector,
-		fleetSimulator:  config.FleetSimulator,
-		clients:         make(map[*websocket.Conn]bool),
-		upgrader:        upgrader,
-		logger:          logger,
-		port:            config.Port,
-		ctx:             ctx,
-		cancel:          cancel,
+		fleetSimulator:   config.FleetSimulator,
+		clients:          make(map[*websocket.Conn]bool),
+		upgrader:         upgrader,
+		logger:           logger,
+		port:             config.Port,
+		ctx:              ctx,
+		cancel:           cancel,
 	}
 
 	// Set up HTTP server
@@ -738,8 +737,6 @@ func (d *Dashboard) healthMonitorLoop() {
 
 // broadcastData sends current data to all connected WebSocket clients
 func (d *Dashboard) broadcastData() {
-	data := d.generateDashboardData()
-
 	d.clientsMu.RLock()
 	clients := make([]*websocket.Conn, 0, len(d.clients))
 	for client := range d.clients {
@@ -846,7 +843,7 @@ func (d *Dashboard) generateChartData() ChartData {
 		})
 
 		// Device count
-		deviceValue := float64(d.FleetMetrics.OnlineDevices)
+		deviceValue := float64(0)
 		if d.fleetSimulator != nil {
 			deviceValue = float64(d.fleetSimulator.GetMetrics().OnlineDevices)
 		}
