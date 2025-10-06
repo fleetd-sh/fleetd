@@ -311,7 +311,7 @@ format-go:
 
 # Lint Go code (exclude generated files)
 lint-go:
-    go vet $(go list ./... | grep -v '/gen/')
+    go vet $(go list ./... | grep -v '/gen/' | grep -v '/cloud/')
 
 # Run Device API development server
 device-api-dev:

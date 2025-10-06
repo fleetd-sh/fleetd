@@ -2,6 +2,7 @@
 .env
 *.log
 data/
+cloud/
 
 # OS
 .DS_Store
