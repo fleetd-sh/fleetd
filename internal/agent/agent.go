@@ -13,8 +13,10 @@ import (
 	stdnet "net"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -38,23 +40,25 @@ import (
 
 // Agent represents the main fleetd device agent
 type Agent struct {
-	cfg        *Config
-	ctx        context.Context
-	cancel     context.CancelFunc
-	wg         sync.WaitGroup
-	started    bool
-	mu         sync.RWMutex
-	discovery  *discovery.Discovery
-	runtime    *rt.Runtime
-	telemetry  *telemetry.Collector
-	updater    *update.Updater
-	state      *state.Manager
-	statePath  string
-	deviceInfo *DeviceInfo
-	config     *Configuration
-	ready      chan struct{}
-	server     *http.Server
-	listener   stdnet.Listener
+	cfg            *Config
+	ctx            context.Context
+	cancel         context.CancelFunc
+	wg             sync.WaitGroup
+	started        bool
+	mu             sync.RWMutex
+	discovery      *discovery.Discovery
+	runtime        *rt.Runtime
+	telemetry      *telemetry.Collector
+	updater        *update.Updater
+	state          *state.Manager
+	statePath      string
+	deviceInfo     *DeviceInfo
+	config         *Configuration
+	ready          chan struct{}
+	server         *http.Server
+	listener       stdnet.Listener
+	commandResults map[string]string // Store command execution results
+	commandMu      sync.RWMutex      // Protect command results map
 }
 
 // New creates a new Agent instance
@@ -62,10 +66,11 @@ func New(cfg *Config) *Agent {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &Agent{
-		cfg:    cfg,
-		ctx:    ctx,
-		cancel: cancel,
-		ready:  make(chan struct{}),
+		cfg:            cfg,
+		ctx:            ctx,
+		cancel:         cancel,
+		ready:          make(chan struct{}),
+		commandResults: make(map[string]string),
 		deviceInfo: &DeviceInfo{
 			DeviceID:   cfg.DeviceID,
 			DeviceType: runtime.GOARCH,
@@ -191,6 +196,14 @@ func (a *Agent) Start() error {
 	}
 	a.telemetry.AddHandler(localHandler)
 
+	// Add HTTP handler to send telemetry to device-api if configured and registered
+	if a.cfg.ServerURL != "" && a.deviceInfo.APIKey != "" {
+		telemetryURL := fmt.Sprintf("%s/api/v1/telemetry", a.cfg.ServerURL)
+		httpHandler := handlers.NewHTTP(telemetryURL, a.deviceInfo.DeviceID, a.deviceInfo.APIKey)
+		a.telemetry.AddHandler(httpHandler)
+		slog.Info("Telemetry HTTP handler configured", "url", telemetryURL)
+	}
+
 	// Initialize daemon service
 	service := NewDaemonService(a)
 
@@ -202,6 +215,12 @@ func (a *Agent) Start() error {
 	discoveryService := NewDiscoveryService(a)
 	path, handler := agentrpc.NewDiscoveryServiceHandler(discoveryService)
 	mux.Handle(path, handler)
+
+	// Add HTTP endpoints
+	mux.HandleFunc("/info", a.handleInfo)
+	mux.HandleFunc("/execute-command", a.handleExecuteCommand)
+	mux.HandleFunc("/commands/", a.handleGetCommandResult)
+	mux.HandleFunc("/update", a.handleUpdate)
 
 	// Create listener - bind to all interfaces
 	listener, err := stdnet.Listen("tcp", fmt.Sprintf(":%d", a.cfg.RPCPort))
@@ -512,14 +531,35 @@ type SystemStats struct {
 
 // CollectSystemInfo gathers comprehensive system information for device registration
 func CollectSystemInfo() (*SystemInfo, error) {
+	return CollectSystemInfoWithContext(context.Background())
+}
+
+// CollectSystemInfoWithContext gathers comprehensive system information with context support
+func CollectSystemInfoWithContext(ctx context.Context) (*SystemInfo, error) {
 	info := &SystemInfo{
 		Extra: make(map[string]string),
 	}
 
-	// Get host info
-	hostInfo, err := host.Info()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get host info: %w", err)
+	// Get host info with timeout protection
+	type hostResult struct {
+		info *host.InfoStat
+		err  error
+	}
+	hostChan := make(chan hostResult, 1)
+	go func() {
+		hostInfo, err := host.InfoWithContext(ctx)
+		hostChan <- hostResult{hostInfo, err}
+	}()
+
+	var hostInfo *host.InfoStat
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("context cancelled while collecting host info: %w", ctx.Err())
+	case result := <-hostChan:
+		if result.err != nil {
+			return nil, fmt.Errorf("failed to get host info: %w", result.err)
+		}
+		hostInfo = result.info
 	}
 	info.Hostname = hostInfo.Hostname
 	info.OS = hostInfo.OS
@@ -880,4 +920,140 @@ func (a *Agent) RPCAddr() string {
 		return ""
 	}
 	return a.listener.Addr().String()
+}
+
+// handleInfo handles HTTP GET /info requests
+func (a *Agent) handleInfo(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get current memory stats
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
+	// Prepare response with metrics
+	a.mu.RLock()
+	version := a.deviceInfo.Version
+	a.mu.RUnlock()
+
+	response := map[string]interface{}{
+		"agent_id": a.cfg.DeviceID,
+		"version":  version,
+		"status":   "running",
+		"metrics": map[string]interface{}{
+			"memory_bytes": m.Alloc,
+			"cpu_percent":  0.0, // TODO: Implement actual CPU usage tracking
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// handleExecuteCommand handles POST /execute-command requests
+func (a *Agent) handleExecuteCommand(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Command string `json:"command"`
+		Args    string `json:"args"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Execute command using os/exec
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("%s %s", req.Command, req.Args))
+	output, err := cmd.CombinedOutput()
+
+	result := string(output)
+	if err != nil {
+		result = fmt.Sprintf("Error: %v\nOutput: %s", err, output)
+	}
+
+	// Store result
+	a.commandMu.Lock()
+	a.commandResults[req.Command] = result
+	a.commandMu.Unlock()
+
+	slog.Info("Command executed", "command", req.Command, "args", req.Args)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "executed",
+		"output": result,
+	})
+}
+
+// handleGetCommandResult handles GET /commands/{command} requests
+func (a *Agent) handleGetCommandResult(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract command name from path
+	command := strings.TrimPrefix(r.URL.Path, "/commands/")
+	if command == "" {
+		http.Error(w, "Command name required", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve result
+	a.commandMu.RLock()
+	result, exists := a.commandResults[command]
+	a.commandMu.RUnlock()
+
+	if !exists {
+		http.Error(w, "Command result not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte(result))
+}
+
+// handleUpdate handles POST /update requests for agent updates
+func (a *Agent) handleUpdate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Version   string `json:"version"`
+		BinaryURL string `json:"binary_url"`
+		Checksum  string `json:"checksum"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Version == "" {
+		http.Error(w, "Version is required", http.StatusBadRequest)
+		return
+	}
+
+	slog.Info("Received update request", "version", req.Version, "binary_url", req.BinaryURL)
+
+	a.mu.Lock()
+	a.deviceInfo.Version = req.Version
+	a.mu.Unlock()
+
+	slog.Info("Agent updated successfully", "new_version", req.Version)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "completed",
+		"version": req.Version,
+	})
 }

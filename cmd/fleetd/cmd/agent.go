@@ -15,12 +15,14 @@ import (
 )
 
 var (
-	serverURL   string
-	storageDir  string
-	rpcPort     int
-	mdnsPort    int
-	disableMDNS bool
-	requireSudo bool
+	serverURL        string
+	storageDir       string
+	rpcPort          int
+	mdnsPort         int
+	disableMDNS      bool
+	requireSudo      bool
+	deviceName       string
+	telemetryInterval int
 )
 
 var agentCmd = &cobra.Command{
@@ -37,6 +39,8 @@ func init() {
 	agentCmd.Flags().IntVar(&mdnsPort, "mdns-port", 0, "Port to advertise via mDNS (defaults to RPC port)")
 	agentCmd.Flags().BoolVar(&disableMDNS, "disable-mdns", false, "Disable mDNS discovery")
 	agentCmd.Flags().BoolVar(&requireSudo, "require-sudo", true, "Require sudo for system directories")
+	agentCmd.Flags().StringVar(&deviceName, "device-name", "", "Device name for registration (defaults to hostname)")
+	agentCmd.Flags().IntVar(&telemetryInterval, "telemetry-interval", 60, "Telemetry collection interval in seconds")
 }
 
 func runAgent(cmd *cobra.Command, args []string) error {
@@ -74,6 +78,8 @@ func runAgent(cmd *cobra.Command, args []string) error {
 	cfg.RPCPort = rpcPort
 	cfg.MDNSPort = mdnsPort
 	cfg.DisableMDNS = disableMDNS
+	cfg.DeviceName = deviceName
+	cfg.TelemetryInterval = telemetryInterval
 
 	a := agent.New(cfg)
 	if err := a.Start(); err != nil {
