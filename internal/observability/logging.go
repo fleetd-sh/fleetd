@@ -3,12 +3,14 @@ package observability
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
 
+	"fleetd.sh/internal/middleware"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -285,23 +287,19 @@ func LoggerMiddleware(logger *Logger) func(http.Handler) http.Handler {
 				zap.String("query", r.URL.RawQuery),
 			)
 
-			// Wrap response writer
-			wrapped := &loggingResponseWriter{ResponseWriter: w}
+			wrapped := middleware.NewResponseWriter(w)
 
-			// Add logger to context
 			ctx := context.WithValue(r.Context(), "logger", reqLogger)
 			r = r.WithContext(ctx)
 
-			// Handle request
 			next.ServeHTTP(wrapped, r)
 
-			// Log request completion
 			duration := time.Since(start)
 			reqLogger.Info("Request completed",
 				zap.String("method", r.Method),
 				zap.String("path", r.URL.Path),
-				zap.Int("status", wrapped.statusCode),
-				zap.Int("bytes", wrapped.bytes),
+				zap.Int("status", wrapped.StatusCode()),
+				zap.Int("bytes", wrapped.BytesWritten()),
 				zap.Duration("duration", duration),
 			)
 
@@ -313,23 +311,6 @@ func LoggerMiddleware(logger *Logger) func(http.Handler) http.Handler {
 			}
 		})
 	}
-}
-
-type loggingResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	bytes      int
-}
-
-func (lrw *loggingResponseWriter) WriteHeader(code int) {
-	lrw.statusCode = code
-	lrw.ResponseWriter.WriteHeader(code)
-}
-
-func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
-	n, err := lrw.ResponseWriter.Write(b)
-	lrw.bytes += n
-	return n, err
 }
 
 func generateRequestID() string {

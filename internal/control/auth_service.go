@@ -3,11 +3,11 @@ package control
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"connectrpc.com/connect"
 	publicv1 "fleetd.sh/gen/public/v1"
-	"fleetd.sh/internal/ferrors"
 	"fleetd.sh/internal/security"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -79,7 +79,7 @@ func (s *AuthService) Login(ctx context.Context, req *connect.Request[publicv1.L
 		}), nil
 	}
 
-	return nil, connect.NewError(connect.CodeInvalidArgument, ferrors.New(ferrors.ErrCodeInvalidInput, "invalid credentials"))
+	return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid credentials"))
 }
 
 // Logout invalidates tokens
@@ -118,7 +118,7 @@ func (s *AuthService) GetCurrentUser(ctx context.Context, req *connect.Request[e
 	// Get user from context (set by JWT middleware)
 	claims, ok := ctx.Value("user").(*security.Claims)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, ferrors.New(ferrors.ErrCodePermissionDenied, "not authenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
 	}
 
 	// Fetch user details from database
@@ -137,7 +137,7 @@ func (s *AuthService) CreateAPIKey(ctx context.Context, req *connect.Request[pub
 	// Get user from context
 	claims, ok := ctx.Value("user").(*security.Claims)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, ferrors.New(ferrors.ErrCodePermissionDenied, "not authenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
 	}
 
 	// Generate API key
@@ -173,7 +173,7 @@ func (s *AuthService) ListAPIKeys(ctx context.Context, req *connect.Request[publ
 	// Get user from context
 	claims, ok := ctx.Value("user").(*security.Claims)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, ferrors.New(ferrors.ErrCodePermissionDenied, "not authenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
 	}
 
 	// Query API keys
@@ -231,7 +231,7 @@ func (s *AuthService) RevokeAPIKey(ctx context.Context, req *connect.Request[pub
 	// Get user from context
 	claims, ok := ctx.Value("user").(*security.Claims)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, ferrors.New(ferrors.ErrCodePermissionDenied, "not authenticated"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("not authenticated"))
 	}
 
 	// Delete API key
@@ -247,7 +247,7 @@ func (s *AuthService) RevokeAPIKey(ctx context.Context, req *connect.Request[pub
 	}
 
 	if rowsAffected == 0 {
-		return nil, connect.NewError(connect.CodeNotFound, ferrors.New(ferrors.ErrCodeNotFound, "API key not found"))
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("API key not found"))
 	}
 
 	return connect.NewResponse(&emptypb.Empty{}), nil
@@ -262,11 +262,11 @@ func (s *AuthService) GetSSOProviders(ctx context.Context, req *connect.Request[
 }
 
 func (s *AuthService) InitiateSSOLogin(ctx context.Context, req *connect.Request[publicv1.InitiateSSOLoginRequest]) (*connect.Response[publicv1.InitiateSSOLoginResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, ferrors.New(ferrors.ErrCodeNotImplemented, "SSO not yet implemented"))
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("SSO not yet implemented"))
 }
 
 func (s *AuthService) CompleteSSOLogin(ctx context.Context, req *connect.Request[publicv1.CompleteSSOLoginRequest]) (*connect.Response[publicv1.CompleteSSOLoginResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, ferrors.New(ferrors.ErrCodeNotImplemented, "SSO not yet implemented"))
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("SSO not yet implemented"))
 }
 
 // Helper methods
@@ -313,14 +313,14 @@ func (s *AuthService) authenticatePassword(ctx context.Context, email, password 
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "invalid credentials")
+			return nil, errors.New("invalid credentials")
 		}
 		return nil, err
 	}
 
 	// Verify password
 	if err := bcrypt.CompareHashAndPassword(hashedPassword, []byte(password)); err != nil {
-		return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "invalid credentials")
+		return nil, errors.New("invalid credentials")
 	}
 
 	user.Role = parseUserRole(roleStr)
@@ -366,7 +366,7 @@ func (s *AuthService) authenticateAPIKey(ctx context.Context, apiKey string) (*p
 		}
 	}
 
-	return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "invalid API key")
+	return nil, errors.New("invalid API key")
 }
 
 func (s *AuthService) getUserByID(ctx context.Context, userID string) (*publicv1.User, error) {
@@ -384,7 +384,7 @@ func (s *AuthService) getUserByID(ctx context.Context, userID string) (*publicv1
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ferrors.New(ferrors.ErrCodeNotFound, "user not found")
+			return nil, errors.New("user not found")
 		}
 		return nil, err
 	}

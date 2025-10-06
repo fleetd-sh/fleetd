@@ -175,12 +175,17 @@ func (s *AuthHTTPService) handleVerifyCode(w http.ResponseWriter, r *http.Reques
 // handleApproveDevice approves a device authorization (called by the web UI)
 func (s *AuthHTTPService) handleApproveDevice(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		DeviceAuthID string `json:"device_auth_id"`
-		UserID       string `json:"user_id"`
+		Code   string `json:"code"`    // User code to approve
+		UserID string `json:"user_id"` // User approving the request
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if req.Code == "" {
+		http.Error(w, "Missing code", http.StatusBadRequest)
 		return
 	}
 
@@ -190,8 +195,8 @@ func (s *AuthHTTPService) handleApproveDevice(w http.ResponseWriter, r *http.Req
 		req.UserID = s.getOrCreateDemoUser()
 	}
 
-	if err := s.deviceAuth.ApproveDeviceAuth(req.DeviceAuthID, req.UserID); err != nil {
-		http.Error(w, "Failed to approve device", http.StatusInternalServerError)
+	if err := s.deviceAuth.ApproveDeviceAuth(req.Code, req.UserID); err != nil {
+		http.Error(w, "Failed to approve device", http.StatusBadRequest)
 		return
 	}
 
@@ -243,7 +248,7 @@ func (s *AuthHTTPService) handleRevokeToken(w http.ResponseWriter, r *http.Reque
 
 	query := `
 		UPDATE access_token
-		SET revoked_at = NOW()
+		SET revoked_at = CURRENT_TIMESTAMP
 		WHERE token = $1
 	`
 
@@ -282,8 +287,8 @@ func CreateAuthMiddleware(db *sql.DB) func(http.Handler) http.Handler {
 			// Skip auth for certain paths
 			path := r.URL.Path
 			if strings.HasPrefix(path, "/api/v1/auth/") ||
-			   strings.HasPrefix(path, "/health") ||
-			   path == "/" {
+				strings.HasPrefix(path, "/health") ||
+				path == "/" {
 				next.ServeHTTP(w, r)
 				return
 			}
