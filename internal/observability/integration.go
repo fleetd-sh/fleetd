@@ -15,16 +15,16 @@ import (
 // IntegrationConfig holds the observability integration configuration
 type IntegrationConfig struct {
 	// VictoriaMetrics configuration
-	VictoriaMetricsURL     string
-	EnableMetrics          bool
-	MetricsPushInterval    time.Duration
-	MetricsBatchSize       int
+	VictoriaMetricsURL  string
+	EnableMetrics       bool
+	MetricsPushInterval time.Duration
+	MetricsBatchSize    int
 
 	// Loki configuration
-	LokiURL            string
-	EnableLogsExport   bool
-	LogsBatchSize      int
-	LogsFlushInterval  time.Duration
+	LokiURL           string
+	EnableLogsExport  bool
+	LogsBatchSize     int
+	LogsFlushInterval time.Duration
 
 	// Common settings
 	DeviceID string
@@ -34,20 +34,20 @@ type IntegrationConfig struct {
 
 // Integration manages metrics and logs export to observability stack
 type Integration struct {
-	config    *IntegrationConfig
-	vmClient  *telemetry.VictoriaMetricsClient
+	config     *IntegrationConfig
+	vmClient   *telemetry.VictoriaMetricsClient
 	lokiClient *telemetry.LokiClient
 
 	// Metrics collectors
-	deviceCount      *prometheus.GaugeVec
+	deviceCount       *prometheus.GaugeVec
 	telemetryReceived *prometheus.CounterVec
-	apiRequests      *prometheus.CounterVec
-	apiLatency       *prometheus.HistogramVec
+	apiRequests       *prometheus.CounterVec
+	apiLatency        *prometheus.HistogramVec
 
 	// Internal state
-	ctx      context.Context
-	cancel   context.CancelFunc
-	wg       sync.WaitGroup
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     sync.WaitGroup
 
 	// Buffering for metrics
 	metricsBuf []telemetry.MetricPoint
@@ -97,9 +97,9 @@ func NewIntegration(config *IntegrationConfig) (*Integration, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	i := &Integration{
-		config:    config,
-		ctx:       ctx,
-		cancel:    cancel,
+		config:     config,
+		ctx:        ctx,
+		cancel:     cancel,
 		metricsBuf: make([]telemetry.MetricPoint, 0, config.MetricsBatchSize),
 		metricsCh:  make(chan telemetry.MetricPoint, 10000),
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -23,13 +22,13 @@ type RollbackManager struct {
 
 // Backup represents a system backup
 type Backup struct {
-	ID          string    `json:"id"`
-	Version     string    `json:"version"`
-	CreatedAt   time.Time `json:"created_at"`
-	Size        int64     `json:"size"`
-	Type        string    `json:"type"`
-	Files       []string  `json:"files"`
-	Metadata    map[string]interface{} `json:"metadata"`
+	ID        string                 `json:"id"`
+	Version   string                 `json:"version"`
+	CreatedAt time.Time              `json:"created_at"`
+	Size      int64                  `json:"size"`
+	Type      string                 `json:"type"`
+	Files     []string               `json:"files"`
+	Metadata  map[string]interface{} `json:"metadata"`
 }
 
 // NewRollbackManager creates a new rollback manager
@@ -237,9 +236,9 @@ func (rm *RollbackManager) CleanupOldBackups() error {
 // getBackupItems returns the list of items to backup
 func (rm *RollbackManager) getBackupItems() []string {
 	items := []string{
-		"/usr/local/bin/fleetd-agent",      // Agent binary
-		"/etc/fleetd/agent.yaml",            // Configuration
-		"/var/lib/fleetd/state.db",          // State database
+		"/usr/local/bin/fleetd-agent", // Agent binary
+		"/etc/fleetd/agent.yaml",      // Configuration
+		"/var/lib/fleetd/state.db",    // State database
 	}
 
 	// Add platform-specific items

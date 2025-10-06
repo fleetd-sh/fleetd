@@ -11,6 +11,7 @@ import (
 	pb "fleetd.sh/gen/fleetd/v1"
 	"fleetd.sh/internal/agent/capability"
 	"fleetd.sh/internal/agent/storage"
+	"fleetd.sh/internal/retry"
 )
 
 // Manager handles all data synchronization for the device
@@ -159,11 +160,13 @@ func (m *Manager) syncWorker(ctx context.Context) {
 	ticker := time.NewTicker(m.config.SyncInterval)
 	defer ticker.Stop()
 
-	backoff := NewBackoff(
-		m.config.InitialBackoff,
-		m.config.MaxBackoff,
-		m.config.BackoffMultiplier,
-	)
+	backoff := retry.NewBackoff(retry.Config{
+		MaxAttempts:    m.config.MaxRetries,
+		InitialBackoff: m.config.InitialBackoff,
+		MaxBackoff:     m.config.MaxBackoff,
+		Multiplier:     m.config.BackoffMultiplier,
+		Jitter:         true,
+	})
 
 	for {
 		select {
@@ -344,7 +347,7 @@ func (m *Manager) performFinalSync() {
 }
 
 // handleSyncError handles sync errors with backoff
-func (m *Manager) handleSyncError(err error, backoff *Backoff) {
+func (m *Manager) handleSyncError(err error, backoff *retry.Backoff) {
 	m.metrics.FailedSyncs.Add(1)
 	m.metrics.LastError.Store(err)
 	m.metrics.ConsecutiveFailures.Add(1)

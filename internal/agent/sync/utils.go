@@ -2,74 +2,11 @@ package sync
 
 import (
 	"fmt"
-	"math"
-	"math/rand"
 	"sync"
 	"time"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
-
-// Backoff implements exponential backoff with jitter
-type Backoff struct {
-	mu         sync.Mutex
-	initial    time.Duration
-	max        time.Duration
-	multiplier float64
-	attempt    int
-	rand       *rand.Rand
-}
-
-// NewBackoff creates a new backoff calculator
-func NewBackoff(initial, max time.Duration, multiplier float64) *Backoff {
-	return &Backoff{
-		initial:    initial,
-		max:        max,
-		multiplier: multiplier,
-		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
-	}
-}
-
-// Next returns the next backoff duration
-func (b *Backoff) Next() time.Duration {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.attempt++
-
-	// Calculate exponential backoff
-	backoff := float64(b.initial) * math.Pow(b.multiplier, float64(b.attempt-1))
-
-	// Cap at maximum
-	if backoff > float64(b.max) {
-		backoff = float64(b.max)
-	}
-
-	// Add jitter (±25%)
-	jitter := backoff * 0.25 * (2*b.rand.Float64() - 1)
-	backoff += jitter
-
-	// Ensure minimum duration
-	if backoff < float64(b.initial) {
-		backoff = float64(b.initial)
-	}
-
-	return time.Duration(backoff)
-}
-
-// Reset resets the backoff counter
-func (b *Backoff) Reset() {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	b.attempt = 0
-}
-
-// Attempt returns the current attempt number
-func (b *Backoff) Attempt() int {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	return b.attempt
-}
 
 // timestampToProto converts time.Time to protobuf timestamp
 func timestampToProto(t time.Time) *timestamppb.Timestamp {

@@ -14,10 +14,10 @@ import (
 
 // DeviceHTTPClient implements HTTPClient for real device communication
 type DeviceHTTPClient struct {
-	client      *http.Client
-	baseURL     string // Base URL for device API
-	apiKey      string // API key for authentication
-	tlsVerify   bool   // Whether to verify TLS certificates
+	client    *http.Client
+	baseURL   string // Base URL for device API
+	apiKey    string // API key for authentication
+	tlsVerify bool   // Whether to verify TLS certificates
 }
 
 // UpdateCommand represents an update command sent to devices

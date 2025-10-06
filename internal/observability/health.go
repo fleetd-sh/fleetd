@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 )
 
 // HealthStatus represents the health status of a component
@@ -50,13 +49,13 @@ type HealthService struct {
 	checks   map[string]HealthChecker
 	mu       sync.RWMutex
 	logger   *slog.Logger
-	provider *Provider
+	provider *Observability
 	cache    map[string]*HealthCheck
 	cacheTTL time.Duration
 }
 
 // NewHealthService creates a new health service
-func NewHealthService(provider *Provider) *HealthService {
+func NewHealthService(provider *Observability) *HealthService {
 	return &HealthService{
 		checks:   make(map[string]HealthChecker),
 		cache:    make(map[string]*HealthCheck),
@@ -127,7 +126,7 @@ func (s *HealthService) Check(ctx context.Context) map[string]HealthCheck {
 			defer cancel()
 
 			// Start span
-			checkCtx, span := s.provider.Tracer("health").Start(checkCtx, fmt.Sprintf("health.check.%s", name))
+			checkCtx, span := s.provider.Tracer.tracer.Start(checkCtx, fmt.Sprintf("health.check.%s", name))
 			defer span.End()
 
 			// Perform check
@@ -137,22 +136,6 @@ func (s *HealthService) Check(ctx context.Context) map[string]HealthCheck {
 			attrs := []attribute.KeyValue{
 				attribute.String("check", name),
 				attribute.String("status", string(check.Status)),
-			}
-
-			if s.provider.metrics != nil {
-				// Record check duration
-				checkDuration, _ := s.provider.Meter("health").Float64Histogram(
-					"health_check_duration_seconds",
-					metric.WithDescription("Health check duration in seconds"),
-				)
-				checkDuration.Record(checkCtx, check.Duration.Seconds(), metric.WithAttributes(attrs...))
-
-				// Record check status
-				checkStatus, _ := s.provider.Meter("health").Int64Counter(
-					"health_check_total",
-					metric.WithDescription("Total number of health checks"),
-				)
-				checkStatus.Add(checkCtx, 1, metric.WithAttributes(attrs...))
 			}
 
 			// Update cache

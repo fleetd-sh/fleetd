@@ -2,12 +2,11 @@ package security
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
 	"time"
-
-	"fleetd.sh/internal/ferrors"
 )
 
 // Role represents a user role
@@ -219,11 +218,11 @@ func (m *RBACManager) CreateUser(user *User) error {
 	defer m.mu.Unlock()
 
 	if user.ID == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "user ID is required")
+		return errors.New("user ID is required")
 	}
 
 	if _, exists := m.users[user.ID]; exists {
-		return ferrors.Newf(ferrors.ErrCodeAlreadyExists, "user already exists: %s", user.ID)
+		return fmt.Errorf("user already exists: %s", user.ID)
 	}
 
 	now := time.Now()
@@ -247,7 +246,7 @@ func (m *RBACManager) GetUser(userID string) (*User, error) {
 
 	user, exists := m.users[userID]
 	if !exists {
-		return nil, ferrors.Newf(ferrors.ErrCodeNotFound, "user not found: %s", userID)
+		return nil, fmt.Errorf("user not found: %s", userID)
 	}
 
 	return user, nil
@@ -259,7 +258,7 @@ func (m *RBACManager) UpdateUser(user *User) error {
 	defer m.mu.Unlock()
 
 	if _, exists := m.users[user.ID]; !exists {
-		return ferrors.Newf(ferrors.ErrCodeNotFound, "user not found: %s", user.ID)
+		return fmt.Errorf("user not found: %s", user.ID)
 	}
 
 	user.UpdatedAt = time.Now()
@@ -283,7 +282,7 @@ func (m *RBACManager) DeleteUser(userID string) error {
 	defer m.mu.Unlock()
 
 	if _, exists := m.users[userID]; !exists {
-		return ferrors.Newf(ferrors.ErrCodeNotFound, "user not found: %s", userID)
+		return fmt.Errorf("user not found: %s", userID)
 	}
 
 	delete(m.users, userID)
@@ -300,7 +299,7 @@ func (m *RBACManager) CheckPermission(ctx context.Context, userID string, permis
 		if *allowed {
 			return nil
 		}
-		return ferrors.New(ferrors.ErrCodePermissionDenied, "permission denied")
+		return errors.New("permission denied")
 	}
 
 	// Get user
@@ -321,8 +320,7 @@ func (m *RBACManager) CheckPermission(ctx context.Context, userID string, permis
 			"permission", permission,
 			"user_roles", user.Roles,
 		)
-		return ferrors.Newf(ferrors.ErrCodePermissionDenied,
-			"user %s does not have permission %s", userID, permission)
+		return fmt.Errorf("user %s does not have permission %s", userID, permission)
 	}
 
 	return nil
@@ -388,13 +386,11 @@ func (m *RBACManager) CheckPolicy(ctx context.Context, userID string, resource s
 	}
 
 	if explicitDeny {
-		return ferrors.Newf(ferrors.ErrCodePermissionDenied,
-			"access denied by policy for resource %s action %s", resource, action)
+		return fmt.Errorf("access denied by policy for resource %s action %s", resource, action)
 	}
 
 	if !explicitAllow {
-		return ferrors.Newf(ferrors.ErrCodePermissionDenied,
-			"no policy allows access to resource %s action %s", resource, action)
+		return fmt.Errorf("no policy allows access to resource %s action %s", resource, action)
 	}
 
 	return nil
@@ -448,11 +444,11 @@ func (m *RBACManager) CreatePolicy(policy *Policy) error {
 	defer m.mu.Unlock()
 
 	if policy.ID == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "policy ID is required")
+		return errors.New("policy ID is required")
 	}
 
 	if _, exists := m.policies[policy.ID]; exists {
-		return ferrors.Newf(ferrors.ErrCodeAlreadyExists, "policy already exists: %s", policy.ID)
+		return fmt.Errorf("policy already exists: %s", policy.ID)
 	}
 
 	m.policies[policy.ID] = policy

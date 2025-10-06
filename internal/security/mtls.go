@@ -15,8 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"fleetd.sh/internal/ferrors"
 )
 
 // MTLSConfig holds mTLS configuration
@@ -70,9 +68,8 @@ func NewMTLSManager(config *MTLSConfig) (*MTLSManager, error) {
 		logger: slog.Default().With("component", "mtls"),
 	}
 
-	// Initialize TLS configuration
 	if err := manager.initializeTLSConfig(); err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to initialize TLS config")
+		return nil, fmt.Errorf("failed to initialize TLS config: %w", err)
 	}
 
 	return manager, nil

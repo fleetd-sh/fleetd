@@ -61,7 +61,7 @@ type HealthReport struct {
 }
 
 // NewClient creates a new update client
-func NewClient(db *sql.DB, httpClient HTTPClient) *Client {
+func NewClient(db *sql.DB, httpClient *DeviceHTTPClient) *Client {
 	return &Client{
 		db:         db,
 		campaigns:  make(map[string]*Campaign),

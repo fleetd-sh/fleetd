@@ -188,7 +188,7 @@ func TestDeviceFlow_ApproveDeviceAuth(t *testing.T) {
 		{
 			name:     "successful approval",
 			userCode: "ABCD-1234",
-			userID:    "user-123",
+			userID:   "user-123",
 			wantErr:  false,
 			setupMock: func() {
 				mock.ExpectExec("UPDATE device_auth_request").
@@ -199,7 +199,7 @@ func TestDeviceFlow_ApproveDeviceAuth(t *testing.T) {
 		{
 			name:     "code not found",
 			userCode: "XXXX-XXXX",
-			userID:    "user-123",
+			userID:   "user-123",
 			wantErr:  true,
 			setupMock: func() {
 				mock.ExpectExec("UPDATE device_auth_request").
@@ -261,12 +261,12 @@ func TestDeviceFlow_ExchangeDeviceCode(t *testing.T) {
 				// Insert access token
 				mock.ExpectExec("INSERT INTO access_token").
 					WithArgs(
-						sqlmock.AnyArg(),      // id
-						sqlmock.AnyArg(),      // token
-						"user-123",            // user_id
-						"test-device-code",    // device_auth_id
-						sqlmock.AnyArg(),      // expires_at
-						"fleetctl",            // client_id
+						sqlmock.AnyArg(),   // id
+						sqlmock.AnyArg(),   // token
+						"user-123",         // user_id
+						"test-device-code", // device_auth_id
+						sqlmock.AnyArg(),   // expires_at
+						"fleetctl",         // client_id
 					).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},

@@ -45,22 +45,22 @@ type Snapshot struct {
 
 // DeviceSnapshot captures device state before update
 type DeviceSnapshot struct {
-	DeviceID       string                 `json:"device_id"`
-	Version        string                 `json:"version"`
-	Configuration  map[string]interface{} `json:"configuration"`
-	Status         string                 `json:"status"`
-	LastHealthy    time.Time              `json:"last_healthy"`
+	DeviceID      string                 `json:"device_id"`
+	Version       string                 `json:"version"`
+	Configuration map[string]interface{} `json:"configuration"`
+	Status        string                 `json:"status"`
+	LastHealthy   time.Time              `json:"last_healthy"`
 }
 
 // RollbackResult represents the outcome of a rollback
 type RollbackResult struct {
-	Success        bool      `json:"success"`
-	RolledBack     int       `json:"rolled_back"`
-	Failed         int       `json:"failed"`
-	Skipped        int       `json:"skipped"`
-	StartTime      time.Time `json:"start_time"`
-	EndTime        time.Time `json:"end_time"`
-	Errors         []string  `json:"errors"`
+	Success    bool      `json:"success"`
+	RolledBack int       `json:"rolled_back"`
+	Failed     int       `json:"failed"`
+	Skipped    int       `json:"skipped"`
+	StartTime  time.Time `json:"start_time"`
+	EndTime    time.Time `json:"end_time"`
+	Errors     []string  `json:"errors"`
 }
 
 // TriggerReason represents why a rollback was triggered

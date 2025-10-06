@@ -68,10 +68,10 @@ type EndpointConfig struct {
 
 // DDoSConfig defines DDoS protection settings
 type DDoSConfig struct {
-	Enabled              bool          `yaml:"enabled" json:"enabled" env:"DDOS_PROTECTION_ENABLED" default:"true"`
-	MaxConnectionsPerIP  int           `yaml:"max_connections_per_ip" json:"max_connections_per_ip" env:"DDOS_MAX_CONN_PER_IP" default:"100"`
-	MaxRequestsPerIPPerMin int         `yaml:"max_requests_per_ip_per_min" json:"max_requests_per_ip_per_min" env:"DDOS_MAX_REQ_PER_IP" default:"1000"`
-	BanDuration          time.Duration `yaml:"ban_duration" json:"ban_duration" env:"DDOS_BAN_DURATION" default:"15m"`
+	Enabled                bool          `yaml:"enabled" json:"enabled" env:"DDOS_PROTECTION_ENABLED" default:"true"`
+	MaxConnectionsPerIP    int           `yaml:"max_connections_per_ip" json:"max_connections_per_ip" env:"DDOS_MAX_CONN_PER_IP" default:"100"`
+	MaxRequestsPerIPPerMin int           `yaml:"max_requests_per_ip_per_min" json:"max_requests_per_ip_per_min" env:"DDOS_MAX_REQ_PER_IP" default:"1000"`
+	BanDuration            time.Duration `yaml:"ban_duration" json:"ban_duration" env:"DDOS_BAN_DURATION" default:"15m"`
 
 	// Whitelist IPs that bypass DDoS protection
 	WhitelistedIPs []string `yaml:"whitelisted_ips" json:"whitelisted_ips"`
@@ -189,20 +189,20 @@ func DefaultRateLimitConfig() *RateLimitingConfig {
 // ToMiddlewareConfig converts to middleware configuration
 func (c *RateLimitingConfig) ToMiddlewareConfig() middleware.RateLimitConfig {
 	config := middleware.RateLimitConfig{
-		RequestsPerSecond:      c.Global.RequestsPerSecond,
-		BurstSize:              c.Global.BurstSize,
+		RequestsPerSecond:       c.Global.RequestsPerSecond,
+		BurstSize:               c.Global.BurstSize,
 		DeviceRequestsPerMinute: c.Device.RequestsPerMinute,
-		DeviceBurstSize:        c.Device.BurstSize,
-		MaxConnectionsPerIP:    c.DDoS.MaxConnectionsPerIP,
-		MaxRequestsPerIPPerMin: c.DDoS.MaxRequestsPerIPPerMin,
-		BanDuration:            c.DDoS.BanDuration,
-		ErrorThreshold:         c.CircuitBreaker.ErrorThreshold,
-		ErrorWindow:            c.CircuitBreaker.ErrorWindow,
-		RecoveryTimeout:        c.CircuitBreaker.RecoveryTimeout,
-		CleanupInterval:        c.Maintenance.CleanupInterval,
-		VisitorTimeout:         c.Maintenance.VisitorTimeout,
-		EndpointLimits:         make(map[string]middleware.EndpointLimit),
-		APIKeyLimits:           make(map[string]middleware.APIKeyLimit),
+		DeviceBurstSize:         c.Device.BurstSize,
+		MaxConnectionsPerIP:     c.DDoS.MaxConnectionsPerIP,
+		MaxRequestsPerIPPerMin:  c.DDoS.MaxRequestsPerIPPerMin,
+		BanDuration:             c.DDoS.BanDuration,
+		ErrorThreshold:          c.CircuitBreaker.ErrorThreshold,
+		ErrorWindow:             c.CircuitBreaker.ErrorWindow,
+		RecoveryTimeout:         c.CircuitBreaker.RecoveryTimeout,
+		CleanupInterval:         c.Maintenance.CleanupInterval,
+		VisitorTimeout:          c.Maintenance.VisitorTimeout,
+		EndpointLimits:          make(map[string]middleware.EndpointLimit),
+		APIKeyLimits:            make(map[string]middleware.APIKeyLimit),
 	}
 
 	// Convert endpoint limits

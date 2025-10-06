@@ -73,18 +73,7 @@ func (w *WindowsServiceManager) Disable() error {
 }
 
 func (w *WindowsServiceManager) Query() (map[string]interface{}, error) {
-	status, err := QueryService()
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]interface{})
-	result["state"] = status.State
-	result["accepts"] = status.Accepts
-	result["process_id"] = status.ProcessId
-	result["win32_exit_code"] = status.Win32ExitCode
-
-	return result, nil
+	return QueryService()
 }
 
 func (w *WindowsServiceManager) Run(cfg *config.AgentConfig) error {

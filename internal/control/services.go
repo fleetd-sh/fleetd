@@ -41,4 +41,3 @@ func (s *AnalyticsService) GetPerformanceMetrics(ctx context.Context, req *conne
 	// Implementation will be completed when proto definitions are finalized
 	return connect.NewResponse(&pb.GetPerformanceMetricsResponse{}), nil
 }
-

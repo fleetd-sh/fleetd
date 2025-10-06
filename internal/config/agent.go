@@ -29,28 +29,28 @@ type AgentConfig struct {
 	MetricsInterval     time.Duration `json:"metrics_interval" yaml:"metrics_interval"`
 
 	// Storage
-	DataDir     string `json:"data_dir" yaml:"data_dir"`
-	LogDir      string `json:"log_dir" yaml:"log_dir"`
-	BackupDir   string `json:"backup_dir" yaml:"backup_dir"`
+	DataDir   string `json:"data_dir" yaml:"data_dir"`
+	LogDir    string `json:"log_dir" yaml:"log_dir"`
+	BackupDir string `json:"backup_dir" yaml:"backup_dir"`
 
 	// Security
-	TLSVerify    bool   `json:"tls_verify" yaml:"tls_verify"`
-	TLSCert      string `json:"tls_cert" yaml:"tls_cert"`
-	TLSKey       string `json:"tls_key" yaml:"tls_key"`
-	TLSCACert    string `json:"tls_ca_cert" yaml:"tls_ca_cert"`
-	PublicKey    string `json:"public_key" yaml:"public_key"`
+	TLSVerify bool   `json:"tls_verify" yaml:"tls_verify"`
+	TLSCert   string `json:"tls_cert" yaml:"tls_cert"`
+	TLSKey    string `json:"tls_key" yaml:"tls_key"`
+	TLSCACert string `json:"tls_ca_cert" yaml:"tls_ca_cert"`
+	PublicKey string `json:"public_key" yaml:"public_key"`
 
 	// Behavior
-	AutoUpdate       bool `json:"auto_update" yaml:"auto_update"`
-	AutoRollback     bool `json:"auto_rollback" yaml:"auto_rollback"`
-	MaxRetries       int  `json:"max_retries" yaml:"max_retries"`
-	RetryBackoff     time.Duration `json:"retry_backoff" yaml:"retry_backoff"`
-	OfflineBufferSize int  `json:"offline_buffer_size" yaml:"offline_buffer_size"`
+	AutoUpdate          bool          `json:"auto_update" yaml:"auto_update"`
+	AutoRollback        bool          `json:"auto_rollback" yaml:"auto_rollback"`
+	MaxRetries          int           `json:"max_retries" yaml:"max_retries"`
+	RetryBackoff        time.Duration `json:"retry_backoff" yaml:"retry_backoff"`
+	OfflineBufferSize   int           `json:"offline_buffer_size" yaml:"offline_buffer_size"`
 	HealthCheckInterval time.Duration `json:"health_check_interval" yaml:"health_check_interval"`
 
 	// Debug
-	Debug         bool `json:"debug" yaml:"debug"`
-	LogLevel      string `json:"log_level" yaml:"log_level"`
+	Debug    bool   `json:"debug" yaml:"debug"`
+	LogLevel string `json:"log_level" yaml:"log_level"`
 }
 
 // DefaultAgentConfig returns default agent configuration with platform-specific paths
@@ -62,18 +62,18 @@ func DefaultAgentConfig() *AgentConfig {
 		UpdateCheckInterval: 5 * time.Minute,
 		MetricsInterval:     1 * time.Minute,
 		HealthCheckInterval: 30 * time.Second,
-		DataDir:            dataDir,
-		LogDir:             logDir,
-		BackupDir:          backupDir,
-		TLSVerify:          true,
-		AutoUpdate:         true,
-		AutoRollback:       true,
-		MaxRetries:         3,
-		RetryBackoff:       10 * time.Second,
-		OfflineBufferSize:  1000,
-		LogLevel:           "info",
-		Labels:             make(map[string]string),
-		Capabilities:       []string{"update", "metrics", "logs"},
+		DataDir:             dataDir,
+		LogDir:              logDir,
+		BackupDir:           backupDir,
+		TLSVerify:           true,
+		AutoUpdate:          true,
+		AutoRollback:        true,
+		MaxRetries:          3,
+		RetryBackoff:        10 * time.Second,
+		OfflineBufferSize:   1000,
+		LogLevel:            "info",
+		Labels:              make(map[string]string),
+		Capabilities:        []string{"update", "metrics", "logs"},
 	}
 }
 

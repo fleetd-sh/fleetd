@@ -3,13 +3,13 @@ package security
 import (
 	"context"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"connectrpc.com/connect"
-	"fleetd.sh/internal/ferrors"
 )
 
 // SecurityMiddleware combines authentication and authorization
@@ -175,7 +175,7 @@ func (s *SecurityMiddleware) authenticateHTTPRequest(r *http.Request) (context.C
 
 	// Check if authentication is required
 	if s.config.RequireAuth && !s.config.AllowAnonymous {
-		return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "authentication required")
+		return nil, errors.New("authentication required")
 	}
 
 	// Allow anonymous access if configured
@@ -228,7 +228,7 @@ func (s *SecurityMiddleware) authenticateConnectRequest(ctx context.Context, req
 
 	// Check if authentication is required
 	if s.config.RequireAuth && !s.config.AllowAnonymous {
-		return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "authentication required")
+		return nil, errors.New("authentication required")
 	}
 
 	return ctx, nil
@@ -273,7 +273,7 @@ func (s *SecurityMiddleware) handleMTLSAuth(ctx context.Context, cert *x509.Cert
 func (s *SecurityMiddleware) authorizeRequest(ctx context.Context, permission Permission) error {
 	user, ok := GetUserFromContext(ctx)
 	if !ok {
-		return ferrors.New(ferrors.ErrCodePermissionDenied, "user not found in context")
+		return errors.New("user not found in context")
 	}
 
 	// Check permission through RBAC manager
@@ -347,14 +347,15 @@ func (s *SecurityMiddleware) handleAuthError(w http.ResponseWriter, err error) {
 	code := http.StatusUnauthorized
 	message := "Unauthorized"
 
-	var fleetErr *ferrors.FleetError
-	if ferrors.As(err, &fleetErr) {
-		if fleetErr.Code == ferrors.ErrCodePermissionDenied {
+	// Check if it's a permissions error
+	if err != nil {
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "permission denied") || strings.Contains(errMsg, "forbidden") {
 			code = http.StatusForbidden
 			message = "Forbidden"
 		}
-		if fleetErr.Message != "" {
-			message = fleetErr.Message
+		if errMsg != "" {
+			message = errMsg
 		}
 	}
 
@@ -363,15 +364,17 @@ func (s *SecurityMiddleware) handleAuthError(w http.ResponseWriter, err error) {
 
 // toConnectError converts error to Connect error
 func (s *SecurityMiddleware) toConnectError(err error) error {
-	var fleetErr *ferrors.FleetError
-	if ferrors.As(err, &fleetErr) {
-		code := connect.CodeUnauthenticated
-		if fleetErr.Code == ferrors.ErrCodePermissionDenied {
-			code = connect.CodePermissionDenied
-		}
-		return connect.NewError(code, err)
+	if err == nil {
+		return nil
 	}
-	return connect.NewError(connect.CodeUnauthenticated, err)
+
+	// Check error message for permission denied
+	code := connect.CodeUnauthenticated
+	if strings.Contains(err.Error(), "permission denied") || strings.Contains(err.Error(), "forbidden") {
+		code = connect.CodePermissionDenied
+	}
+
+	return connect.NewError(code, err)
 }
 
 // RequirePermission creates middleware that requires specific permission

@@ -14,14 +14,14 @@ import (
 )
 
 // HTTPMiddleware creates HTTP middleware with tracing and metrics
-func HTTPMiddleware(provider *Provider) func(http.Handler) http.Handler {
+func HTTPMiddleware(provider *Observability) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Extract trace context from headers
 			ctx := propagation.TraceContext{}.Extract(r.Context(), propagation.HeaderCarrier(r.Header))
 
 			// Start span
-			ctx, span := provider.Tracer("http").Start(ctx, fmt.Sprintf("%s %s", r.Method, r.URL.Path),
+			ctx, span := provider.Tracer.tracer.Start(ctx, fmt.Sprintf("%s %s", r.Method, r.URL.Path),
 				trace.WithSpanKind(trace.SpanKindServer),
 				trace.WithAttributes(
 					attribute.String("http.method", r.Method),
@@ -34,24 +34,24 @@ func HTTPMiddleware(provider *Provider) func(http.Handler) http.Handler {
 			)
 			defer span.End()
 
-			// Track request in flight
-			provider.metrics.HTTPRequestsInFlight.Add(ctx, 1)
-			defer provider.metrics.HTTPRequestsInFlight.Add(ctx, -1)
+			// TODO: Add HTTPRequestsInFlight metric when available
+			// provider.Metrics.HTTPRequestsInFlight.Add(ctx, 1)
+			// defer provider.Metrics.HTTPRequestsInFlight.Add(ctx, -1)
 
 			// Wrap response writer to capture status and size
 			wrapped := &responseWriter{
 				ResponseWriter: w,
-				statusCode:     http.StatusOK,
-				written:        0,
+				status:         http.StatusOK,
+				bytes:          0,
 			}
 
 			// Inject trace context into response headers
 			propagation.TraceContext{}.Inject(ctx, propagation.HeaderCarrier(w.Header()))
 
-			// Add trace ID to response headers
-			if traceID := GetTraceID(ctx); traceID != "" {
-				w.Header().Set("X-Trace-ID", traceID)
-			}
+			// TODO: Add GetTraceID function or remove this
+			// if traceID := GetTraceID(ctx); traceID != "" {
+			// 	w.Header().Set("X-Trace-ID", traceID)
+			// }
 
 			// Record start time
 			startTime := time.Now()
@@ -61,16 +61,17 @@ func HTTPMiddleware(provider *Provider) func(http.Handler) http.Handler {
 
 			// Record metrics
 			duration := time.Since(startTime)
-			provider.metrics.RecordHTTPRequest(ctx, r.Method, r.URL.Path, wrapped.statusCode, duration, wrapped.written)
+			statusStr := http.StatusText(wrapped.status)
+			provider.Metrics.RecordHTTPRequest(r.Method, r.URL.Path, statusStr, duration, wrapped.bytes)
 
 			// Set span status based on HTTP status code
 			span.SetAttributes(
-				attribute.Int("http.status_code", wrapped.statusCode),
-				attribute.Int64("http.response_size", wrapped.written),
+				attribute.Int("http.status_code", wrapped.status),
+				attribute.Int64("http.response_size", int64(wrapped.bytes)),
 			)
 
-			if wrapped.statusCode >= 400 {
-				span.SetStatus(codes.Error, http.StatusText(wrapped.statusCode))
+			if wrapped.status >= 400 {
+				span.SetStatus(codes.Error, http.StatusText(wrapped.status))
 			} else {
 				span.SetStatus(codes.Ok, "")
 			}
@@ -79,7 +80,7 @@ func HTTPMiddleware(provider *Provider) func(http.Handler) http.Handler {
 }
 
 // ConnectUnaryInterceptor creates a Connect unary interceptor with tracing and metrics
-func ConnectUnaryInterceptor(provider *Provider) connect.UnaryInterceptorFunc {
+func ConnectUnaryInterceptor(provider *Observability) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 			// Extract trace context from headers
@@ -87,7 +88,7 @@ func ConnectUnaryInterceptor(provider *Provider) connect.UnaryInterceptorFunc {
 
 			// Start span
 			procedure := req.Spec().Procedure
-			ctx, span := provider.Tracer("connect").Start(ctx, procedure,
+			ctx, span := provider.Tracer.tracer.Start(ctx, procedure,
 				trace.WithSpanKind(trace.SpanKindServer),
 				trace.WithAttributes(
 					attribute.String("rpc.system", "connect"),
@@ -97,16 +98,16 @@ func ConnectUnaryInterceptor(provider *Provider) connect.UnaryInterceptorFunc {
 			)
 			defer span.End()
 
-			// Record start time
-			startTime := time.Now()
+			// TODO: Add RecordRPCRequest method when available
+			// startTime := time.Now()
 
 			// Call next handler
 			resp, err := next(ctx, req)
 
-			// Record metrics
-			duration := time.Since(startTime)
-			success := err == nil
-			provider.metrics.RecordRPCRequest(ctx, procedure, success, duration)
+			// Record metrics when available
+			// duration := time.Since(startTime)
+			// success := err == nil
+			// provider.Metrics.RecordRPCRequest(ctx, procedure, success, duration)
 
 			// Set span status
 			if err != nil {
@@ -128,10 +129,10 @@ func ConnectUnaryInterceptor(provider *Provider) connect.UnaryInterceptorFunc {
 			if resp != nil {
 				propagation.TraceContext{}.Inject(ctx, propagation.HeaderCarrier(resp.Header()))
 
-				// Add trace ID to response headers
-				if traceID := GetTraceID(ctx); traceID != "" {
-					resp.Header().Set("X-Trace-ID", traceID)
-				}
+				// TODO: Add GetTraceID function or remove this
+				// if traceID := GetTraceID(ctx); traceID != "" {
+				// 	resp.Header().Set("X-Trace-ID", traceID)
+				// }
 			}
 
 			return resp, err
@@ -140,10 +141,10 @@ func ConnectUnaryInterceptor(provider *Provider) connect.UnaryInterceptorFunc {
 }
 
 // DatabaseMiddleware wraps database operations with tracing
-func DatabaseMiddleware(provider *Provider) func(ctx context.Context, query string, fn func() error) error {
+func DatabaseMiddleware(provider *Observability) func(ctx context.Context, query string, fn func() error) error {
 	return func(ctx context.Context, query string, fn func() error) error {
 		// Start span
-		ctx, span := provider.Tracer("database").Start(ctx, "db.query",
+		ctx, span := provider.Tracer.tracer.Start(ctx, "db.query",
 			trace.WithAttributes(
 				attribute.String("db.statement", truncateQuery(query)),
 				attribute.String("db.system", "postgres"),
@@ -151,16 +152,16 @@ func DatabaseMiddleware(provider *Provider) func(ctx context.Context, query stri
 		)
 		defer span.End()
 
-		// Record start time
-		startTime := time.Now()
+		// TODO: Add RecordDBQuery method when available
+		// startTime := time.Now()
 
 		// Execute query
 		err := fn()
 
-		// Record metrics
-		duration := time.Since(startTime)
-		success := err == nil
-		provider.metrics.RecordDBQuery(ctx, query, success, duration)
+		// Record metrics when available
+		// duration := time.Since(startTime)
+		// success := err == nil
+		// provider.Metrics.RecordDBQuery(ctx, query, success, duration)
 
 		// Set span status
 		if err != nil {
@@ -174,23 +175,7 @@ func DatabaseMiddleware(provider *Provider) func(ctx context.Context, query stri
 	}
 }
 
-// responseWriter wraps http.ResponseWriter to capture status and size
-type responseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	written    int64
-}
-
-func (w *responseWriter) WriteHeader(statusCode int) {
-	w.statusCode = statusCode
-	w.ResponseWriter.WriteHeader(statusCode)
-}
-
-func (w *responseWriter) Write(b []byte) (int, error) {
-	n, err := w.ResponseWriter.Write(b)
-	w.written += int64(n)
-	return n, err
-}
+// responseWriter is defined in metrics.go
 
 // truncateQuery truncates long queries for attributes
 func truncateQuery(query string) string {
@@ -202,9 +187,9 @@ func truncateQuery(query string) string {
 }
 
 // TracedHandler wraps an HTTP handler with tracing
-func TracedHandler(provider *Provider, name string, handler http.HandlerFunc) http.HandlerFunc {
+func TracedHandler(provider *Observability, name string, handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, span := provider.Tracer("http").Start(r.Context(), name,
+		ctx, span := provider.Tracer.tracer.Start(r.Context(), name,
 			trace.WithSpanKind(trace.SpanKindInternal),
 		)
 		defer span.End()
@@ -214,8 +199,8 @@ func TracedHandler(provider *Provider, name string, handler http.HandlerFunc) ht
 }
 
 // TraceFunction wraps a function with tracing
-func TraceFunction(ctx context.Context, provider *Provider, name string, fn func(context.Context) error) error {
-	ctx, span := provider.Tracer("function").Start(ctx, name,
+func TraceFunction(ctx context.Context, provider *Observability, name string, fn func(context.Context) error) error {
+	ctx, span := provider.Tracer.tracer.Start(ctx, name,
 		trace.WithSpanKind(trace.SpanKindInternal),
 	)
 	defer span.End()
@@ -229,56 +214,4 @@ func TraceFunction(ctx context.Context, provider *Provider, name string, fn func
 	}
 
 	return err
-}
-
-// WithRetry wraps a function with retry logic and tracing
-func WithRetry(ctx context.Context, provider *Provider, name string, maxAttempts int, fn func(context.Context) error) error {
-	ctx, span := provider.Tracer("retry").Start(ctx, name,
-		trace.WithAttributes(
-			attribute.Int("retry.max_attempts", maxAttempts),
-		),
-	)
-	defer span.End()
-
-	var lastErr error
-	for attempt := 1; attempt <= maxAttempts; attempt++ {
-		// Create span for each attempt
-		attemptCtx, attemptSpan := provider.Tracer("retry").Start(ctx, fmt.Sprintf("%s.attempt.%d", name, attempt),
-			trace.WithAttributes(
-				attribute.Int("retry.attempt", attempt),
-			),
-		)
-
-		// Execute function
-		lastErr = fn(attemptCtx)
-
-		if lastErr == nil {
-			attemptSpan.SetStatus(codes.Ok, "")
-			attemptSpan.End()
-			span.SetStatus(codes.Ok, "")
-			return nil
-		}
-
-		// Record error
-		attemptSpan.RecordError(lastErr)
-		attemptSpan.SetStatus(codes.Error, lastErr.Error())
-		attemptSpan.End()
-
-		// Add retry event
-		span.AddEvent("retry_attempt_failed", trace.WithAttributes(
-			attribute.Int("attempt", attempt),
-			attribute.String("error", lastErr.Error()),
-		))
-
-		// Wait before retry (exponential backoff)
-		if attempt < maxAttempts {
-			backoff := time.Duration(attempt) * time.Second
-			time.Sleep(backoff)
-		}
-	}
-
-	// All attempts failed
-	span.RecordError(lastErr)
-	span.SetStatus(codes.Error, fmt.Sprintf("all %d attempts failed", maxAttempts))
-	return lastErr
 }

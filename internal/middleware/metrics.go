@@ -9,35 +9,13 @@ import (
 	"fleetd.sh/internal/metrics"
 )
 
-// metricsResponseWriter wraps http.ResponseWriter to capture status code and size
-type metricsResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	size       int
-}
-
-func (rw *metricsResponseWriter) WriteHeader(code int) {
-	rw.statusCode = code
-	rw.ResponseWriter.WriteHeader(code)
-}
-
-func (rw *metricsResponseWriter) Write(b []byte) (int, error) {
-	size, err := rw.ResponseWriter.Write(b)
-	rw.size += size
-	return size, err
-}
-
 // NewMetricsMiddleware creates a new metrics middleware
 func NewMetricsMiddleware(serviceName string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 
-			// Wrap response writer to capture metrics
-			wrapped := &metricsResponseWriter{
-				ResponseWriter: w,
-				statusCode:     200,
-			}
+			wrapped := NewResponseWriter(w)
 
 			// Get request size
 			reqSize := float64(r.ContentLength)
@@ -49,7 +27,7 @@ func NewMetricsMiddleware(serviceName string) func(http.Handler) http.Handler {
 
 			duration := time.Since(start).Seconds()
 			endpoint := cleanPath(r.URL.Path)
-			statusStr := strconv.Itoa(wrapped.statusCode)
+			statusStr := strconv.Itoa(wrapped.StatusCode())
 
 			metrics.RecordHTTPRequest(
 				serviceName,
@@ -58,7 +36,7 @@ func NewMetricsMiddleware(serviceName string) func(http.Handler) http.Handler {
 				statusStr,
 				duration,
 				reqSize,
-				float64(wrapped.size),
+				float64(wrapped.BytesWritten()),
 			)
 		})
 	}

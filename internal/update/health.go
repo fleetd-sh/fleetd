@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -38,10 +39,10 @@ type HealthCheck struct {
 
 // HealthStatus represents overall health status
 type HealthStatus struct {
-	Healthy    bool                   `json:"healthy"`
-	Timestamp  time.Time              `json:"timestamp"`
-	Checks     []HealthCheckResult    `json:"checks"`
-	Metrics    map[string]interface{} `json:"metrics"`
+	Healthy   bool                   `json:"healthy"`
+	Timestamp time.Time              `json:"timestamp"`
+	Checks    []HealthCheckResult    `json:"checks"`
+	Metrics   map[string]interface{} `json:"metrics"`
 }
 
 // HealthCheckResult represents the result of a health check
@@ -272,7 +273,7 @@ func (hc *HealthChecker) checkDiskSpace(ctx context.Context) error {
 func (hc *HealthChecker) checkNetworkConnectivity(ctx context.Context) error {
 	// Check if we can resolve DNS
 	resolver := &net.Resolver{}
-	_, err := resolver.LookupHostContext(ctx, "google.com")
+	_, err := resolver.LookupHost(ctx, "google.com")
 	if err != nil {
 		return fmt.Errorf("DNS resolution failed: %w", err)
 	}

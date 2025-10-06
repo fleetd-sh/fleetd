@@ -9,9 +9,11 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -24,7 +26,6 @@ import (
 	"time"
 
 	pb "fleetd.sh/gen/public/v1"
-	"fleetd.sh/internal/ferrors"
 	"github.com/shirou/gopsutil/v3/process"
 )
 
@@ -176,15 +177,13 @@ func (hc *HealthChecker) Start(healthCh chan<- HealthStatus) {
 
 // Manager manages application processes with enhanced error handling
 type Manager struct {
-	processes      map[string]*ManagedProcess
-	mu             sync.RWMutex
-	logger         *slog.Logger
-	config         *Config
-	metrics        chan ProcessMetrics
-	circuitBreaker *ferrors.CircuitBreakerGroup
-	errorHandler   *ferrors.ErrorHandler
-	shutdownCh     chan struct{}
-	shutdownWg     sync.WaitGroup
+	processes  map[string]*ManagedProcess
+	mu         sync.RWMutex
+	logger     *slog.Logger
+	config     *Config
+	metrics    chan ProcessMetrics
+	shutdownCh chan struct{}
+	shutdownWg sync.WaitGroup
 }
 
 // ManagedProcess represents a process with production-ready error handling
@@ -208,9 +207,7 @@ type ManagedProcess struct {
 	healthcheck *HealthChecker
 
 	// Config
-	config       *ProcessConfig
-	retryPolicy  *ferrors.RetryPolicy
-	errorHandler *ferrors.ErrorHandler
+	config *ProcessConfig
 
 	// Context and cleanup
 	ctx    context.Context
@@ -219,64 +216,25 @@ type ManagedProcess struct {
 	logger *slog.Logger
 }
 
-// NewManager creates a new process manager with enhanced error handling
+// NewManager creates a new process manager
 func NewManager(config *Config) *Manager {
-	// Create circuit breaker group for different operations
-	cbConfig := &ferrors.CircuitBreakerConfig{
-		MaxFailures: 5,
-		MaxRequests: 1,
-		Interval:    60 * time.Second,
-		Timeout:     30 * time.Second,
-		OnStateChange: func(from, to ferrors.CircuitBreakerState) {
-			slog.Warn("Process manager circuit breaker state changed",
-				"from", from.String(),
-				"to", to.String(),
-			)
-		},
-	}
-
-	cbGroup := ferrors.NewCircuitBreakerGroup(cbConfig)
-
-	// Create error handler
-	errorHandler := &ferrors.ErrorHandler{
-		OnError: func(err *ferrors.FleetError) {
-			slog.Error("Process manager error",
-				"code", err.Code,
-				"message", err.Message,
-				"severity", err.Severity,
-				"retryable", err.Retryable,
-			)
-		},
-		OnPanic: func(recovered any, stack string) {
-			slog.Error("Process manager panic",
-				"recovered", recovered,
-				"stack", stack,
-			)
-		},
-	}
-
 	return &Manager{
-		processes:      make(map[string]*ManagedProcess),
-		logger:         slog.Default().With("component", "process-manager"),
-		config:         config,
-		metrics:        make(chan ProcessMetrics, config.MetricsBuffer),
-		circuitBreaker: cbGroup,
-		errorHandler:   errorHandler,
-		shutdownCh:     make(chan struct{}),
+		processes:  make(map[string]*ManagedProcess),
+		logger:     slog.Default().With("component", "process-manager"),
+		config:     config,
+		metrics:    make(chan ProcessMetrics, config.MetricsBuffer),
+		shutdownCh: make(chan struct{}),
 	}
 }
 
-// DeployApplication deploys and starts an application with enhanced error handling
+// DeployApplication deploys and starts an application
 func (m *Manager) DeployApplication(ctx context.Context, app *pb.Application, artifacts map[string]*pb.Artifact) error {
-	// Recover from panics
-	defer m.errorHandler.HandlePanic()
-
 	// Validate inputs
 	if app == nil {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "application is nil")
+		return errors.New("application is nil")
 	}
 	if app.Id == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "application ID is required")
+		return errors.New("application ID is required")
 	}
 
 	m.logger.Info("Deploying application",
@@ -285,133 +243,74 @@ func (m *Manager) DeployApplication(ctx context.Context, app *pb.Application, ar
 		"id", app.Id,
 	)
 
-	// Use circuit breaker for deployment
-	return m.circuitBreaker.Execute(ctx, "deploy-"+app.Id, func() error {
-		return m.deployWithRetry(ctx, app, artifacts)
-	})
-}
-
-func (m *Manager) deployWithRetry(ctx context.Context, app *pb.Application, artifacts map[string]*pb.Artifact) error {
-	retryConfig := &ferrors.RetryConfig{
-		MaxAttempts:  3,
-		InitialDelay: 1 * time.Second,
-		MaxDelay:     10 * time.Second,
-		Multiplier:   2.0,
-		RetryableFunc: func(err error) bool {
-			code := ferrors.GetCode(err)
-			// Retry on transient errors
-			return code == ferrors.ErrCodeTimeout ||
-				code == ferrors.ErrCodeUnavailable ||
-				code == ferrors.ErrCodeResourceExhausted
-		},
-		OnRetry: func(attempt int, err error, delay time.Duration) {
-			m.logger.Warn("Retrying deployment",
-				"app", app.Name,
-				"attempt", attempt,
+	// Stop existing version if running
+	if existing := m.GetProcess(app.Id); existing != nil {
+		if err := m.stopProcessWithTimeout(ctx, app.Id, 30*time.Second); err != nil {
+			// Log but continue - old process might be dead already
+			m.logger.Warn("Failed to stop existing process",
+				"app", app.Id,
 				"error", err,
-				"delay", delay,
 			)
-		},
+		}
 	}
 
-	return ferrors.Retry(ctx, retryConfig, func() error {
-		// Stop existing version if running
-		if existing := m.GetProcess(app.Id); existing != nil {
-			if err := m.stopProcessWithTimeout(ctx, app.Id, 30*time.Second); err != nil {
-				// Log but continue - old process might be dead already
-				m.logger.Warn("Failed to stop existing process",
-					"app", app.Id,
-					"error", err,
-				)
-			}
-		}
+	// Extract and prepare artifacts
+	execPath, err := m.prepareArtifactsWithValidation(ctx, app, artifacts)
+	if err != nil {
+		return fmt.Errorf("failed to prepare artifacts for %s: %w", app.Name, err)
+	}
 
-		// Extract and prepare artifacts
-		execPath, err := m.prepareArtifactsWithValidation(ctx, app, artifacts)
-		if err != nil {
-			return ferrors.Wrapf(err, ferrors.ErrCodeDeploymentFailed,
-				"failed to prepare artifacts for %s", app.Name)
-		}
+	// Create process configuration
+	config, err := m.buildProcessConfigWithValidation(app, execPath)
+	if err != nil {
+		return fmt.Errorf("invalid process configuration for %s: %w", app.Name, err)
+	}
 
-		// Create process configuration
-		config, err := m.buildProcessConfigWithValidation(app, execPath)
-		if err != nil {
-			return ferrors.Wrapf(err, ferrors.ErrCodeInvalidInput,
-				"invalid process configuration for %s", app.Name)
-		}
+	// Create managed process
+	mp := m.createManagedProcess(app, config)
 
-		// Create managed process
-		mp := m.createManagedProcess(app, config)
+	// Start the process
+	if err := mp.StartWithRetry(ctx); err != nil {
+		return fmt.Errorf("failed to start process %s: %w", app.Name, err)
+	}
 
-		// Start the process
-		if err := mp.StartWithRetry(ctx); err != nil {
-			return ferrors.Wrapf(err, ferrors.ErrCodeDeploymentFailed,
-				"failed to start process %s", app.Name)
-		}
+	// Register with manager
+	m.registerProcess(app.Id, mp)
 
-		// Register with manager
-		m.registerProcess(app.Id, mp)
+	// Start monitoring
+	m.shutdownWg.Add(1)
+	go func() {
+		defer m.shutdownWg.Done()
+		mp.MonitorWithRecovery(m.metrics)
+	}()
 
-		// Start monitoring
-		m.shutdownWg.Add(1)
-		go func() {
-			defer m.shutdownWg.Done()
-			mp.MonitorWithRecovery(m.metrics)
-		}()
+	m.logger.Info("Application deployed successfully",
+		"app", app.Name,
+		"version", app.Version,
+		"pid", mp.Process.Pid,
+	)
 
-		m.logger.Info("Application deployed successfully",
-			"app", app.Name,
-			"version", app.Version,
-			"pid", mp.Process.Pid,
-		)
-
-		return nil
-	})
+	return nil
 }
 
 func (m *Manager) createManagedProcess(app *pb.Application, config *ProcessConfig) *ManagedProcess {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	// Create retry policy for process operations
-	retryConfig := &ferrors.RetryConfig{
-		MaxAttempts:  3,
-		InitialDelay: 500 * time.Millisecond,
-		MaxDelay:     5 * time.Second,
-		Multiplier:   2.0,
-	}
-
-	retryPolicy := ferrors.NewRetryPolicy(retryConfig, nil)
-
-	// Create error handler for this process
-	errorHandler := &ferrors.ErrorHandler{
-		RequestID: app.Id,
-		OnError: func(err *ferrors.FleetError) {
-			m.logger.Error("Process error",
-				"app", app.Name,
-				"error", err,
-			)
-		},
-	}
-
 	return &ManagedProcess{
-		App:          app,
-		config:       config,
-		stopCh:       make(chan struct{}),
-		healthCh:     make(chan HealthStatus, 1),
-		errorCh:      make(chan error, 10),
-		ctx:          ctx,
-		cancel:       cancel,
-		retryPolicy:  retryPolicy,
-		errorHandler: errorHandler,
-		logger:       m.logger.With("app", app.Name),
+		App:      app,
+		config:   config,
+		stopCh:   make(chan struct{}),
+		healthCh: make(chan HealthStatus, 1),
+		errorCh:  make(chan error, 10),
+		ctx:      ctx,
+		cancel:   cancel,
+		logger:   m.logger.With("app", app.Name),
 	}
 }
 
-// StartWithRetry starts the process with retry logic
+// StartWithRetry starts the process
 func (mp *ManagedProcess) StartWithRetry(ctx context.Context) error {
-	return mp.retryPolicy.Execute(ctx, func() error {
-		return mp.start(ctx)
-	})
+	return mp.start(ctx)
 }
 
 func (mp *ManagedProcess) start(ctx context.Context) error {
@@ -422,7 +321,7 @@ func (mp *ManagedProcess) start(ctx context.Context) error {
 	cmd, err := mp.buildCommand()
 	if err != nil {
 		mp.State.Store(StateCrashed)
-		return ferrors.Wrap(err, ferrors.ErrCodeDeploymentFailed, "failed to build command")
+		return fmt.Errorf("failed to build command: %w", err)
 	}
 
 	mp.Cmd = cmd
@@ -436,7 +335,7 @@ func (mp *ManagedProcess) start(ctx context.Context) error {
 	// Set up log streaming with error handling
 	stdout, stderr, err := mp.setupLogStreaming()
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to setup log streaming")
+		return fmt.Errorf("failed to setup log streaming: %w", err)
 	}
 
 	// Start the process with timeout
@@ -450,11 +349,11 @@ func (mp *ManagedProcess) start(ctx context.Context) error {
 
 	select {
 	case <-startCtx.Done():
-		return ferrors.Wrap(startCtx.Err(), ferrors.ErrCodeTimeout, "process start timeout")
+		return fmt.Errorf("process start timeout: %w", startCtx.Err())
 	case err := <-errCh:
 		if err != nil {
 			mp.State.Store(StateCrashed)
-			return ferrors.Wrap(err, ferrors.ErrCodeDeploymentFailed, "failed to start process")
+			return fmt.Errorf("failed to start process: %w", err)
 		}
 	}
 
@@ -479,13 +378,12 @@ func (mp *ManagedProcess) start(ctx context.Context) error {
 
 func (mp *ManagedProcess) buildCommand() (*exec.Cmd, error) {
 	if mp.config.Executable == "" {
-		return nil, ferrors.New(ferrors.ErrCodeInvalidInput, "executable path is empty")
+		return nil, errors.New("executable path is empty")
 	}
 
 	// Validate executable exists
 	if _, err := os.Stat(mp.config.Executable); err != nil {
-		return nil, ferrors.Wrapf(err, ferrors.ErrCodeNotFound,
-			"executable not found: %s", mp.config.Executable)
+		return nil, fmt.Errorf("executable not found: %s: %w", mp.config.Executable, err)
 	}
 
 	cmd := exec.Command(mp.config.Executable, mp.config.Args...)
@@ -503,10 +401,9 @@ func (mp *ManagedProcess) buildCommand() (*exec.Cmd, error) {
 	// Set working directory with validation
 	if mp.config.WorkingDir != "" {
 		if stat, err := os.Stat(mp.config.WorkingDir); err != nil {
-			return nil, ferrors.Wrapf(err, ferrors.ErrCodeNotFound,
-				"working directory not found: %s", mp.config.WorkingDir)
+			return nil, fmt.Errorf("working directory not found: %s: %w", mp.config.WorkingDir, err)
 		} else if !stat.IsDir() {
-			return nil, ferrors.Newf(ferrors.ErrCodeInvalidInput,
+			return nil, fmt.Errorf(
 				"working directory is not a directory: %s", mp.config.WorkingDir)
 		}
 		cmd.Dir = mp.config.WorkingDir
@@ -547,7 +444,7 @@ func (mp *ManagedProcess) startLogStreamingWithRecovery(stdout, stderr io.ReadCl
 		defer func() {
 			if r := recover(); r != nil {
 				mp.logger.Error("Panic in stdout streaming", "recovered", r)
-				mp.errorCh <- ferrors.Newf(ferrors.ErrCodeInternal,
+				mp.errorCh <- fmt.Errorf(
 					"stdout streaming panic: %v", r)
 			}
 		}()
@@ -566,8 +463,8 @@ func (mp *ManagedProcess) startLogStreamingWithRecovery(stdout, stderr io.ReadCl
 			select {
 			case <-mp.stopCh:
 				return
-			case mp.errorCh <- ferrors.Wrap(err, ferrors.ErrCodeInternal,
-				"stdout streaming error"):
+			case mp.errorCh <- fmt.Errorf(
+				"stdout streaming error: %w", err):
 			}
 		}
 	}()
@@ -577,7 +474,7 @@ func (mp *ManagedProcess) startLogStreamingWithRecovery(stdout, stderr io.ReadCl
 		defer func() {
 			if r := recover(); r != nil {
 				mp.logger.Error("Panic in stderr streaming", "recovered", r)
-				mp.errorCh <- ferrors.Newf(ferrors.ErrCodeInternal,
+				mp.errorCh <- fmt.Errorf(
 					"stderr streaming panic: %v", r)
 			}
 		}()
@@ -596,8 +493,8 @@ func (mp *ManagedProcess) startLogStreamingWithRecovery(stdout, stderr io.ReadCl
 			select {
 			case <-mp.stopCh:
 				return
-			case mp.errorCh <- ferrors.Wrap(err, ferrors.ErrCodeInternal,
-				"stderr streaming error"):
+			case mp.errorCh <- fmt.Errorf(
+				"stderr streaming error: %w", err):
 			}
 		}
 	}()
@@ -608,7 +505,7 @@ func (mp *ManagedProcess) startHealthCheckingWithRecovery() {
 		defer func() {
 			if r := recover(); r != nil {
 				mp.logger.Error("Panic in health checking", "recovered", r)
-				mp.errorCh <- ferrors.Newf(ferrors.ErrCodeInternal,
+				mp.errorCh <- fmt.Errorf(
 					"health checking panic: %v", r)
 			}
 		}()
@@ -690,9 +587,7 @@ func (mp *ManagedProcess) monitorExitWithRecovery() {
 		// Unexpected exit
 		mp.State.Store(StateCrashed)
 
-		fleetErr := ferrors.Wrapf(err, ferrors.ErrCodeDeploymentFailed,
-			"process exited unexpectedly")
-		mp.errorHandler.Handle(fleetErr)
+		mp.logger.Error("Process exited unexpectedly", "error", err)
 
 		// Check restart policy
 		if mp.shouldRestartWithBackoff() {
@@ -734,8 +629,9 @@ func (mp *ManagedProcess) restartWithErrorHandling() {
 		baseDelay = 30 * time.Second
 	}
 
-	// Add jitter to prevent thundering herd
-	jitteredDelay := ferrors.ApplyJitter(baseDelay, 0.1)
+	// Add jitter to prevent thundering herd (simple jitter implementation)
+	jitter := time.Duration(float64(baseDelay) * 0.1 * (2.0*rand.Float64() - 1.0))
+	jitteredDelay := baseDelay + jitter
 
 	time.Sleep(jitteredDelay)
 
@@ -776,7 +672,7 @@ func (mp *ManagedProcess) MonitorWithRecovery(metricsCh chan<- ProcessMetrics) {
 		case <-mp.stopCh:
 			return
 		case err := <-mp.errorCh:
-			mp.errorHandler.Handle(err)
+			mp.logger.Error("Process error received", "error", err)
 		case <-ticker.C:
 			metrics, err := mp.collectMetrics()
 			if err != nil {
@@ -800,12 +696,12 @@ func (mp *ManagedProcess) collectMetrics() (ProcessMetrics, error) {
 	}
 
 	if mp.Process == nil {
-		return metrics, ferrors.New(ferrors.ErrCodeInternal, "process not started")
+		return metrics, errors.New("process not started")
 	}
 
 	p, err := process.NewProcess(int32(mp.Process.Pid))
 	if err != nil {
-		return metrics, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get process")
+		return metrics, fmt.Errorf("failed to get process: %w", err)
 	}
 
 	// Collect metrics with error handling for each
@@ -839,13 +735,13 @@ func (mp *ManagedProcess) collectMetrics() (ProcessMetrics, error) {
 
 func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Application, artifacts map[string]*pb.Artifact) (string, error) {
 	if len(artifacts) == 0 {
-		return "", ferrors.New(ferrors.ErrCodeInvalidInput, "no artifacts provided")
+		return "", errors.New("no artifacts provided")
 	}
 
 	// Create deployment directory
 	deployDir := filepath.Join("/opt/fleetd/deployments", app.Name, app.Version)
 	if err := os.MkdirAll(deployDir, 0755); err != nil {
-		return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to create deployment directory")
+		return "", fmt.Errorf("failed to create deployment directory: %w", err)
 	}
 
 	// Process each artifact
@@ -856,11 +752,11 @@ func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Ap
 		if artifact.StorageUrl != "" {
 			data, err := m.downloadArtifact(ctx, artifact.StorageUrl)
 			if err != nil {
-				return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to download artifact")
+				return "", fmt.Errorf("failed to download artifact: %w", err)
 			}
 			artifactData = data
 		} else {
-			return "", ferrors.New(ferrors.ErrCodeInvalidInput, "artifact has no storage URL")
+			return "", errors.New("artifact has no storage URL")
 		}
 
 		// Validate checksum if provided
@@ -868,7 +764,7 @@ func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Ap
 			// Try SHA256 first, then other checksums
 			if sha256sum, ok := artifact.Checksums["sha256"]; ok {
 				if err := m.validateChecksum(artifactData, sha256sum); err != nil {
-					return "", ferrors.Wrap(err, ferrors.ErrCodePermissionDenied, "artifact checksum validation failed")
+					return "", fmt.Errorf("artifact checksum validation failed: %w", err)
 				}
 			}
 		}
@@ -879,7 +775,7 @@ func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Ap
 		case pb.ArtifactType_ARTIFACT_TYPE_BINARY:
 			// Write binary directly
 			if err := os.WriteFile(artifactPath, artifactData, 0755); err != nil {
-				return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to write binary")
+				return "", fmt.Errorf("failed to write binary: %w", err)
 			}
 			if mainExecutable == "" {
 				mainExecutable = artifactPath
@@ -890,12 +786,12 @@ func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Ap
 			if strings.HasSuffix(name, ".tar.gz") || strings.HasSuffix(name, ".tgz") {
 				// Extract tar.gz archive
 				if err := m.extractTarGz(artifactData, deployDir); err != nil {
-					return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to extract tar.gz")
+					return "", fmt.Errorf("failed to extract tar.gz: %w", err)
 				}
 			} else if strings.HasSuffix(name, ".zip") {
 				// Extract zip archive
 				if err := m.extractZip(artifactData, deployDir); err != nil {
-					return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to extract zip")
+					return "", fmt.Errorf("failed to extract zip: %w", err)
 				}
 			}
 			// Find main executable in extracted files
@@ -906,7 +802,7 @@ func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Ap
 		case pb.ArtifactType_ARTIFACT_TYPE_SCRIPT:
 			// Write script with execute permissions
 			if err := os.WriteFile(artifactPath, artifactData, 0755); err != nil {
-				return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to write script")
+				return "", fmt.Errorf("failed to write script: %w", err)
 			}
 			if mainExecutable == "" {
 				mainExecutable = artifactPath
@@ -915,13 +811,13 @@ func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Ap
 		default:
 			// Write as-is for unknown types
 			if err := os.WriteFile(artifactPath, artifactData, 0644); err != nil {
-				return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to write artifact")
+				return "", fmt.Errorf("failed to write artifact: %w", err)
 			}
 		}
 	}
 
 	if mainExecutable == "" {
-		return "", ferrors.New(ferrors.ErrCodeInvalidInput, "no executable found in artifacts")
+		return "", errors.New("no executable found in artifacts")
 	}
 
 	return mainExecutable, nil
@@ -929,7 +825,7 @@ func (m *Manager) prepareArtifactsWithValidation(ctx context.Context, app *pb.Ap
 
 func (m *Manager) buildProcessConfigWithValidation(app *pb.Application, execPath string) (*ProcessConfig, error) {
 	if execPath == "" {
-		return nil, ferrors.New(ferrors.ErrCodeInvalidInput, "executable path is empty")
+		return nil, errors.New("executable path is empty")
 	}
 
 	config := &ProcessConfig{
@@ -953,17 +849,15 @@ func (m *Manager) buildProcessConfigWithValidation(app *pb.Application, execPath
 func (m *Manager) validateProcessConfig(config *ProcessConfig) error {
 	// Validate executable
 	if _, err := os.Stat(config.Executable); err != nil {
-		return ferrors.Wrapf(err, ferrors.ErrCodeNotFound,
-			"executable not found: %s", config.Executable)
+		return fmt.Errorf("executable not found: %s: %w", config.Executable, err)
 	}
 
 	// Validate working directory if specified
 	if config.WorkingDir != "" {
 		if stat, err := os.Stat(config.WorkingDir); err != nil {
-			return ferrors.Wrapf(err, ferrors.ErrCodeNotFound,
-				"working directory not found: %s", config.WorkingDir)
+			return fmt.Errorf("working directory not found: %s: %w", config.WorkingDir, err)
 		} else if !stat.IsDir() {
-			return ferrors.Newf(ferrors.ErrCodeInvalidInput,
+			return fmt.Errorf(
 				"working directory is not a directory: %s", config.WorkingDir)
 		}
 	}
@@ -1025,8 +919,8 @@ func (m *Manager) stopProcessWithTimeout(ctx context.Context, appID string, time
 			m.logger.Warn("Process did not exit after SIGTERM, sending SIGKILL",
 				"app", appID, "grace_period", gracePeriod)
 			if err := mp.Process.Kill(); err != nil {
-				return ferrors.Wrap(err, ferrors.ErrCodeTimeout,
-					"failed to kill process after timeout")
+				return fmt.Errorf(
+					"failed to kill process after timeout: %w", err)
 			}
 			// Wait for process to fully exit after SIGKILL
 			<-done
@@ -1122,8 +1016,8 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		return ferrors.Wrap(ctx.Err(), ferrors.ErrCodeTimeout,
-			"shutdown timeout")
+		return fmt.Errorf(
+			"shutdown timeout: %w", ctx.Err())
 	case <-done:
 		// All processes stopped
 	}

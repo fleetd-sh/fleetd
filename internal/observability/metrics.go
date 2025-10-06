@@ -2,6 +2,7 @@ package observability
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -14,64 +15,64 @@ type MetricsCollector struct {
 	registry *prometheus.Registry
 
 	// Device metrics
-	devicesTotal         *prometheus.GaugeVec
-	devicesOnline        *prometheus.GaugeVec
-	deviceRegistrations  *prometheus.CounterVec
-	deviceHeartbeats     *prometheus.CounterVec
-	deviceErrors         *prometheus.CounterVec
+	devicesTotal        *prometheus.GaugeVec
+	devicesOnline       *prometheus.GaugeVec
+	deviceRegistrations *prometheus.CounterVec
+	deviceHeartbeats    *prometheus.CounterVec
+	deviceErrors        *prometheus.CounterVec
 
 	// Update metrics
-	updatesInitiated     *prometheus.CounterVec
-	updatesSuccessful    *prometheus.CounterVec
-	updatesFailed        *prometheus.CounterVec
-	updateDuration       *prometheus.HistogramVec
-	rollbacksPerformed   *prometheus.CounterVec
+	updatesInitiated   *prometheus.CounterVec
+	updatesSuccessful  *prometheus.CounterVec
+	updatesFailed      *prometheus.CounterVec
+	updateDuration     *prometheus.HistogramVec
+	rollbacksPerformed *prometheus.CounterVec
 
 	// API metrics
-	httpRequestsTotal    *prometheus.CounterVec
-	httpRequestDuration  *prometheus.HistogramVec
-	httpResponseSize     *prometheus.HistogramVec
-	activeConnections    prometheus.Gauge
+	httpRequestsTotal   *prometheus.CounterVec
+	httpRequestDuration *prometheus.HistogramVec
+	httpResponseSize    *prometheus.HistogramVec
+	activeConnections   prometheus.Gauge
 
 	// System metrics
-	cpuUsage            *prometheus.GaugeVec
-	memoryUsage         *prometheus.GaugeVec
-	diskUsage           *prometheus.GaugeVec
-	networkBytesRx      *prometheus.CounterVec
-	networkBytesTx      *prometheus.CounterVec
+	cpuUsage       *prometheus.GaugeVec
+	memoryUsage    *prometheus.GaugeVec
+	diskUsage      *prometheus.GaugeVec
+	networkBytesRx *prometheus.CounterVec
+	networkBytesTx *prometheus.CounterVec
 
 	// Database metrics
-	dbConnectionsActive  prometheus.Gauge
-	dbConnectionsIdle    prometheus.Gauge
+	dbConnectionsActive prometheus.Gauge
+	dbConnectionsIdle   prometheus.Gauge
 	dbQueryDuration     *prometheus.HistogramVec
 	dbQueryErrors       *prometheus.CounterVec
 	dbTransactions      *prometheus.CounterVec
 
 	// Business metrics
-	metricsIngested     *prometheus.CounterVec
-	metricsBuffered     prometheus.Gauge
-	commandsExecuted    *prometheus.CounterVec
-	commandsFailed      *prometheus.CounterVec
+	metricsIngested  *prometheus.CounterVec
+	metricsBuffered  prometheus.Gauge
+	commandsExecuted *prometheus.CounterVec
+	commandsFailed   *prometheus.CounterVec
 
 	// Agent metrics (for device-side)
-	agentUptime         prometheus.Counter
-	agentRestarts       prometheus.Counter
-	agentStateChanges   *prometheus.CounterVec
-	agentConfigReloads  prometheus.Counter
+	agentUptime        prometheus.Counter
+	agentRestarts      prometheus.Counter
+	agentStateChanges  *prometheus.CounterVec
+	agentConfigReloads prometheus.Counter
 
 	// Rate limiting metrics
-	rateLimitRequests     *prometheus.CounterVec
-	rateLimitRejections   *prometheus.CounterVec
-	rateLimitBans         *prometheus.CounterVec
+	rateLimitRequests       *prometheus.CounterVec
+	rateLimitRejections     *prometheus.CounterVec
+	rateLimitBans           *prometheus.CounterVec
 	rateLimitActiveVisitors prometheus.Gauge
-	circuitBreakerState   *prometheus.GaugeVec
-	circuitBreakerTrips   *prometheus.CounterVec
+	circuitBreakerState     *prometheus.GaugeVec
+	circuitBreakerTrips     *prometheus.CounterVec
 
 	// Certificate metrics
-	certificateExpiry     *prometheus.GaugeVec
-	certificateRenewals   *prometheus.CounterVec
-	certificateErrors     *prometheus.CounterVec
-	certificateValid      *prometheus.GaugeVec
+	certificateExpiry   *prometheus.GaugeVec
+	certificateRenewals *prometheus.CounterVec
+	certificateErrors   *prometheus.CounterVec
+	certificateValid    *prometheus.GaugeVec
 }
 
 func NewMetricsCollector() *MetricsCollector {

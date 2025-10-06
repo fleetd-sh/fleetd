@@ -13,15 +13,15 @@ import (
 
 // DeviceAuthRequest represents a device authorization request
 type DeviceAuthRequest struct {
-	ID              string    `json:"id"`
-	DeviceCode      string    `json:"device_code"`
-	UserCode        string    `json:"user_code"`
-	VerificationURL string    `json:"verification_url"`
-	ExpiresAt       time.Time `json:"expires_at"`
-	Interval        int       `json:"interval"`
-	ClientID        string    `json:"client_id"`
-	ClientName      string    `json:"client_name"`
-	UserID          *string   `json:"user_id,omitempty"`
+	ID              string     `json:"id"`
+	DeviceCode      string     `json:"device_code"`
+	UserCode        string     `json:"user_code"`
+	VerificationURL string     `json:"verification_url"`
+	ExpiresAt       time.Time  `json:"expires_at"`
+	Interval        int        `json:"interval"`
+	ClientID        string     `json:"client_id"`
+	ClientName      string     `json:"client_name"`
+	UserID          *string    `json:"user_id,omitempty"`
 	ApprovedAt      *time.Time `json:"approved_at,omitempty"`
 }
 
@@ -156,11 +156,12 @@ func (s *DeviceAuthService) VerifyUserCode(userCode string) (*DeviceAuthRequest,
 		SELECT id, device_code, user_code, verification_url, expires_at,
 		       interval_seconds, client_id, client_name, user_id, approved_at
 		FROM device_auth_request
-		WHERE user_code = $1 AND expires_at > NOW()
+		WHERE user_code = $1 AND expires_at > CURRENT_TIMESTAMP
 	`
 
 	var authReq DeviceAuthRequest
 	var interval int
+	var clientName sql.NullString
 
 	err := s.db.QueryRow(query, userCode).Scan(
 		&authReq.ID,
@@ -170,7 +171,7 @@ func (s *DeviceAuthService) VerifyUserCode(userCode string) (*DeviceAuthRequest,
 		&authReq.ExpiresAt,
 		&interval,
 		&authReq.ClientID,
-		&authReq.ClientName,
+		&clientName,
 		&authReq.UserID,
 		&authReq.ApprovedAt,
 	)
@@ -183,6 +184,9 @@ func (s *DeviceAuthService) VerifyUserCode(userCode string) (*DeviceAuthRequest,
 	}
 
 	authReq.Interval = interval
+	if clientName.Valid {
+		authReq.ClientName = clientName.String
+	}
 	return &authReq, nil
 }
 
@@ -193,8 +197,8 @@ func (s *DeviceAuthService) ApproveDeviceAuth(userCode, userID string) error {
 
 	query := `
 		UPDATE device_auth_request
-		SET user_id = $1, approved_at = NOW()
-		WHERE user_code = $2 AND expires_at > NOW() AND approved_at IS NULL
+		SET user_id = $1, approved_at = CURRENT_TIMESTAMP
+		WHERE user_code = $2 AND expires_at > CURRENT_TIMESTAMP AND approved_at IS NULL
 	`
 
 	result, err := s.db.Exec(query, userID, userCode)
@@ -217,8 +221,8 @@ func (s *DeviceAuthService) ApproveDeviceAuth(userCode, userID string) error {
 func (s *DeviceAuthService) ApproveDeviceAuthByID(deviceAuthID, userID string) error {
 	query := `
 		UPDATE device_auth_request
-		SET user_id = $1, approved_at = NOW()
-		WHERE id = $2 AND expires_at > NOW() AND approved_at IS NULL
+		SET user_id = $1, approved_at = CURRENT_TIMESTAMP
+		WHERE id = $2 AND expires_at > CURRENT_TIMESTAMP AND approved_at IS NULL
 	`
 
 	result, err := s.db.Exec(query, userID, deviceAuthID)
@@ -243,11 +247,12 @@ func (s *DeviceAuthService) CheckDeviceAuth(deviceCode string) (*DeviceAuthReque
 		SELECT id, device_code, user_code, verification_url, expires_at,
 		       interval_seconds, client_id, client_name, user_id, approved_at
 		FROM device_auth_request
-		WHERE device_code = $1 AND expires_at > NOW()
+		WHERE device_code = $1 AND expires_at > CURRENT_TIMESTAMP
 	`
 
 	var authReq DeviceAuthRequest
 	var interval int
+	var clientName sql.NullString
 
 	err := s.db.QueryRow(query, deviceCode).Scan(
 		&authReq.ID,
@@ -257,7 +262,7 @@ func (s *DeviceAuthService) CheckDeviceAuth(deviceCode string) (*DeviceAuthReque
 		&authReq.ExpiresAt,
 		&interval,
 		&authReq.ClientID,
-		&authReq.ClientName,
+		&clientName,
 		&authReq.UserID,
 		&authReq.ApprovedAt,
 	)
@@ -270,6 +275,9 @@ func (s *DeviceAuthService) CheckDeviceAuth(deviceCode string) (*DeviceAuthReque
 	}
 
 	authReq.Interval = interval
+	if clientName.Valid {
+		authReq.ClientName = clientName.String
+	}
 
 	if authReq.ApprovedAt == nil {
 		return nil, fmt.Errorf("authorization_pending")
@@ -285,8 +293,8 @@ func (s *DeviceAuthService) CreateAccessToken(userID, deviceAuthID, clientID str
 
 	query := `
 		INSERT INTO access_token
-		(id, token, user_id, device_auth_id, expires_at, client_id, scope)
-		VALUES ($1, $2, $3, $4, $5, $6, 'api')
+		(id, token, user_id, device_auth_id, expires_at, client_id)
+		VALUES ($1, $2, $3, $4, $5, $6)
 	`
 
 	_, err := s.db.Exec(query,
@@ -311,7 +319,7 @@ func (s *DeviceAuthService) ValidateToken(token string) (string, error) {
 		SELECT user_id
 		FROM access_token
 		WHERE token = $1
-		  AND expires_at > NOW()
+		  AND expires_at > CURRENT_TIMESTAMP
 		  AND revoked_at IS NULL
 	`
 
@@ -326,7 +334,7 @@ func (s *DeviceAuthService) ValidateToken(token string) (string, error) {
 	}
 
 	// Update last_used
-	updateQuery := `UPDATE access_token SET last_used = NOW() WHERE token = $1`
+	updateQuery := `UPDATE access_token SET last_used = CURRENT_TIMESTAMP WHERE token = $1`
 	s.db.Exec(updateQuery, token)
 
 	return userID, nil

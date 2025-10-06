@@ -22,37 +22,37 @@ import (
 
 // Vault provides secure storage for sensitive credentials
 type Vault struct {
-	path       string
-	key        []byte
-	mu         sync.RWMutex
-	cache      map[string]*Credential
-	cacheTime  map[string]time.Time
-	cacheTTL   time.Duration
+	path      string
+	key       []byte
+	mu        sync.RWMutex
+	cache     map[string]*Credential
+	cacheTime map[string]time.Time
+	cacheTTL  time.Duration
 }
 
 // Credential represents a stored credential
 type Credential struct {
-	ID          string                 `json:"id"`
-	Type        CredentialType         `json:"type"`
-	Name        string                 `json:"name"`
-	Value       string                 `json:"value"`
-	Metadata    map[string]interface{} `json:"metadata"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
-	ExpiresAt   *time.Time             `json:"expires_at,omitempty"`
-	Encrypted   bool                   `json:"encrypted"`
+	ID        string                 `json:"id"`
+	Type      CredentialType         `json:"type"`
+	Name      string                 `json:"name"`
+	Value     string                 `json:"value"`
+	Metadata  map[string]interface{} `json:"metadata"`
+	CreatedAt time.Time              `json:"created_at"`
+	UpdatedAt time.Time              `json:"updated_at"`
+	ExpiresAt *time.Time             `json:"expires_at,omitempty"`
+	Encrypted bool                   `json:"encrypted"`
 }
 
 // CredentialType defines the type of credential
 type CredentialType string
 
 const (
-	CredentialTypeAPIKey     CredentialType = "api_key"
-	CredentialTypeToken      CredentialType = "token"
+	CredentialTypeAPIKey      CredentialType = "api_key"
+	CredentialTypeToken       CredentialType = "token"
 	CredentialTypeCertificate CredentialType = "certificate"
-	CredentialTypePrivateKey CredentialType = "private_key"
-	CredentialTypePassword   CredentialType = "password"
-	CredentialTypeSecret     CredentialType = "secret"
+	CredentialTypePrivateKey  CredentialType = "private_key"
+	CredentialTypePassword    CredentialType = "password"
+	CredentialTypeSecret      CredentialType = "secret"
 )
 
 // VaultConfig holds vault configuration

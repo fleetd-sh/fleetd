@@ -207,28 +207,6 @@ func GetAPIKey(ctx context.Context) (string, bool) {
 	return apiKey, ok
 }
 
-// loggingResponseWriter wraps http.ResponseWriter to capture status code for logging
-type loggingResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	written    bool
-}
-
-func (rw *loggingResponseWriter) WriteHeader(code int) {
-	if !rw.written {
-		rw.statusCode = code
-		rw.ResponseWriter.WriteHeader(code)
-		rw.written = true
-	}
-}
-
-func (rw *loggingResponseWriter) Write(b []byte) (int, error) {
-	if !rw.written {
-		rw.WriteHeader(http.StatusOK)
-	}
-	return rw.ResponseWriter.Write(b)
-}
-
 // NewLoggingMiddleware creates logging middleware
 func NewLoggingMiddleware() func(http.Handler) http.Handler {
 	logger := slog.Default().With("component", "http")
@@ -237,30 +215,24 @@ func NewLoggingMiddleware() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
 
-			// Wrap response writer to capture status code
-			rw := &loggingResponseWriter{
-				ResponseWriter: w,
-				statusCode:     http.StatusOK,
-				written:        false,
-			}
+			rw := NewResponseWriter(w)
 
 			next.ServeHTTP(rw, r)
 
-			// Log request details
 			duration := time.Since(start)
 
 			logLevel := slog.LevelInfo
-			if rw.statusCode >= 400 && rw.statusCode < 500 {
+			statusCode := rw.StatusCode()
+			if statusCode >= 400 && statusCode < 500 {
 				logLevel = slog.LevelWarn
-			} else if rw.statusCode >= 500 {
+			} else if statusCode >= 500 {
 				logLevel = slog.LevelError
 			}
 
-			// Include request ID if available
 			fields := []any{
 				"method", r.Method,
 				"path", r.URL.Path,
-				"status", rw.statusCode,
+				"status", statusCode,
 				"duration_ms", duration.Milliseconds(),
 				"remote_addr", r.RemoteAddr,
 				"user_agent", r.UserAgent(),

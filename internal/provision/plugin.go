@@ -17,20 +17,20 @@ import (
 
 // Plugin represents a YAML-based plugin (no CGO required)
 type Plugin struct {
-	Name          string                 `yaml:"name"`
-	Version       string                 `yaml:"version"`
-	Description   string                 `yaml:"description"`
-	Author        string                 `yaml:"author"`
-	Platforms     []string               `yaml:"platforms"`
-	Architectures []string               `yaml:"architectures"`
-	Options       map[string]OptionDef   `yaml:"options"`
-	Files         []FileDefinition       `yaml:"files"`
-	Hooks         PluginHooks            `yaml:"hooks"`
-	Resources     ResourceRequirements   `yaml:"resources"`
+	Name          string               `yaml:"name"`
+	Version       string               `yaml:"version"`
+	Description   string               `yaml:"description"`
+	Author        string               `yaml:"author"`
+	Platforms     []string             `yaml:"platforms"`
+	Architectures []string             `yaml:"architectures"`
+	Options       map[string]OptionDef `yaml:"options"`
+	Files         []FileDefinition     `yaml:"files"`
+	Hooks         PluginHooks          `yaml:"hooks"`
+	Resources     ResourceRequirements `yaml:"resources"`
 
 	// Runtime data
-	config     map[string]interface{}
-	pluginDir  string
+	config    map[string]interface{}
+	pluginDir string
 }
 
 // OptionDef defines a plugin configuration option
@@ -67,15 +67,15 @@ type FirstrunHook struct {
 
 // ResourceRequirements defines plugin resource needs
 type ResourceRequirements struct {
-	MinMemoryMB    int  `yaml:"min_memory_mb"`
-	MinDiskMB      int  `yaml:"min_disk_mb"`
+	MinMemoryMB     int  `yaml:"min_memory_mb"`
+	MinDiskMB       int  `yaml:"min_disk_mb"`
 	RequiresNetwork bool `yaml:"requires_network"`
 }
 
 // PluginManager manages YAML-based plugins
 type PluginManager struct {
-	plugins        map[string]*Plugin
-	embeddedFS     *embed.FS
+	plugins         map[string]*Plugin
+	embeddedFS      *embed.FS
 	customPluginDir string
 }
 

@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"fleetd.sh/internal/ferrors"
 )
 
 // RBACStore provides database persistence for RBAC
@@ -106,7 +104,7 @@ func (s *SQLRBACStore) createTables() error {
 			// Try SQLite-compatible version if PostgreSQL fails
 			sqliteQuery := convertToSQLite(query)
 			if _, err2 := s.db.Exec(sqliteQuery); err2 != nil {
-				return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to create RBAC tables")
+				return fmt.Errorf("failed to create RBAC tables: %w", err)
 			}
 		}
 	}
@@ -118,7 +116,7 @@ func (s *SQLRBACStore) createTables() error {
 func (s *SQLRBACStore) CreateUser(ctx context.Context, user *User) error {
 	metadataJSON, err := json.Marshal(user.Metadata)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to marshal metadata")
+		return fmt.Errorf("failed to marshal metadata: %w", err)
 	}
 
 	query := `
@@ -134,7 +132,7 @@ func (s *SQLRBACStore) CreateUser(ctx context.Context, user *User) error {
 		user.ID, user.Username, user.Email, metadataJSON, now, now)
 
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to create user")
+		return fmt.Errorf("failed to create user: %w", err)
 	}
 
 	// Insert roles
@@ -172,10 +170,10 @@ func (s *SQLRBACStore) GetUser(ctx context.Context, userID string) (*User, error
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, ferrors.Newf(ferrors.ErrCodeNotFound, "user not found: %s", userID)
+		return nil, fmt.Errorf("user not found: %s", userID)
 	}
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get user")
+		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
 	if lastLogin.Valid {
@@ -184,7 +182,7 @@ func (s *SQLRBACStore) GetUser(ctx context.Context, userID string) (*User, error
 
 	if metadataJSON != nil {
 		if err := json.Unmarshal(metadataJSON, &user.Metadata); err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to unmarshal metadata")
+			return nil, fmt.Errorf("failed to unmarshal metadata: %w", err)
 		}
 	}
 
@@ -210,10 +208,10 @@ func (s *SQLRBACStore) GetUserByUsername(ctx context.Context, username string) (
 	var userID string
 	err := s.db.QueryRowContext(ctx, query, username).Scan(&userID)
 	if err == sql.ErrNoRows {
-		return nil, ferrors.Newf(ferrors.ErrCodeNotFound, "user not found: %s", username)
+		return nil, fmt.Errorf("user not found: %s", username)
 	}
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get user by username")
+		return nil, fmt.Errorf("failed to get user by username: %w", err)
 	}
 
 	return s.GetUser(ctx, userID)
@@ -223,7 +221,7 @@ func (s *SQLRBACStore) GetUserByUsername(ctx context.Context, username string) (
 func (s *SQLRBACStore) UpdateUser(ctx context.Context, user *User) error {
 	metadataJSON, err := json.Marshal(user.Metadata)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to marshal metadata")
+		return fmt.Errorf("failed to marshal metadata: %w", err)
 	}
 
 	query := `
@@ -238,16 +236,16 @@ func (s *SQLRBACStore) UpdateUser(ctx context.Context, user *User) error {
 		user.Username, user.Email, metadataJSON, user.UpdatedAt, user.ID)
 
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to update user")
+		return fmt.Errorf("failed to update user: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get rows affected")
+		return fmt.Errorf("failed to get rows affected: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		return ferrors.Newf(ferrors.ErrCodeNotFound, "user not found: %s", user.ID)
+		return fmt.Errorf("user not found: %s", user.ID)
 	}
 
 	return nil
@@ -259,16 +257,16 @@ func (s *SQLRBACStore) DeleteUser(ctx context.Context, userID string) error {
 
 	result, err := s.db.ExecContext(ctx, query, userID)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to delete user")
+		return fmt.Errorf("failed to delete user: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get rows affected")
+		return fmt.Errorf("failed to get rows affected: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		return ferrors.Newf(ferrors.ErrCodeNotFound, "user not found: %s", userID)
+		return fmt.Errorf("user not found: %s", userID)
 	}
 
 	return nil
@@ -285,7 +283,7 @@ func (s *SQLRBACStore) ListUsers(ctx context.Context, limit, offset int) ([]*Use
 
 	rows, err := s.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to list users")
+		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
 	defer rows.Close()
 
@@ -300,7 +298,7 @@ func (s *SQLRBACStore) ListUsers(ctx context.Context, limit, offset int) ([]*Use
 			&user.CreatedAt, &user.UpdatedAt, &lastLogin,
 		)
 		if err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to scan user")
+			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
 
 		if lastLogin.Valid {
@@ -309,7 +307,7 @@ func (s *SQLRBACStore) ListUsers(ctx context.Context, limit, offset int) ([]*Use
 
 		if metadataJSON != nil {
 			if err := json.Unmarshal(metadataJSON, &user.Metadata); err != nil {
-				return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to unmarshal metadata")
+				return nil, fmt.Errorf("failed to unmarshal metadata: %w", err)
 			}
 		}
 
@@ -342,7 +340,7 @@ func (s *SQLRBACStore) AssignRole(ctx context.Context, userID string, role Role)
 		// Try SQLite query
 		_, err = s.db.ExecContext(ctx, sqliteQuery, userID, string(role))
 		if err != nil {
-			return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to assign role")
+			return fmt.Errorf("failed to assign role: %w", err)
 		}
 	}
 
@@ -355,7 +353,7 @@ func (s *SQLRBACStore) RevokeRole(ctx context.Context, userID string, role Role)
 
 	_, err := s.db.ExecContext(ctx, query, userID, string(role))
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to revoke role")
+		return fmt.Errorf("failed to revoke role: %w", err)
 	}
 
 	return nil
@@ -367,7 +365,7 @@ func (s *SQLRBACStore) GetUserRoles(ctx context.Context, userID string) ([]Role,
 
 	rows, err := s.db.QueryContext(ctx, query, userID)
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get user roles")
+		return nil, fmt.Errorf("failed to get user roles: %w", err)
 	}
 	defer rows.Close()
 
@@ -375,7 +373,7 @@ func (s *SQLRBACStore) GetUserRoles(ctx context.Context, userID string) ([]Role,
 	for rows.Next() {
 		var roleStr string
 		if err := rows.Scan(&roleStr); err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to scan role")
+			return nil, fmt.Errorf("failed to scan role: %w", err)
 		}
 		roles = append(roles, Role(roleStr))
 	}
@@ -402,7 +400,7 @@ func (s *SQLRBACStore) GrantPermission(ctx context.Context, userID string, permi
 		// Try SQLite query
 		_, err = s.db.ExecContext(ctx, sqliteQuery, userID, string(permission))
 		if err != nil {
-			return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to grant permission")
+			return fmt.Errorf("failed to grant permission: %w", err)
 		}
 	}
 
@@ -415,7 +413,7 @@ func (s *SQLRBACStore) RevokePermission(ctx context.Context, userID string, perm
 
 	_, err := s.db.ExecContext(ctx, query, userID, string(permission))
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to revoke permission")
+		return fmt.Errorf("failed to revoke permission: %w", err)
 	}
 
 	return nil
@@ -427,7 +425,7 @@ func (s *SQLRBACStore) GetUserPermissions(ctx context.Context, userID string) ([
 
 	rows, err := s.db.QueryContext(ctx, query, userID)
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get user permissions")
+		return nil, fmt.Errorf("failed to get user permissions: %w", err)
 	}
 	defer rows.Close()
 
@@ -435,7 +433,7 @@ func (s *SQLRBACStore) GetUserPermissions(ctx context.Context, userID string) ([
 	for rows.Next() {
 		var permStr string
 		if err := rows.Scan(&permStr); err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to scan permission")
+			return nil, fmt.Errorf("failed to scan permission: %w", err)
 		}
 		permissions = append(permissions, Permission(permStr))
 	}
@@ -447,12 +445,12 @@ func (s *SQLRBACStore) GetUserPermissions(ctx context.Context, userID string) ([
 func (s *SQLRBACStore) CreatePolicy(ctx context.Context, policy *Policy) error {
 	actionsJSON, err := json.Marshal(policy.Actions)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to marshal actions")
+		return fmt.Errorf("failed to marshal actions: %w", err)
 	}
 
 	conditionsJSON, err := json.Marshal(policy.Conditions)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to marshal conditions")
+		return fmt.Errorf("failed to marshal conditions: %w", err)
 	}
 
 	query := `
@@ -465,7 +463,7 @@ func (s *SQLRBACStore) CreatePolicy(ctx context.Context, policy *Policy) error {
 		actionsJSON, string(policy.Effect), conditionsJSON, policy.Priority)
 
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to create policy")
+		return fmt.Errorf("failed to create policy: %w", err)
 	}
 
 	return nil
@@ -489,21 +487,21 @@ func (s *SQLRBACStore) GetPolicy(ctx context.Context, policyID string) (*Policy,
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, ferrors.Newf(ferrors.ErrCodeNotFound, "policy not found: %s", policyID)
+		return nil, fmt.Errorf("policy not found: %s", policyID)
 	}
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get policy")
+		return nil, fmt.Errorf("failed to get policy: %w", err)
 	}
 
 	policy.Effect = PolicyEffect(effectStr)
 
 	if err := json.Unmarshal(actionsJSON, &policy.Actions); err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to unmarshal actions")
+		return nil, fmt.Errorf("failed to unmarshal actions: %w", err)
 	}
 
 	if conditionsJSON != nil {
 		if err := json.Unmarshal(conditionsJSON, &policy.Conditions); err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to unmarshal conditions")
+			return nil, fmt.Errorf("failed to unmarshal conditions: %w", err)
 		}
 	}
 
@@ -514,12 +512,12 @@ func (s *SQLRBACStore) GetPolicy(ctx context.Context, policyID string) (*Policy,
 func (s *SQLRBACStore) UpdatePolicy(ctx context.Context, policy *Policy) error {
 	actionsJSON, err := json.Marshal(policy.Actions)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to marshal actions")
+		return fmt.Errorf("failed to marshal actions: %w", err)
 	}
 
 	conditionsJSON, err := json.Marshal(policy.Conditions)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to marshal conditions")
+		return fmt.Errorf("failed to marshal conditions: %w", err)
 	}
 
 	query := `
@@ -534,16 +532,16 @@ func (s *SQLRBACStore) UpdatePolicy(ctx context.Context, policy *Policy) error {
 		string(policy.Effect), conditionsJSON, policy.Priority, time.Now(), policy.ID)
 
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to update policy")
+		return fmt.Errorf("failed to update policy: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get rows affected")
+		return fmt.Errorf("failed to get rows affected: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		return ferrors.Newf(ferrors.ErrCodeNotFound, "policy not found: %s", policy.ID)
+		return fmt.Errorf("policy not found: %s", policy.ID)
 	}
 
 	return nil
@@ -555,16 +553,16 @@ func (s *SQLRBACStore) DeletePolicy(ctx context.Context, policyID string) error 
 
 	result, err := s.db.ExecContext(ctx, query, policyID)
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to delete policy")
+		return fmt.Errorf("failed to delete policy: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get rows affected")
+		return fmt.Errorf("failed to get rows affected: %w", err)
 	}
 
 	if rowsAffected == 0 {
-		return ferrors.Newf(ferrors.ErrCodeNotFound, "policy not found: %s", policyID)
+		return fmt.Errorf("policy not found: %s", policyID)
 	}
 
 	return nil
@@ -581,7 +579,7 @@ func (s *SQLRBACStore) ListPolicies(ctx context.Context, limit, offset int) ([]*
 
 	rows, err := s.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to list policies")
+		return nil, fmt.Errorf("failed to list policies: %w", err)
 	}
 	defer rows.Close()
 
@@ -596,18 +594,18 @@ func (s *SQLRBACStore) ListPolicies(ctx context.Context, limit, offset int) ([]*
 			&actionsJSON, &effectStr, &conditionsJSON, &policy.Priority,
 		)
 		if err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to scan policy")
+			return nil, fmt.Errorf("failed to scan policy: %w", err)
 		}
 
 		policy.Effect = PolicyEffect(effectStr)
 
 		if err := json.Unmarshal(actionsJSON, &policy.Actions); err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to unmarshal actions")
+			return nil, fmt.Errorf("failed to unmarshal actions: %w", err)
 		}
 
 		if conditionsJSON != nil {
 			if err := json.Unmarshal(conditionsJSON, &policy.Conditions); err != nil {
-				return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to unmarshal conditions")
+				return nil, fmt.Errorf("failed to unmarshal conditions: %w", err)
 			}
 		}
 
@@ -628,7 +626,7 @@ func (s *SQLRBACStore) GetPoliciesForResource(ctx context.Context, resource stri
 
 	rows, err := s.db.QueryContext(ctx, query, resource)
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to get policies for resource")
+		return nil, fmt.Errorf("failed to get policies for resource: %w", err)
 	}
 	defer rows.Close()
 
@@ -643,18 +641,18 @@ func (s *SQLRBACStore) GetPoliciesForResource(ctx context.Context, resource stri
 			&actionsJSON, &effectStr, &conditionsJSON, &policy.Priority,
 		)
 		if err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to scan policy")
+			return nil, fmt.Errorf("failed to scan policy: %w", err)
 		}
 
 		policy.Effect = PolicyEffect(effectStr)
 
 		if err := json.Unmarshal(actionsJSON, &policy.Actions); err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to unmarshal actions")
+			return nil, fmt.Errorf("failed to unmarshal actions: %w", err)
 		}
 
 		if conditionsJSON != nil {
 			if err := json.Unmarshal(conditionsJSON, &policy.Conditions); err != nil {
-				return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to unmarshal conditions")
+				return nil, fmt.Errorf("failed to unmarshal conditions: %w", err)
 			}
 		}
 

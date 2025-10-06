@@ -29,15 +29,15 @@ type Config struct {
 	MetricsAddr    string // Address for Prometheus metrics endpoint
 
 	// Logging
-	LogLevel   string
-	LogFormat  string
-	LogOutput  string
+	LogLevel  string
+	LogFormat string
+	LogOutput string
 
 	// Tracing
-	TracingEnabled   bool
-	TracingEndpoint  string
-	TracingProtocol  string
-	TracingInsecure  bool
+	TracingEnabled    bool
+	TracingEndpoint   string
+	TracingProtocol   string
+	TracingInsecure   bool
 	TracingSampleRate float64
 }
 
@@ -125,7 +125,7 @@ func (o *Observability) HTTPMiddleware(next http.Handler) http.Handler {
 // WrapDatabase wraps database operations with observability
 func (o *Observability) WrapDatabase(db *sql.DB) *ObservableDB {
 	return &ObservableDB{
-		DB:           db,
+		DB:            db,
 		observability: o,
 	}
 }

@@ -22,17 +22,17 @@ import (
 
 // Agent represents a device agent that communicates with the fleet server
 type Agent struct {
-	config          *config.AgentConfig
-	client          *http.Client
-	deviceInfo      *DeviceInfo
-	currentState    *State
-	updateChan     chan *UpdateCommand
-	metricsChan    chan *Metrics
-	mu              sync.RWMutex
-	shutdownChan    chan struct{}
-	lastHealthCheck time.Time
-	healthStatus    bool
-	stateStore      *StateStore
+	config           *config.AgentConfig
+	client           *http.Client
+	deviceInfo       *DeviceInfo
+	currentState     *State
+	updateChan       chan *UpdateCommand
+	metricsChan      chan *Metrics
+	mu               sync.RWMutex
+	shutdownChan     chan struct{}
+	lastHealthCheck  time.Time
+	healthStatus     bool
+	stateStore       *StateStore
 	metricsCollector *metrics.Collector
 }
 
@@ -83,6 +83,10 @@ type Metrics struct {
 
 // NewAgent creates a new device agent
 func NewAgent(cfg *config.AgentConfig) (*Agent, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("config cannot be nil")
+	}
+
 	// Gather device information
 	deviceInfo := &DeviceInfo{
 		DeviceID:       cfg.DeviceID,
@@ -93,6 +97,13 @@ func NewAgent(cfg *config.AgentConfig) (*Agent, error) {
 		IPAddress:      getIPAddress(),
 		Labels:         cfg.Labels,
 		Capabilities:   cfg.Capabilities,
+	}
+
+	// Create data directory if it doesn't exist
+	if cfg.DataDir != "" {
+		if err := os.MkdirAll(cfg.DataDir, 0755); err != nil {
+			return nil, fmt.Errorf("failed to create data directory: %w", err)
+		}
 	}
 
 	// Initialize state store
@@ -106,11 +117,11 @@ func NewAgent(cfg *config.AgentConfig) (*Agent, error) {
 		client:           &http.Client{Timeout: 30 * time.Second},
 		deviceInfo:       deviceInfo,
 		currentState:     &State{Status: "idle"},
-		updateChan:      make(chan *UpdateCommand, 10),
-		metricsChan:     make(chan *Metrics, 100),
-		shutdownChan:    make(chan struct{}),
-		healthStatus:    true,
-		stateStore:      stateStore,
+		updateChan:       make(chan *UpdateCommand, 10),
+		metricsChan:      make(chan *Metrics, 100),
+		shutdownChan:     make(chan struct{}),
+		healthStatus:     true,
+		stateStore:       stateStore,
 		metricsCollector: metrics.NewCollector(),
 	}
 
@@ -125,6 +136,11 @@ func NewAgent(cfg *config.AgentConfig) (*Agent, error) {
 
 // Start begins the agent's main loop
 func (a *Agent) Start(ctx context.Context) error {
+	// Initialize heartbeat timestamp
+	a.mu.Lock()
+	a.currentState.LastHeartbeat = time.Now()
+	a.mu.Unlock()
+
 	// Register with server
 	if err := a.register(ctx); err != nil {
 		return fmt.Errorf("registration failed: %w", err)
@@ -203,6 +219,11 @@ func (a *Agent) register(ctx context.Context) error {
 
 // heartbeatLoop sends periodic heartbeats to the server
 func (a *Agent) heartbeatLoop(ctx context.Context) {
+	if a.config.HeartbeatInterval <= 0 {
+		<-ctx.Done()
+		return
+	}
+
 	ticker := time.NewTicker(a.config.HeartbeatInterval)
 	defer ticker.Stop()
 
@@ -257,6 +278,11 @@ func (a *Agent) sendHeartbeat(ctx context.Context) error {
 
 // updateCheckLoop periodically checks for updates
 func (a *Agent) updateCheckLoop(ctx context.Context) {
+	if a.config.UpdateCheckInterval <= 0 {
+		<-ctx.Done()
+		return
+	}
+
 	ticker := time.NewTicker(a.config.UpdateCheckInterval)
 	defer ticker.Stop()
 
@@ -546,6 +572,11 @@ func (a *Agent) reportUpdateStatus(ctx context.Context, updateID, status, errorM
 
 // metricsLoop collects and sends metrics periodically
 func (a *Agent) metricsLoop(ctx context.Context) {
+	if a.config.MetricsInterval <= 0 {
+		<-ctx.Done()
+		return
+	}
+
 	ticker := time.NewTicker(a.config.MetricsInterval)
 	defer ticker.Stop()
 
@@ -577,18 +608,18 @@ func (a *Agent) collectMetrics() *Metrics {
 		MemoryUsage: sysMetrics.Memory.UsedPercent,
 		DiskUsage:   sysMetrics.Disk.UsedPercent,
 		Custom: map[string]interface{}{
-			"load_avg_1":      sysMetrics.CPU.LoadAvg1,
-			"load_avg_5":      sysMetrics.CPU.LoadAvg5,
-			"load_avg_15":     sysMetrics.CPU.LoadAvg15,
-			"memory_total":    sysMetrics.Memory.Total,
+			"load_avg_1":       sysMetrics.CPU.LoadAvg1,
+			"load_avg_5":       sysMetrics.CPU.LoadAvg5,
+			"load_avg_15":      sysMetrics.CPU.LoadAvg15,
+			"memory_total":     sysMetrics.Memory.Total,
 			"memory_available": sysMetrics.Memory.Available,
-			"disk_total":      sysMetrics.Disk.Total,
-			"disk_free":       sysMetrics.Disk.Free,
-			"network_sent":    sysMetrics.Network.TotalSent,
-			"network_recv":    sysMetrics.Network.TotalRecv,
-			"uptime":          sysMetrics.System.Uptime,
-			"agent_cpu":       sysMetrics.Process.AgentCPU,
-			"agent_memory":    sysMetrics.Process.AgentMem,
+			"disk_total":       sysMetrics.Disk.Total,
+			"disk_free":        sysMetrics.Disk.Free,
+			"network_sent":     sysMetrics.Network.TotalSent,
+			"network_recv":     sysMetrics.Network.TotalRecv,
+			"uptime":           sysMetrics.System.Uptime,
+			"agent_cpu":        sysMetrics.Process.AgentCPU,
+			"agent_memory":     sysMetrics.Process.AgentMem,
 		},
 	}
 

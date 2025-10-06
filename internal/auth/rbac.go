@@ -49,17 +49,17 @@ const (
 // Predefined permissions
 const (
 	// Deployment permissions
-	PermDeploymentCreate = "deployment:create"
-	PermDeploymentRead   = "deployment:read"
-	PermDeploymentUpdate = "deployment:update"
-	PermDeploymentDelete = "deployment:delete"
+	PermDeploymentCreate  = "deployment:create"
+	PermDeploymentRead    = "deployment:read"
+	PermDeploymentUpdate  = "deployment:update"
+	PermDeploymentDelete  = "deployment:delete"
 	PermDeploymentApprove = "deployment:approve"
 
 	// Device permissions
-	PermDeviceCreate = "device:create"
-	PermDeviceRead   = "device:read"
-	PermDeviceUpdate = "device:update"
-	PermDeviceDelete = "device:delete"
+	PermDeviceCreate  = "device:create"
+	PermDeviceRead    = "device:read"
+	PermDeviceUpdate  = "device:update"
+	PermDeviceDelete  = "device:delete"
 	PermDeviceCommand = "device:command"
 
 	// Fleet permissions
@@ -67,8 +67,8 @@ const (
 	PermFleetView   = "fleet:view"
 
 	// System permissions
-	PermSystemAdmin = "system:admin"
-	PermSystemConfig = "system:config"
+	PermSystemAdmin   = "system:admin"
+	PermSystemConfig  = "system:config"
 	PermSystemMetrics = "system:metrics"
 
 	// API permissions

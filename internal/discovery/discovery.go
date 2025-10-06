@@ -114,6 +114,7 @@ func (d *Discovery) Stop() error {
 // Browse looks for other fleetd devices on the network
 func (d *Discovery) Browse(ctx context.Context, timeout time.Duration) ([]string, error) {
 	devices := make(map[string]bool)
+	var devicesMu sync.Mutex
 	entriesCh := make(chan *mdns.ServiceEntry, 10)
 
 	// Start collecting entries
@@ -124,12 +125,18 @@ func (d *Discovery) Browse(ctx context.Context, timeout time.Duration) ([]string
 				if !ok {
 					return
 				}
-				for _, field := range entry.InfoFields {
+				// Copy InfoFields to avoid race with mdns library
+				infoFields := make([]string, len(entry.InfoFields))
+				copy(infoFields, entry.InfoFields)
+
+				for _, field := range infoFields {
 					if strings.HasPrefix(field, "deviceid=") {
 						deviceID := strings.TrimPrefix(field, "deviceid=")
 						// Skip self-discovery only if we have a deviceID
 						if d.deviceID == "" || deviceID != d.deviceID {
+							devicesMu.Lock()
 							devices[deviceID] = true
+							devicesMu.Unlock()
 						}
 					}
 				}
@@ -157,10 +164,12 @@ func (d *Discovery) Browse(ctx context.Context, timeout time.Duration) ([]string
 	}
 
 	// Convert map to slice
+	devicesMu.Lock()
 	var result []string
 	for device := range devices {
 		result = append(result, device)
 	}
+	devicesMu.Unlock()
 
 	return result, nil
 }

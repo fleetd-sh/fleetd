@@ -33,21 +33,21 @@ type Check struct {
 
 // Report represents overall health status
 type Report struct {
-	Status     Status              `json:"status"`
-	Checks     []Check             `json:"checks"`
-	Version    string              `json:"version"`
-	Uptime     time.Duration       `json:"uptime"`
-	Timestamp  time.Time           `json:"timestamp"`
-	Thresholds HealthThresholds    `json:"thresholds"`
+	Status     Status           `json:"status"`
+	Checks     []Check          `json:"checks"`
+	Version    string           `json:"version"`
+	Uptime     time.Duration    `json:"uptime"`
+	Timestamp  time.Time        `json:"timestamp"`
+	Thresholds HealthThresholds `json:"thresholds"`
 }
 
 // HealthThresholds defines health check thresholds
 type HealthThresholds struct {
-	CPULimit           float64       `json:"cpu_limit"`
-	MemoryLimit        float64       `json:"memory_limit"`
-	DiskLimit          float64       `json:"disk_limit"`
-	ResponseTimeLimit  time.Duration `json:"response_time_limit"`
-	ErrorRateLimit     float64       `json:"error_rate_limit"`
+	CPULimit          float64       `json:"cpu_limit"`
+	MemoryLimit       float64       `json:"memory_limit"`
+	DiskLimit         float64       `json:"disk_limit"`
+	ResponseTimeLimit time.Duration `json:"response_time_limit"`
+	ErrorRateLimit    float64       `json:"error_rate_limit"`
 }
 
 // Checker performs health checks
@@ -81,11 +81,11 @@ func NewChecker(db *sql.DB, version string) *Checker {
 // DefaultThresholds returns default health thresholds
 func DefaultThresholds() HealthThresholds {
 	return HealthThresholds{
-		CPULimit:          80.0,  // 80% CPU usage
-		MemoryLimit:       90.0,  // 90% memory usage
-		DiskLimit:         85.0,  // 85% disk usage
+		CPULimit:          80.0, // 80% CPU usage
+		MemoryLimit:       90.0, // 90% memory usage
+		DiskLimit:         85.0, // 85% disk usage
 		ResponseTimeLimit: 5 * time.Second,
-		ErrorRateLimit:    5.0,   // 5% error rate
+		ErrorRateLimit:    5.0, // 5% error rate
 	}
 }
 
@@ -252,8 +252,8 @@ func (c *Checker) DatabaseCheck() CheckFunc {
 		stats := c.db.Stats()
 		check.Metadata = map[string]interface{}{
 			"open_connections": stats.OpenConnections,
-			"in_use":          stats.InUse,
-			"idle":            stats.Idle,
+			"in_use":           stats.InUse,
+			"idle":             stats.Idle,
 		}
 
 		if stats.OpenConnections > 0 {
@@ -415,7 +415,7 @@ func (c *Checker) DeploymentHealthCheck(deploymentID string) CheckFunc {
 
 		check.Metadata = map[string]interface{}{
 			"deployment_status": status,
-			"error_rate":       errorRate,
+			"error_rate":        errorRate,
 		}
 
 		if status == "failed" || errorRate > c.thresholds.ErrorRateLimit {

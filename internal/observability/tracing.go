@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	// TODO: Re-enable when gRPC support is needed
+	// "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -19,7 +20,9 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
-	"google.golang.org/grpc"
+	"go.uber.org/zap"
+	// TODO: Re-enable when gRPC support is needed
+	// "google.golang.org/grpc"
 )
 
 type TracingConfig struct {
@@ -145,7 +148,9 @@ func (t *Tracer) TraceHTTPRequest(ctx context.Context, req *http.Request) (conte
 			semconv.HTTPTargetKey.String(req.URL.Path),
 			semconv.HTTPURLKey.String(req.URL.String()),
 			semconv.HTTPUserAgentKey.String(req.UserAgent()),
-			semconv.HTTPHostKey.String(req.Host),
+			// TODO: HTTPHostKey was removed in newer semconv versions
+			// semconv.HTTPHostKey.String(req.Host),
+			attribute.String("http.host", req.Host),
 		),
 	)
 
@@ -236,20 +241,22 @@ func (t *Tracer) HTTPMiddleware() func(http.Handler) http.Handler {
 }
 
 // GRPCUnaryInterceptor creates a gRPC unary interceptor for tracing
-func (t *Tracer) GRPCUnaryInterceptor() grpc.UnaryServerInterceptor {
-	return otelgrpc.UnaryServerInterceptor(
-		otelgrpc.WithTracerProvider(otel.GetTracerProvider()),
-		otelgrpc.WithPropagators(otel.GetTextMapPropagator()),
-	)
-}
+// TODO: Update for newer otelgrpc API (UnaryServerInterceptor removed)
+// func (t *Tracer) GRPCUnaryInterceptor() grpc.UnaryServerInterceptor {
+// 	return otelgrpc.UnaryServerInterceptor(
+// 		otelgrpc.WithTracerProvider(otel.GetTracerProvider()),
+// 		otelgrpc.WithPropagators(otel.GetTextMapPropagator()),
+// 	)
+// }
 
 // GRPCStreamInterceptor creates a gRPC stream interceptor for tracing
-func (t *Tracer) GRPCStreamInterceptor() grpc.StreamServerInterceptor {
-	return otelgrpc.StreamServerInterceptor(
-		otelgrpc.WithTracerProvider(otel.GetTracerProvider()),
-		otelgrpc.WithPropagators(otel.GetTextMapPropagator()),
-	)
-}
+// TODO: Update for newer otelgrpc API (StreamServerInterceptor removed)
+// func (t *Tracer) GRPCStreamInterceptor() grpc.StreamServerInterceptor {
+// 	return otelgrpc.StreamServerInterceptor(
+// 		otelgrpc.WithTracerProvider(otel.GetTracerProvider()),
+// 		otelgrpc.WithPropagators(otel.GetTextMapPropagator()),
+// 	)
+// }
 
 // TraceFunc wraps a function with tracing
 func (t *Tracer) TraceFunc(ctx context.Context, name string, fn func(context.Context) error) error {

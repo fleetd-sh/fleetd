@@ -40,14 +40,14 @@ type RateLimitConfig struct {
 	DeviceBurstSize         int
 
 	// DDoS protection
-	MaxConnectionsPerIP   int
+	MaxConnectionsPerIP    int
 	MaxRequestsPerIPPerMin int
-	BanDuration           time.Duration
+	BanDuration            time.Duration
 
 	// Circuit breaker
-	ErrorThreshold   int
-	ErrorWindow      time.Duration
-	RecoveryTimeout  time.Duration
+	ErrorThreshold  int
+	ErrorWindow     time.Duration
+	RecoveryTimeout time.Duration
 
 	// Cleanup
 	CleanupInterval time.Duration
@@ -72,12 +72,12 @@ type APIKeyLimit struct {
 
 // visitor tracks rate limiting state per client
 type visitor struct {
-	limiter       *rate.Limiter
-	lastSeen      time.Time
-	requestCount  int
-	errorCount    int
-	banned        bool
-	banExpiry     time.Time
+	limiter        *rate.Limiter
+	lastSeen       time.Time
+	requestCount   int
+	errorCount     int
+	banned         bool
+	banExpiry      time.Time
 	circuitBreaker *CircuitBreaker
 }
 
@@ -308,6 +308,17 @@ func (rl *RateLimiter) getVisitor(key string) *visitor {
 
 // getLimiterForRequest determines the appropriate rate limiter for a request
 func (rl *RateLimiter) getLimiterForRequest(r *http.Request, v *visitor, clientID string) *rate.Limiter {
+	// Check API key-specific limits first (highest priority)
+	if apiKey := rl.getAPIKey(r); apiKey != "" {
+		if keyLimit, exists := rl.config.APIKeyLimits[apiKey]; exists {
+			// Update visitor's limiter if not already set with API key limits
+			if v.limiter == nil || v.limiter.Limit() != rate.Limit(keyLimit.RequestsPerSecond) {
+				v.limiter = rate.NewLimiter(rate.Limit(keyLimit.RequestsPerSecond), keyLimit.BurstSize)
+			}
+			return v.limiter
+		}
+	}
+
 	// Check endpoint-specific limits
 	path := r.URL.Path
 	for _, limit := range rl.config.EndpointLimits {
@@ -454,14 +465,14 @@ func (rl *RateLimiter) banClient(clientID string) {
 func (rl *RateLimiter) detectSuspiciousActivity(r *http.Request) bool {
 	// Check for common attack patterns
 	suspicious := []string{
-		"../",           // Path traversal
-		"<script>",      // XSS attempt
-		"';",            // SQL injection
-		"${jndi:",       // Log4Shell
-		"{{",            // Template injection
-		"%00",           // Null byte
-		"cmd=",          // Command injection
-		"/etc/passwd",   // Sensitive file access
+		"../",         // Path traversal
+		"<script>",    // XSS attempt
+		"';",          // SQL injection
+		"${jndi:",     // Log4Shell
+		"{{",          // Template injection
+		"%00",         // Null byte
+		"cmd=",        // Command injection
+		"/etc/passwd", // Sensitive file access
 	}
 
 	url := r.URL.String()
@@ -516,8 +527,8 @@ func (rl *RateLimiter) handleRateLimitExceeded(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusTooManyRequests)
 
 	response := map[string]interface{}{
-		"error":   "rate_limit_exceeded",
-		"message": reason,
+		"error":       "rate_limit_exceeded",
+		"message":     reason,
 		"retry_after": 60,
 	}
 
@@ -535,8 +546,8 @@ func (rl *RateLimiter) handleCircuitOpen(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusServiceUnavailable)
 
 	response := map[string]interface{}{
-		"error":   "service_unavailable",
-		"message": "Service temporarily unavailable due to high error rate",
+		"error":       "service_unavailable",
+		"message":     "Service temporarily unavailable due to high error rate",
 		"retry_after": 30,
 	}
 

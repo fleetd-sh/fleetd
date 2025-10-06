@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"fleetd.sh/internal/database"
-	"fleetd.sh/internal/ferrors"
 	"fleetd.sh/internal/models"
 )
 
@@ -46,35 +47,23 @@ type ListOptions struct {
 	GroupID string
 }
 
-// deviceRepository is the enhanced device repository with error handling
+// deviceRepository is the device repository
 type deviceRepository struct {
-	db           *database.DB
-	logger       *slog.Logger
-	errorHandler *ferrors.ErrorHandler
+	db     *database.DB
+	logger *slog.Logger
 }
 
-// NewDeviceRepository creates a new device repository with enhanced error handling
+// NewDeviceRepository creates a new device repository
 func NewDeviceRepository(db *database.DB) DeviceRepository {
-	errorHandler := &ferrors.ErrorHandler{
-		OnError: func(err *ferrors.FleetError) {
-			slog.Error("Device repository error",
-				"code", err.Code,
-				"message", err.Message,
-			)
-		},
-	}
-
 	return &deviceRepository{
-		db:           db,
-		logger:       slog.Default().With("component", "device-repository"),
-		errorHandler: errorHandler,
+		db:     db,
+		logger: slog.Default().With("component", "device-repository"),
 	}
 }
 
 // List returns paginated devices with proper error handling
 func (r *deviceRepository) List(ctx context.Context, opts ListOptions) ([]*models.Device, error) {
 	// Recover from panics
-	defer r.errorHandler.HandlePanic()
 
 	// Validate options
 	if err := r.validateListOptions(&opts); err != nil {
@@ -87,8 +76,7 @@ func (r *deviceRepository) List(ctx context.Context, opts ListOptions) ([]*model
 	// Execute query with timeout
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to query devices")
+		return nil, fmt.Errorf("failed to query devices")
 	}
 	defer rows.Close()
 
@@ -110,11 +98,10 @@ func (r *deviceRepository) List(ctx context.Context, opts ListOptions) ([]*model
 // Get returns a single device with enhanced error handling
 func (r *deviceRepository) Get(ctx context.Context, id string) (*models.Device, error) {
 	// Recover from panics
-	defer r.errorHandler.HandlePanic()
 
 	// Validate input
 	if id == "" {
-		return nil, ferrors.New(ferrors.ErrCodeInvalidInput, "device ID is required")
+		return nil, errors.New("device ID is required")
 	}
 
 	query := `
@@ -129,11 +116,10 @@ func (r *deviceRepository) Get(ctx context.Context, id string) (*models.Device, 
 	device, err := r.scanDeviceRow(row)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ferrors.Newf(ferrors.ErrCodeNotFound,
+			return nil, fmt.Errorf(
 				"device not found: %s", id)
 		}
-		return nil, ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to get device")
+		return nil, fmt.Errorf("failed to get device")
 	}
 
 	r.logger.Debug("Retrieved device", "id", id)
@@ -143,7 +129,6 @@ func (r *deviceRepository) Get(ctx context.Context, id string) (*models.Device, 
 // Create adds a new device with validation and error handling
 func (r *deviceRepository) Create(ctx context.Context, device *models.Device) error {
 	// Recover from panics
-	defer r.errorHandler.HandlePanic()
 
 	// Validate device
 	if err := r.validateDevice(device); err != nil {
@@ -158,8 +143,7 @@ func (r *deviceRepository) Create(ctx context.Context, device *models.Device) er
 	// Serialize metadata
 	metadataJSON, err := json.Marshal(device.Metadata)
 	if err != nil {
-		return ferrors.Wrapf(err, ferrors.ErrCodeInvalidInput,
-			"failed to marshal metadata")
+		return fmt.Errorf("failed to marshal metadata")
 	}
 
 	query := `
@@ -168,29 +152,20 @@ func (r *deviceRepository) Create(ctx context.Context, device *models.Device) er
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
-	// Execute within transaction for consistency
-	err = r.db.Transaction(ctx, func(tx *database.Tx) error {
-		_, execErr := tx.ExecContext(ctx, query,
-			device.ID,
-			device.Name,
-			device.Type,
-			device.Version,
-			device.APIKey,
-			string(metadataJSON),
-			device.CreatedAt,
-			device.UpdatedAt,
-		)
-		return execErr
-	})
+	// Execute insert
+	_, err = r.db.ExecContext(ctx, query,
+		device.ID,
+		device.Name,
+		device.Type,
+		device.Version,
+		device.APIKey,
+		string(metadataJSON),
+		device.CreatedAt,
+		device.UpdatedAt,
+	)
 
 	if err != nil {
-		// Check for duplicate key
-		if ferrors.GetCode(err) == ferrors.ErrCodeAlreadyExists {
-			return ferrors.Newf(ferrors.ErrCodeAlreadyExists,
-				"device already exists: %s", device.ID)
-		}
-		return ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to create device")
+		return fmt.Errorf("failed to create device: %w", err)
 	}
 
 	r.logger.Info("Device created",
@@ -205,7 +180,6 @@ func (r *deviceRepository) Create(ctx context.Context, device *models.Device) er
 // Update modifies an existing device with optimistic locking
 func (r *deviceRepository) Update(ctx context.Context, device *models.Device) error {
 	// Recover from panics
-	defer r.errorHandler.HandlePanic()
 
 	// Validate device
 	if err := r.validateDevice(device); err != nil {
@@ -218,8 +192,7 @@ func (r *deviceRepository) Update(ctx context.Context, device *models.Device) er
 	// Serialize metadata
 	metadataJSON, err := json.Marshal(device.Metadata)
 	if err != nil {
-		return ferrors.Wrapf(err, ferrors.ErrCodeInvalidInput,
-			"failed to marshal metadata")
+		return fmt.Errorf("failed to marshal metadata")
 	}
 
 	query := `
@@ -240,29 +213,22 @@ func (r *deviceRepository) Update(ctx context.Context, device *models.Device) er
 	)
 
 	if err != nil {
-		return ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to update device")
+		return fmt.Errorf("failed to update device")
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to get rows affected")
+		return fmt.Errorf("failed to get rows affected")
 	}
 
 	if rowsAffected == 0 {
 		// Either device doesn't exist or was updated concurrently
 		_, getErr := r.Get(ctx, device.ID)
 		if getErr != nil {
-			if ferrors.GetCode(getErr) == ferrors.ErrCodeNotFound {
-				return ferrors.Newf(ferrors.ErrCodeNotFound,
-					"device not found: %s", device.ID)
-			}
-			return getErr
+			return fmt.Errorf("device not found: %s", device.ID)
 		}
 		// Device exists but was updated concurrently
-		return ferrors.New(ferrors.ErrCodePreconditionFailed,
-			"device was updated by another process")
+		return errors.New("device was updated by another process")
 	}
 
 	r.logger.Info("Device updated", "id", device.ID)
@@ -272,54 +238,40 @@ func (r *deviceRepository) Update(ctx context.Context, device *models.Device) er
 // Delete removes a device with cascade handling
 func (r *deviceRepository) Delete(ctx context.Context, id string) error {
 	// Recover from panics
-	defer r.errorHandler.HandlePanic()
 
 	// Validate input
 	if id == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device ID is required")
+		return errors.New("device ID is required")
 	}
 
-	// Execute within transaction for cascade deletes
-	err := r.db.Transaction(ctx, func(tx *database.Tx) error {
-		// Delete related data first (metrics, health, etc.)
-		deleteQueries := []string{
-			"DELETE FROM device_metric WHERE device_id = ?",
-			"DELETE FROM device_health WHERE device_id = ?",
-			"DELETE FROM device_update WHERE device_id = ?",
-			"DELETE FROM metric WHERE device_id = ?",
+	// Delete related data first (metrics, health, etc.)
+	deleteQueries := []string{
+		"DELETE FROM device_metric WHERE device_id = ?",
+		"DELETE FROM device_health WHERE device_id = ?",
+		"DELETE FROM device_update WHERE device_id = ?",
+		"DELETE FROM metric WHERE device_id = ?",
+	}
+
+	for _, query := range deleteQueries {
+		if _, err := r.db.ExecContext(ctx, query, id); err != nil {
+			return fmt.Errorf("failed to delete related data: %w", err)
 		}
+	}
 
-		for _, query := range deleteQueries {
-			if _, err := tx.ExecContext(ctx, query, id); err != nil {
-				return ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-					"failed to delete related data")
-			}
-		}
-
-		// Delete the device
-		result, err := tx.ExecContext(ctx,
-			"DELETE FROM device WHERE id = ?", id)
-		if err != nil {
-			return ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-				"failed to delete device")
-		}
-
-		rowsAffected, err := result.RowsAffected()
-		if err != nil {
-			return ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-				"failed to get rows affected")
-		}
-
-		if rowsAffected == 0 {
-			return ferrors.Newf(ferrors.ErrCodeNotFound,
-				"device not found: %s", id)
-		}
-
-		return nil
-	})
-
+	// Delete the device
+	result, err := r.db.ExecContext(ctx,
+		"DELETE FROM device WHERE id = ?", id)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to delete device: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("device not found: %s", id)
 	}
 
 	r.logger.Info("Device deleted", "id", id)
@@ -329,11 +281,10 @@ func (r *deviceRepository) Delete(ctx context.Context, id string) error {
 // UpdateLastSeen updates the last_seen timestamp with minimal locking
 func (r *deviceRepository) UpdateLastSeen(ctx context.Context, id string, timestamp time.Time) error {
 	// Recover from panics
-	defer r.errorHandler.HandlePanic()
 
 	// Validate input
 	if id == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device ID is required")
+		return errors.New("device ID is required")
 	}
 
 	query := `
@@ -345,18 +296,16 @@ func (r *deviceRepository) UpdateLastSeen(ctx context.Context, id string, timest
 	now := time.Now()
 	result, err := r.db.ExecContext(ctx, query, timestamp, now, id)
 	if err != nil {
-		return ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to update last seen")
+		return fmt.Errorf("failed to update last seen")
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to get rows affected")
+		return fmt.Errorf("failed to get rows affected")
 	}
 
 	if rowsAffected == 0 {
-		return ferrors.Newf(ferrors.ErrCodeNotFound,
+		return fmt.Errorf(
 			"device not found: %s", id)
 	}
 
@@ -367,7 +316,6 @@ func (r *deviceRepository) UpdateLastSeen(ctx context.Context, id string, timest
 // CountByStatus returns device counts grouped by status
 func (r *deviceRepository) CountByStatus(ctx context.Context) (map[string]int32, error) {
 	// Recover from panics
-	defer r.errorHandler.HandlePanic()
 
 	query := `
 		SELECT
@@ -383,8 +331,7 @@ func (r *deviceRepository) CountByStatus(ctx context.Context) (map[string]int32,
 
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
-		return nil, ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to count devices by status")
+		return nil, fmt.Errorf("failed to count devices by status")
 	}
 	defer rows.Close()
 
@@ -394,16 +341,14 @@ func (r *deviceRepository) CountByStatus(ctx context.Context) (map[string]int32,
 		var count int32
 
 		if err := rows.Scan(&status, &count); err != nil {
-			return nil, ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-				"failed to scan status count")
+			return nil, fmt.Errorf("failed to scan status count")
 		}
 
 		counts[status] = count
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to iterate status counts")
+		return nil, fmt.Errorf("failed to iterate status counts")
 	}
 
 	// Ensure all statuses are present
@@ -440,7 +385,7 @@ func (r *deviceRepository) validateListOptions(opts *ListOptions) error {
 	}
 
 	if !validOrderBy[opts.OrderBy] {
-		return ferrors.Newf(ferrors.ErrCodeInvalidInput,
+		return fmt.Errorf(
 			"invalid order by field: %s", opts.OrderBy)
 	}
 
@@ -483,15 +428,13 @@ func (r *deviceRepository) parseDeviceRows(rows *sql.Rows) ([]*models.Device, er
 	for rows.Next() {
 		device, err := r.scanDevice(rows)
 		if err != nil {
-			return nil, ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-				"failed to scan device row")
+			return nil, fmt.Errorf("failed to scan device row")
 		}
 		devices = append(devices, device)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, ferrors.Wrapf(err, ferrors.ErrCodeInternal,
-			"failed to iterate device rows")
+		return nil, fmt.Errorf("failed to iterate device rows")
 	}
 
 	return devices, nil
@@ -584,32 +527,32 @@ func (r *deviceRepository) scanDeviceRow(row *sql.Row) (*models.Device, error) {
 
 func (r *deviceRepository) validateDevice(device *models.Device) error {
 	if device == nil {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device is nil")
+		return errors.New("device is nil")
 	}
 
 	if device.ID == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device ID is required")
+		return errors.New("device ID is required")
 	}
 
 	if device.Name == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device name is required")
+		return errors.New("device name is required")
 	}
 
 	if device.Type == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device type is required")
+		return errors.New("device type is required")
 	}
 
 	if device.Version == "" {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device version is required")
+		return errors.New("device version is required")
 	}
 
 	// Validate ID format (e.g., UUID)
 	if len(device.ID) > 255 {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device ID too long")
+		return errors.New("device ID too long")
 	}
 
 	if len(device.Name) > 255 {
-		return ferrors.New(ferrors.ErrCodeInvalidInput, "device name too long")
+		return errors.New("device name too long")
 	}
 
 	return nil

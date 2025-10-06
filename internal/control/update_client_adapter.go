@@ -97,7 +97,6 @@ func (a *UpdateClientAdapter) GetCampaignStatus(ctx context.Context, campaignID 
 		return nil, fmt.Errorf("campaign not found: %s", campaignID)
 	}
 
-
 	// In a real implementation, this would query the UpdateService
 	// to get actual device update statuses
 
@@ -136,7 +135,6 @@ func (a *UpdateClientAdapter) GetCampaignStatus(ctx context.Context, campaignID 
 		progress.Running = totalDevices
 		campaign.Status = "running"
 	}
-
 
 	return &fleet.CampaignStatus{
 		ID:        campaignID,

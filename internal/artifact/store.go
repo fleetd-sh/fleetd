@@ -17,26 +17,26 @@ import (
 
 // Store manages binary artifacts for deployments
 type Store struct {
-	basePath   string
-	db         *sql.DB
-	signer     *security.Signer
-	maxSize    int64 // Maximum artifact size in bytes
-	cdnURL     string // Optional CDN URL prefix
+	basePath string
+	db       *sql.DB
+	signer   *security.Signer
+	maxSize  int64  // Maximum artifact size in bytes
+	cdnURL   string // Optional CDN URL prefix
 }
 
 // Artifact represents a stored artifact
 type Artifact struct {
-	ID          string    `json:"id" db:"id"`
-	Name        string    `json:"name" db:"name"`
-	Version     string    `json:"version" db:"version"`
-	Type        string    `json:"type" db:"type"` // binary, config, script
-	Size        int64     `json:"size" db:"size"`
-	Checksum    string    `json:"checksum" db:"checksum"`
-	Signature   string    `json:"signature" db:"signature"`
-	URL         string    `json:"url" db:"url"`
-	Metadata    string    `json:"metadata" db:"metadata"` // JSON metadata
-	UploadedAt  time.Time `json:"uploaded_at" db:"uploaded_at"`
-	UploadedBy  string    `json:"uploaded_by" db:"uploaded_by"`
+	ID         string    `json:"id" db:"id"`
+	Name       string    `json:"name" db:"name"`
+	Version    string    `json:"version" db:"version"`
+	Type       string    `json:"type" db:"type"` // binary, config, script
+	Size       int64     `json:"size" db:"size"`
+	Checksum   string    `json:"checksum" db:"checksum"`
+	Signature  string    `json:"signature" db:"signature"`
+	URL        string    `json:"url" db:"url"`
+	Metadata   string    `json:"metadata" db:"metadata"` // JSON metadata
+	UploadedAt time.Time `json:"uploaded_at" db:"uploaded_at"`
+	UploadedBy string    `json:"uploaded_by" db:"uploaded_by"`
 }
 
 // NewStore creates a new artifact store

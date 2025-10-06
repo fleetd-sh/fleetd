@@ -191,7 +191,6 @@ func (c *Collector) Collect() (*SystemMetrics, error) {
 // - collector_darwin.go for macOS
 // - collector_generic.go for Linux and other Unix-like systems
 
-
 // Utility functions
 
 // GetDiskUsageForPath gets disk usage for a specific path

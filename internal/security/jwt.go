@@ -5,11 +5,11 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
-	"fleetd.sh/internal/ferrors"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -70,7 +70,7 @@ func NewJWTManager(config *JWTConfig) (*JWTManager, error) {
 	if len(config.SigningKey) == 0 && config.RSAPrivateKey == nil {
 		key := make([]byte, 32)
 		if _, err := rand.Read(key); err != nil {
-			return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to generate signing key")
+			return nil, fmt.Errorf("failed to generate signing key: %w", err)
 		}
 		config.SigningKey = key
 	}
@@ -121,13 +121,13 @@ func (m *JWTManager) GenerateTokenPair(user *User) (*Token, error) {
 	// Generate access token
 	accessToken, accessExp, err := m.generateToken(user, TokenTypeAccess, m.config.AccessTokenTTL)
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to generate access token")
+		return nil, fmt.Errorf("failed to generate access token: %w", err)
 	}
 
 	// Generate refresh token
 	refreshToken, _, err := m.generateToken(user, TokenTypeRefresh, m.config.RefreshTokenTTL)
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to generate refresh token")
+		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
 	}
 
 	return &Token{
@@ -163,7 +163,7 @@ func (m *JWTManager) GenerateDeviceToken(deviceID string) (string, error) {
 
 	signedToken, err := m.signToken(token)
 	if err != nil {
-		return "", ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to sign device token")
+		return "", fmt.Errorf("failed to sign device token: %w", err)
 	}
 
 	m.logger.Info("Device token generated",
@@ -231,18 +231,18 @@ func (m *JWTManager) ValidateToken(tokenString string) (*Claims, error) {
 	})
 
 	if err != nil {
-		return nil, ferrors.Wrap(err, ferrors.ErrCodePermissionDenied, "invalid token")
+		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
 	// Check if token is valid
 	if !token.Valid {
-		return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "token is not valid")
+		return nil, errors.New("token is not valid")
 	}
 
 	// Extract claims
 	claims, ok := token.Claims.(*Claims)
 	if !ok {
-		return nil, ferrors.New(ferrors.ErrCodeInternal, "failed to parse claims")
+		return nil, errors.New("failed to parse claims")
 	}
 
 	// Validate claims
@@ -257,7 +257,7 @@ func (m *JWTManager) ValidateToken(tokenString string) (*Claims, error) {
 			m.logger.Error("Failed to check token blacklist", "error", err, "jti", claims.ID)
 			// Continue without failing - blacklist check is best-effort
 		} else if isRevoked {
-			return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "token has been revoked")
+			return nil, errors.New("token has been revoked")
 		}
 	}
 
@@ -270,17 +270,17 @@ func (m *JWTManager) validateClaims(claims *Claims) error {
 
 	// Check expiration
 	if claims.ExpiresAt != nil && claims.ExpiresAt.Before(now) {
-		return ferrors.New(ferrors.ErrCodePermissionDenied, "token has expired")
+		return errors.New("token has expired")
 	}
 
 	// Check not before
 	if claims.NotBefore != nil && claims.NotBefore.After(now) {
-		return ferrors.New(ferrors.ErrCodePermissionDenied, "token not yet valid")
+		return errors.New("token not yet valid")
 	}
 
 	// Check issuer
 	if claims.Issuer != m.config.Issuer {
-		return ferrors.Newf(ferrors.ErrCodePermissionDenied, "invalid issuer: %s", claims.Issuer)
+		return fmt.Errorf("invalid issuer: %s", claims.Issuer)
 	}
 
 	// Check audience
@@ -292,7 +292,7 @@ func (m *JWTManager) validateClaims(claims *Claims) error {
 		}
 	}
 	if !validAudience {
-		return ferrors.New(ferrors.ErrCodePermissionDenied, "invalid audience")
+		return errors.New("invalid audience")
 	}
 
 	return nil
@@ -308,7 +308,7 @@ func (m *JWTManager) RefreshToken(refreshTokenString string) (*Token, error) {
 
 	// Check if it's a refresh token
 	if claims.TokenType != TokenTypeRefresh {
-		return nil, ferrors.New(ferrors.ErrCodePermissionDenied, "not a refresh token")
+		return nil, errors.New("not a refresh token")
 	}
 
 	// Create user from claims
@@ -344,12 +344,12 @@ func (m *JWTManager) ParseUnverified(tokenString string) (*Claims, error) {
 // RevokeToken revokes a token by adding it to the blacklist
 func (m *JWTManager) RevokeToken(tokenID string, expiresAt time.Time) error {
 	if m.tokenBlacklist == nil {
-		return ferrors.New(ferrors.ErrCodeInternal, "token blacklist not configured")
+		return errors.New("token blacklist not configured")
 	}
 
 	ctx := context.Background()
 	if err := m.tokenBlacklist.Add(ctx, tokenID, expiresAt); err != nil {
-		return ferrors.Wrap(err, ferrors.ErrCodeInternal, "failed to revoke token")
+		return fmt.Errorf("failed to revoke token: %w", err)
 	}
 
 	m.logger.Info("Token revoked", "token_id", tokenID, "expires_at", expiresAt)
@@ -374,13 +374,13 @@ func (m *JWTManager) SetTokenBlacklist(blacklist TokenBlacklist) {
 // ExtractTokenFromHeader extracts token from Authorization header
 func ExtractTokenFromHeader(authHeader string) (string, error) {
 	if authHeader == "" {
-		return "", ferrors.New(ferrors.ErrCodePermissionDenied, "authorization header missing")
+		return "", errors.New("authorization header missing")
 	}
 
 	// Check for Bearer token
 	const bearerPrefix = "Bearer "
 	if len(authHeader) < len(bearerPrefix) || authHeader[:len(bearerPrefix)] != bearerPrefix {
-		return "", ferrors.New(ferrors.ErrCodePermissionDenied, "invalid authorization header format")
+		return "", errors.New("invalid authorization header format")
 	}
 
 	return authHeader[len(bearerPrefix):], nil
@@ -446,12 +446,12 @@ func (m *JWTManager) GetTokenInfo(tokenString string) (*TokenInfo, error) {
 	})
 
 	if token == nil {
-		return nil, ferrors.New(ferrors.ErrCodeInvalidInput, "failed to parse token")
+		return nil, errors.New("failed to parse token")
 	}
 
 	claims, ok := token.Claims.(*Claims)
 	if !ok {
-		return nil, ferrors.New(ferrors.ErrCodeInternal, "failed to parse claims")
+		return nil, errors.New("failed to parse claims")
 	}
 
 	now := time.Now()

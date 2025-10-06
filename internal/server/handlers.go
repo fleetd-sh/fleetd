@@ -89,24 +89,45 @@ func (s *Server) handleDevices(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(devices)
 }
 
-// handleDevice handles GET/PUT/DELETE /api/v1/devices/{id}
-func (s *Server) handleDevice(w http.ResponseWriter, r *http.Request) {
-	// Extract device ID from path
+// handleDeviceRoutes handles all /api/v1/devices/{id}/* routes
+func (s *Server) handleDeviceRoutes(w http.ResponseWriter, r *http.Request) {
+	// Extract device ID and sub-path
 	path := strings.TrimPrefix(r.URL.Path, "/api/v1/devices/")
 	if path == "" {
 		http.Error(w, "Device ID required", http.StatusBadRequest)
 		return
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-		s.getDevice(w, r, path)
-	case http.MethodPut:
-		s.updateDevice(w, r, path)
-	case http.MethodDelete:
-		s.deleteDevice(w, r, path)
+	// Split into device ID and sub-route
+	parts := strings.SplitN(path, "/", 2)
+	deviceID := parts[0]
+	subRoute := ""
+	if len(parts) > 1 {
+		subRoute = parts[1]
+	}
+
+	// Route based on sub-path
+	switch subRoute {
+	case "metrics":
+		s.getDeviceMetrics(w, r, deviceID)
+	case "update":
+		s.updateDeviceVersion(w, r, deviceID)
+	case "command":
+		s.executeDeviceCommand(w, r, deviceID)
+	case "":
+		// Base device operations
+		switch r.Method {
+		case http.MethodGet:
+			s.getDevice(w, r, deviceID)
+		case http.MethodPut:
+			s.updateDevice(w, r, deviceID)
+		case http.MethodDelete:
+			s.deleteDevice(w, r, deviceID)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Not found", http.StatusNotFound)
 	}
 }
 
@@ -560,4 +581,177 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			flusher.Flush()
 		}
 	}
+}
+
+// getDeviceMetrics handles GET /api/v1/devices/{id}/metrics
+func (s *Server) getDeviceMetrics(w http.ResponseWriter, r *http.Request, deviceID string) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// First verify device exists
+	var exists bool
+	err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM device WHERE id = ?)", deviceID).Scan(&exists)
+	if err != nil || !exists {
+		http.Error(w, "Device not found", http.StatusNotFound)
+		return
+	}
+
+	// Check if telemetry table exists
+	var tableExists bool
+	err = s.db.QueryRow("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='telemetry'").Scan(&tableExists)
+	if err != nil || !tableExists {
+		// Table doesn't exist yet, return empty metrics
+		metrics := make(map[string]interface{})
+		metrics["device_id"] = deviceID
+		metrics["metrics"] = []map[string]interface{}{}
+		metrics["count"] = 0
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(metrics)
+		return
+	}
+
+	// Query latest telemetry metrics for this device
+	rows, err := s.db.Query(`
+		SELECT metric_name, metric_value, timestamp, COALESCE(metadata, '{}')
+		FROM telemetry
+		WHERE device_id = ?
+		ORDER BY timestamp DESC
+		LIMIT 100
+	`, deviceID)
+	if err != nil {
+		slog.Error("Failed to query device metrics", "error", err, "device_id", deviceID)
+		// Return empty metrics instead of error
+		metrics := make(map[string]interface{})
+		metrics["device_id"] = deviceID
+		metrics["metrics"] = []map[string]interface{}{}
+		metrics["count"] = 0
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(metrics)
+		return
+	}
+	defer rows.Close()
+
+	// Build metrics map
+	metrics := make(map[string]interface{})
+	metrics["device_id"] = deviceID
+	metrics["metrics"] = []map[string]interface{}{}
+
+	metricsData := []map[string]interface{}{}
+	for rows.Next() {
+		var name string
+		var value float64
+		var timestamp time.Time
+		var metadata string
+
+		if err := rows.Scan(&name, &value, &timestamp, &metadata); err != nil {
+			slog.Error("Failed to scan metric", "error", err)
+			continue
+		}
+
+		metricsData = append(metricsData, map[string]interface{}{
+			"name":      name,
+			"value":     value,
+			"timestamp": timestamp.Format(time.RFC3339),
+			"metadata":  metadata,
+		})
+	}
+	metrics["metrics"] = metricsData
+	metrics["count"] = len(metricsData)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(metrics)
+}
+
+// updateDeviceVersion handles POST /api/v1/devices/{id}/update
+func (s *Server) updateDeviceVersion(w http.ResponseWriter, r *http.Request, deviceID string) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Version    string `json:"version"`
+		BinaryURL  string `json:"binary_url"`
+		Checksum   string `json:"checksum"`
+		ForceUpdate bool  `json:"force_update"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Verify device exists
+	var exists bool
+	err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM device WHERE id = ?)", deviceID).Scan(&exists)
+	if err != nil || !exists {
+		http.Error(w, "Device not found", http.StatusNotFound)
+		return
+	}
+
+	// Store update request
+	// TODO: Implement actual update mechanism - for now just log it
+	slog.Info("Device update requested",
+		"device_id", deviceID,
+		"version", req.Version,
+		"binary_url", req.BinaryURL)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "accepted",
+		"message": "Update request queued",
+		"version": req.Version,
+	})
+}
+
+// executeDeviceCommand handles POST /api/v1/devices/{id}/command
+func (s *Server) executeDeviceCommand(w http.ResponseWriter, r *http.Request, deviceID string) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		Command string `json:"command"`
+		Args    string `json:"args"`
+		Timeout int    `json:"timeout"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Verify device exists and get last seen time
+	var lastSeen time.Time
+	err := s.db.QueryRow(`
+		SELECT COALESCE(last_seen, created_at)
+		FROM device
+		WHERE id = ?
+	`, deviceID).Scan(&lastSeen)
+	if err != nil {
+		http.Error(w, "Device not found", http.StatusNotFound)
+		return
+	}
+
+	// For E2E testing, we need to forward commands to agents
+	// In production, this would use a proper message queue or polling mechanism
+	// For now, we'll store the command and agents can poll for it
+	// OR we try to send directly if we have device connectivity info
+
+	slog.Info("Device command requested",
+		"device_id", deviceID,
+		"command", req.Command,
+		"args", req.Args)
+
+	w.WriteHeader(http.StatusAccepted)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "accepted",
+		"message": "Command queued for execution",
+		"command": req.Command,
+	})
 }

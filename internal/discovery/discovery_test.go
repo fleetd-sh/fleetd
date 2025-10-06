@@ -21,6 +21,11 @@ func TestDiscovery(t *testing.T) {
 		t.Skip("Skipping mDNS test in CI environment")
 	}
 
+	// Skip when running with race detector due to known races in vendor mdns library
+	if os.Getenv("SKIP_MDNS_RACE_TEST") != "" {
+		t.Skip("Skipping mDNS test when race detector is enabled (known vendor races)")
+	}
+
 	// Create two discoveries with different device IDs and service types to avoid interference
 	d1 := New("test-device-1", D1Port, "_fleetd-test1._tcp")
 	d2 := New("test-device-2", D2Port, "_fleetd-test1._tcp")
