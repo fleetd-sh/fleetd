@@ -29,9 +29,13 @@ jobs:
       - name: Generate Proto
         run: buf generate
 
+      - name: Download dependencies
+        run: go mod download
+
       - name: Check formatting
         run: |
-          UNFORMATTED=$(go fmt $(go list ./cmd/... ./internal/... ./pkg/... ./sdk/... ./gen/fleetd/... ./gen/agent/... ./gen/health/... ./gen/public/... 2>/dev/null))
+          PKGS=$(go list -e ./... 2>/dev/null | grep '^fleetd.sh/')
+          UNFORMATTED=$(echo "$PKGS" | xargs go fmt)
           if [ -n "$UNFORMATTED" ]; then
             echo "The following files are not formatted:"
             echo "$UNFORMATTED"
@@ -39,7 +43,7 @@ jobs:
           fi
 
       - name: Run vet
-        run: go vet ./cmd/... ./internal/... ./pkg/... ./sdk/... ./gen/fleetd/... ./gen/agent/... ./gen/health/... ./gen/public/...
+        run: go list -e ./... 2>/dev/null | grep '^fleetd.sh/' | xargs go vet
 
       - name: Lint Proto files
         run: buf lint
@@ -62,8 +66,13 @@ jobs:
       - name: Generate Proto
         run: buf generate
 
+      - name: Download dependencies
+        run: go mod download
+
       - name: Run unit tests
-        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./cmd/... ./internal/... ./pkg/... ./sdk/...
+        run: |
+          PKGS=$(go list -e ./... 2>/dev/null | grep '^fleetd.sh/')
+          echo "$PKGS" | xargs go test -v -race -coverprofile=coverage.out -covermode=atomic
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -103,6 +112,9 @@ jobs:
 
       - name: Generate Proto
         run: buf generate
+
+      - name: Download dependencies
+        run: go mod download
 
       - name: Install just
         uses: extractions/setup-just@v1
