@@ -34,7 +34,7 @@ jobs:
 
       - name: Check formatting
         run: |
-          PKGS=$(go list -e ./... 2>/dev/null | grep '^fleetd.sh/')
+          PKGS=$(go list -e ./... 2>/dev/null | grep '^fleetd.sh/' | grep -v 'gen/google')
           UNFORMATTED=$(echo "$PKGS" | xargs go fmt)
           if [ -n "$UNFORMATTED" ]; then
             echo "The following files are not formatted:"
@@ -43,7 +43,7 @@ jobs:
           fi
 
       - name: Run vet
-        run: go list -e ./... 2>/dev/null | grep '^fleetd.sh/' | xargs go vet
+        run: go list -e ./... 2>/dev/null | grep '^fleetd.sh/' | grep -v 'gen/google' | xargs go vet
 
       - name: Lint Proto files
         run: buf lint
@@ -71,7 +71,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          PKGS=$(go list -e ./... 2>/dev/null | grep '^fleetd.sh/')
+          PKGS=$(go list -e ./... 2>/dev/null | grep '^fleetd.sh/' | grep -v 'gen/google')
           echo "$PKGS" | xargs go test -v -race -coverprofile=coverage.out -covermode=atomic
 
       - name: Upload coverage
@@ -140,7 +140,7 @@ jobs:
         run: just test-integration || go test -v ./test/integration/... ./internal/...
 
   web:
-    name: Web Tests
+    name: Studio
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

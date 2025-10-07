@@ -21,16 +21,19 @@ bin/
 *.exe
 *.bak
 *.so
-fleetd
-device-agent
-device-api
-fleetctl
-platform-api
-fleet
+/fleetd
+/device-agent
+/device-api
+/fleetctl
+/platform-api
+/fleet
 
 # Generated documentation (auto-generated, should not be committed)
 gen/docs/
-fleet
+/fleet
+
+# Generated googleapis Go code (causes package conflicts)
+gen/google/
 
 # Dependencies
 node_modules/

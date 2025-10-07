@@ -1,0 +1,173 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+service TelemetryService {
+  // Get telemetry data for devices
+  rpc GetTelemetry(GetTelemetryRequest) returns (GetTelemetryResponse) {}
+  
+  // Get aggregated metrics
+  rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse) {}
+  
+  // Stream real-time telemetry data
+  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryData) {}
+  
+  // Get system logs
+  rpc GetLogs(GetLogsRequest) returns (GetLogsResponse) {}
+
+  // Stream real-time logs
+  rpc StreamLogs(StreamLogsRequest) returns (stream TelemetryLogEntry) {}
+  
+  // Configure alerts
+  rpc ConfigureAlert(ConfigureAlertRequest) returns (ConfigureAlertResponse) {}
+  
+  // List configured alerts
+  rpc ListAlerts(ListAlertsRequest) returns (ListAlertsResponse) {}
+  
+  // Delete an alert
+  rpc DeleteAlert(DeleteAlertRequest) returns (DeleteAlertResponse) {}
+}
+
+message TelemetryData {
+  string device_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  double cpu_usage = 3;
+  double memory_usage = 4;
+  double disk_usage = 5;
+  double network_usage = 6;
+  double temperature = 7;
+  map<string, double> custom_metrics = 8;
+}
+
+message TelemetryLogEntry {
+  string id = 1;
+  string device_id = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  LogLevel level = 4;
+  string message = 5;
+  map<string, string> metadata = 6;
+}
+
+enum LogLevel {
+  LOG_LEVEL_UNSPECIFIED = 0;
+  LOG_LEVEL_DEBUG = 1;
+  LOG_LEVEL_INFO = 2;
+  LOG_LEVEL_WARN = 3;
+  LOG_LEVEL_ERROR = 4;
+  LOG_LEVEL_FATAL = 5;
+}
+
+message Alert {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  AlertType type = 4;
+  double threshold = 5;
+  AlertCondition condition = 6;
+  bool enabled = 7;
+  repeated string device_ids = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+enum AlertType {
+  ALERT_TYPE_UNSPECIFIED = 0;
+  ALERT_TYPE_CPU = 1;
+  ALERT_TYPE_MEMORY = 2;
+  ALERT_TYPE_DISK = 3;
+  ALERT_TYPE_NETWORK = 4;
+  ALERT_TYPE_TEMPERATURE = 5;
+  ALERT_TYPE_DEVICE_OFFLINE = 6;
+  ALERT_TYPE_CUSTOM = 7;
+}
+
+enum AlertCondition {
+  ALERT_CONDITION_UNSPECIFIED = 0;
+  ALERT_CONDITION_GREATER_THAN = 1;
+  ALERT_CONDITION_LESS_THAN = 2;
+  ALERT_CONDITION_EQUAL = 3;
+  ALERT_CONDITION_NOT_EQUAL = 4;
+}
+
+message GetTelemetryRequest {
+  string device_id = 1;
+  google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp end_time = 3;
+  int32 limit = 4;
+}
+
+message GetTelemetryResponse {
+  repeated TelemetryData data = 1;
+}
+
+message GetMetricsRequest {
+  repeated string device_ids = 1;
+  repeated string metric_names = 2;
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp end_time = 4;
+  string aggregation = 5; // avg, min, max, sum
+  int32 interval_seconds = 6;
+}
+
+message GetMetricsResponse {
+  repeated MetricData metrics = 1;
+}
+
+message MetricData {
+  string name = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  double value = 3;
+  string device_id = 4;
+  map<string, string> labels = 5;
+}
+
+message StreamTelemetryRequest {
+  repeated string device_ids = 1;
+  repeated string metric_names = 2;
+}
+
+message GetLogsRequest {
+  repeated string device_ids = 1;
+  repeated LogLevel levels = 2;
+  string filter = 3;
+  google.protobuf.Timestamp start_time = 4;
+  google.protobuf.Timestamp end_time = 5;
+  int32 limit = 6;
+}
+
+message GetLogsResponse {
+  repeated TelemetryLogEntry logs = 1;
+}
+
+message StreamLogsRequest {
+  repeated string device_ids = 1;
+  repeated LogLevel levels = 2;
+  string filter = 3;
+}
+
+message ConfigureAlertRequest {
+  Alert alert = 1;
+}
+
+message ConfigureAlertResponse {
+  Alert alert = 1;
+}
+
+message ListAlertsRequest {
+  repeated string device_ids = 1;
+  bool enabled_only = 2;
+}
+
+message ListAlertsResponse {
+  repeated Alert alerts = 1;
+}
+
+message DeleteAlertRequest {
+  string alert_id = 1;
+}
+
+message DeleteAlertResponse {}

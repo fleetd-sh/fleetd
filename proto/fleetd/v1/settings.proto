@@ -1,0 +1,237 @@
+syntax = "proto3";
+
+package fleetd.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "fleetd.sh/gen/fleetd/v1;fleetpb";
+
+service SettingsService {
+  // Get organization settings
+  rpc GetOrganizationSettings(GetOrganizationSettingsRequest) returns (GetOrganizationSettingsResponse) {}
+  
+  // Update organization settings
+  rpc UpdateOrganizationSettings(UpdateOrganizationSettingsRequest) returns (UpdateOrganizationSettingsResponse) {}
+  
+  // Get security settings
+  rpc GetSecuritySettings(GetSecuritySettingsRequest) returns (GetSecuritySettingsResponse) {}
+  
+  // Update security settings  
+  rpc UpdateSecuritySettings(UpdateSecuritySettingsRequest) returns (UpdateSecuritySettingsResponse) {}
+  
+  // Get notification settings
+  rpc GetNotificationSettings(GetNotificationSettingsRequest) returns (GetNotificationSettingsResponse) {}
+  
+  // Update notification settings
+  rpc UpdateNotificationSettings(UpdateNotificationSettingsRequest) returns (UpdateNotificationSettingsResponse) {}
+  
+  // Get API settings
+  rpc GetAPISettings(GetAPISettingsRequest) returns (GetAPISettingsResponse) {}
+  
+  // Update API settings
+  rpc UpdateAPISettings(UpdateAPISettingsRequest) returns (UpdateAPISettingsResponse) {}
+  
+  // Regenerate API key
+  rpc RegenerateAPIKey(RegenerateAPIKeyRequest) returns (RegenerateAPIKeyResponse) {}
+  
+  // Get advanced settings
+  rpc GetAdvancedSettings(GetAdvancedSettingsRequest) returns (GetAdvancedSettingsResponse) {}
+  
+  // Update advanced settings
+  rpc UpdateAdvancedSettings(UpdateAdvancedSettingsRequest) returns (UpdateAdvancedSettingsResponse) {}
+  
+  // Export all data
+  rpc ExportData(ExportDataRequest) returns (ExportDataResponse) {}
+  
+  // Delete all data (danger zone)
+  rpc DeleteAllData(DeleteAllDataRequest) returns (DeleteAllDataResponse) {}
+}
+
+message OrganizationSettings {
+  string name = 1;
+  string contact_email = 2;
+  string timezone = 3;
+  string language = 4;
+  string logo_url = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message SecuritySettings {
+  bool two_factor_required = 1;
+  int32 session_timeout_minutes = 2;
+  bool ip_whitelist_enabled = 3;
+  repeated string allowed_ips = 4;
+  bool audit_logging_enabled = 5;
+  PasswordPolicy password_policy = 6;
+}
+
+message PasswordPolicy {
+  int32 min_length = 1;
+  bool require_uppercase = 2;
+  bool require_lowercase = 3;
+  bool require_numbers = 4;
+  bool require_special_chars = 5;
+  int32 expiry_days = 6;
+}
+
+message NotificationSettings {
+  EmailNotifications email_notifications = 1;
+  WebhookSettings webhook_settings = 2;
+  AlertThresholds alert_thresholds = 3;
+}
+
+message EmailNotifications {
+  bool device_offline_alerts = 1;
+  bool deployment_status_updates = 2;
+  bool security_alerts = 3;
+  bool weekly_summary = 4;
+  repeated string recipient_emails = 5;
+}
+
+message WebhookSettings {
+  bool enabled = 1;
+  string url = 2;
+  string secret = 3;
+  repeated string events = 4;
+}
+
+message AlertThresholds {
+  double cpu_usage_percent = 1;
+  double memory_usage_percent = 2;
+  double disk_usage_percent = 3;
+  int32 offline_duration_minutes = 4;
+}
+
+message APISettings {
+  string api_key = 1;
+  int32 rate_limit_per_minute = 2;
+  int32 rate_limit_per_hour = 3;
+  CORSSettings cors_settings = 4;
+  google.protobuf.Timestamp api_key_created_at = 5;
+}
+
+message CORSSettings {
+  repeated string allowed_origins = 1;
+  bool allow_credentials = 2;
+  repeated string allowed_methods = 3;
+  repeated string allowed_headers = 4;
+}
+
+message AdvancedSettings {
+  DataRetention data_retention = 1;
+  ExperimentalFeatures experimental_features = 2;
+  google.protobuf.Struct custom_config = 3;
+}
+
+message DataRetention {
+  int32 telemetry_days = 1;
+  int32 logs_days = 2;
+  int32 audit_logs_days = 3;
+  int32 backups_days = 4;
+}
+
+message ExperimentalFeatures {
+  bool beta_features_enabled = 1;
+  bool debug_mode_enabled = 2;
+  repeated string enabled_features = 3;
+}
+
+message GetOrganizationSettingsRequest {}
+
+message GetOrganizationSettingsResponse {
+  OrganizationSettings settings = 1;
+}
+
+message UpdateOrganizationSettingsRequest {
+  OrganizationSettings settings = 1;
+}
+
+message UpdateOrganizationSettingsResponse {
+  OrganizationSettings settings = 1;
+}
+
+message GetSecuritySettingsRequest {}
+
+message GetSecuritySettingsResponse {
+  SecuritySettings settings = 1;
+}
+
+message UpdateSecuritySettingsRequest {
+  SecuritySettings settings = 1;
+}
+
+message UpdateSecuritySettingsResponse {
+  SecuritySettings settings = 1;
+}
+
+message GetNotificationSettingsRequest {}
+
+message GetNotificationSettingsResponse {
+  NotificationSettings settings = 1;
+}
+
+message UpdateNotificationSettingsRequest {
+  NotificationSettings settings = 1;
+}
+
+message UpdateNotificationSettingsResponse {
+  NotificationSettings settings = 1;
+}
+
+message GetAPISettingsRequest {}
+
+message GetAPISettingsResponse {
+  APISettings settings = 1;
+}
+
+message UpdateAPISettingsRequest {
+  APISettings settings = 1;
+  bool regenerate_key = 2;
+}
+
+message UpdateAPISettingsResponse {
+  APISettings settings = 1;
+}
+
+message RegenerateAPIKeyRequest {}
+
+message RegenerateAPIKeyResponse {
+  string new_api_key = 1;
+  google.protobuf.Timestamp created_at = 2;
+}
+
+message GetAdvancedSettingsRequest {}
+
+message GetAdvancedSettingsResponse {
+  AdvancedSettings settings = 1;
+}
+
+message UpdateAdvancedSettingsRequest {
+  AdvancedSettings settings = 1;
+}
+
+message UpdateAdvancedSettingsResponse {
+  AdvancedSettings settings = 1;
+}
+
+message ExportDataRequest {
+  repeated string data_types = 1; // devices, telemetry, logs, settings, etc.
+  string format = 2; // json, csv, etc.
+}
+
+message ExportDataResponse {
+  string download_url = 1;
+  int64 size_bytes = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+message DeleteAllDataRequest {
+  string confirmation_code = 1; // Require explicit confirmation
+}
+
+message DeleteAllDataResponse {
+  bool success = 1;
+  string message = 2;
+}
