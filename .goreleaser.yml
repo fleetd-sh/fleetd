@@ -91,21 +91,14 @@ builds:
 
 archives:
   - id: fleetctl
-    builds:
-      - fleetctl
-    format: tar.gz
-    format_overrides:
-      - goos: windows
-        format: zip
+    rlcp: true
     name_template: "fleetctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     files:
       - LICENSE
       - README.md
 
   - id: fleetd
-    builds:
-      - fleetd
-    format: tar.gz
+    rlcp: true
     name_template: "fleetd_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     files:
       - LICENSE
@@ -113,10 +106,7 @@ archives:
       - QUICK_START.md
 
   - id: servers
-    builds:
-      - device-api
-      - platform-api
-    format: tar.gz
+    rlcp: true
     name_template: "fleetd-servers_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
@@ -169,15 +159,11 @@ release:
     - glob: scripts/install.sh
       name_template: install.sh
 
-dockers:
+dockers_v2:
   - id: device-api
     ids:
       - device-api
     image_templates:
-      - "fleetd/device-api:latest"
-      - "fleetd/device-api:{{ .Tag }}"
-      - "fleetd/device-api:{{ .Major }}"
-      - "fleetd/device-api:{{ .Major }}.{{ .Minor }}"
       - "ghcr.io/fleetd-sh/device-api:latest"
       - "ghcr.io/fleetd-sh/device-api:{{ .Tag }}"
       - "ghcr.io/fleetd-sh/device-api:{{ .Major }}"
@@ -195,10 +181,6 @@ dockers:
     ids:
       - platform-api
     image_templates:
-      - "fleetd/platform-api:latest"
-      - "fleetd/platform-api:{{ .Tag }}"
-      - "fleetd/platform-api:{{ .Major }}"
-      - "fleetd/platform-api:{{ .Major }}.{{ .Minor }}"
       - "ghcr.io/fleetd-sh/platform-api:latest"
       - "ghcr.io/fleetd-sh/platform-api:{{ .Tag }}"
       - "ghcr.io/fleetd-sh/platform-api:{{ .Major }}"
@@ -216,10 +198,6 @@ dockers:
     ids:
       - fleetd
     image_templates:
-      - "fleetd/fleetd:latest"
-      - "fleetd/fleetd:{{ .Tag }}"
-      - "fleetd/fleetd:{{ .Major }}"
-      - "fleetd/fleetd:{{ .Major }}.{{ .Minor }}"
       - "ghcr.io/fleetd-sh/fleetd:latest"
       - "ghcr.io/fleetd-sh/fleetd:{{ .Tag }}"
       - "ghcr.io/fleetd-sh/fleetd:{{ .Major }}"
@@ -234,7 +212,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
 
-brews:
+homebrew:
   - name: fleetctl
     ids:
       - fleetctl
@@ -286,8 +264,6 @@ scoops:
 nfpms:
   - id: fleetctl
     package_name: fleetctl
-    builds:
-      - fleetctl
     vendor: fleetd
     homepage: https://fleetd.sh
     maintainer: fleetd maintainers <maintainers@fleetd.sh>
@@ -316,8 +292,6 @@ nfpms:
 
   - id: fleetd
     package_name: fleetd
-    builds:
-      - fleetd
     vendor: fleetd
     homepage: https://fleetd.sh
     maintainer: fleetd maintainers <maintainers@fleetd.sh>
