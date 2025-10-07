@@ -285,9 +285,9 @@ nfpms:
     package_name: fleetctl
     builds:
       - fleetctl
-    vendor: Fleetd
+    vendor: fleetd
     homepage: https://fleetd.sh
-    maintainer: Fleetd Maintainers <maintainers@fleetd.sh>
+    maintainer: fleetd maintainers <maintainers@fleetd.sh>
     description: Fleet management CLI tool for edge device orchestration
     license: MIT
     formats:
@@ -308,16 +308,16 @@ nfpms:
     scripts:
       postinstall: |
         #!/bin/sh
-        echo "Fleetctl installed successfully!"
+        echo "fleetctl installed successfully"
         echo "Run 'fleetctl --help' to get started"
 
   - id: fleetd
     package_name: fleetd
     builds:
       - fleetd
-    vendor: Fleetd
+    vendor: fleetd
     homepage: https://fleetd.sh
-    maintainer: Fleetd Maintainers <maintainers@fleetd.sh>
+    maintainer: fleetd maintainers <maintainers@fleetd.sh>
     description: Fleet daemon for edge device management
     license: MIT
     formats:
@@ -342,7 +342,7 @@ nfpms:
       postinstall: |
         #!/bin/sh
         systemctl daemon-reload
-        echo "Fleetd installed successfully!"
+        echo "fleetd installed successfully"
         echo "Run 'systemctl start fleetd' to start the service"
       preremove: |
         #!/bin/sh
@@ -371,30 +371,3 @@ sboms:
   - id: packages
     artifacts: package
 
-announce:
-  discord:
-    enabled: true
-    message_template: |
-      **Fleetd {{ .Tag }} Released!** 🚀
-
-      {{ .ProjectName }} {{ .Tag }} is now available!
-
-      **Changelog:**
-      {{ .ReleaseNotes }}
-
-      **Downloads:** https://github.com/fleetd-sh/fleetd/releases/tag/{{ .Tag }}
-
-  slack:
-    enabled: false
-    message_template: |
-      Fleetd {{ .Tag }} has been released!
-      Check it out at {{ .ReleaseURL }}
-
-  twitter:
-    enabled: false
-    message_template: |
-      Fleetd {{ .Tag }} is out! 🎉
-
-      Check out the release notes: {{ .ReleaseURL }}
-
-      #fleetd #edgecomputing #devops

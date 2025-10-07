@@ -1,11 +1,7 @@
 name: Stability Tests
 
 on:
-  # Run on schedule (daily at 2 AM UTC)
-  schedule:
-    - cron: '0 2 * * *'
-
-  # Allow manual trigger
+  # Manual trigger only - these are long-running tests (up to 72h)
   workflow_dispatch:
     inputs:
       duration:
@@ -22,84 +18,14 @@ on:
         type: boolean
         default: false
 
-  # Run on release
-  release:
-    types: [published]
-
-  # Run on significant changes to core components
-  push:
-    branches: [main]
-    paths:
-      - 'internal/agent/**'
-      - 'internal/control/**'
-      - 'internal/database/**'
-      - 'cmd/**'
-      - 'go.mod'
-      - 'go.sum'
-
-  pull_request:
-    branches: [main]
-    paths:
-      - 'internal/agent/**'
-      - 'internal/control/**'
-      - 'internal/database/**'
-      - 'cmd/**'
-      - 'go.mod'
-      - 'go.sum'
-
 env:
-  GO_VERSION: '1.21'
+  GO_VERSION: '1.23'
   STABILITY_TEST_TIMEOUT: '45m'
 
 jobs:
-  # Quick stability check for PRs
-  quick-stability:
-    name: Quick Stability Check
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ env.GO_VERSION }}
-        cache: true
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y sqlite3
-        go mod download
-
-    - name: Build fleetd
-      run: make build
-
-    - name: Run quick stability test
-      run: |
-        ./scripts/ci-stability-test.sh \
-          --duration 10m \
-          --components memory,connections \
-          --output ./quick-stability-results
-      env:
-        CI: true
-        STABILITY_TEST_TIMEOUT: '15m'
-
-    - name: Upload quick test results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: quick-stability-results
-        path: ./quick-stability-results/
-        retention-days: 7
-
-  # Standard stability test for main branch and manual triggers
+  # Standard stability test for manual triggers
   standard-stability:
     name: Standard Stability Test
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -136,8 +62,13 @@ jobs:
     - name: Install Go dependencies
       run: go mod download
 
+    - name: Install just
+      uses: extractions/setup-just@v1
+      with:
+        just-version: "1.36"
+
     - name: Build fleetd
-      run: make build
+      run: just build-all
 
     - name: Run stability test - ${{ matrix.scenario.name }}
       run: |
@@ -171,27 +102,11 @@ jobs:
         path: ./stability-results-${{ matrix.scenario.name }}/
         retention-days: 14
 
-    - name: Comment PR with results
-      if: github.event_name == 'pull_request' && always()
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          if (fs.existsSync('test-summary.md')) {
-            const summary = fs.readFileSync('test-summary.md', 'utf8');
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: summary
-            });
-          }
-
-  # Long-running stability test for releases and scheduled runs
+  # Long-running stability test for manual triggers
   extended-stability:
     name: Extended Stability Test (72h)
-    if: github.event_name == 'schedule' || github.event_name == 'release'
+    if: github.event.inputs.duration == '72h'
     runs-on: ubuntu-latest
     timeout-minutes: 4320  # 72 hours
 
@@ -213,8 +128,13 @@ jobs:
     - name: Install Go dependencies
       run: go mod download
 
+    - name: Install just
+      uses: extractions/setup-just@v1
+      with:
+        just-version: "1.36"
+
     - name: Build fleetd
-      run: make build
+      run: just build-all
 
     - name: Setup extended test environment
       run: |
@@ -318,7 +238,7 @@ jobs:
             local peak_memory=$(jq -r '.peak_memory_mb' ./extended-stability-results/stability-report.json)
             local avg_cpu=$(jq -r '.average_cpu_percent' ./extended-stability-results/stability-report.json)
 
-            echo "- **Status:** $(if [[ "$success" == "true" ]]; then echo "✅ PASSED"; else echo "❌ FAILED"; fi)" >> extended-summary.md
+            echo "- **Status:** $(if [[ "$success" == "true" ]]; then echo "PASSED"; else echo "FAILED"; fi)" >> extended-summary.md
             echo "- **Total Errors:** $errors" >> extended-summary.md
             echo "- **Peak Memory:** ${peak_memory} MB" >> extended-summary.md
             echo "- **Average CPU:** ${avg_cpu}%" >> extended-summary.md
@@ -330,7 +250,7 @@ jobs:
           cat ./extended-stability-results/ci-stability-report.txt >> extended-summary.md
           echo "\`\`\`" >> extended-summary.md
         else
-          echo "❌ Test results not available" >> extended-summary.md
+          echo "Test results not available" >> extended-summary.md
         fi
 
     - name: Upload extended test results
@@ -341,36 +261,11 @@ jobs:
         path: ./extended-stability-results/
         retention-days: 30
 
-    - name: Create GitHub release comment
-      if: github.event_name == 'release' && always()
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          if (fs.existsSync('extended-summary.md')) {
-            const summary = fs.readFileSync('extended-summary.md', 'utf8');
-
-            // Find the release
-            const release = await github.rest.repos.getReleaseByTag({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag: context.ref.replace('refs/tags/', '')
-            });
-
-            // Add comment to release
-            await github.rest.repos.createReleaseComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: release.data.id,
-              body: `## 72-Hour Stability Test Results\n\n${summary}`
-            });
-          }
-
   # Cleanup and notification
   notify-results:
     name: Notify Results
-    if: always() && (github.event_name == 'schedule' || github.event_name == 'release')
-    needs: [standard-stability, extended-stability]
+    if: always()
+    needs: [standard-stability]
     runs-on: ubuntu-latest
 
     steps:

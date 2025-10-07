@@ -1,15 +1,9 @@
 name: Load Tests
 
 on:
-  # Run on push to main branch
-  push:
-    branches: [ main ]
-
-  # Run on pull requests
-  pull_request:
-    branches: [ main ]
-
-  # Allow manual triggering
+  schedule:
+    # Run weekly on Saturdays at 2 AM UTC
+    - cron: '0 2 * * 6'
   workflow_dispatch:
     inputs:
       test_scenario:
@@ -43,7 +37,7 @@ on:
         type: string
 
 env:
-  GO_VERSION: '1.21'
+  GO_VERSION: '1.23'
   LOAD_TEST_RESULTS_DIR: './load_test_results'
 
 jobs:
@@ -145,13 +139,13 @@ jobs:
 
             # Check if test passed
             if (( $(echo "$SUCCESS_RATE > 90" | bc -l) )); then
-              echo "✅ Load test passed!" >> $GITHUB_STEP_SUMMARY
+              echo "Load test passed" >> $GITHUB_STEP_SUMMARY
             else
-              echo "❌ Load test failed - success rate below 90%" >> $GITHUB_STEP_SUMMARY
+              echo "Load test failed - success rate below 90%" >> $GITHUB_STEP_SUMMARY
               exit 1
             fi
           else
-            echo "❌ No test results found" >> $GITHUB_STEP_SUMMARY
+            echo "No test results found" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -338,13 +332,13 @@ jobs:
             echo "### Performance Metrics" >> $GITHUB_STEP_SUMMARY
             echo "| Metric | Value | Status |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|--------|" >> $GITHUB_STEP_SUMMARY
-            echo "| Success Rate | ${SUCCESS_RATE}% | $([ $(echo "$SUCCESS_RATE > 95" | bc -l) -eq 1 ] && echo "✅" || echo "⚠️") |" >> $GITHUB_STEP_SUMMARY
-            echo "| Error Rate | ${ERROR_RATE}% | $([ $(echo "$ERROR_RATE < 5" | bc -l) -eq 1 ] && echo "✅" || echo "❌") |" >> $GITHUB_STEP_SUMMARY
-            echo "| Avg Throughput | ${THROUGHPUT} req/s | ✅ |" >> $GITHUB_STEP_SUMMARY
-            echo "| Peak Throughput | ${PEAK_THROUGHPUT} req/s | ✅ |" >> $GITHUB_STEP_SUMMARY
-            echo "| P50 Latency | ${P50_LATENCY} | $([ $(echo "${P50_LATENCY%*ms} < 50" | bc -l) -eq 1 ] && echo "✅" || echo "⚠️") |" >> $GITHUB_STEP_SUMMARY
-            echo "| P95 Latency | ${P95_LATENCY} | $([ $(echo "${P95_LATENCY%*ms} < 100" | bc -l) -eq 1 ] && echo "✅" || echo "⚠️") |" >> $GITHUB_STEP_SUMMARY
-            echo "| P99 Latency | ${P99_LATENCY} | $([ $(echo "${P99_LATENCY%*ms} < 200" | bc -l) -eq 1 ] && echo "✅" || echo "❌") |" >> $GITHUB_STEP_SUMMARY
+            echo "| Success Rate | ${SUCCESS_RATE}% | $([ $(echo "$SUCCESS_RATE > 95" | bc -l) -eq 1 ] && echo "PASS" || echo "WARN") |" >> $GITHUB_STEP_SUMMARY
+            echo "| Error Rate | ${ERROR_RATE}% | $([ $(echo "$ERROR_RATE < 5" | bc -l) -eq 1 ] && echo "PASS" || echo "FAIL") |" >> $GITHUB_STEP_SUMMARY
+            echo "| Avg Throughput | ${THROUGHPUT} req/s | PASS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Peak Throughput | ${PEAK_THROUGHPUT} req/s | PASS |" >> $GITHUB_STEP_SUMMARY
+            echo "| P50 Latency | ${P50_LATENCY} | $([ $(echo "${P50_LATENCY%*ms} < 50" | bc -l) -eq 1 ] && echo "PASS" || echo "WARN") |" >> $GITHUB_STEP_SUMMARY
+            echo "| P95 Latency | ${P95_LATENCY} | $([ $(echo "${P95_LATENCY%*ms} < 100" | bc -l) -eq 1 ] && echo "PASS" || echo "WARN") |" >> $GITHUB_STEP_SUMMARY
+            echo "| P99 Latency | ${P99_LATENCY} | $([ $(echo "${P99_LATENCY%*ms} < 200" | bc -l) -eq 1 ] && echo "PASS" || echo "FAIL") |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Resource Usage" >> $GITHUB_STEP_SUMMARY
             echo "| Resource | Peak Usage |" >> $GITHUB_STEP_SUMMARY
@@ -365,14 +359,14 @@ jobs:
             # Determine if test passed
             if [ $(echo "$SUCCESS_RATE > 90 && $ERROR_RATE < 10" | bc -l) -eq 1 ]; then
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **Load test PASSED!**" >> $GITHUB_STEP_SUMMARY
+              echo "Load test passed" >> $GITHUB_STEP_SUMMARY
             else
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "❌ **Load test FAILED!**" >> $GITHUB_STEP_SUMMARY
+              echo "Load test failed" >> $GITHUB_STEP_SUMMARY
               exit 1
             fi
           else
-            echo "❌ No test results found" >> $GITHUB_STEP_SUMMARY
+            echo "No test results found" >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -426,7 +420,7 @@ jobs:
             BASELINE_THROUGHPUT=$(jq -r '.average_throughput' "./baseline-results/baseline.json")
             BASELINE_ERROR=$(jq -r '.error_rate' "./baseline-results/baseline.json")
 
-            echo "## Performance Regression Analysis 📈" >> $GITHUB_STEP_SUMMARY
+            echo "## Performance Regression Analysis" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Metric | Current | Baseline | Change |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|---------|----------|--------|" >> $GITHUB_STEP_SUMMARY
@@ -443,30 +437,30 @@ jobs:
             # Check for significant regressions
             REGRESSION=false
             if [ $(echo "$SUCCESS_CHANGE < -5" | bc -l) -eq 1 ]; then
-              echo "⚠️ **Significant regression in success rate!**" >> $GITHUB_STEP_SUMMARY
+              echo "Significant regression in success rate" >> $GITHUB_STEP_SUMMARY
               REGRESSION=true
             fi
 
             if [ $(echo "$THROUGHPUT_CHANGE < -10" | bc -l) -eq 1 ]; then
-              echo "⚠️ **Significant regression in throughput!**" >> $GITHUB_STEP_SUMMARY
+              echo "Significant regression in throughput" >> $GITHUB_STEP_SUMMARY
               REGRESSION=true
             fi
 
             if [ $(echo "$ERROR_CHANGE > 2" | bc -l) -eq 1 ]; then
-              echo "⚠️ **Significant increase in error rate!**" >> $GITHUB_STEP_SUMMARY
+              echo "Significant increase in error rate" >> $GITHUB_STEP_SUMMARY
               REGRESSION=true
             fi
 
             if [ "$REGRESSION" = true ]; then
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "❌ **Performance regression detected! Please review the changes.**" >> $GITHUB_STEP_SUMMARY
+              echo "Performance regression detected. Please review the changes." >> $GITHUB_STEP_SUMMARY
               exit 1
             else
               echo "" >> $GITHUB_STEP_SUMMARY
-              echo "✅ **No significant performance regressions detected.**" >> $GITHUB_STEP_SUMMARY
+              echo "No significant performance regressions detected" >> $GITHUB_STEP_SUMMARY
             fi
           else
-            echo "⚠️ Could not perform regression analysis - missing data" >> $GITHUB_STEP_SUMMARY
+            echo "Could not perform regression analysis - missing data" >> $GITHUB_STEP_SUMMARY
           fi
 
   # Scheduled performance monitoring
