@@ -172,11 +172,9 @@ dockers:
       - "ghcr.io/fleetd-sh/device-api:{{ .Major }}.{{ .Minor }}"
     dockerfile: container/device.dockerfile
     use: buildx
-    push_flags:
-      - --sbom=false
-      - --provenance=false
     build_flag_templates:
       - "--platform=linux/amd64,linux/arm64"
+      - "--output=type=image,push=true"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=device-api"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -192,11 +190,9 @@ dockers:
       - "ghcr.io/fleetd-sh/platform-api:{{ .Major }}.{{ .Minor }}"
     dockerfile: container/platform.dockerfile
     use: buildx
-    push_flags:
-      - --sbom=false
-      - --provenance=false
     build_flag_templates:
       - "--platform=linux/amd64,linux/arm64"
+      - "--output=type=image,push=true"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=platform-api"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
