@@ -152,30 +152,8 @@ jobs:
 
       - name: Sign container images
         run: |
-          cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/device-api:latest
-          cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/platform-api:latest
-          cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/fleetd:latest
+          cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/device-api:latest
+          cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/platform-api:latest
+          cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/fleetd:latest
         continue-on-error: true
-
-  publish-docker-compose:
-    name: Publish Docker Compose Files
-    runs-on: ubuntu-latest
-    needs: release
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Create release archive
-        run: |
-          mkdir -p fleetd-docker-${{ github.ref_name }}
-          cp -r docker/* fleetd-docker-${{ github.ref_name }}/
-          tar czf fleetd-docker-${{ github.ref_name }}.tar.gz fleetd-docker-${{ github.ref_name }}
-
-      - name: Upload to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: fleetd-docker-${{ github.ref_name }}.tar.gz
-          asset_name: fleetd-docker-${{ github.ref_name }}.tar.gz
-          tag: ${{ github.ref }}
-          overwrite: true
 

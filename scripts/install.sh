@@ -7,7 +7,7 @@
 set -euo pipefail
 
 # Configuration
-REPO_OWNER="fleetd"
+REPO_OWNER="fleetd-sh"
 REPO_NAME="fleetd"
 BINARY_NAME="fleetctl"
 GITHUB_API="https://api.github.com"

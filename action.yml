@@ -167,7 +167,7 @@ runs:
       shell: bash
       run: |
         echo "Installing fleetctl..."
-        curl -sSL https://fleetd.sh/install | sh
+        curl -sSL https://get.fleetd.sh | sh
         echo "$HOME/.fleetd/bin" >> $GITHUB_PATH
 
     - name: Prepare deployment configuration

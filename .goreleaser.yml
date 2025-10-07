@@ -165,6 +165,9 @@ release:
   prerelease: auto
   mode: keep-existing
   name_template: "{{.ProjectName}}-v{{.Version}}"
+  extra_files:
+    - glob: scripts/install.sh
+      name_template: install.sh
 
 dockers:
   - id: device-api
