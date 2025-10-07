@@ -31,23 +31,29 @@ type CPUUsage struct {
 }
 
 // GetDiskUsage returns disk usage for a path
-func GetDiskUsage(path string) (*DiskUsage, error) {
-	var stat syscall.Statfs_t
-	if err := syscall.Statfs(path, &stat); err != nil {
-		return nil, fmt.Errorf("failed to get disk stats: %w", err)
+func GetDiskUsage(paths []string) ([]DiskUsage, error) {
+	usages := make([]DiskUsage, 0, len(paths))
+
+	for _, path := range paths {
+		var stat syscall.Statfs_t
+		if err := syscall.Statfs(path, &stat); err != nil {
+			return nil, fmt.Errorf("failed to get disk stats for %s: %w", path, err)
+		}
+
+		total := stat.Blocks * uint64(stat.Bsize)
+		free := stat.Bavail * uint64(stat.Bsize)
+		used := total - free
+		usedPercent := float64(used) * 100.0 / float64(total)
+
+		usages = append(usages, DiskUsage{
+			Total:       total,
+			Used:        used,
+			Free:        free,
+			UsedPercent: usedPercent,
+		})
 	}
 
-	total := stat.Blocks * uint64(stat.Bsize)
-	free := stat.Bavail * uint64(stat.Bsize)
-	used := total - free
-	usedPercent := float64(used) * 100.0 / float64(total)
-
-	return &DiskUsage{
-		Total:       total,
-		Used:        used,
-		Free:        free,
-		UsedPercent: usedPercent,
-	}, nil
+	return usages, nil
 }
 
 // GetMemoryUsage returns current memory usage
