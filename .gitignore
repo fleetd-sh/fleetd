@@ -32,6 +32,11 @@ fleet
 gen/docs/
 fleet
 
+# Generated protobuf - googleapis components not directly used
+gen/google/bytestream/
+gen/google/geo/
+gen/google/longrunning/
+
 # Dependencies
 node_modules/
 vendor/
