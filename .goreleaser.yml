@@ -173,6 +173,7 @@ dockers:
     dockerfile: container/device.dockerfile
     use: buildx
     build_flag_templates:
+      - "--push"
       - "--platform=linux/amd64,linux/arm64"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=device-api"
@@ -190,6 +191,7 @@ dockers:
     dockerfile: container/platform.dockerfile
     use: buildx
     build_flag_templates:
+      - "--push"
       - "--platform=linux/amd64,linux/arm64"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=platform-api"
