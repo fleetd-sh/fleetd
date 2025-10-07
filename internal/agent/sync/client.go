@@ -24,8 +24,8 @@ type SyncClient interface {
 
 // StreamClient handles bidirectional streaming
 type StreamClient interface {
-	Send(*pb.SyncData) error
-	Receive() (*pb.SyncCommand, error)
+	Send(*pb.StreamSyncRequest) error
+	Receive() (*pb.StreamSyncResponse, error)
 	Close() error
 }
 
@@ -223,15 +223,15 @@ func (c *ConnectSyncClient) loggingInterceptor() connect.UnaryInterceptorFunc {
 
 // connectStreamClient wraps a Connect streaming client
 type connectStreamClient struct {
-	stream *connect.BidiStreamForClient[pb.SyncData, pb.SyncCommand]
+	stream *connect.BidiStreamForClient[pb.StreamSyncRequest, pb.StreamSyncResponse]
 	logger *slog.Logger
 }
 
-func (s *connectStreamClient) Send(data *pb.SyncData) error {
+func (s *connectStreamClient) Send(data *pb.StreamSyncRequest) error {
 	return s.stream.Send(data)
 }
 
-func (s *connectStreamClient) Receive() (*pb.SyncCommand, error) {
+func (s *connectStreamClient) Receive() (*pb.StreamSyncResponse, error) {
 	return s.stream.Receive()
 }
 

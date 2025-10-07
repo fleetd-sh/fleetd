@@ -355,7 +355,7 @@ func (s *FleetService) GetTelemetry(ctx context.Context, req *connect.Request[pb
 	}), nil
 }
 
-func (s *FleetService) StreamTelemetry(ctx context.Context, req *connect.Request[pb.StreamTelemetryRequest], stream *connect.ServerStream[pb.TelemetryEvent]) error {
+func (s *FleetService) StreamTelemetry(ctx context.Context, req *connect.Request[pb.StreamTelemetryRequest], stream *connect.ServerStream[pb.StreamTelemetryResponse]) error {
 	// Create a ticker for polling telemetry
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -406,7 +406,7 @@ func (s *FleetService) StreamTelemetry(ctx context.Context, req *connect.Request
 						}
 					}
 
-					event := &pb.TelemetryEvent{
+					response := &pb.StreamTelemetryResponse{
 						Point: &pb.TelemetryPoint{
 							DeviceId:   deviceID,
 							MetricName: metricName,
@@ -415,7 +415,7 @@ func (s *FleetService) StreamTelemetry(ctx context.Context, req *connect.Request
 						},
 					}
 
-					if err := stream.Send(event); err != nil {
+					if err := stream.Send(response); err != nil {
 						rows.Close()
 						return err
 					}
@@ -863,7 +863,7 @@ func (s *FleetService) GetDeploymentStatus(ctx context.Context, req *connect.Req
 	}), nil
 }
 
-func (s *FleetService) StreamDeploymentEvents(ctx context.Context, req *connect.Request[pb.StreamDeploymentEventsRequest], stream *connect.ServerStream[pb.DeploymentEvent]) error {
+func (s *FleetService) StreamDeploymentEvents(ctx context.Context, req *connect.Request[pb.StreamDeploymentEventsRequest], stream *connect.ServerStream[pb.StreamDeploymentEventsResponse]) error {
 	// TODO: Implement streaming
 	return nil
 }
@@ -882,7 +882,7 @@ func (s *FleetService) UpdateConfiguration(ctx context.Context, req *connect.Req
 
 // Events streaming
 
-func (s *FleetService) StreamEvents(ctx context.Context, req *connect.Request[pb.StreamEventsRequest], stream *connect.ServerStream[pb.Event]) error {
+func (s *FleetService) StreamEvents(ctx context.Context, req *connect.Request[pb.StreamEventsRequest], stream *connect.ServerStream[pb.StreamEventsResponse]) error {
 	// TODO: Implement streaming
 	return nil
 }

@@ -215,7 +215,7 @@ func (s *SyncService) GetSyncConfig(
 // StreamSync handles bidirectional streaming sync
 func (s *SyncService) StreamSync(
 	ctx context.Context,
-	stream *connect.BidiStream[pb.SyncData, pb.SyncCommand],
+	stream *connect.BidiStream[pb.StreamSyncRequest, pb.StreamSyncResponse],
 ) error {
 	// This would implement real-time bidirectional sync
 	// For now, just a placeholder

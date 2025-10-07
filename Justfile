@@ -307,11 +307,11 @@ test-clean:
 
 # Format Go code (exclude generated files)
 format-go:
-    go fmt $(go list ./... | grep -v '/gen/')
+    go list -e ./... 2>/dev/null | grep '^fleetd.sh/' | grep -v 'gen/google' | xargs go fmt
 
 # Lint Go code (exclude generated files)
 lint-go:
-    go vet $(go list ./... | grep -v '/gen/' | grep -v '/cloud/')
+    go list -e ./... 2>/dev/null | grep '^fleetd.sh/' | grep -v 'gen/google' | xargs go vet
 
 # Run Device API development server
 device-api-dev:

@@ -98,7 +98,7 @@ func (s *TelemetryService) GetMetrics(
 func (s *TelemetryService) StreamTelemetry(
 	ctx context.Context,
 	req *connect.Request[fleetpb.StreamTelemetryRequest],
-	stream *connect.ServerStream[fleetpb.TelemetryData],
+	stream *connect.ServerStream[fleetpb.StreamTelemetryResponse],
 ) error {
 	deviceIds := req.Msg.DeviceIds
 	if len(deviceIds) == 0 {
@@ -114,7 +114,7 @@ func (s *TelemetryService) StreamTelemetry(
 			return nil
 		case <-ticker.C:
 			for _, deviceId := range deviceIds {
-				data := &fleetpb.TelemetryData{
+				data := &fleetpb.StreamTelemetryResponse{
 					DeviceId:      deviceId,
 					Timestamp:     timestamppb.Now(),
 					CpuUsage:      rand.Float64() * 100,
@@ -184,7 +184,7 @@ func (s *TelemetryService) GetLogs(
 func (s *TelemetryService) StreamLogs(
 	ctx context.Context,
 	req *connect.Request[fleetpb.StreamLogsRequest],
-	stream *connect.ServerStream[fleetpb.TelemetryLogEntry],
+	stream *connect.ServerStream[fleetpb.StreamLogsResponse],
 ) error {
 	deviceIds := req.Msg.DeviceIds
 	if len(deviceIds) == 0 {
@@ -211,7 +211,7 @@ func (s *TelemetryService) StreamLogs(
 			return nil
 		case <-ticker.C:
 			deviceId := deviceIds[rand.Intn(len(deviceIds))]
-			log := &fleetpb.TelemetryLogEntry{
+			log := &fleetpb.StreamLogsResponse{
 				Id:        fmt.Sprintf("log-%d", time.Now().Unix()),
 				DeviceId:  deviceId,
 				Timestamp: timestamppb.Now(),
