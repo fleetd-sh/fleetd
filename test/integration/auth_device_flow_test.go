@@ -207,8 +207,8 @@ func TestAuthDeviceFlow_PollForToken(t *testing.T) {
 				"client_id":   "fleetctl",
 			},
 			setupAuth: func() {
-				// Insert an expired code - use string format for SQLite
-				expiredTime := time.Now().Add(-1 * time.Hour).Format("2006-01-02 15:04:05")
+				// Insert an expired code
+				expiredTime := time.Now().UTC().Add(-1 * time.Hour)
 				_, err := suite.db.Exec(`
 					INSERT INTO device_auth_request (id, device_code, user_code, verification_url, expires_at, client_id)
 					VALUES ($1, $2, $3, $4, $5, $6)
@@ -217,7 +217,7 @@ func TestAuthDeviceFlow_PollForToken(t *testing.T) {
 				require.NoError(t, err)
 			},
 			wantStatus: http.StatusBadRequest,
-			wantError:  "authorization_pending", // Expired but unapproved codes return pending
+			wantError:  "expired_token", // Expired codes are filtered out by the query and return expired_token
 		},
 	}
 
