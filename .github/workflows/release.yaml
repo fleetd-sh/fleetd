@@ -132,7 +132,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-        if: ${{ secrets.DOCKERHUB_USERNAME }}
         continue-on-error: true
 
       - name: Login to GitHub Container Registry
