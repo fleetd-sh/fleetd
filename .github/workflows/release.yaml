@@ -121,6 +121,9 @@ jobs:
       - name: Setup Cosign
         uses: sigstore/cosign-installer@v3
 
+      - name: Setup Syft
+        uses: anchore/sbom-action/download-syft@v0
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -147,6 +150,5 @@ jobs:
         run: |
           cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/device-api:latest
           cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/platform-api:latest
-          cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/fleetd:latest
         continue-on-error: true
 
