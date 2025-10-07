@@ -784,12 +784,12 @@ func TestOrchestratorConcurrentOperations(t *testing.T) {
 	mockClient.getCampaignStatusFunc = func(ctx context.Context, campaignID string) (*CampaignStatus, error) {
 		return &CampaignStatus{
 			ID:     "campaign",
-			Status: "completed",
+			Status: "running",
 			Progress: DeploymentProgress{
 				Total:      1,
-				Succeeded:  1,
+				Succeeded:  0,
 				Failed:     0,
-				Percentage: 100,
+				Percentage: 0,
 			},
 		}, nil
 	}
