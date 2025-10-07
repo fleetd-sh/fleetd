@@ -21,14 +21,9 @@ builds:
     goarch:
       - amd64
       - arm64
-      - arm
-    goarm:
-      - "7"
     ignore:
       - goos: windows
         goarch: arm64
-      - goos: windows
-        goarch: arm
     ldflags:
       - -s -w
       - -X fleetd.sh/internal/version.Version={{.Version}}
@@ -46,9 +41,6 @@ builds:
     goarch:
       - amd64
       - arm64
-      - arm
-    goarm:
-      - "7"
     ldflags:
       - -s -w
       - -X fleetd.sh/internal/version.Version={{.Version}}
@@ -91,22 +83,19 @@ builds:
 
 archives:
   - id: fleetctl
-    rlcp: true
-    name_template: "fleetctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "fleetctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
   - id: fleetd
-    rlcp: true
-    name_template: "fleetd_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "fleetd_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
       - QUICK_START.md
 
   - id: servers
-    rlcp: true
     name_template: "fleetd-servers_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
@@ -159,7 +148,7 @@ release:
     - glob: scripts/install.sh
       name_template: install.sh
 
-dockers_v2:
+dockers:
   - id: device-api
     ids:
       - device-api
@@ -206,13 +195,13 @@ dockers_v2:
     skip_push: auto
     use: buildx
     build_flag_templates:
-      - "--platform=linux/amd64,linux/arm64,linux/arm/v7"
+      - "--platform=linux/amd64,linux/arm64"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=fleetd"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
 
-homebrew:
+brews:
   - name: fleetctl
     ids:
       - fleetctl
