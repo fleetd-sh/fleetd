@@ -95,24 +95,28 @@ builds:
 
 archives:
   - id: fleetctl
+    builds: [fleetctl]
     name_template: "fleetctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
   - id: fleetd
+    builds: [fleetd]
     name_template: "fleetd_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
   - id: device-api
+    builds: [device-api]
     name_template: "device-api_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
   - id: platform-api
+    builds: [platform-api]
     name_template: "platform-api_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
@@ -281,6 +285,7 @@ scoops:
 
 nfpms:
   - id: fleetctl
+    builds: [fleetctl]
     package_name: fleetctl
     vendor: fleetd
     homepage: https://fleetd.sh
@@ -304,6 +309,7 @@ nfpms:
         dst: /usr/share/doc/fleetctl/README.md
 
   - id: fleetd
+    builds: [fleetd]
     package_name: fleetd
     vendor: fleetd
     homepage: https://fleetd.sh
