@@ -23,6 +23,7 @@ func TestPostgreSQLIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping PostgreSQL integration tests in short mode")
 	}
+	requireIntegrationMode(t)
 
 	t.Run("DatabaseMigrations", testDatabaseMigrations)
 	t.Run("ConcurrentDeviceRegistrations", testConcurrentDeviceRegistrations)

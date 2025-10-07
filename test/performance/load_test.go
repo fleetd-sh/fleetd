@@ -18,6 +18,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// requirePerformanceMode checks if performance tests are enabled
+func requirePerformanceMode(t *testing.T) {
+	if os.Getenv("PERFORMANCE") == "" && os.Getenv("E2E") == "" {
+		t.Skip("Performance tests not enabled (set PERFORMANCE=1 or E2E=1)")
+	}
+}
+
 // LoadTestConfig defines configuration for load tests
 type LoadTestConfig struct {
 	BaseURL            string
@@ -89,6 +96,7 @@ func TestDeviceRegistrationLoad(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping load test in short mode")
 	}
+	requirePerformanceMode(t)
 
 	config := LoadTestConfig{
 		BaseURL:            getTestServerURL(),
@@ -129,6 +137,7 @@ func TestAPIEndpointsLoad(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping load test in short mode")
 	}
+	requirePerformanceMode(t)
 
 	config := LoadTestConfig{
 		BaseURL:            getTestServerURL(),
@@ -174,6 +183,7 @@ func TestBurstLoad(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping burst test in short mode")
 	}
+	requirePerformanceMode(t)
 
 	config := LoadTestConfig{
 		BaseURL:     getTestServerURL(),
@@ -219,6 +229,7 @@ func TestSustainedLoad(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping sustained load test in short mode")
 	}
+	requirePerformanceMode(t)
 
 	config := LoadTestConfig{
 		BaseURL:           getTestServerURL(),

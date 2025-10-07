@@ -16,6 +16,8 @@ import (
 )
 
 func TestFleetServiceDeployment(t *testing.T) {
+	requireIntegrationMode(t)
+
 	// Setup test database
 	db := setupTestDatabase(t)
 	defer safeCloseDB(db)
@@ -245,6 +247,8 @@ spec:
 }
 
 func TestDeploymentOrchestrator(t *testing.T) {
+	requireIntegrationMode(t)
+
 	// Setup test database
 	db := setupTestDatabase(t)
 	defer safeCloseDB(db)
@@ -452,6 +456,7 @@ func createTestManifest() *fleet.Manifest {
 
 // Mock UpdateClient for testing
 type mockUpdateClient struct {
+	mu           sync.Mutex
 	pauseCalled  bool
 	resumeCalled bool
 	cancelCalled bool
@@ -474,16 +479,22 @@ func (m *mockUpdateClient) GetCampaignStatus(ctx context.Context, campaignID str
 }
 
 func (m *mockUpdateClient) PauseCampaign(ctx context.Context, campaignID string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.pauseCalled = true
 	return nil
 }
 
 func (m *mockUpdateClient) ResumeCampaign(ctx context.Context, campaignID string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.resumeCalled = true
 	return nil
 }
 
 func (m *mockUpdateClient) CancelCampaign(ctx context.Context, campaignID string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.cancelCalled = true
 	return nil
 }
