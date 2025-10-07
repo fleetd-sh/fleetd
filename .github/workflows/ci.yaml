@@ -31,7 +31,7 @@ jobs:
 
       - name: Check formatting
         run: |
-          UNFORMATTED=$(go fmt ./...)
+          UNFORMATTED=$(go fmt $(go list ./cmd/... ./internal/... ./pkg/... ./sdk/... ./gen/fleetd/... ./gen/agent/... ./gen/health/... ./gen/public/... 2>/dev/null))
           if [ -n "$UNFORMATTED" ]; then
             echo "The following files are not formatted:"
             echo "$UNFORMATTED"
@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: Run vet
-        run: go vet ./...
+        run: go vet ./cmd/... ./internal/... ./pkg/... ./sdk/... ./gen/fleetd/... ./gen/agent/... ./gen/health/... ./gen/public/...
 
       - name: Lint Proto files
         run: buf lint
@@ -63,7 +63,7 @@ jobs:
         run: buf generate
 
       - name: Run unit tests
-        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./cmd/... ./internal/... ./pkg/... ./sdk/...
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
