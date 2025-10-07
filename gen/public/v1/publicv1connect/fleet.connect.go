@@ -107,7 +107,7 @@ type FleetServiceClient interface {
 	DiscoverDevices(context.Context, *connect.Request[v1.DiscoverDevicesRequest]) (*connect.Response[v1.DiscoverDevicesResponse], error)
 	// Telemetry
 	GetTelemetry(context.Context, *connect.Request[v1.GetTelemetryRequest]) (*connect.Response[v1.GetTelemetryResponse], error)
-	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.TelemetryEvent], error)
+	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.StreamTelemetryResponse], error)
 	// Deployment management - Unified API for all deployment types
 	CreateDeployment(context.Context, *connect.Request[v1.CreateDeploymentRequest]) (*connect.Response[v1.CreateDeploymentResponse], error)
 	ListDeployments(context.Context, *connect.Request[v1.ListDeploymentsRequest]) (*connect.Response[v1.ListDeploymentsResponse], error)
@@ -117,12 +117,12 @@ type FleetServiceClient interface {
 	CancelDeployment(context.Context, *connect.Request[v1.CancelDeploymentRequest]) (*connect.Response[v1.CancelDeploymentResponse], error)
 	RollbackDeployment(context.Context, *connect.Request[v1.RollbackDeploymentRequest]) (*connect.Response[v1.RollbackDeploymentResponse], error)
 	GetDeploymentStatus(context.Context, *connect.Request[v1.GetDeploymentStatusRequest]) (*connect.Response[v1.GetDeploymentStatusResponse], error)
-	StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest]) (*connect.ServerStreamForClient[v1.DeploymentEvent], error)
+	StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest]) (*connect.ServerStreamForClient[v1.StreamDeploymentEventsResponse], error)
 	// Configuration
 	GetConfiguration(context.Context, *connect.Request[v1.GetConfigurationRequest]) (*connect.Response[v1.GetConfigurationResponse], error)
 	UpdateConfiguration(context.Context, *connect.Request[v1.UpdateConfigurationRequest]) (*connect.Response[v1.UpdateConfigurationResponse], error)
 	// Events streaming (SSE replacement)
-	StreamEvents(context.Context, *connect.Request[v1.StreamEventsRequest]) (*connect.ServerStreamForClient[v1.Event], error)
+	StreamEvents(context.Context, *connect.Request[v1.StreamEventsRequest]) (*connect.ServerStreamForClient[v1.StreamEventsResponse], error)
 }
 
 // NewFleetServiceClient constructs a client for the public.v1.FleetService service. By default, it
@@ -178,7 +178,7 @@ func NewFleetServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(fleetServiceMethods.ByName("GetTelemetry")),
 			connect.WithClientOptions(opts...),
 		),
-		streamTelemetry: connect.NewClient[v1.StreamTelemetryRequest, v1.TelemetryEvent](
+		streamTelemetry: connect.NewClient[v1.StreamTelemetryRequest, v1.StreamTelemetryResponse](
 			httpClient,
 			baseURL+FleetServiceStreamTelemetryProcedure,
 			connect.WithSchema(fleetServiceMethods.ByName("StreamTelemetry")),
@@ -232,7 +232,7 @@ func NewFleetServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(fleetServiceMethods.ByName("GetDeploymentStatus")),
 			connect.WithClientOptions(opts...),
 		),
-		streamDeploymentEvents: connect.NewClient[v1.StreamDeploymentEventsRequest, v1.DeploymentEvent](
+		streamDeploymentEvents: connect.NewClient[v1.StreamDeploymentEventsRequest, v1.StreamDeploymentEventsResponse](
 			httpClient,
 			baseURL+FleetServiceStreamDeploymentEventsProcedure,
 			connect.WithSchema(fleetServiceMethods.ByName("StreamDeploymentEvents")),
@@ -250,7 +250,7 @@ func NewFleetServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(fleetServiceMethods.ByName("UpdateConfiguration")),
 			connect.WithClientOptions(opts...),
 		),
-		streamEvents: connect.NewClient[v1.StreamEventsRequest, v1.Event](
+		streamEvents: connect.NewClient[v1.StreamEventsRequest, v1.StreamEventsResponse](
 			httpClient,
 			baseURL+FleetServiceStreamEventsProcedure,
 			connect.WithSchema(fleetServiceMethods.ByName("StreamEvents")),
@@ -268,7 +268,7 @@ type fleetServiceClient struct {
 	getDeviceStats         *connect.Client[v1.GetDeviceStatsRequest, v1.GetDeviceStatsResponse]
 	discoverDevices        *connect.Client[v1.DiscoverDevicesRequest, v1.DiscoverDevicesResponse]
 	getTelemetry           *connect.Client[v1.GetTelemetryRequest, v1.GetTelemetryResponse]
-	streamTelemetry        *connect.Client[v1.StreamTelemetryRequest, v1.TelemetryEvent]
+	streamTelemetry        *connect.Client[v1.StreamTelemetryRequest, v1.StreamTelemetryResponse]
 	createDeployment       *connect.Client[v1.CreateDeploymentRequest, v1.CreateDeploymentResponse]
 	listDeployments        *connect.Client[v1.ListDeploymentsRequest, v1.ListDeploymentsResponse]
 	getDeployment          *connect.Client[v1.GetDeploymentRequest, v1.GetDeploymentResponse]
@@ -277,10 +277,10 @@ type fleetServiceClient struct {
 	cancelDeployment       *connect.Client[v1.CancelDeploymentRequest, v1.CancelDeploymentResponse]
 	rollbackDeployment     *connect.Client[v1.RollbackDeploymentRequest, v1.RollbackDeploymentResponse]
 	getDeploymentStatus    *connect.Client[v1.GetDeploymentStatusRequest, v1.GetDeploymentStatusResponse]
-	streamDeploymentEvents *connect.Client[v1.StreamDeploymentEventsRequest, v1.DeploymentEvent]
+	streamDeploymentEvents *connect.Client[v1.StreamDeploymentEventsRequest, v1.StreamDeploymentEventsResponse]
 	getConfiguration       *connect.Client[v1.GetConfigurationRequest, v1.GetConfigurationResponse]
 	updateConfiguration    *connect.Client[v1.UpdateConfigurationRequest, v1.UpdateConfigurationResponse]
-	streamEvents           *connect.Client[v1.StreamEventsRequest, v1.Event]
+	streamEvents           *connect.Client[v1.StreamEventsRequest, v1.StreamEventsResponse]
 }
 
 // ListDevices calls public.v1.FleetService.ListDevices.
@@ -319,7 +319,7 @@ func (c *fleetServiceClient) GetTelemetry(ctx context.Context, req *connect.Requ
 }
 
 // StreamTelemetry calls public.v1.FleetService.StreamTelemetry.
-func (c *fleetServiceClient) StreamTelemetry(ctx context.Context, req *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.TelemetryEvent], error) {
+func (c *fleetServiceClient) StreamTelemetry(ctx context.Context, req *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.StreamTelemetryResponse], error) {
 	return c.streamTelemetry.CallServerStream(ctx, req)
 }
 
@@ -364,7 +364,7 @@ func (c *fleetServiceClient) GetDeploymentStatus(ctx context.Context, req *conne
 }
 
 // StreamDeploymentEvents calls public.v1.FleetService.StreamDeploymentEvents.
-func (c *fleetServiceClient) StreamDeploymentEvents(ctx context.Context, req *connect.Request[v1.StreamDeploymentEventsRequest]) (*connect.ServerStreamForClient[v1.DeploymentEvent], error) {
+func (c *fleetServiceClient) StreamDeploymentEvents(ctx context.Context, req *connect.Request[v1.StreamDeploymentEventsRequest]) (*connect.ServerStreamForClient[v1.StreamDeploymentEventsResponse], error) {
 	return c.streamDeploymentEvents.CallServerStream(ctx, req)
 }
 
@@ -379,7 +379,7 @@ func (c *fleetServiceClient) UpdateConfiguration(ctx context.Context, req *conne
 }
 
 // StreamEvents calls public.v1.FleetService.StreamEvents.
-func (c *fleetServiceClient) StreamEvents(ctx context.Context, req *connect.Request[v1.StreamEventsRequest]) (*connect.ServerStreamForClient[v1.Event], error) {
+func (c *fleetServiceClient) StreamEvents(ctx context.Context, req *connect.Request[v1.StreamEventsRequest]) (*connect.ServerStreamForClient[v1.StreamEventsResponse], error) {
 	return c.streamEvents.CallServerStream(ctx, req)
 }
 
@@ -395,7 +395,7 @@ type FleetServiceHandler interface {
 	DiscoverDevices(context.Context, *connect.Request[v1.DiscoverDevicesRequest]) (*connect.Response[v1.DiscoverDevicesResponse], error)
 	// Telemetry
 	GetTelemetry(context.Context, *connect.Request[v1.GetTelemetryRequest]) (*connect.Response[v1.GetTelemetryResponse], error)
-	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.TelemetryEvent]) error
+	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.StreamTelemetryResponse]) error
 	// Deployment management - Unified API for all deployment types
 	CreateDeployment(context.Context, *connect.Request[v1.CreateDeploymentRequest]) (*connect.Response[v1.CreateDeploymentResponse], error)
 	ListDeployments(context.Context, *connect.Request[v1.ListDeploymentsRequest]) (*connect.Response[v1.ListDeploymentsResponse], error)
@@ -405,12 +405,12 @@ type FleetServiceHandler interface {
 	CancelDeployment(context.Context, *connect.Request[v1.CancelDeploymentRequest]) (*connect.Response[v1.CancelDeploymentResponse], error)
 	RollbackDeployment(context.Context, *connect.Request[v1.RollbackDeploymentRequest]) (*connect.Response[v1.RollbackDeploymentResponse], error)
 	GetDeploymentStatus(context.Context, *connect.Request[v1.GetDeploymentStatusRequest]) (*connect.Response[v1.GetDeploymentStatusResponse], error)
-	StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest], *connect.ServerStream[v1.DeploymentEvent]) error
+	StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest], *connect.ServerStream[v1.StreamDeploymentEventsResponse]) error
 	// Configuration
 	GetConfiguration(context.Context, *connect.Request[v1.GetConfigurationRequest]) (*connect.Response[v1.GetConfigurationResponse], error)
 	UpdateConfiguration(context.Context, *connect.Request[v1.UpdateConfigurationRequest]) (*connect.Response[v1.UpdateConfigurationResponse], error)
 	// Events streaming (SSE replacement)
-	StreamEvents(context.Context, *connect.Request[v1.StreamEventsRequest], *connect.ServerStream[v1.Event]) error
+	StreamEvents(context.Context, *connect.Request[v1.StreamEventsRequest], *connect.ServerStream[v1.StreamEventsResponse]) error
 }
 
 // NewFleetServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -619,7 +619,7 @@ func (UnimplementedFleetServiceHandler) GetTelemetry(context.Context, *connect.R
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.GetTelemetry is not implemented"))
 }
 
-func (UnimplementedFleetServiceHandler) StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.TelemetryEvent]) error {
+func (UnimplementedFleetServiceHandler) StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.StreamTelemetryResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.StreamTelemetry is not implemented"))
 }
 
@@ -655,7 +655,7 @@ func (UnimplementedFleetServiceHandler) GetDeploymentStatus(context.Context, *co
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.GetDeploymentStatus is not implemented"))
 }
 
-func (UnimplementedFleetServiceHandler) StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest], *connect.ServerStream[v1.DeploymentEvent]) error {
+func (UnimplementedFleetServiceHandler) StreamDeploymentEvents(context.Context, *connect.Request[v1.StreamDeploymentEventsRequest], *connect.ServerStream[v1.StreamDeploymentEventsResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.StreamDeploymentEvents is not implemented"))
 }
 
@@ -667,6 +667,6 @@ func (UnimplementedFleetServiceHandler) UpdateConfiguration(context.Context, *co
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.UpdateConfiguration is not implemented"))
 }
 
-func (UnimplementedFleetServiceHandler) StreamEvents(context.Context, *connect.Request[v1.StreamEventsRequest], *connect.ServerStream[v1.Event]) error {
+func (UnimplementedFleetServiceHandler) StreamEvents(context.Context, *connect.Request[v1.StreamEventsRequest], *connect.ServerStream[v1.StreamEventsResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("public.v1.FleetService.StreamEvents is not implemented"))
 }

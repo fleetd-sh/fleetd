@@ -18,7 +18,7 @@ service SyncService {
   rpc GetSyncConfig(GetSyncConfigRequest) returns (GetSyncConfigResponse);
 
   // StreamSync establishes bidirectional sync stream
-  rpc StreamSync(stream SyncData) returns (stream SyncCommand);
+  rpc StreamSync(stream StreamSyncRequest) returns (stream StreamSyncResponse);
 }
 
 // Device capability information for sync
@@ -164,7 +164,7 @@ message GetSyncConfigResponse {
 }
 
 // Bidirectional sync data
-message SyncData {
+message StreamSyncRequest {
   oneof data {
     MetricsBatch metrics = 1;
     LogsBatch logs = 2;
@@ -176,7 +176,7 @@ message SyncData {
 }
 
 // Sync command from server
-message SyncCommand {
+message StreamSyncResponse {
   oneof command {
     SyncConfig config_update = 1;
     SyncFlush flush = 2;

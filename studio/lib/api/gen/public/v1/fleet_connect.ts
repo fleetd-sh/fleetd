@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CancelDeploymentRequest, CancelDeploymentResponse, CreateDeploymentRequest, CreateDeploymentResponse, DeleteDeviceRequest, DeploymentEvent, DiscoverDevicesRequest, DiscoverDevicesResponse, Event, GetConfigurationRequest, GetConfigurationResponse, GetDeploymentRequest, GetDeploymentResponse, GetDeploymentStatusRequest, GetDeploymentStatusResponse, GetDeviceRequest, GetDeviceResponse, GetDeviceStatsRequest, GetDeviceStatsResponse, GetTelemetryRequest, GetTelemetryResponse, ListDeploymentsRequest, ListDeploymentsResponse, ListDevicesRequest, ListDevicesResponse, PauseDeploymentRequest, PauseDeploymentResponse, RollbackDeploymentRequest, RollbackDeploymentResponse, StartDeploymentRequest, StartDeploymentResponse, StreamDeploymentEventsRequest, StreamEventsRequest, StreamTelemetryRequest, TelemetryEvent, UpdateConfigurationRequest, UpdateConfigurationResponse, UpdateDeviceRequest, UpdateDeviceResponse } from "./fleet_pb.js";
+import { CancelDeploymentRequest, CancelDeploymentResponse, CreateDeploymentRequest, CreateDeploymentResponse, DeleteDeviceRequest, DiscoverDevicesRequest, DiscoverDevicesResponse, GetConfigurationRequest, GetConfigurationResponse, GetDeploymentRequest, GetDeploymentResponse, GetDeploymentStatusRequest, GetDeploymentStatusResponse, GetDeviceRequest, GetDeviceResponse, GetDeviceStatsRequest, GetDeviceStatsResponse, GetTelemetryRequest, GetTelemetryResponse, ListDeploymentsRequest, ListDeploymentsResponse, ListDevicesRequest, ListDevicesResponse, PauseDeploymentRequest, PauseDeploymentResponse, RollbackDeploymentRequest, RollbackDeploymentResponse, StartDeploymentRequest, StartDeploymentResponse, StreamDeploymentEventsRequest, StreamDeploymentEventsResponse, StreamEventsRequest, StreamEventsResponse, StreamTelemetryRequest, StreamTelemetryResponse, UpdateConfigurationRequest, UpdateConfigurationResponse, UpdateDeviceRequest, UpdateDeviceResponse } from "./fleet_pb.js";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -90,7 +90,7 @@ export const FleetService = {
     streamTelemetry: {
       name: "StreamTelemetry",
       I: StreamTelemetryRequest,
-      O: TelemetryEvent,
+      O: StreamTelemetryResponse,
       kind: MethodKind.ServerStreaming,
     },
     /**
@@ -173,7 +173,7 @@ export const FleetService = {
     streamDeploymentEvents: {
       name: "StreamDeploymentEvents",
       I: StreamDeploymentEventsRequest,
-      O: DeploymentEvent,
+      O: StreamDeploymentEventsResponse,
       kind: MethodKind.ServerStreaming,
     },
     /**
@@ -204,7 +204,7 @@ export const FleetService = {
     streamEvents: {
       name: "StreamEvents",
       I: StreamEventsRequest,
-      O: Event,
+      O: StreamEventsResponse,
       kind: MethodKind.ServerStreaming,
     },
   }

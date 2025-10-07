@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { GetSyncConfigRequest, GetSyncConfigResponse, SyncCommand, SyncData, SyncLogsRequest, SyncLogsResponse, SyncMetricsRequest, SyncMetricsResponse } from "./sync_pb.js";
+import { GetSyncConfigRequest, GetSyncConfigResponse, StreamSyncRequest, StreamSyncResponse, SyncLogsRequest, SyncLogsResponse, SyncMetricsRequest, SyncMetricsResponse } from "./sync_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -54,8 +54,8 @@ export const SyncService = {
      */
     streamSync: {
       name: "StreamSync",
-      I: SyncData,
-      O: SyncCommand,
+      I: StreamSyncRequest,
+      O: StreamSyncResponse,
       kind: MethodKind.BiDiStreaming,
     },
   }

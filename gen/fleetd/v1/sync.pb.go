@@ -1089,34 +1089,34 @@ func (x *GetSyncConfigResponse) GetEnableEdgeAnalytics() bool {
 }
 
 // Bidirectional sync data
-type SyncData struct {
+type StreamSyncRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Data:
 	//
-	//	*SyncData_Metrics
-	//	*SyncData_Logs
-	//	*SyncData_Heartbeat
-	//	*SyncData_Ack
-	Data          isSyncData_Data `protobuf_oneof:"data"`
-	Metadata      *SyncMetadata   `protobuf:"bytes,10,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	//	*StreamSyncRequest_Metrics
+	//	*StreamSyncRequest_Logs
+	//	*StreamSyncRequest_Heartbeat
+	//	*StreamSyncRequest_Ack
+	Data          isStreamSyncRequest_Data `protobuf_oneof:"data"`
+	Metadata      *SyncMetadata            `protobuf:"bytes,10,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SyncData) Reset() {
-	*x = SyncData{}
+func (x *StreamSyncRequest) Reset() {
+	*x = StreamSyncRequest{}
 	mi := &file_fleetd_v1_sync_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SyncData) String() string {
+func (x *StreamSyncRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SyncData) ProtoMessage() {}
+func (*StreamSyncRequest) ProtoMessage() {}
 
-func (x *SyncData) ProtoReflect() protoreflect.Message {
+func (x *StreamSyncRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_fleetd_v1_sync_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1128,119 +1128,119 @@ func (x *SyncData) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SyncData.ProtoReflect.Descriptor instead.
-func (*SyncData) Descriptor() ([]byte, []int) {
+// Deprecated: Use StreamSyncRequest.ProtoReflect.Descriptor instead.
+func (*StreamSyncRequest) Descriptor() ([]byte, []int) {
 	return file_fleetd_v1_sync_proto_rawDescGZIP(), []int{13}
 }
 
-func (x *SyncData) GetData() isSyncData_Data {
+func (x *StreamSyncRequest) GetData() isStreamSyncRequest_Data {
 	if x != nil {
 		return x.Data
 	}
 	return nil
 }
 
-func (x *SyncData) GetMetrics() *MetricsBatch {
+func (x *StreamSyncRequest) GetMetrics() *MetricsBatch {
 	if x != nil {
-		if x, ok := x.Data.(*SyncData_Metrics); ok {
+		if x, ok := x.Data.(*StreamSyncRequest_Metrics); ok {
 			return x.Metrics
 		}
 	}
 	return nil
 }
 
-func (x *SyncData) GetLogs() *LogsBatch {
+func (x *StreamSyncRequest) GetLogs() *LogsBatch {
 	if x != nil {
-		if x, ok := x.Data.(*SyncData_Logs); ok {
+		if x, ok := x.Data.(*StreamSyncRequest_Logs); ok {
 			return x.Logs
 		}
 	}
 	return nil
 }
 
-func (x *SyncData) GetHeartbeat() *SyncHeartbeat {
+func (x *StreamSyncRequest) GetHeartbeat() *SyncHeartbeat {
 	if x != nil {
-		if x, ok := x.Data.(*SyncData_Heartbeat); ok {
+		if x, ok := x.Data.(*StreamSyncRequest_Heartbeat); ok {
 			return x.Heartbeat
 		}
 	}
 	return nil
 }
 
-func (x *SyncData) GetAck() *SyncAck {
+func (x *StreamSyncRequest) GetAck() *SyncAck {
 	if x != nil {
-		if x, ok := x.Data.(*SyncData_Ack); ok {
+		if x, ok := x.Data.(*StreamSyncRequest_Ack); ok {
 			return x.Ack
 		}
 	}
 	return nil
 }
 
-func (x *SyncData) GetMetadata() *SyncMetadata {
+func (x *StreamSyncRequest) GetMetadata() *SyncMetadata {
 	if x != nil {
 		return x.Metadata
 	}
 	return nil
 }
 
-type isSyncData_Data interface {
-	isSyncData_Data()
+type isStreamSyncRequest_Data interface {
+	isStreamSyncRequest_Data()
 }
 
-type SyncData_Metrics struct {
+type StreamSyncRequest_Metrics struct {
 	Metrics *MetricsBatch `protobuf:"bytes,1,opt,name=metrics,proto3,oneof"`
 }
 
-type SyncData_Logs struct {
+type StreamSyncRequest_Logs struct {
 	Logs *LogsBatch `protobuf:"bytes,2,opt,name=logs,proto3,oneof"`
 }
 
-type SyncData_Heartbeat struct {
+type StreamSyncRequest_Heartbeat struct {
 	Heartbeat *SyncHeartbeat `protobuf:"bytes,3,opt,name=heartbeat,proto3,oneof"`
 }
 
-type SyncData_Ack struct {
+type StreamSyncRequest_Ack struct {
 	Ack *SyncAck `protobuf:"bytes,4,opt,name=ack,proto3,oneof"`
 }
 
-func (*SyncData_Metrics) isSyncData_Data() {}
+func (*StreamSyncRequest_Metrics) isStreamSyncRequest_Data() {}
 
-func (*SyncData_Logs) isSyncData_Data() {}
+func (*StreamSyncRequest_Logs) isStreamSyncRequest_Data() {}
 
-func (*SyncData_Heartbeat) isSyncData_Data() {}
+func (*StreamSyncRequest_Heartbeat) isStreamSyncRequest_Data() {}
 
-func (*SyncData_Ack) isSyncData_Data() {}
+func (*StreamSyncRequest_Ack) isStreamSyncRequest_Data() {}
 
 // Sync command from server
-type SyncCommand struct {
+type StreamSyncResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Command:
 	//
-	//	*SyncCommand_ConfigUpdate
-	//	*SyncCommand_Flush
-	//	*SyncCommand_Pause
-	//	*SyncCommand_Resume
-	//	*SyncCommand_Ack
-	Command       isSyncCommand_Command  `protobuf_oneof:"command"`
-	ServerTime    *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=server_time,json=serverTime,proto3" json:"server_time,omitempty"`
+	//	*StreamSyncResponse_ConfigUpdate
+	//	*StreamSyncResponse_Flush
+	//	*StreamSyncResponse_Pause
+	//	*StreamSyncResponse_Resume
+	//	*StreamSyncResponse_Ack
+	Command       isStreamSyncResponse_Command `protobuf_oneof:"command"`
+	ServerTime    *timestamppb.Timestamp       `protobuf:"bytes,10,opt,name=server_time,json=serverTime,proto3" json:"server_time,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SyncCommand) Reset() {
-	*x = SyncCommand{}
+func (x *StreamSyncResponse) Reset() {
+	*x = StreamSyncResponse{}
 	mi := &file_fleetd_v1_sync_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SyncCommand) String() string {
+func (x *StreamSyncResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SyncCommand) ProtoMessage() {}
+func (*StreamSyncResponse) ProtoMessage() {}
 
-func (x *SyncCommand) ProtoReflect() protoreflect.Message {
+func (x *StreamSyncResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_fleetd_v1_sync_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1252,103 +1252,103 @@ func (x *SyncCommand) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SyncCommand.ProtoReflect.Descriptor instead.
-func (*SyncCommand) Descriptor() ([]byte, []int) {
+// Deprecated: Use StreamSyncResponse.ProtoReflect.Descriptor instead.
+func (*StreamSyncResponse) Descriptor() ([]byte, []int) {
 	return file_fleetd_v1_sync_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *SyncCommand) GetCommand() isSyncCommand_Command {
+func (x *StreamSyncResponse) GetCommand() isStreamSyncResponse_Command {
 	if x != nil {
 		return x.Command
 	}
 	return nil
 }
 
-func (x *SyncCommand) GetConfigUpdate() *SyncConfig {
+func (x *StreamSyncResponse) GetConfigUpdate() *SyncConfig {
 	if x != nil {
-		if x, ok := x.Command.(*SyncCommand_ConfigUpdate); ok {
+		if x, ok := x.Command.(*StreamSyncResponse_ConfigUpdate); ok {
 			return x.ConfigUpdate
 		}
 	}
 	return nil
 }
 
-func (x *SyncCommand) GetFlush() *SyncFlush {
+func (x *StreamSyncResponse) GetFlush() *SyncFlush {
 	if x != nil {
-		if x, ok := x.Command.(*SyncCommand_Flush); ok {
+		if x, ok := x.Command.(*StreamSyncResponse_Flush); ok {
 			return x.Flush
 		}
 	}
 	return nil
 }
 
-func (x *SyncCommand) GetPause() *SyncPause {
+func (x *StreamSyncResponse) GetPause() *SyncPause {
 	if x != nil {
-		if x, ok := x.Command.(*SyncCommand_Pause); ok {
+		if x, ok := x.Command.(*StreamSyncResponse_Pause); ok {
 			return x.Pause
 		}
 	}
 	return nil
 }
 
-func (x *SyncCommand) GetResume() *SyncResume {
+func (x *StreamSyncResponse) GetResume() *SyncResume {
 	if x != nil {
-		if x, ok := x.Command.(*SyncCommand_Resume); ok {
+		if x, ok := x.Command.(*StreamSyncResponse_Resume); ok {
 			return x.Resume
 		}
 	}
 	return nil
 }
 
-func (x *SyncCommand) GetAck() *SyncAck {
+func (x *StreamSyncResponse) GetAck() *SyncAck {
 	if x != nil {
-		if x, ok := x.Command.(*SyncCommand_Ack); ok {
+		if x, ok := x.Command.(*StreamSyncResponse_Ack); ok {
 			return x.Ack
 		}
 	}
 	return nil
 }
 
-func (x *SyncCommand) GetServerTime() *timestamppb.Timestamp {
+func (x *StreamSyncResponse) GetServerTime() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ServerTime
 	}
 	return nil
 }
 
-type isSyncCommand_Command interface {
-	isSyncCommand_Command()
+type isStreamSyncResponse_Command interface {
+	isStreamSyncResponse_Command()
 }
 
-type SyncCommand_ConfigUpdate struct {
+type StreamSyncResponse_ConfigUpdate struct {
 	ConfigUpdate *SyncConfig `protobuf:"bytes,1,opt,name=config_update,json=configUpdate,proto3,oneof"`
 }
 
-type SyncCommand_Flush struct {
+type StreamSyncResponse_Flush struct {
 	Flush *SyncFlush `protobuf:"bytes,2,opt,name=flush,proto3,oneof"`
 }
 
-type SyncCommand_Pause struct {
+type StreamSyncResponse_Pause struct {
 	Pause *SyncPause `protobuf:"bytes,3,opt,name=pause,proto3,oneof"`
 }
 
-type SyncCommand_Resume struct {
+type StreamSyncResponse_Resume struct {
 	Resume *SyncResume `protobuf:"bytes,4,opt,name=resume,proto3,oneof"`
 }
 
-type SyncCommand_Ack struct {
+type StreamSyncResponse_Ack struct {
 	Ack *SyncAck `protobuf:"bytes,5,opt,name=ack,proto3,oneof"`
 }
 
-func (*SyncCommand_ConfigUpdate) isSyncCommand_Command() {}
+func (*StreamSyncResponse_ConfigUpdate) isStreamSyncResponse_Command() {}
 
-func (*SyncCommand_Flush) isSyncCommand_Command() {}
+func (*StreamSyncResponse_Flush) isStreamSyncResponse_Command() {}
 
-func (*SyncCommand_Pause) isSyncCommand_Command() {}
+func (*StreamSyncResponse_Pause) isStreamSyncResponse_Command() {}
 
-func (*SyncCommand_Resume) isSyncCommand_Command() {}
+func (*StreamSyncResponse_Resume) isStreamSyncResponse_Command() {}
 
-func (*SyncCommand_Ack) isSyncCommand_Command() {}
+func (*StreamSyncResponse_Ack) isStreamSyncResponse_Command() {}
 
 // Heartbeat message
 type SyncHeartbeat struct {
@@ -1749,16 +1749,16 @@ const file_fleetd_v1_sync_proto_rawDesc = "" +
 	"\x0fevents_endpoint\x18\x04 \x01(\tR\x0eeventsEndpoint\x12-\n" +
 	"\x12enable_compression\x18\x05 \x01(\bR\x11enableCompression\x12'\n" +
 	"\x0fenable_batching\x18\x06 \x01(\bR\x0eenableBatching\x122\n" +
-	"\x15enable_edge_analytics\x18\a \x01(\bR\x13enableEdgeAnalytics\"\x8a\x02\n" +
-	"\bSyncData\x123\n" +
+	"\x15enable_edge_analytics\x18\a \x01(\bR\x13enableEdgeAnalytics\"\x93\x02\n" +
+	"\x11StreamSyncRequest\x123\n" +
 	"\ametrics\x18\x01 \x01(\v2\x17.fleetd.v1.MetricsBatchH\x00R\ametrics\x12*\n" +
 	"\x04logs\x18\x02 \x01(\v2\x14.fleetd.v1.LogsBatchH\x00R\x04logs\x128\n" +
 	"\theartbeat\x18\x03 \x01(\v2\x18.fleetd.v1.SyncHeartbeatH\x00R\theartbeat\x12&\n" +
 	"\x03ack\x18\x04 \x01(\v2\x12.fleetd.v1.SyncAckH\x00R\x03ack\x123\n" +
 	"\bmetadata\x18\n" +
 	" \x01(\v2\x17.fleetd.v1.SyncMetadataR\bmetadataB\x06\n" +
-	"\x04data\"\xc8\x02\n" +
-	"\vSyncCommand\x12<\n" +
+	"\x04data\"\xcf\x02\n" +
+	"\x12StreamSyncResponse\x12<\n" +
 	"\rconfig_update\x18\x01 \x01(\v2\x15.fleetd.v1.SyncConfigH\x00R\fconfigUpdate\x12,\n" +
 	"\x05flush\x18\x02 \x01(\v2\x14.fleetd.v1.SyncFlushH\x00R\x05flush\x12,\n" +
 	"\x05pause\x18\x03 \x01(\v2\x14.fleetd.v1.SyncPauseH\x00R\x05pause\x12/\n" +
@@ -1786,13 +1786,13 @@ const file_fleetd_v1_sync_proto_rawDesc = "" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\"$\n" +
 	"\n" +
 	"SyncResume\x12\x16\n" +
-	"\x06reason\x18\x01 \x01(\tR\x06reason2\xb3\x02\n" +
+	"\x06reason\x18\x01 \x01(\tR\x06reason2\xc3\x02\n" +
 	"\vSyncService\x12L\n" +
 	"\vSyncMetrics\x12\x1d.fleetd.v1.SyncMetricsRequest\x1a\x1e.fleetd.v1.SyncMetricsResponse\x12C\n" +
 	"\bSyncLogs\x12\x1a.fleetd.v1.SyncLogsRequest\x1a\x1b.fleetd.v1.SyncLogsResponse\x12R\n" +
-	"\rGetSyncConfig\x12\x1f.fleetd.v1.GetSyncConfigRequest\x1a .fleetd.v1.GetSyncConfigResponse\x12=\n" +
+	"\rGetSyncConfig\x12\x1f.fleetd.v1.GetSyncConfigRequest\x1a .fleetd.v1.GetSyncConfigResponse\x12M\n" +
 	"\n" +
-	"StreamSync\x12\x13.fleetd.v1.SyncData\x1a\x16.fleetd.v1.SyncCommand(\x010\x01B\x80\x01\n" +
+	"StreamSync\x12\x1c.fleetd.v1.StreamSyncRequest\x1a\x1d.fleetd.v1.StreamSyncResponse(\x010\x01B\x80\x01\n" +
 	"\rcom.fleetd.v1B\tSyncProtoP\x01Z\x1ffleetd.sh/gen/fleetd/v1;fleetpb\xa2\x02\x03FXX\xaa\x02\tFleetd.V1\xca\x02\tFleetd\\V1\xe2\x02\x15Fleetd\\V1\\GPBMetadata\xea\x02\n" +
 	"Fleetd::V1b\x06proto3"
 
@@ -1823,8 +1823,8 @@ var file_fleetd_v1_sync_proto_goTypes = []any{
 	(*SyncLogsResponse)(nil),      // 10: fleetd.v1.SyncLogsResponse
 	(*GetSyncConfigRequest)(nil),  // 11: fleetd.v1.GetSyncConfigRequest
 	(*GetSyncConfigResponse)(nil), // 12: fleetd.v1.GetSyncConfigResponse
-	(*SyncData)(nil),              // 13: fleetd.v1.SyncData
-	(*SyncCommand)(nil),           // 14: fleetd.v1.SyncCommand
+	(*StreamSyncRequest)(nil),     // 13: fleetd.v1.StreamSyncRequest
+	(*StreamSyncResponse)(nil),    // 14: fleetd.v1.StreamSyncResponse
 	(*SyncHeartbeat)(nil),         // 15: fleetd.v1.SyncHeartbeat
 	(*SyncAck)(nil),               // 16: fleetd.v1.SyncAck
 	(*SyncFlush)(nil),             // 17: fleetd.v1.SyncFlush
@@ -1852,25 +1852,25 @@ var file_fleetd_v1_sync_proto_depIdxs = []int32{
 	6,  // 14: fleetd.v1.SyncLogsResponse.config_update:type_name -> fleetd.v1.SyncConfig
 	0,  // 15: fleetd.v1.GetSyncConfigRequest.capability:type_name -> fleetd.v1.SyncDeviceCapability
 	6,  // 16: fleetd.v1.GetSyncConfigResponse.config:type_name -> fleetd.v1.SyncConfig
-	2,  // 17: fleetd.v1.SyncData.metrics:type_name -> fleetd.v1.MetricsBatch
-	4,  // 18: fleetd.v1.SyncData.logs:type_name -> fleetd.v1.LogsBatch
-	15, // 19: fleetd.v1.SyncData.heartbeat:type_name -> fleetd.v1.SyncHeartbeat
-	16, // 20: fleetd.v1.SyncData.ack:type_name -> fleetd.v1.SyncAck
-	5,  // 21: fleetd.v1.SyncData.metadata:type_name -> fleetd.v1.SyncMetadata
-	6,  // 22: fleetd.v1.SyncCommand.config_update:type_name -> fleetd.v1.SyncConfig
-	17, // 23: fleetd.v1.SyncCommand.flush:type_name -> fleetd.v1.SyncFlush
-	18, // 24: fleetd.v1.SyncCommand.pause:type_name -> fleetd.v1.SyncPause
-	19, // 25: fleetd.v1.SyncCommand.resume:type_name -> fleetd.v1.SyncResume
-	16, // 26: fleetd.v1.SyncCommand.ack:type_name -> fleetd.v1.SyncAck
-	22, // 27: fleetd.v1.SyncCommand.server_time:type_name -> google.protobuf.Timestamp
+	2,  // 17: fleetd.v1.StreamSyncRequest.metrics:type_name -> fleetd.v1.MetricsBatch
+	4,  // 18: fleetd.v1.StreamSyncRequest.logs:type_name -> fleetd.v1.LogsBatch
+	15, // 19: fleetd.v1.StreamSyncRequest.heartbeat:type_name -> fleetd.v1.SyncHeartbeat
+	16, // 20: fleetd.v1.StreamSyncRequest.ack:type_name -> fleetd.v1.SyncAck
+	5,  // 21: fleetd.v1.StreamSyncRequest.metadata:type_name -> fleetd.v1.SyncMetadata
+	6,  // 22: fleetd.v1.StreamSyncResponse.config_update:type_name -> fleetd.v1.SyncConfig
+	17, // 23: fleetd.v1.StreamSyncResponse.flush:type_name -> fleetd.v1.SyncFlush
+	18, // 24: fleetd.v1.StreamSyncResponse.pause:type_name -> fleetd.v1.SyncPause
+	19, // 25: fleetd.v1.StreamSyncResponse.resume:type_name -> fleetd.v1.SyncResume
+	16, // 26: fleetd.v1.StreamSyncResponse.ack:type_name -> fleetd.v1.SyncAck
+	22, // 27: fleetd.v1.StreamSyncResponse.server_time:type_name -> google.protobuf.Timestamp
 	7,  // 28: fleetd.v1.SyncService.SyncMetrics:input_type -> fleetd.v1.SyncMetricsRequest
 	9,  // 29: fleetd.v1.SyncService.SyncLogs:input_type -> fleetd.v1.SyncLogsRequest
 	11, // 30: fleetd.v1.SyncService.GetSyncConfig:input_type -> fleetd.v1.GetSyncConfigRequest
-	13, // 31: fleetd.v1.SyncService.StreamSync:input_type -> fleetd.v1.SyncData
+	13, // 31: fleetd.v1.SyncService.StreamSync:input_type -> fleetd.v1.StreamSyncRequest
 	8,  // 32: fleetd.v1.SyncService.SyncMetrics:output_type -> fleetd.v1.SyncMetricsResponse
 	10, // 33: fleetd.v1.SyncService.SyncLogs:output_type -> fleetd.v1.SyncLogsResponse
 	12, // 34: fleetd.v1.SyncService.GetSyncConfig:output_type -> fleetd.v1.GetSyncConfigResponse
-	14, // 35: fleetd.v1.SyncService.StreamSync:output_type -> fleetd.v1.SyncCommand
+	14, // 35: fleetd.v1.SyncService.StreamSync:output_type -> fleetd.v1.StreamSyncResponse
 	32, // [32:36] is the sub-list for method output_type
 	28, // [28:32] is the sub-list for method input_type
 	28, // [28:28] is the sub-list for extension type_name
@@ -1884,17 +1884,17 @@ func file_fleetd_v1_sync_proto_init() {
 		return
 	}
 	file_fleetd_v1_sync_proto_msgTypes[13].OneofWrappers = []any{
-		(*SyncData_Metrics)(nil),
-		(*SyncData_Logs)(nil),
-		(*SyncData_Heartbeat)(nil),
-		(*SyncData_Ack)(nil),
+		(*StreamSyncRequest_Metrics)(nil),
+		(*StreamSyncRequest_Logs)(nil),
+		(*StreamSyncRequest_Heartbeat)(nil),
+		(*StreamSyncRequest_Ack)(nil),
 	}
 	file_fleetd_v1_sync_proto_msgTypes[14].OneofWrappers = []any{
-		(*SyncCommand_ConfigUpdate)(nil),
-		(*SyncCommand_Flush)(nil),
-		(*SyncCommand_Pause)(nil),
-		(*SyncCommand_Resume)(nil),
-		(*SyncCommand_Ack)(nil),
+		(*StreamSyncResponse_ConfigUpdate)(nil),
+		(*StreamSyncResponse_Flush)(nil),
+		(*StreamSyncResponse_Pause)(nil),
+		(*StreamSyncResponse_Resume)(nil),
+		(*StreamSyncResponse_Ack)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

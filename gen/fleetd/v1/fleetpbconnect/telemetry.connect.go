@@ -66,11 +66,11 @@ type TelemetryServiceClient interface {
 	// Get aggregated metrics
 	GetMetrics(context.Context, *connect.Request[v1.GetMetricsRequest]) (*connect.Response[v1.GetMetricsResponse], error)
 	// Stream real-time telemetry data
-	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.TelemetryData], error)
+	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.StreamTelemetryResponse], error)
 	// Get system logs
 	GetLogs(context.Context, *connect.Request[v1.GetLogsRequest]) (*connect.Response[v1.GetLogsResponse], error)
 	// Stream real-time logs
-	StreamLogs(context.Context, *connect.Request[v1.StreamLogsRequest]) (*connect.ServerStreamForClient[v1.TelemetryLogEntry], error)
+	StreamLogs(context.Context, *connect.Request[v1.StreamLogsRequest]) (*connect.ServerStreamForClient[v1.StreamLogsResponse], error)
 	// Configure alerts
 	ConfigureAlert(context.Context, *connect.Request[v1.ConfigureAlertRequest]) (*connect.Response[v1.ConfigureAlertResponse], error)
 	// List configured alerts
@@ -102,7 +102,7 @@ func NewTelemetryServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(telemetryServiceMethods.ByName("GetMetrics")),
 			connect.WithClientOptions(opts...),
 		),
-		streamTelemetry: connect.NewClient[v1.StreamTelemetryRequest, v1.TelemetryData](
+		streamTelemetry: connect.NewClient[v1.StreamTelemetryRequest, v1.StreamTelemetryResponse](
 			httpClient,
 			baseURL+TelemetryServiceStreamTelemetryProcedure,
 			connect.WithSchema(telemetryServiceMethods.ByName("StreamTelemetry")),
@@ -114,7 +114,7 @@ func NewTelemetryServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(telemetryServiceMethods.ByName("GetLogs")),
 			connect.WithClientOptions(opts...),
 		),
-		streamLogs: connect.NewClient[v1.StreamLogsRequest, v1.TelemetryLogEntry](
+		streamLogs: connect.NewClient[v1.StreamLogsRequest, v1.StreamLogsResponse](
 			httpClient,
 			baseURL+TelemetryServiceStreamLogsProcedure,
 			connect.WithSchema(telemetryServiceMethods.ByName("StreamLogs")),
@@ -145,9 +145,9 @@ func NewTelemetryServiceClient(httpClient connect.HTTPClient, baseURL string, op
 type telemetryServiceClient struct {
 	getTelemetry    *connect.Client[v1.GetTelemetryRequest, v1.GetTelemetryResponse]
 	getMetrics      *connect.Client[v1.GetMetricsRequest, v1.GetMetricsResponse]
-	streamTelemetry *connect.Client[v1.StreamTelemetryRequest, v1.TelemetryData]
+	streamTelemetry *connect.Client[v1.StreamTelemetryRequest, v1.StreamTelemetryResponse]
 	getLogs         *connect.Client[v1.GetLogsRequest, v1.GetLogsResponse]
-	streamLogs      *connect.Client[v1.StreamLogsRequest, v1.TelemetryLogEntry]
+	streamLogs      *connect.Client[v1.StreamLogsRequest, v1.StreamLogsResponse]
 	configureAlert  *connect.Client[v1.ConfigureAlertRequest, v1.ConfigureAlertResponse]
 	listAlerts      *connect.Client[v1.ListAlertsRequest, v1.ListAlertsResponse]
 	deleteAlert     *connect.Client[v1.DeleteAlertRequest, v1.DeleteAlertResponse]
@@ -164,7 +164,7 @@ func (c *telemetryServiceClient) GetMetrics(ctx context.Context, req *connect.Re
 }
 
 // StreamTelemetry calls fleetd.v1.TelemetryService.StreamTelemetry.
-func (c *telemetryServiceClient) StreamTelemetry(ctx context.Context, req *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.TelemetryData], error) {
+func (c *telemetryServiceClient) StreamTelemetry(ctx context.Context, req *connect.Request[v1.StreamTelemetryRequest]) (*connect.ServerStreamForClient[v1.StreamTelemetryResponse], error) {
 	return c.streamTelemetry.CallServerStream(ctx, req)
 }
 
@@ -174,7 +174,7 @@ func (c *telemetryServiceClient) GetLogs(ctx context.Context, req *connect.Reque
 }
 
 // StreamLogs calls fleetd.v1.TelemetryService.StreamLogs.
-func (c *telemetryServiceClient) StreamLogs(ctx context.Context, req *connect.Request[v1.StreamLogsRequest]) (*connect.ServerStreamForClient[v1.TelemetryLogEntry], error) {
+func (c *telemetryServiceClient) StreamLogs(ctx context.Context, req *connect.Request[v1.StreamLogsRequest]) (*connect.ServerStreamForClient[v1.StreamLogsResponse], error) {
 	return c.streamLogs.CallServerStream(ctx, req)
 }
 
@@ -200,11 +200,11 @@ type TelemetryServiceHandler interface {
 	// Get aggregated metrics
 	GetMetrics(context.Context, *connect.Request[v1.GetMetricsRequest]) (*connect.Response[v1.GetMetricsResponse], error)
 	// Stream real-time telemetry data
-	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.TelemetryData]) error
+	StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.StreamTelemetryResponse]) error
 	// Get system logs
 	GetLogs(context.Context, *connect.Request[v1.GetLogsRequest]) (*connect.Response[v1.GetLogsResponse], error)
 	// Stream real-time logs
-	StreamLogs(context.Context, *connect.Request[v1.StreamLogsRequest], *connect.ServerStream[v1.TelemetryLogEntry]) error
+	StreamLogs(context.Context, *connect.Request[v1.StreamLogsRequest], *connect.ServerStream[v1.StreamLogsResponse]) error
 	// Configure alerts
 	ConfigureAlert(context.Context, *connect.Request[v1.ConfigureAlertRequest]) (*connect.Response[v1.ConfigureAlertResponse], error)
 	// List configured alerts
@@ -303,7 +303,7 @@ func (UnimplementedTelemetryServiceHandler) GetMetrics(context.Context, *connect
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.TelemetryService.GetMetrics is not implemented"))
 }
 
-func (UnimplementedTelemetryServiceHandler) StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.TelemetryData]) error {
+func (UnimplementedTelemetryServiceHandler) StreamTelemetry(context.Context, *connect.Request[v1.StreamTelemetryRequest], *connect.ServerStream[v1.StreamTelemetryResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.TelemetryService.StreamTelemetry is not implemented"))
 }
 
@@ -311,7 +311,7 @@ func (UnimplementedTelemetryServiceHandler) GetLogs(context.Context, *connect.Re
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.TelemetryService.GetLogs is not implemented"))
 }
 
-func (UnimplementedTelemetryServiceHandler) StreamLogs(context.Context, *connect.Request[v1.StreamLogsRequest], *connect.ServerStream[v1.TelemetryLogEntry]) error {
+func (UnimplementedTelemetryServiceHandler) StreamLogs(context.Context, *connect.Request[v1.StreamLogsRequest], *connect.ServerStream[v1.StreamLogsResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.TelemetryService.StreamLogs is not implemented"))
 }
 

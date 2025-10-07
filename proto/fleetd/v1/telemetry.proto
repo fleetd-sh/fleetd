@@ -14,13 +14,13 @@ service TelemetryService {
   rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse) {}
   
   // Stream real-time telemetry data
-  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryData) {}
-  
+  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream StreamTelemetryResponse) {}
+
   // Get system logs
   rpc GetLogs(GetLogsRequest) returns (GetLogsResponse) {}
 
   // Stream real-time logs
-  rpc StreamLogs(StreamLogsRequest) returns (stream TelemetryLogEntry) {}
+  rpc StreamLogs(StreamLogsRequest) returns (stream StreamLogsResponse) {}
   
   // Configure alerts
   rpc ConfigureAlert(ConfigureAlertRequest) returns (ConfigureAlertResponse) {}
@@ -43,7 +43,27 @@ message TelemetryData {
   map<string, double> custom_metrics = 8;
 }
 
+message StreamTelemetryResponse {
+  string device_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  double cpu_usage = 3;
+  double memory_usage = 4;
+  double disk_usage = 5;
+  double network_usage = 6;
+  double temperature = 7;
+  map<string, double> custom_metrics = 8;
+}
+
 message TelemetryLogEntry {
+  string id = 1;
+  string device_id = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  LogLevel level = 4;
+  string message = 5;
+  map<string, string> metadata = 6;
+}
+
+message StreamLogsResponse {
   string id = 1;
   string device_id = 2;
   google.protobuf.Timestamp timestamp = 3;

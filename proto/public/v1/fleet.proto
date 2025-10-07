@@ -23,7 +23,7 @@ service FleetService {
 
   // Telemetry
   rpc GetTelemetry(GetTelemetryRequest) returns (GetTelemetryResponse);
-  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryEvent);
+  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream StreamTelemetryResponse);
 
   // Deployment management - Unified API for all deployment types
   rpc CreateDeployment(CreateDeploymentRequest) returns (CreateDeploymentResponse);
@@ -34,14 +34,14 @@ service FleetService {
   rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse);
   rpc RollbackDeployment(RollbackDeploymentRequest) returns (RollbackDeploymentResponse);
   rpc GetDeploymentStatus(GetDeploymentStatusRequest) returns (GetDeploymentStatusResponse);
-  rpc StreamDeploymentEvents(StreamDeploymentEventsRequest) returns (stream DeploymentEvent);
+  rpc StreamDeploymentEvents(StreamDeploymentEventsRequest) returns (stream StreamDeploymentEventsResponse);
 
   // Configuration
   rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse);
   rpc UpdateConfiguration(UpdateConfigurationRequest) returns (UpdateConfigurationResponse);
 
   // Events streaming (SSE replacement)
-  rpc StreamEvents(StreamEventsRequest) returns (stream Event);
+  rpc StreamEvents(StreamEventsRequest) returns (stream StreamEventsResponse);
 }
 
 // Device represents a managed device
@@ -232,6 +232,10 @@ message StreamTelemetryRequest {
 }
 
 message TelemetryEvent {
+  TelemetryPoint point = 1;
+}
+
+message StreamTelemetryResponse {
   TelemetryPoint point = 1;
 }
 
@@ -769,6 +773,17 @@ message DeploymentEvent {
   string severity = 8;               // info, warning, error
 }
 
+message StreamDeploymentEventsResponse {
+  string id = 1;
+  string deployment_id = 2;
+  string device_id = 3;
+  DeploymentEvent.EventType type = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  string message = 6;
+  google.protobuf.Struct details = 7;
+  string severity = 8;
+}
+
 message DeviceDeploymentStatus {
   string device_id = 1;
   string device_name = 2;
@@ -845,6 +860,15 @@ enum EventType {
 }
 
 message Event {
+  string id = 1;
+  EventType type = 2;
+  string device_id = 3;
+  google.protobuf.Timestamp timestamp = 4;
+  google.protobuf.Struct data = 5;
+  string message = 6;
+}
+
+message StreamEventsResponse {
   string id = 1;
   EventType type = 2;
   string device_id = 3;

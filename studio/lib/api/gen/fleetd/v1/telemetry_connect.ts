@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { ConfigureAlertRequest, ConfigureAlertResponse, DeleteAlertRequest, DeleteAlertResponse, GetLogsRequest, GetLogsResponse, GetMetricsRequest, GetMetricsResponse, GetTelemetryRequest, GetTelemetryResponse, ListAlertsRequest, ListAlertsResponse, StreamLogsRequest, StreamTelemetryRequest, TelemetryData, TelemetryLogEntry } from "./telemetry_pb.js";
+import { ConfigureAlertRequest, ConfigureAlertResponse, DeleteAlertRequest, DeleteAlertResponse, GetLogsRequest, GetLogsResponse, GetMetricsRequest, GetMetricsResponse, GetTelemetryRequest, GetTelemetryResponse, ListAlertsRequest, ListAlertsResponse, StreamLogsRequest, StreamLogsResponse, StreamTelemetryRequest, StreamTelemetryResponse } from "./telemetry_pb.js";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -42,7 +42,7 @@ export const TelemetryService = {
     streamTelemetry: {
       name: "StreamTelemetry",
       I: StreamTelemetryRequest,
-      O: TelemetryData,
+      O: StreamTelemetryResponse,
       kind: MethodKind.ServerStreaming,
     },
     /**
@@ -64,7 +64,7 @@ export const TelemetryService = {
     streamLogs: {
       name: "StreamLogs",
       I: StreamLogsRequest,
-      O: TelemetryLogEntry,
+      O: StreamLogsResponse,
       kind: MethodKind.ServerStreaming,
     },
     /**

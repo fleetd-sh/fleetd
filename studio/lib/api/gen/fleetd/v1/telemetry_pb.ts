@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fleetd/v1/telemetry.proto.
  */
 export const file_fleetd_v1_telemetry: GenFile = /*@__PURE__*/
-  fileDesc("ChlmbGVldGQvdjEvdGVsZW1ldHJ5LnByb3RvEglmbGVldGQudjEitQIKDVRlbGVtZXRyeURhdGESEQoJZGV2aWNlX2lkGAEgASgJEi0KCXRpbWVzdGFtcBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJY3B1X3VzYWdlGAMgASgBEhQKDG1lbW9yeV91c2FnZRgEIAEoARISCgpkaXNrX3VzYWdlGAUgASgBEhUKDW5ldHdvcmtfdXNhZ2UYBiABKAESEwoLdGVtcGVyYXR1cmUYByABKAESQwoOY3VzdG9tX21ldHJpY3MYCCADKAsyKy5mbGVldGQudjEuVGVsZW1ldHJ5RGF0YS5DdXN0b21NZXRyaWNzRW50cnkaNAoSQ3VzdG9tTWV0cmljc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoAToCOAEihQIKEVRlbGVtZXRyeUxvZ0VudHJ5EgoKAmlkGAEgASgJEhEKCWRldmljZV9pZBgCIAEoCRItCgl0aW1lc3RhbXAYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiIKBWxldmVsGAQgASgOMhMuZmxlZXRkLnYxLkxvZ0xldmVsEg8KB21lc3NhZ2UYBSABKAkSPAoIbWV0YWRhdGEYBiADKAsyKi5mbGVldGQudjEuVGVsZW1ldHJ5TG9nRW50cnkuTWV0YWRhdGFFbnRyeRovCg1NZXRhZGF0YUVudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEioAIKBUFsZXJ0EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkSIgoEdHlwZRgEIAEoDjIULmZsZWV0ZC52MS5BbGVydFR5cGUSEQoJdGhyZXNob2xkGAUgASgBEiwKCWNvbmRpdGlvbhgGIAEoDjIZLmZsZWV0ZC52MS5BbGVydENvbmRpdGlvbhIPCgdlbmFibGVkGAcgASgIEhIKCmRldmljZV9pZHMYCCADKAkSLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAilQEKE0dldFRlbGVtZXRyeVJlcXVlc3QSEQoJZGV2aWNlX2lkGAEgASgJEi4KCnN0YXJ0X3RpbWUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKCGVuZF90aW1lGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVsaW1pdBgEIAEoBSI+ChRHZXRUZWxlbWV0cnlSZXNwb25zZRImCgRkYXRhGAEgAygLMhguZmxlZXRkLnYxLlRlbGVtZXRyeURhdGEiygEKEUdldE1ldHJpY3NSZXF1ZXN0EhIKCmRldmljZV9pZHMYASADKAkSFAoMbWV0cmljX25hbWVzGAIgAygJEi4KCnN0YXJ0X3RpbWUYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKCGVuZF90aW1lGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBITCgthZ2dyZWdhdGlvbhgFIAEoCRIYChBpbnRlcnZhbF9zZWNvbmRzGAYgASgFIjwKEkdldE1ldHJpY3NSZXNwb25zZRImCgdtZXRyaWNzGAEgAygLMhUuZmxlZXRkLnYxLk1ldHJpY0RhdGEizQEKCk1ldHJpY0RhdGESDAoEbmFtZRgBIAEoCRItCgl0aW1lc3RhbXAYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBXZhbHVlGAMgASgBEhEKCWRldmljZV9pZBgEIAEoCRIxCgZsYWJlbHMYBSADKAsyIS5mbGVldGQudjEuTWV0cmljRGF0YS5MYWJlbHNFbnRyeRotCgtMYWJlbHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIkIKFlN0cmVhbVRlbGVtZXRyeVJlcXVlc3QSEgoKZGV2aWNlX2lkcxgBIAMoCRIUCgxtZXRyaWNfbmFtZXMYAiADKAkixgEKDkdldExvZ3NSZXF1ZXN0EhIKCmRldmljZV9pZHMYASADKAkSIwoGbGV2ZWxzGAIgAygOMhMuZmxlZXRkLnYxLkxvZ0xldmVsEg4KBmZpbHRlchgDIAEoCRIuCgpzdGFydF90aW1lGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfdGltZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbGltaXQYBiABKAUiPQoPR2V0TG9nc1Jlc3BvbnNlEioKBGxvZ3MYASADKAsyHC5mbGVldGQudjEuVGVsZW1ldHJ5TG9nRW50cnkiXAoRU3RyZWFtTG9nc1JlcXVlc3QSEgoKZGV2aWNlX2lkcxgBIAMoCRIjCgZsZXZlbHMYAiADKA4yEy5mbGVldGQudjEuTG9nTGV2ZWwSDgoGZmlsdGVyGAMgASgJIjgKFUNvbmZpZ3VyZUFsZXJ0UmVxdWVzdBIfCgVhbGVydBgBIAEoCzIQLmZsZWV0ZC52MS5BbGVydCI5ChZDb25maWd1cmVBbGVydFJlc3BvbnNlEh8KBWFsZXJ0GAEgASgLMhAuZmxlZXRkLnYxLkFsZXJ0Ij0KEUxpc3RBbGVydHNSZXF1ZXN0EhIKCmRldmljZV9pZHMYASADKAkSFAoMZW5hYmxlZF9vbmx5GAIgASgIIjYKEkxpc3RBbGVydHNSZXNwb25zZRIgCgZhbGVydHMYASADKAsyEC5mbGVldGQudjEuQWxlcnQiJgoSRGVsZXRlQWxlcnRSZXF1ZXN0EhAKCGFsZXJ0X2lkGAEgASgJIhUKE0RlbGV0ZUFsZXJ0UmVzcG9uc2UqjAEKCExvZ0xldmVsEhkKFUxPR19MRVZFTF9VTlNQRUNJRklFRBAAEhMKD0xPR19MRVZFTF9ERUJVRxABEhIKDkxPR19MRVZFTF9JTkZPEAISEgoOTE9HX0xFVkVMX1dBUk4QAxITCg9MT0dfTEVWRUxfRVJST1IQBBITCg9MT0dfTEVWRUxfRkFUQUwQBSrRAQoJQWxlcnRUeXBlEhoKFkFMRVJUX1RZUEVfVU5TUEVDSUZJRUQQABISCg5BTEVSVF9UWVBFX0NQVRABEhUKEUFMRVJUX1RZUEVfTUVNT1JZEAISEwoPQUxFUlRfVFlQRV9ESVNLEAMSFgoSQUxFUlRfVFlQRV9ORVRXT1JLEAQSGgoWQUxFUlRfVFlQRV9URU1QRVJBVFVSRRAFEh0KGUFMRVJUX1RZUEVfREVWSUNFX09GRkxJTkUQBhIVChFBTEVSVF9UWVBFX0NVU1RPTRAHKqwBCg5BbGVydENvbmRpdGlvbhIfChtBTEVSVF9DT05ESVRJT05fVU5TUEVDSUZJRUQQABIgChxBTEVSVF9DT05ESVRJT05fR1JFQVRFUl9USEFOEAESHQoZQUxFUlRfQ09ORElUSU9OX0xFU1NfVEhBThACEhkKFUFMRVJUX0NPTkRJVElPTl9FUVVBTBADEh0KGUFMRVJUX0NPTkRJVElPTl9OT1RfRVFVQUwQBDKOBQoQVGVsZW1ldHJ5U2VydmljZRJRCgxHZXRUZWxlbWV0cnkSHi5mbGVldGQudjEuR2V0VGVsZW1ldHJ5UmVxdWVzdBofLmZsZWV0ZC52MS5HZXRUZWxlbWV0cnlSZXNwb25zZSIAEksKCkdldE1ldHJpY3MSHC5mbGVldGQudjEuR2V0TWV0cmljc1JlcXVlc3QaHS5mbGVldGQudjEuR2V0TWV0cmljc1Jlc3BvbnNlIgASUgoPU3RyZWFtVGVsZW1ldHJ5EiEuZmxlZXRkLnYxLlN0cmVhbVRlbGVtZXRyeVJlcXVlc3QaGC5mbGVldGQudjEuVGVsZW1ldHJ5RGF0YSIAMAESQgoHR2V0TG9ncxIZLmZsZWV0ZC52MS5HZXRMb2dzUmVxdWVzdBoaLmZsZWV0ZC52MS5HZXRMb2dzUmVzcG9uc2UiABJMCgpTdHJlYW1Mb2dzEhwuZmxlZXRkLnYxLlN0cmVhbUxvZ3NSZXF1ZXN0GhwuZmxlZXRkLnYxLlRlbGVtZXRyeUxvZ0VudHJ5IgAwARJXCg5Db25maWd1cmVBbGVydBIgLmZsZWV0ZC52MS5Db25maWd1cmVBbGVydFJlcXVlc3QaIS5mbGVldGQudjEuQ29uZmlndXJlQWxlcnRSZXNwb25zZSIAEksKCkxpc3RBbGVydHMSHC5mbGVldGQudjEuTGlzdEFsZXJ0c1JlcXVlc3QaHS5mbGVldGQudjEuTGlzdEFsZXJ0c1Jlc3BvbnNlIgASTgoLRGVsZXRlQWxlcnQSHS5mbGVldGQudjEuRGVsZXRlQWxlcnRSZXF1ZXN0Gh4uZmxlZXRkLnYxLkRlbGV0ZUFsZXJ0UmVzcG9uc2UiAEKFAQoNY29tLmZsZWV0ZC52MUIOVGVsZW1ldHJ5UHJvdG9QAVofZmxlZXRkLnNoL2dlbi9mbGVldGQvdjE7ZmxlZXRwYqICA0ZYWKoCCUZsZWV0ZC5WMcoCCUZsZWV0ZFxWMeICFUZsZWV0ZFxWMVxHUEJNZXRhZGF0YeoCCkZsZWV0ZDo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChlmbGVldGQvdjEvdGVsZW1ldHJ5LnByb3RvEglmbGVldGQudjEitQIKDVRlbGVtZXRyeURhdGESEQoJZGV2aWNlX2lkGAEgASgJEi0KCXRpbWVzdGFtcBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJY3B1X3VzYWdlGAMgASgBEhQKDG1lbW9yeV91c2FnZRgEIAEoARISCgpkaXNrX3VzYWdlGAUgASgBEhUKDW5ldHdvcmtfdXNhZ2UYBiABKAESEwoLdGVtcGVyYXR1cmUYByABKAESQwoOY3VzdG9tX21ldHJpY3MYCCADKAsyKy5mbGVldGQudjEuVGVsZW1ldHJ5RGF0YS5DdXN0b21NZXRyaWNzRW50cnkaNAoSQ3VzdG9tTWV0cmljc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoAToCOAEiyQIKF1N0cmVhbVRlbGVtZXRyeVJlc3BvbnNlEhEKCWRldmljZV9pZBgBIAEoCRItCgl0aW1lc3RhbXAYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCWNwdV91c2FnZRgDIAEoARIUCgxtZW1vcnlfdXNhZ2UYBCABKAESEgoKZGlza191c2FnZRgFIAEoARIVCg1uZXR3b3JrX3VzYWdlGAYgASgBEhMKC3RlbXBlcmF0dXJlGAcgASgBEk0KDmN1c3RvbV9tZXRyaWNzGAggAygLMjUuZmxlZXRkLnYxLlN0cmVhbVRlbGVtZXRyeVJlc3BvbnNlLkN1c3RvbU1ldHJpY3NFbnRyeRo0ChJDdXN0b21NZXRyaWNzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgBOgI4ASKFAgoRVGVsZW1ldHJ5TG9nRW50cnkSCgoCaWQYASABKAkSEQoJZGV2aWNlX2lkGAIgASgJEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASIgoFbGV2ZWwYBCABKA4yEy5mbGVldGQudjEuTG9nTGV2ZWwSDwoHbWVzc2FnZRgFIAEoCRI8CghtZXRhZGF0YRgGIAMoCzIqLmZsZWV0ZC52MS5UZWxlbWV0cnlMb2dFbnRyeS5NZXRhZGF0YUVudHJ5Gi8KDU1ldGFkYXRhRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASKHAgoSU3RyZWFtTG9nc1Jlc3BvbnNlEgoKAmlkGAEgASgJEhEKCWRldmljZV9pZBgCIAEoCRItCgl0aW1lc3RhbXAYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiIKBWxldmVsGAQgASgOMhMuZmxlZXRkLnYxLkxvZ0xldmVsEg8KB21lc3NhZ2UYBSABKAkSPQoIbWV0YWRhdGEYBiADKAsyKy5mbGVldGQudjEuU3RyZWFtTG9nc1Jlc3BvbnNlLk1ldGFkYXRhRW50cnkaLwoNTWV0YWRhdGFFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBIqACCgVBbGVydBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhMKC2Rlc2NyaXB0aW9uGAMgASgJEiIKBHR5cGUYBCABKA4yFC5mbGVldGQudjEuQWxlcnRUeXBlEhEKCXRocmVzaG9sZBgFIAEoARIsCgljb25kaXRpb24YBiABKA4yGS5mbGVldGQudjEuQWxlcnRDb25kaXRpb24SDwoHZW5hYmxlZBgHIAEoCBISCgpkZXZpY2VfaWRzGAggAygJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIpUBChNHZXRUZWxlbWV0cnlSZXF1ZXN0EhEKCWRldmljZV9pZBgBIAEoCRIuCgpzdGFydF90aW1lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfdGltZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbGltaXQYBCABKAUiPgoUR2V0VGVsZW1ldHJ5UmVzcG9uc2USJgoEZGF0YRgBIAMoCzIYLmZsZWV0ZC52MS5UZWxlbWV0cnlEYXRhIsoBChFHZXRNZXRyaWNzUmVxdWVzdBISCgpkZXZpY2VfaWRzGAEgAygJEhQKDG1ldHJpY19uYW1lcxgCIAMoCRIuCgpzdGFydF90aW1lGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfdGltZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLYWdncmVnYXRpb24YBSABKAkSGAoQaW50ZXJ2YWxfc2Vjb25kcxgGIAEoBSI8ChJHZXRNZXRyaWNzUmVzcG9uc2USJgoHbWV0cmljcxgBIAMoCzIVLmZsZWV0ZC52MS5NZXRyaWNEYXRhIs0BCgpNZXRyaWNEYXRhEgwKBG5hbWUYASABKAkSLQoJdGltZXN0YW1wGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgV2YWx1ZRgDIAEoARIRCglkZXZpY2VfaWQYBCABKAkSMQoGbGFiZWxzGAUgAygLMiEuZmxlZXRkLnYxLk1ldHJpY0RhdGEuTGFiZWxzRW50cnkaLQoLTGFiZWxzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASJCChZTdHJlYW1UZWxlbWV0cnlSZXF1ZXN0EhIKCmRldmljZV9pZHMYASADKAkSFAoMbWV0cmljX25hbWVzGAIgAygJIsYBCg5HZXRMb2dzUmVxdWVzdBISCgpkZXZpY2VfaWRzGAEgAygJEiMKBmxldmVscxgCIAMoDjITLmZsZWV0ZC52MS5Mb2dMZXZlbBIOCgZmaWx0ZXIYAyABKAkSLgoKc3RhcnRfdGltZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLAoIZW5kX3RpbWUYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBWxpbWl0GAYgASgFIj0KD0dldExvZ3NSZXNwb25zZRIqCgRsb2dzGAEgAygLMhwuZmxlZXRkLnYxLlRlbGVtZXRyeUxvZ0VudHJ5IlwKEVN0cmVhbUxvZ3NSZXF1ZXN0EhIKCmRldmljZV9pZHMYASADKAkSIwoGbGV2ZWxzGAIgAygOMhMuZmxlZXRkLnYxLkxvZ0xldmVsEg4KBmZpbHRlchgDIAEoCSI4ChVDb25maWd1cmVBbGVydFJlcXVlc3QSHwoFYWxlcnQYASABKAsyEC5mbGVldGQudjEuQWxlcnQiOQoWQ29uZmlndXJlQWxlcnRSZXNwb25zZRIfCgVhbGVydBgBIAEoCzIQLmZsZWV0ZC52MS5BbGVydCI9ChFMaXN0QWxlcnRzUmVxdWVzdBISCgpkZXZpY2VfaWRzGAEgAygJEhQKDGVuYWJsZWRfb25seRgCIAEoCCI2ChJMaXN0QWxlcnRzUmVzcG9uc2USIAoGYWxlcnRzGAEgAygLMhAuZmxlZXRkLnYxLkFsZXJ0IiYKEkRlbGV0ZUFsZXJ0UmVxdWVzdBIQCghhbGVydF9pZBgBIAEoCSIVChNEZWxldGVBbGVydFJlc3BvbnNlKowBCghMb2dMZXZlbBIZChVMT0dfTEVWRUxfVU5TUEVDSUZJRUQQABITCg9MT0dfTEVWRUxfREVCVUcQARISCg5MT0dfTEVWRUxfSU5GTxACEhIKDkxPR19MRVZFTF9XQVJOEAMSEwoPTE9HX0xFVkVMX0VSUk9SEAQSEwoPTE9HX0xFVkVMX0ZBVEFMEAUq0QEKCUFsZXJ0VHlwZRIaChZBTEVSVF9UWVBFX1VOU1BFQ0lGSUVEEAASEgoOQUxFUlRfVFlQRV9DUFUQARIVChFBTEVSVF9UWVBFX01FTU9SWRACEhMKD0FMRVJUX1RZUEVfRElTSxADEhYKEkFMRVJUX1RZUEVfTkVUV09SSxAEEhoKFkFMRVJUX1RZUEVfVEVNUEVSQVRVUkUQBRIdChlBTEVSVF9UWVBFX0RFVklDRV9PRkZMSU5FEAYSFQoRQUxFUlRfVFlQRV9DVVNUT00QByqsAQoOQWxlcnRDb25kaXRpb24SHwobQUxFUlRfQ09ORElUSU9OX1VOU1BFQ0lGSUVEEAASIAocQUxFUlRfQ09ORElUSU9OX0dSRUFURVJfVEhBThABEh0KGUFMRVJUX0NPTkRJVElPTl9MRVNTX1RIQU4QAhIZChVBTEVSVF9DT05ESVRJT05fRVFVQUwQAxIdChlBTEVSVF9DT05ESVRJT05fTk9UX0VRVUFMEAQymQUKEFRlbGVtZXRyeVNlcnZpY2USUQoMR2V0VGVsZW1ldHJ5Eh4uZmxlZXRkLnYxLkdldFRlbGVtZXRyeVJlcXVlc3QaHy5mbGVldGQudjEuR2V0VGVsZW1ldHJ5UmVzcG9uc2UiABJLCgpHZXRNZXRyaWNzEhwuZmxlZXRkLnYxLkdldE1ldHJpY3NSZXF1ZXN0Gh0uZmxlZXRkLnYxLkdldE1ldHJpY3NSZXNwb25zZSIAElwKD1N0cmVhbVRlbGVtZXRyeRIhLmZsZWV0ZC52MS5TdHJlYW1UZWxlbWV0cnlSZXF1ZXN0GiIuZmxlZXRkLnYxLlN0cmVhbVRlbGVtZXRyeVJlc3BvbnNlIgAwARJCCgdHZXRMb2dzEhkuZmxlZXRkLnYxLkdldExvZ3NSZXF1ZXN0GhouZmxlZXRkLnYxLkdldExvZ3NSZXNwb25zZSIAEk0KClN0cmVhbUxvZ3MSHC5mbGVldGQudjEuU3RyZWFtTG9nc1JlcXVlc3QaHS5mbGVldGQudjEuU3RyZWFtTG9nc1Jlc3BvbnNlIgAwARJXCg5Db25maWd1cmVBbGVydBIgLmZsZWV0ZC52MS5Db25maWd1cmVBbGVydFJlcXVlc3QaIS5mbGVldGQudjEuQ29uZmlndXJlQWxlcnRSZXNwb25zZSIAEksKCkxpc3RBbGVydHMSHC5mbGVldGQudjEuTGlzdEFsZXJ0c1JlcXVlc3QaHS5mbGVldGQudjEuTGlzdEFsZXJ0c1Jlc3BvbnNlIgASTgoLRGVsZXRlQWxlcnQSHS5mbGVldGQudjEuRGVsZXRlQWxlcnRSZXF1ZXN0Gh4uZmxlZXRkLnYxLkRlbGV0ZUFsZXJ0UmVzcG9uc2UiAEKFAQoNY29tLmZsZWV0ZC52MUIOVGVsZW1ldHJ5UHJvdG9QAVofZmxlZXRkLnNoL2dlbi9mbGVldGQvdjE7ZmxlZXRwYqICA0ZYWKoCCUZsZWV0ZC5WMcoCCUZsZWV0ZFxWMeICFUZsZWV0ZFxWMVxHUEJNZXRhZGF0YeoCCkZsZWV0ZDo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message fleetd.v1.TelemetryData
@@ -67,6 +67,58 @@ export const TelemetryDataSchema: GenMessage<TelemetryData> = /*@__PURE__*/
   messageDesc(file_fleetd_v1_telemetry, 0);
 
 /**
+ * @generated from message fleetd.v1.StreamTelemetryResponse
+ */
+export type StreamTelemetryResponse = Message<"fleetd.v1.StreamTelemetryResponse"> & {
+  /**
+   * @generated from field: string device_id = 1;
+   */
+  deviceId: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp timestamp = 2;
+   */
+  timestamp?: Timestamp;
+
+  /**
+   * @generated from field: double cpu_usage = 3;
+   */
+  cpuUsage: number;
+
+  /**
+   * @generated from field: double memory_usage = 4;
+   */
+  memoryUsage: number;
+
+  /**
+   * @generated from field: double disk_usage = 5;
+   */
+  diskUsage: number;
+
+  /**
+   * @generated from field: double network_usage = 6;
+   */
+  networkUsage: number;
+
+  /**
+   * @generated from field: double temperature = 7;
+   */
+  temperature: number;
+
+  /**
+   * @generated from field: map<string, double> custom_metrics = 8;
+   */
+  customMetrics: { [key: string]: number };
+};
+
+/**
+ * Describes the message fleetd.v1.StreamTelemetryResponse.
+ * Use `create(StreamTelemetryResponseSchema)` to create a new message.
+ */
+export const StreamTelemetryResponseSchema: GenMessage<StreamTelemetryResponse> = /*@__PURE__*/
+  messageDesc(file_fleetd_v1_telemetry, 1);
+
+/**
  * @generated from message fleetd.v1.TelemetryLogEntry
  */
 export type TelemetryLogEntry = Message<"fleetd.v1.TelemetryLogEntry"> & {
@@ -106,7 +158,49 @@ export type TelemetryLogEntry = Message<"fleetd.v1.TelemetryLogEntry"> & {
  * Use `create(TelemetryLogEntrySchema)` to create a new message.
  */
 export const TelemetryLogEntrySchema: GenMessage<TelemetryLogEntry> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 1);
+  messageDesc(file_fleetd_v1_telemetry, 2);
+
+/**
+ * @generated from message fleetd.v1.StreamLogsResponse
+ */
+export type StreamLogsResponse = Message<"fleetd.v1.StreamLogsResponse"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string device_id = 2;
+   */
+  deviceId: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp timestamp = 3;
+   */
+  timestamp?: Timestamp;
+
+  /**
+   * @generated from field: fleetd.v1.LogLevel level = 4;
+   */
+  level: LogLevel;
+
+  /**
+   * @generated from field: string message = 5;
+   */
+  message: string;
+
+  /**
+   * @generated from field: map<string, string> metadata = 6;
+   */
+  metadata: { [key: string]: string };
+};
+
+/**
+ * Describes the message fleetd.v1.StreamLogsResponse.
+ * Use `create(StreamLogsResponseSchema)` to create a new message.
+ */
+export const StreamLogsResponseSchema: GenMessage<StreamLogsResponse> = /*@__PURE__*/
+  messageDesc(file_fleetd_v1_telemetry, 3);
 
 /**
  * @generated from message fleetd.v1.Alert
@@ -168,7 +262,7 @@ export type Alert = Message<"fleetd.v1.Alert"> & {
  * Use `create(AlertSchema)` to create a new message.
  */
 export const AlertSchema: GenMessage<Alert> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 2);
+  messageDesc(file_fleetd_v1_telemetry, 4);
 
 /**
  * @generated from message fleetd.v1.GetTelemetryRequest
@@ -200,7 +294,7 @@ export type GetTelemetryRequest = Message<"fleetd.v1.GetTelemetryRequest"> & {
  * Use `create(GetTelemetryRequestSchema)` to create a new message.
  */
 export const GetTelemetryRequestSchema: GenMessage<GetTelemetryRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 3);
+  messageDesc(file_fleetd_v1_telemetry, 5);
 
 /**
  * @generated from message fleetd.v1.GetTelemetryResponse
@@ -217,7 +311,7 @@ export type GetTelemetryResponse = Message<"fleetd.v1.GetTelemetryResponse"> & {
  * Use `create(GetTelemetryResponseSchema)` to create a new message.
  */
 export const GetTelemetryResponseSchema: GenMessage<GetTelemetryResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 4);
+  messageDesc(file_fleetd_v1_telemetry, 6);
 
 /**
  * @generated from message fleetd.v1.GetMetricsRequest
@@ -261,7 +355,7 @@ export type GetMetricsRequest = Message<"fleetd.v1.GetMetricsRequest"> & {
  * Use `create(GetMetricsRequestSchema)` to create a new message.
  */
 export const GetMetricsRequestSchema: GenMessage<GetMetricsRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 5);
+  messageDesc(file_fleetd_v1_telemetry, 7);
 
 /**
  * @generated from message fleetd.v1.GetMetricsResponse
@@ -278,7 +372,7 @@ export type GetMetricsResponse = Message<"fleetd.v1.GetMetricsResponse"> & {
  * Use `create(GetMetricsResponseSchema)` to create a new message.
  */
 export const GetMetricsResponseSchema: GenMessage<GetMetricsResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 6);
+  messageDesc(file_fleetd_v1_telemetry, 8);
 
 /**
  * @generated from message fleetd.v1.MetricData
@@ -315,7 +409,7 @@ export type MetricData = Message<"fleetd.v1.MetricData"> & {
  * Use `create(MetricDataSchema)` to create a new message.
  */
 export const MetricDataSchema: GenMessage<MetricData> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 7);
+  messageDesc(file_fleetd_v1_telemetry, 9);
 
 /**
  * @generated from message fleetd.v1.StreamTelemetryRequest
@@ -337,7 +431,7 @@ export type StreamTelemetryRequest = Message<"fleetd.v1.StreamTelemetryRequest">
  * Use `create(StreamTelemetryRequestSchema)` to create a new message.
  */
 export const StreamTelemetryRequestSchema: GenMessage<StreamTelemetryRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 8);
+  messageDesc(file_fleetd_v1_telemetry, 10);
 
 /**
  * @generated from message fleetd.v1.GetLogsRequest
@@ -379,7 +473,7 @@ export type GetLogsRequest = Message<"fleetd.v1.GetLogsRequest"> & {
  * Use `create(GetLogsRequestSchema)` to create a new message.
  */
 export const GetLogsRequestSchema: GenMessage<GetLogsRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 9);
+  messageDesc(file_fleetd_v1_telemetry, 11);
 
 /**
  * @generated from message fleetd.v1.GetLogsResponse
@@ -396,7 +490,7 @@ export type GetLogsResponse = Message<"fleetd.v1.GetLogsResponse"> & {
  * Use `create(GetLogsResponseSchema)` to create a new message.
  */
 export const GetLogsResponseSchema: GenMessage<GetLogsResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 10);
+  messageDesc(file_fleetd_v1_telemetry, 12);
 
 /**
  * @generated from message fleetd.v1.StreamLogsRequest
@@ -423,7 +517,7 @@ export type StreamLogsRequest = Message<"fleetd.v1.StreamLogsRequest"> & {
  * Use `create(StreamLogsRequestSchema)` to create a new message.
  */
 export const StreamLogsRequestSchema: GenMessage<StreamLogsRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 11);
+  messageDesc(file_fleetd_v1_telemetry, 13);
 
 /**
  * @generated from message fleetd.v1.ConfigureAlertRequest
@@ -440,7 +534,7 @@ export type ConfigureAlertRequest = Message<"fleetd.v1.ConfigureAlertRequest"> &
  * Use `create(ConfigureAlertRequestSchema)` to create a new message.
  */
 export const ConfigureAlertRequestSchema: GenMessage<ConfigureAlertRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 12);
+  messageDesc(file_fleetd_v1_telemetry, 14);
 
 /**
  * @generated from message fleetd.v1.ConfigureAlertResponse
@@ -457,7 +551,7 @@ export type ConfigureAlertResponse = Message<"fleetd.v1.ConfigureAlertResponse">
  * Use `create(ConfigureAlertResponseSchema)` to create a new message.
  */
 export const ConfigureAlertResponseSchema: GenMessage<ConfigureAlertResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 13);
+  messageDesc(file_fleetd_v1_telemetry, 15);
 
 /**
  * @generated from message fleetd.v1.ListAlertsRequest
@@ -479,7 +573,7 @@ export type ListAlertsRequest = Message<"fleetd.v1.ListAlertsRequest"> & {
  * Use `create(ListAlertsRequestSchema)` to create a new message.
  */
 export const ListAlertsRequestSchema: GenMessage<ListAlertsRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 14);
+  messageDesc(file_fleetd_v1_telemetry, 16);
 
 /**
  * @generated from message fleetd.v1.ListAlertsResponse
@@ -496,7 +590,7 @@ export type ListAlertsResponse = Message<"fleetd.v1.ListAlertsResponse"> & {
  * Use `create(ListAlertsResponseSchema)` to create a new message.
  */
 export const ListAlertsResponseSchema: GenMessage<ListAlertsResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 15);
+  messageDesc(file_fleetd_v1_telemetry, 17);
 
 /**
  * @generated from message fleetd.v1.DeleteAlertRequest
@@ -513,7 +607,7 @@ export type DeleteAlertRequest = Message<"fleetd.v1.DeleteAlertRequest"> & {
  * Use `create(DeleteAlertRequestSchema)` to create a new message.
  */
 export const DeleteAlertRequestSchema: GenMessage<DeleteAlertRequest> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 16);
+  messageDesc(file_fleetd_v1_telemetry, 18);
 
 /**
  * @generated from message fleetd.v1.DeleteAlertResponse
@@ -526,7 +620,7 @@ export type DeleteAlertResponse = Message<"fleetd.v1.DeleteAlertResponse"> & {
  * Use `create(DeleteAlertResponseSchema)` to create a new message.
  */
 export const DeleteAlertResponseSchema: GenMessage<DeleteAlertResponse> = /*@__PURE__*/
-  messageDesc(file_fleetd_v1_telemetry, 17);
+  messageDesc(file_fleetd_v1_telemetry, 19);
 
 /**
  * @generated from enum fleetd.v1.LogLevel
@@ -688,7 +782,7 @@ export const TelemetryService: GenService<{
   streamTelemetry: {
     methodKind: "server_streaming";
     input: typeof StreamTelemetryRequestSchema;
-    output: typeof TelemetryDataSchema;
+    output: typeof StreamTelemetryResponseSchema;
   },
   /**
    * Get system logs
@@ -708,7 +802,7 @@ export const TelemetryService: GenService<{
   streamLogs: {
     methodKind: "server_streaming";
     input: typeof StreamLogsRequestSchema;
-    output: typeof TelemetryLogEntrySchema;
+    output: typeof StreamLogsResponseSchema;
   },
   /**
    * Configure alerts

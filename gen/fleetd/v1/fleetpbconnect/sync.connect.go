@@ -53,7 +53,7 @@ type SyncServiceClient interface {
 	// GetSyncConfig gets updated sync configuration for device
 	GetSyncConfig(context.Context, *connect.Request[v1.GetSyncConfigRequest]) (*connect.Response[v1.GetSyncConfigResponse], error)
 	// StreamSync establishes bidirectional sync stream
-	StreamSync(context.Context) *connect.BidiStreamForClient[v1.SyncData, v1.SyncCommand]
+	StreamSync(context.Context) *connect.BidiStreamForClient[v1.StreamSyncRequest, v1.StreamSyncResponse]
 }
 
 // NewSyncServiceClient constructs a client for the fleetd.v1.SyncService service. By default, it
@@ -85,7 +85,7 @@ func NewSyncServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(syncServiceMethods.ByName("GetSyncConfig")),
 			connect.WithClientOptions(opts...),
 		),
-		streamSync: connect.NewClient[v1.SyncData, v1.SyncCommand](
+		streamSync: connect.NewClient[v1.StreamSyncRequest, v1.StreamSyncResponse](
 			httpClient,
 			baseURL+SyncServiceStreamSyncProcedure,
 			connect.WithSchema(syncServiceMethods.ByName("StreamSync")),
@@ -99,7 +99,7 @@ type syncServiceClient struct {
 	syncMetrics   *connect.Client[v1.SyncMetricsRequest, v1.SyncMetricsResponse]
 	syncLogs      *connect.Client[v1.SyncLogsRequest, v1.SyncLogsResponse]
 	getSyncConfig *connect.Client[v1.GetSyncConfigRequest, v1.GetSyncConfigResponse]
-	streamSync    *connect.Client[v1.SyncData, v1.SyncCommand]
+	streamSync    *connect.Client[v1.StreamSyncRequest, v1.StreamSyncResponse]
 }
 
 // SyncMetrics calls fleetd.v1.SyncService.SyncMetrics.
@@ -118,7 +118,7 @@ func (c *syncServiceClient) GetSyncConfig(ctx context.Context, req *connect.Requ
 }
 
 // StreamSync calls fleetd.v1.SyncService.StreamSync.
-func (c *syncServiceClient) StreamSync(ctx context.Context) *connect.BidiStreamForClient[v1.SyncData, v1.SyncCommand] {
+func (c *syncServiceClient) StreamSync(ctx context.Context) *connect.BidiStreamForClient[v1.StreamSyncRequest, v1.StreamSyncResponse] {
 	return c.streamSync.CallBidiStream(ctx)
 }
 
@@ -131,7 +131,7 @@ type SyncServiceHandler interface {
 	// GetSyncConfig gets updated sync configuration for device
 	GetSyncConfig(context.Context, *connect.Request[v1.GetSyncConfigRequest]) (*connect.Response[v1.GetSyncConfigResponse], error)
 	// StreamSync establishes bidirectional sync stream
-	StreamSync(context.Context, *connect.BidiStream[v1.SyncData, v1.SyncCommand]) error
+	StreamSync(context.Context, *connect.BidiStream[v1.StreamSyncRequest, v1.StreamSyncResponse]) error
 }
 
 // NewSyncServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -196,6 +196,6 @@ func (UnimplementedSyncServiceHandler) GetSyncConfig(context.Context, *connect.R
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.SyncService.GetSyncConfig is not implemented"))
 }
 
-func (UnimplementedSyncServiceHandler) StreamSync(context.Context, *connect.BidiStream[v1.SyncData, v1.SyncCommand]) error {
+func (UnimplementedSyncServiceHandler) StreamSync(context.Context, *connect.BidiStream[v1.StreamSyncRequest, v1.StreamSyncResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("fleetd.v1.SyncService.StreamSync is not implemented"))
 }

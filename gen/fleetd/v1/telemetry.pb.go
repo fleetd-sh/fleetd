@@ -299,6 +299,106 @@ func (x *TelemetryData) GetCustomMetrics() map[string]float64 {
 	return nil
 }
 
+type StreamTelemetryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeviceId      string                 `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	CpuUsage      float64                `protobuf:"fixed64,3,opt,name=cpu_usage,json=cpuUsage,proto3" json:"cpu_usage,omitempty"`
+	MemoryUsage   float64                `protobuf:"fixed64,4,opt,name=memory_usage,json=memoryUsage,proto3" json:"memory_usage,omitempty"`
+	DiskUsage     float64                `protobuf:"fixed64,5,opt,name=disk_usage,json=diskUsage,proto3" json:"disk_usage,omitempty"`
+	NetworkUsage  float64                `protobuf:"fixed64,6,opt,name=network_usage,json=networkUsage,proto3" json:"network_usage,omitempty"`
+	Temperature   float64                `protobuf:"fixed64,7,opt,name=temperature,proto3" json:"temperature,omitempty"`
+	CustomMetrics map[string]float64     `protobuf:"bytes,8,rep,name=custom_metrics,json=customMetrics,proto3" json:"custom_metrics,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"fixed64,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamTelemetryResponse) Reset() {
+	*x = StreamTelemetryResponse{}
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamTelemetryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamTelemetryResponse) ProtoMessage() {}
+
+func (x *StreamTelemetryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamTelemetryResponse.ProtoReflect.Descriptor instead.
+func (*StreamTelemetryResponse) Descriptor() ([]byte, []int) {
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *StreamTelemetryResponse) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *StreamTelemetryResponse) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+func (x *StreamTelemetryResponse) GetCpuUsage() float64 {
+	if x != nil {
+		return x.CpuUsage
+	}
+	return 0
+}
+
+func (x *StreamTelemetryResponse) GetMemoryUsage() float64 {
+	if x != nil {
+		return x.MemoryUsage
+	}
+	return 0
+}
+
+func (x *StreamTelemetryResponse) GetDiskUsage() float64 {
+	if x != nil {
+		return x.DiskUsage
+	}
+	return 0
+}
+
+func (x *StreamTelemetryResponse) GetNetworkUsage() float64 {
+	if x != nil {
+		return x.NetworkUsage
+	}
+	return 0
+}
+
+func (x *StreamTelemetryResponse) GetTemperature() float64 {
+	if x != nil {
+		return x.Temperature
+	}
+	return 0
+}
+
+func (x *StreamTelemetryResponse) GetCustomMetrics() map[string]float64 {
+	if x != nil {
+		return x.CustomMetrics
+	}
+	return nil
+}
+
 type TelemetryLogEntry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -313,7 +413,7 @@ type TelemetryLogEntry struct {
 
 func (x *TelemetryLogEntry) Reset() {
 	*x = TelemetryLogEntry{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[1]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -325,7 +425,7 @@ func (x *TelemetryLogEntry) String() string {
 func (*TelemetryLogEntry) ProtoMessage() {}
 
 func (x *TelemetryLogEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[1]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -338,7 +438,7 @@ func (x *TelemetryLogEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TelemetryLogEntry.ProtoReflect.Descriptor instead.
 func (*TelemetryLogEntry) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{1}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TelemetryLogEntry) GetId() string {
@@ -383,6 +483,90 @@ func (x *TelemetryLogEntry) GetMetadata() map[string]string {
 	return nil
 }
 
+type StreamLogsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	DeviceId      string                 `protobuf:"bytes,2,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Level         LogLevel               `protobuf:"varint,4,opt,name=level,proto3,enum=fleetd.v1.LogLevel" json:"level,omitempty"`
+	Message       string                 `protobuf:"bytes,5,opt,name=message,proto3" json:"message,omitempty"`
+	Metadata      map[string]string      `protobuf:"bytes,6,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamLogsResponse) Reset() {
+	*x = StreamLogsResponse{}
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamLogsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamLogsResponse) ProtoMessage() {}
+
+func (x *StreamLogsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamLogsResponse.ProtoReflect.Descriptor instead.
+func (*StreamLogsResponse) Descriptor() ([]byte, []int) {
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *StreamLogsResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *StreamLogsResponse) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *StreamLogsResponse) GetTimestamp() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Timestamp
+	}
+	return nil
+}
+
+func (x *StreamLogsResponse) GetLevel() LogLevel {
+	if x != nil {
+		return x.Level
+	}
+	return LogLevel_LOG_LEVEL_UNSPECIFIED
+}
+
+func (x *StreamLogsResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *StreamLogsResponse) GetMetadata() map[string]string {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
 type Alert struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -401,7 +585,7 @@ type Alert struct {
 
 func (x *Alert) Reset() {
 	*x = Alert{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[2]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -413,7 +597,7 @@ func (x *Alert) String() string {
 func (*Alert) ProtoMessage() {}
 
 func (x *Alert) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[2]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -426,7 +610,7 @@ func (x *Alert) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Alert.ProtoReflect.Descriptor instead.
 func (*Alert) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{2}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Alert) GetId() string {
@@ -511,7 +695,7 @@ type GetTelemetryRequest struct {
 
 func (x *GetTelemetryRequest) Reset() {
 	*x = GetTelemetryRequest{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[3]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -523,7 +707,7 @@ func (x *GetTelemetryRequest) String() string {
 func (*GetTelemetryRequest) ProtoMessage() {}
 
 func (x *GetTelemetryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[3]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -536,7 +720,7 @@ func (x *GetTelemetryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTelemetryRequest.ProtoReflect.Descriptor instead.
 func (*GetTelemetryRequest) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{3}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetTelemetryRequest) GetDeviceId() string {
@@ -576,7 +760,7 @@ type GetTelemetryResponse struct {
 
 func (x *GetTelemetryResponse) Reset() {
 	*x = GetTelemetryResponse{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[4]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -588,7 +772,7 @@ func (x *GetTelemetryResponse) String() string {
 func (*GetTelemetryResponse) ProtoMessage() {}
 
 func (x *GetTelemetryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[4]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -601,7 +785,7 @@ func (x *GetTelemetryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTelemetryResponse.ProtoReflect.Descriptor instead.
 func (*GetTelemetryResponse) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{4}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetTelemetryResponse) GetData() []*TelemetryData {
@@ -625,7 +809,7 @@ type GetMetricsRequest struct {
 
 func (x *GetMetricsRequest) Reset() {
 	*x = GetMetricsRequest{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[5]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -637,7 +821,7 @@ func (x *GetMetricsRequest) String() string {
 func (*GetMetricsRequest) ProtoMessage() {}
 
 func (x *GetMetricsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[5]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -650,7 +834,7 @@ func (x *GetMetricsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMetricsRequest.ProtoReflect.Descriptor instead.
 func (*GetMetricsRequest) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{5}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetMetricsRequest) GetDeviceIds() []string {
@@ -704,7 +888,7 @@ type GetMetricsResponse struct {
 
 func (x *GetMetricsResponse) Reset() {
 	*x = GetMetricsResponse{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[6]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -716,7 +900,7 @@ func (x *GetMetricsResponse) String() string {
 func (*GetMetricsResponse) ProtoMessage() {}
 
 func (x *GetMetricsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[6]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -729,7 +913,7 @@ func (x *GetMetricsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMetricsResponse.ProtoReflect.Descriptor instead.
 func (*GetMetricsResponse) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{6}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetMetricsResponse) GetMetrics() []*MetricData {
@@ -752,7 +936,7 @@ type MetricData struct {
 
 func (x *MetricData) Reset() {
 	*x = MetricData{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[7]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -764,7 +948,7 @@ func (x *MetricData) String() string {
 func (*MetricData) ProtoMessage() {}
 
 func (x *MetricData) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[7]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -777,7 +961,7 @@ func (x *MetricData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MetricData.ProtoReflect.Descriptor instead.
 func (*MetricData) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{7}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *MetricData) GetName() string {
@@ -825,7 +1009,7 @@ type StreamTelemetryRequest struct {
 
 func (x *StreamTelemetryRequest) Reset() {
 	*x = StreamTelemetryRequest{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[8]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -837,7 +1021,7 @@ func (x *StreamTelemetryRequest) String() string {
 func (*StreamTelemetryRequest) ProtoMessage() {}
 
 func (x *StreamTelemetryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[8]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -850,7 +1034,7 @@ func (x *StreamTelemetryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamTelemetryRequest.ProtoReflect.Descriptor instead.
 func (*StreamTelemetryRequest) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{8}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *StreamTelemetryRequest) GetDeviceIds() []string {
@@ -881,7 +1065,7 @@ type GetLogsRequest struct {
 
 func (x *GetLogsRequest) Reset() {
 	*x = GetLogsRequest{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[9]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -893,7 +1077,7 @@ func (x *GetLogsRequest) String() string {
 func (*GetLogsRequest) ProtoMessage() {}
 
 func (x *GetLogsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[9]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -906,7 +1090,7 @@ func (x *GetLogsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLogsRequest.ProtoReflect.Descriptor instead.
 func (*GetLogsRequest) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{9}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetLogsRequest) GetDeviceIds() []string {
@@ -960,7 +1144,7 @@ type GetLogsResponse struct {
 
 func (x *GetLogsResponse) Reset() {
 	*x = GetLogsResponse{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[10]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -972,7 +1156,7 @@ func (x *GetLogsResponse) String() string {
 func (*GetLogsResponse) ProtoMessage() {}
 
 func (x *GetLogsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[10]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -985,7 +1169,7 @@ func (x *GetLogsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLogsResponse.ProtoReflect.Descriptor instead.
 func (*GetLogsResponse) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{10}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetLogsResponse) GetLogs() []*TelemetryLogEntry {
@@ -1006,7 +1190,7 @@ type StreamLogsRequest struct {
 
 func (x *StreamLogsRequest) Reset() {
 	*x = StreamLogsRequest{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[11]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1018,7 +1202,7 @@ func (x *StreamLogsRequest) String() string {
 func (*StreamLogsRequest) ProtoMessage() {}
 
 func (x *StreamLogsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[11]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1031,7 +1215,7 @@ func (x *StreamLogsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamLogsRequest.ProtoReflect.Descriptor instead.
 func (*StreamLogsRequest) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{11}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *StreamLogsRequest) GetDeviceIds() []string {
@@ -1064,7 +1248,7 @@ type ConfigureAlertRequest struct {
 
 func (x *ConfigureAlertRequest) Reset() {
 	*x = ConfigureAlertRequest{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[12]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1076,7 +1260,7 @@ func (x *ConfigureAlertRequest) String() string {
 func (*ConfigureAlertRequest) ProtoMessage() {}
 
 func (x *ConfigureAlertRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[12]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1089,7 +1273,7 @@ func (x *ConfigureAlertRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfigureAlertRequest.ProtoReflect.Descriptor instead.
 func (*ConfigureAlertRequest) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{12}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ConfigureAlertRequest) GetAlert() *Alert {
@@ -1108,7 +1292,7 @@ type ConfigureAlertResponse struct {
 
 func (x *ConfigureAlertResponse) Reset() {
 	*x = ConfigureAlertResponse{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[13]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1120,7 +1304,7 @@ func (x *ConfigureAlertResponse) String() string {
 func (*ConfigureAlertResponse) ProtoMessage() {}
 
 func (x *ConfigureAlertResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[13]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1133,7 +1317,7 @@ func (x *ConfigureAlertResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfigureAlertResponse.ProtoReflect.Descriptor instead.
 func (*ConfigureAlertResponse) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{13}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ConfigureAlertResponse) GetAlert() *Alert {
@@ -1153,7 +1337,7 @@ type ListAlertsRequest struct {
 
 func (x *ListAlertsRequest) Reset() {
 	*x = ListAlertsRequest{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[14]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1165,7 +1349,7 @@ func (x *ListAlertsRequest) String() string {
 func (*ListAlertsRequest) ProtoMessage() {}
 
 func (x *ListAlertsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[14]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1178,7 +1362,7 @@ func (x *ListAlertsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAlertsRequest.ProtoReflect.Descriptor instead.
 func (*ListAlertsRequest) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{14}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListAlertsRequest) GetDeviceIds() []string {
@@ -1204,7 +1388,7 @@ type ListAlertsResponse struct {
 
 func (x *ListAlertsResponse) Reset() {
 	*x = ListAlertsResponse{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[15]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1216,7 +1400,7 @@ func (x *ListAlertsResponse) String() string {
 func (*ListAlertsResponse) ProtoMessage() {}
 
 func (x *ListAlertsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[15]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1229,7 +1413,7 @@ func (x *ListAlertsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAlertsResponse.ProtoReflect.Descriptor instead.
 func (*ListAlertsResponse) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{15}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ListAlertsResponse) GetAlerts() []*Alert {
@@ -1248,7 +1432,7 @@ type DeleteAlertRequest struct {
 
 func (x *DeleteAlertRequest) Reset() {
 	*x = DeleteAlertRequest{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[16]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1260,7 +1444,7 @@ func (x *DeleteAlertRequest) String() string {
 func (*DeleteAlertRequest) ProtoMessage() {}
 
 func (x *DeleteAlertRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[16]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1273,7 +1457,7 @@ func (x *DeleteAlertRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAlertRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAlertRequest) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{16}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DeleteAlertRequest) GetAlertId() string {
@@ -1291,7 +1475,7 @@ type DeleteAlertResponse struct {
 
 func (x *DeleteAlertResponse) Reset() {
 	*x = DeleteAlertResponse{}
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[17]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1303,7 +1487,7 @@ func (x *DeleteAlertResponse) String() string {
 func (*DeleteAlertResponse) ProtoMessage() {}
 
 func (x *DeleteAlertResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fleetd_v1_telemetry_proto_msgTypes[17]
+	mi := &file_fleetd_v1_telemetry_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1316,7 +1500,7 @@ func (x *DeleteAlertResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAlertResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAlertResponse) Descriptor() ([]byte, []int) {
-	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{17}
+	return file_fleetd_v1_telemetry_proto_rawDescGZIP(), []int{19}
 }
 
 var File_fleetd_v1_telemetry_proto protoreflect.FileDescriptor
@@ -1336,6 +1520,19 @@ const file_fleetd_v1_telemetry_proto_rawDesc = "" +
 	"\x0ecustom_metrics\x18\b \x03(\v2+.fleetd.v1.TelemetryData.CustomMetricsEntryR\rcustomMetrics\x1a@\n" +
 	"\x12CustomMetricsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xb6\x03\n" +
+	"\x17StreamTelemetryResponse\x12\x1b\n" +
+	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x128\n" +
+	"\ttimestamp\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12\x1b\n" +
+	"\tcpu_usage\x18\x03 \x01(\x01R\bcpuUsage\x12!\n" +
+	"\fmemory_usage\x18\x04 \x01(\x01R\vmemoryUsage\x12\x1d\n" +
+	"\n" +
+	"disk_usage\x18\x05 \x01(\x01R\tdiskUsage\x12#\n" +
+	"\rnetwork_usage\x18\x06 \x01(\x01R\fnetworkUsage\x12 \n" +
+	"\vtemperature\x18\a \x01(\x01R\vtemperature\x12\\\n" +
+	"\x0ecustom_metrics\x18\b \x03(\v25.fleetd.v1.StreamTelemetryResponse.CustomMetricsEntryR\rcustomMetrics\x1a@\n" +
+	"\x12CustomMetricsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\x01R\x05value:\x028\x01\"\xc4\x02\n" +
 	"\x11TelemetryLogEntry\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
@@ -1344,6 +1541,16 @@ const file_fleetd_v1_telemetry_proto_rawDesc = "" +
 	"\x05level\x18\x04 \x01(\x0e2\x13.fleetd.v1.LogLevelR\x05level\x12\x18\n" +
 	"\amessage\x18\x05 \x01(\tR\amessage\x12F\n" +
 	"\bmetadata\x18\x06 \x03(\v2*.fleetd.v1.TelemetryLogEntry.MetadataEntryR\bmetadata\x1a;\n" +
+	"\rMetadataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xc6\x02\n" +
+	"\x12StreamLogsResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\tdevice_id\x18\x02 \x01(\tR\bdeviceId\x128\n" +
+	"\ttimestamp\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x12)\n" +
+	"\x05level\x18\x04 \x01(\x0e2\x13.fleetd.v1.LogLevelR\x05level\x12\x18\n" +
+	"\amessage\x18\x05 \x01(\tR\amessage\x12G\n" +
+	"\bmetadata\x18\x06 \x03(\v2+.fleetd.v1.StreamLogsResponse.MetadataEntryR\bmetadata\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xfd\x02\n" +
@@ -1445,15 +1652,15 @@ const file_fleetd_v1_telemetry_proto_rawDesc = "" +
 	"\x1cALERT_CONDITION_GREATER_THAN\x10\x01\x12\x1d\n" +
 	"\x19ALERT_CONDITION_LESS_THAN\x10\x02\x12\x19\n" +
 	"\x15ALERT_CONDITION_EQUAL\x10\x03\x12\x1d\n" +
-	"\x19ALERT_CONDITION_NOT_EQUAL\x10\x042\x8e\x05\n" +
+	"\x19ALERT_CONDITION_NOT_EQUAL\x10\x042\x99\x05\n" +
 	"\x10TelemetryService\x12Q\n" +
 	"\fGetTelemetry\x12\x1e.fleetd.v1.GetTelemetryRequest\x1a\x1f.fleetd.v1.GetTelemetryResponse\"\x00\x12K\n" +
 	"\n" +
-	"GetMetrics\x12\x1c.fleetd.v1.GetMetricsRequest\x1a\x1d.fleetd.v1.GetMetricsResponse\"\x00\x12R\n" +
-	"\x0fStreamTelemetry\x12!.fleetd.v1.StreamTelemetryRequest\x1a\x18.fleetd.v1.TelemetryData\"\x000\x01\x12B\n" +
-	"\aGetLogs\x12\x19.fleetd.v1.GetLogsRequest\x1a\x1a.fleetd.v1.GetLogsResponse\"\x00\x12L\n" +
+	"GetMetrics\x12\x1c.fleetd.v1.GetMetricsRequest\x1a\x1d.fleetd.v1.GetMetricsResponse\"\x00\x12\\\n" +
+	"\x0fStreamTelemetry\x12!.fleetd.v1.StreamTelemetryRequest\x1a\".fleetd.v1.StreamTelemetryResponse\"\x000\x01\x12B\n" +
+	"\aGetLogs\x12\x19.fleetd.v1.GetLogsRequest\x1a\x1a.fleetd.v1.GetLogsResponse\"\x00\x12M\n" +
 	"\n" +
-	"StreamLogs\x12\x1c.fleetd.v1.StreamLogsRequest\x1a\x1c.fleetd.v1.TelemetryLogEntry\"\x000\x01\x12W\n" +
+	"StreamLogs\x12\x1c.fleetd.v1.StreamLogsRequest\x1a\x1d.fleetd.v1.StreamLogsResponse\"\x000\x01\x12W\n" +
 	"\x0eConfigureAlert\x12 .fleetd.v1.ConfigureAlertRequest\x1a!.fleetd.v1.ConfigureAlertResponse\"\x00\x12K\n" +
 	"\n" +
 	"ListAlerts\x12\x1c.fleetd.v1.ListAlertsRequest\x1a\x1d.fleetd.v1.ListAlertsResponse\"\x00\x12N\n" +
@@ -1474,81 +1681,90 @@ func file_fleetd_v1_telemetry_proto_rawDescGZIP() []byte {
 }
 
 var file_fleetd_v1_telemetry_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_fleetd_v1_telemetry_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_fleetd_v1_telemetry_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_fleetd_v1_telemetry_proto_goTypes = []any{
-	(LogLevel)(0),                  // 0: fleetd.v1.LogLevel
-	(AlertType)(0),                 // 1: fleetd.v1.AlertType
-	(AlertCondition)(0),            // 2: fleetd.v1.AlertCondition
-	(*TelemetryData)(nil),          // 3: fleetd.v1.TelemetryData
-	(*TelemetryLogEntry)(nil),      // 4: fleetd.v1.TelemetryLogEntry
-	(*Alert)(nil),                  // 5: fleetd.v1.Alert
-	(*GetTelemetryRequest)(nil),    // 6: fleetd.v1.GetTelemetryRequest
-	(*GetTelemetryResponse)(nil),   // 7: fleetd.v1.GetTelemetryResponse
-	(*GetMetricsRequest)(nil),      // 8: fleetd.v1.GetMetricsRequest
-	(*GetMetricsResponse)(nil),     // 9: fleetd.v1.GetMetricsResponse
-	(*MetricData)(nil),             // 10: fleetd.v1.MetricData
-	(*StreamTelemetryRequest)(nil), // 11: fleetd.v1.StreamTelemetryRequest
-	(*GetLogsRequest)(nil),         // 12: fleetd.v1.GetLogsRequest
-	(*GetLogsResponse)(nil),        // 13: fleetd.v1.GetLogsResponse
-	(*StreamLogsRequest)(nil),      // 14: fleetd.v1.StreamLogsRequest
-	(*ConfigureAlertRequest)(nil),  // 15: fleetd.v1.ConfigureAlertRequest
-	(*ConfigureAlertResponse)(nil), // 16: fleetd.v1.ConfigureAlertResponse
-	(*ListAlertsRequest)(nil),      // 17: fleetd.v1.ListAlertsRequest
-	(*ListAlertsResponse)(nil),     // 18: fleetd.v1.ListAlertsResponse
-	(*DeleteAlertRequest)(nil),     // 19: fleetd.v1.DeleteAlertRequest
-	(*DeleteAlertResponse)(nil),    // 20: fleetd.v1.DeleteAlertResponse
-	nil,                            // 21: fleetd.v1.TelemetryData.CustomMetricsEntry
-	nil,                            // 22: fleetd.v1.TelemetryLogEntry.MetadataEntry
-	nil,                            // 23: fleetd.v1.MetricData.LabelsEntry
-	(*timestamppb.Timestamp)(nil),  // 24: google.protobuf.Timestamp
+	(LogLevel)(0),                   // 0: fleetd.v1.LogLevel
+	(AlertType)(0),                  // 1: fleetd.v1.AlertType
+	(AlertCondition)(0),             // 2: fleetd.v1.AlertCondition
+	(*TelemetryData)(nil),           // 3: fleetd.v1.TelemetryData
+	(*StreamTelemetryResponse)(nil), // 4: fleetd.v1.StreamTelemetryResponse
+	(*TelemetryLogEntry)(nil),       // 5: fleetd.v1.TelemetryLogEntry
+	(*StreamLogsResponse)(nil),      // 6: fleetd.v1.StreamLogsResponse
+	(*Alert)(nil),                   // 7: fleetd.v1.Alert
+	(*GetTelemetryRequest)(nil),     // 8: fleetd.v1.GetTelemetryRequest
+	(*GetTelemetryResponse)(nil),    // 9: fleetd.v1.GetTelemetryResponse
+	(*GetMetricsRequest)(nil),       // 10: fleetd.v1.GetMetricsRequest
+	(*GetMetricsResponse)(nil),      // 11: fleetd.v1.GetMetricsResponse
+	(*MetricData)(nil),              // 12: fleetd.v1.MetricData
+	(*StreamTelemetryRequest)(nil),  // 13: fleetd.v1.StreamTelemetryRequest
+	(*GetLogsRequest)(nil),          // 14: fleetd.v1.GetLogsRequest
+	(*GetLogsResponse)(nil),         // 15: fleetd.v1.GetLogsResponse
+	(*StreamLogsRequest)(nil),       // 16: fleetd.v1.StreamLogsRequest
+	(*ConfigureAlertRequest)(nil),   // 17: fleetd.v1.ConfigureAlertRequest
+	(*ConfigureAlertResponse)(nil),  // 18: fleetd.v1.ConfigureAlertResponse
+	(*ListAlertsRequest)(nil),       // 19: fleetd.v1.ListAlertsRequest
+	(*ListAlertsResponse)(nil),      // 20: fleetd.v1.ListAlertsResponse
+	(*DeleteAlertRequest)(nil),      // 21: fleetd.v1.DeleteAlertRequest
+	(*DeleteAlertResponse)(nil),     // 22: fleetd.v1.DeleteAlertResponse
+	nil,                             // 23: fleetd.v1.TelemetryData.CustomMetricsEntry
+	nil,                             // 24: fleetd.v1.StreamTelemetryResponse.CustomMetricsEntry
+	nil,                             // 25: fleetd.v1.TelemetryLogEntry.MetadataEntry
+	nil,                             // 26: fleetd.v1.StreamLogsResponse.MetadataEntry
+	nil,                             // 27: fleetd.v1.MetricData.LabelsEntry
+	(*timestamppb.Timestamp)(nil),   // 28: google.protobuf.Timestamp
 }
 var file_fleetd_v1_telemetry_proto_depIdxs = []int32{
-	24, // 0: fleetd.v1.TelemetryData.timestamp:type_name -> google.protobuf.Timestamp
-	21, // 1: fleetd.v1.TelemetryData.custom_metrics:type_name -> fleetd.v1.TelemetryData.CustomMetricsEntry
-	24, // 2: fleetd.v1.TelemetryLogEntry.timestamp:type_name -> google.protobuf.Timestamp
-	0,  // 3: fleetd.v1.TelemetryLogEntry.level:type_name -> fleetd.v1.LogLevel
-	22, // 4: fleetd.v1.TelemetryLogEntry.metadata:type_name -> fleetd.v1.TelemetryLogEntry.MetadataEntry
-	1,  // 5: fleetd.v1.Alert.type:type_name -> fleetd.v1.AlertType
-	2,  // 6: fleetd.v1.Alert.condition:type_name -> fleetd.v1.AlertCondition
-	24, // 7: fleetd.v1.Alert.created_at:type_name -> google.protobuf.Timestamp
-	24, // 8: fleetd.v1.Alert.updated_at:type_name -> google.protobuf.Timestamp
-	24, // 9: fleetd.v1.GetTelemetryRequest.start_time:type_name -> google.protobuf.Timestamp
-	24, // 10: fleetd.v1.GetTelemetryRequest.end_time:type_name -> google.protobuf.Timestamp
-	3,  // 11: fleetd.v1.GetTelemetryResponse.data:type_name -> fleetd.v1.TelemetryData
-	24, // 12: fleetd.v1.GetMetricsRequest.start_time:type_name -> google.protobuf.Timestamp
-	24, // 13: fleetd.v1.GetMetricsRequest.end_time:type_name -> google.protobuf.Timestamp
-	10, // 14: fleetd.v1.GetMetricsResponse.metrics:type_name -> fleetd.v1.MetricData
-	24, // 15: fleetd.v1.MetricData.timestamp:type_name -> google.protobuf.Timestamp
-	23, // 16: fleetd.v1.MetricData.labels:type_name -> fleetd.v1.MetricData.LabelsEntry
-	0,  // 17: fleetd.v1.GetLogsRequest.levels:type_name -> fleetd.v1.LogLevel
-	24, // 18: fleetd.v1.GetLogsRequest.start_time:type_name -> google.protobuf.Timestamp
-	24, // 19: fleetd.v1.GetLogsRequest.end_time:type_name -> google.protobuf.Timestamp
-	4,  // 20: fleetd.v1.GetLogsResponse.logs:type_name -> fleetd.v1.TelemetryLogEntry
-	0,  // 21: fleetd.v1.StreamLogsRequest.levels:type_name -> fleetd.v1.LogLevel
-	5,  // 22: fleetd.v1.ConfigureAlertRequest.alert:type_name -> fleetd.v1.Alert
-	5,  // 23: fleetd.v1.ConfigureAlertResponse.alert:type_name -> fleetd.v1.Alert
-	5,  // 24: fleetd.v1.ListAlertsResponse.alerts:type_name -> fleetd.v1.Alert
-	6,  // 25: fleetd.v1.TelemetryService.GetTelemetry:input_type -> fleetd.v1.GetTelemetryRequest
-	8,  // 26: fleetd.v1.TelemetryService.GetMetrics:input_type -> fleetd.v1.GetMetricsRequest
-	11, // 27: fleetd.v1.TelemetryService.StreamTelemetry:input_type -> fleetd.v1.StreamTelemetryRequest
-	12, // 28: fleetd.v1.TelemetryService.GetLogs:input_type -> fleetd.v1.GetLogsRequest
-	14, // 29: fleetd.v1.TelemetryService.StreamLogs:input_type -> fleetd.v1.StreamLogsRequest
-	15, // 30: fleetd.v1.TelemetryService.ConfigureAlert:input_type -> fleetd.v1.ConfigureAlertRequest
-	17, // 31: fleetd.v1.TelemetryService.ListAlerts:input_type -> fleetd.v1.ListAlertsRequest
-	19, // 32: fleetd.v1.TelemetryService.DeleteAlert:input_type -> fleetd.v1.DeleteAlertRequest
-	7,  // 33: fleetd.v1.TelemetryService.GetTelemetry:output_type -> fleetd.v1.GetTelemetryResponse
-	9,  // 34: fleetd.v1.TelemetryService.GetMetrics:output_type -> fleetd.v1.GetMetricsResponse
-	3,  // 35: fleetd.v1.TelemetryService.StreamTelemetry:output_type -> fleetd.v1.TelemetryData
-	13, // 36: fleetd.v1.TelemetryService.GetLogs:output_type -> fleetd.v1.GetLogsResponse
-	4,  // 37: fleetd.v1.TelemetryService.StreamLogs:output_type -> fleetd.v1.TelemetryLogEntry
-	16, // 38: fleetd.v1.TelemetryService.ConfigureAlert:output_type -> fleetd.v1.ConfigureAlertResponse
-	18, // 39: fleetd.v1.TelemetryService.ListAlerts:output_type -> fleetd.v1.ListAlertsResponse
-	20, // 40: fleetd.v1.TelemetryService.DeleteAlert:output_type -> fleetd.v1.DeleteAlertResponse
-	33, // [33:41] is the sub-list for method output_type
-	25, // [25:33] is the sub-list for method input_type
-	25, // [25:25] is the sub-list for extension type_name
-	25, // [25:25] is the sub-list for extension extendee
-	0,  // [0:25] is the sub-list for field type_name
+	28, // 0: fleetd.v1.TelemetryData.timestamp:type_name -> google.protobuf.Timestamp
+	23, // 1: fleetd.v1.TelemetryData.custom_metrics:type_name -> fleetd.v1.TelemetryData.CustomMetricsEntry
+	28, // 2: fleetd.v1.StreamTelemetryResponse.timestamp:type_name -> google.protobuf.Timestamp
+	24, // 3: fleetd.v1.StreamTelemetryResponse.custom_metrics:type_name -> fleetd.v1.StreamTelemetryResponse.CustomMetricsEntry
+	28, // 4: fleetd.v1.TelemetryLogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	0,  // 5: fleetd.v1.TelemetryLogEntry.level:type_name -> fleetd.v1.LogLevel
+	25, // 6: fleetd.v1.TelemetryLogEntry.metadata:type_name -> fleetd.v1.TelemetryLogEntry.MetadataEntry
+	28, // 7: fleetd.v1.StreamLogsResponse.timestamp:type_name -> google.protobuf.Timestamp
+	0,  // 8: fleetd.v1.StreamLogsResponse.level:type_name -> fleetd.v1.LogLevel
+	26, // 9: fleetd.v1.StreamLogsResponse.metadata:type_name -> fleetd.v1.StreamLogsResponse.MetadataEntry
+	1,  // 10: fleetd.v1.Alert.type:type_name -> fleetd.v1.AlertType
+	2,  // 11: fleetd.v1.Alert.condition:type_name -> fleetd.v1.AlertCondition
+	28, // 12: fleetd.v1.Alert.created_at:type_name -> google.protobuf.Timestamp
+	28, // 13: fleetd.v1.Alert.updated_at:type_name -> google.protobuf.Timestamp
+	28, // 14: fleetd.v1.GetTelemetryRequest.start_time:type_name -> google.protobuf.Timestamp
+	28, // 15: fleetd.v1.GetTelemetryRequest.end_time:type_name -> google.protobuf.Timestamp
+	3,  // 16: fleetd.v1.GetTelemetryResponse.data:type_name -> fleetd.v1.TelemetryData
+	28, // 17: fleetd.v1.GetMetricsRequest.start_time:type_name -> google.protobuf.Timestamp
+	28, // 18: fleetd.v1.GetMetricsRequest.end_time:type_name -> google.protobuf.Timestamp
+	12, // 19: fleetd.v1.GetMetricsResponse.metrics:type_name -> fleetd.v1.MetricData
+	28, // 20: fleetd.v1.MetricData.timestamp:type_name -> google.protobuf.Timestamp
+	27, // 21: fleetd.v1.MetricData.labels:type_name -> fleetd.v1.MetricData.LabelsEntry
+	0,  // 22: fleetd.v1.GetLogsRequest.levels:type_name -> fleetd.v1.LogLevel
+	28, // 23: fleetd.v1.GetLogsRequest.start_time:type_name -> google.protobuf.Timestamp
+	28, // 24: fleetd.v1.GetLogsRequest.end_time:type_name -> google.protobuf.Timestamp
+	5,  // 25: fleetd.v1.GetLogsResponse.logs:type_name -> fleetd.v1.TelemetryLogEntry
+	0,  // 26: fleetd.v1.StreamLogsRequest.levels:type_name -> fleetd.v1.LogLevel
+	7,  // 27: fleetd.v1.ConfigureAlertRequest.alert:type_name -> fleetd.v1.Alert
+	7,  // 28: fleetd.v1.ConfigureAlertResponse.alert:type_name -> fleetd.v1.Alert
+	7,  // 29: fleetd.v1.ListAlertsResponse.alerts:type_name -> fleetd.v1.Alert
+	8,  // 30: fleetd.v1.TelemetryService.GetTelemetry:input_type -> fleetd.v1.GetTelemetryRequest
+	10, // 31: fleetd.v1.TelemetryService.GetMetrics:input_type -> fleetd.v1.GetMetricsRequest
+	13, // 32: fleetd.v1.TelemetryService.StreamTelemetry:input_type -> fleetd.v1.StreamTelemetryRequest
+	14, // 33: fleetd.v1.TelemetryService.GetLogs:input_type -> fleetd.v1.GetLogsRequest
+	16, // 34: fleetd.v1.TelemetryService.StreamLogs:input_type -> fleetd.v1.StreamLogsRequest
+	17, // 35: fleetd.v1.TelemetryService.ConfigureAlert:input_type -> fleetd.v1.ConfigureAlertRequest
+	19, // 36: fleetd.v1.TelemetryService.ListAlerts:input_type -> fleetd.v1.ListAlertsRequest
+	21, // 37: fleetd.v1.TelemetryService.DeleteAlert:input_type -> fleetd.v1.DeleteAlertRequest
+	9,  // 38: fleetd.v1.TelemetryService.GetTelemetry:output_type -> fleetd.v1.GetTelemetryResponse
+	11, // 39: fleetd.v1.TelemetryService.GetMetrics:output_type -> fleetd.v1.GetMetricsResponse
+	4,  // 40: fleetd.v1.TelemetryService.StreamTelemetry:output_type -> fleetd.v1.StreamTelemetryResponse
+	15, // 41: fleetd.v1.TelemetryService.GetLogs:output_type -> fleetd.v1.GetLogsResponse
+	6,  // 42: fleetd.v1.TelemetryService.StreamLogs:output_type -> fleetd.v1.StreamLogsResponse
+	18, // 43: fleetd.v1.TelemetryService.ConfigureAlert:output_type -> fleetd.v1.ConfigureAlertResponse
+	20, // 44: fleetd.v1.TelemetryService.ListAlerts:output_type -> fleetd.v1.ListAlertsResponse
+	22, // 45: fleetd.v1.TelemetryService.DeleteAlert:output_type -> fleetd.v1.DeleteAlertResponse
+	38, // [38:46] is the sub-list for method output_type
+	30, // [30:38] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_fleetd_v1_telemetry_proto_init() }
@@ -1562,7 +1778,7 @@ func file_fleetd_v1_telemetry_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fleetd_v1_telemetry_proto_rawDesc), len(file_fleetd_v1_telemetry_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   21,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
