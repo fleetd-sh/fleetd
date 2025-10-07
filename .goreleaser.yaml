@@ -24,11 +24,14 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
     ldflags:
       - -s -w
       - -X fleetd.sh/internal/version.Version={{.Version}}
       - -X fleetd.sh/internal/version.CommitSHA={{.Commit}}
-      - -X fleetd.sh/internal/version.BuildTime={{.Date}}
+      - -X fleetd.sh/internal/version.BuildTime={{ .CommitDate }}
 
   - id: fleetd
     main: ./cmd/fleetd
@@ -41,11 +44,14 @@ builds:
     goarch:
       - amd64
       - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
     ldflags:
       - -s -w
       - -X fleetd.sh/internal/version.Version={{.Version}}
       - -X fleetd.sh/internal/version.CommitSHA={{.Commit}}
-      - -X fleetd.sh/internal/version.BuildTime={{.Date}}
+      - -X fleetd.sh/internal/version.BuildTime={{ .CommitDate }}
 
   - id: device-api
     main: ./cmd/device-api
@@ -58,11 +64,14 @@ builds:
     goarch:
       - amd64
       - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
     ldflags:
       - -s -w
       - -X fleetd.sh/internal/version.Version={{.Version}}
       - -X fleetd.sh/internal/version.CommitSHA={{.Commit}}
-      - -X fleetd.sh/internal/version.BuildTime={{.Date}}
+      - -X fleetd.sh/internal/version.BuildTime={{ .CommitDate }}
 
   - id: platform-api
     main: ./cmd/platform-api
@@ -75,40 +84,35 @@ builds:
     goarch:
       - amd64
       - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
     ldflags:
       - -s -w
       - -X fleetd.sh/internal/version.Version={{.Version}}
       - -X fleetd.sh/internal/version.CommitSHA={{.Commit}}
-      - -X fleetd.sh/internal/version.BuildTime={{.Date}}
+      - -X fleetd.sh/internal/version.BuildTime={{ .CommitDate }}
 
 archives:
   - id: fleetctl
-    builds:
-      - fleetctl
     name_template: "fleetctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
   - id: fleetd
-    builds:
-      - fleetd
     name_template: "fleetd_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
   - id: device-api
-    builds:
-      - device-api
     name_template: "device-api_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
   - id: platform-api
-    builds:
-      - platform-api
     name_template: "platform-api_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
@@ -116,6 +120,9 @@ archives:
 
 checksum:
   name_template: 'checksums.txt'
+
+source:
+  enabled: true
 
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
@@ -161,6 +168,23 @@ release:
     - glob: scripts/install.sh
       name_template: install.sh
 
+sboms:
+  - artifacts: archive
+  - id: source
+    artifacts: source
+
+signs:
+  - cmd: cosign
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--output-certificate=${certificate}"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: checksum
+    output: true
+
 dockers:
   - id: device-api
     ids:
@@ -174,11 +198,11 @@ dockers:
     use: buildx
     build_flag_templates:
       - "--platform=linux/amd64,linux/arm64"
-      - "--output=type=image,push=true"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=device-api"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
 
   - id: platform-api
     ids:
@@ -192,11 +216,19 @@ dockers:
     use: buildx
     build_flag_templates:
       - "--platform=linux/amd64,linux/arm64"
-      - "--output=type=image,push=true"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=platform-api"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+
+docker_signs:
+  - cmd: cosign
+    output: true
+    args:
+      - "sign"
+      - "${artifact}"
+      - "--yes"
 
 brews:
   - name: fleetctl
@@ -290,26 +322,3 @@ nfpms:
         dst: /usr/share/doc/fleetd/LICENSE
       - src: README.md
         dst: /usr/share/doc/fleetd/README.md
-
-signs:
-  - cmd: cosign
-    signature: "${artifact}.sig"
-    certificate: "${artifact}.pem"
-    args:
-      - sign-blob
-      - "--output-signature=${signature}"
-      - "--output-certificate=${certificate}"
-      - "${artifact}"
-      - "--yes"
-    artifacts: all
-
-sboms:
-  - id: source
-    artifacts: source
-  - id: binaries
-    artifacts: binary
-  - id: archives
-    artifacts: archive
-  - id: packages
-    artifacts: package
-
