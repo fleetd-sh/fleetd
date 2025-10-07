@@ -83,20 +83,33 @@ builds:
 
 archives:
   - id: fleetctl
+    builds:
+      - fleetctl
     name_template: "fleetctl_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
   - id: fleetd
+    builds:
+      - fleetd
     name_template: "fleetd_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
-      - QUICK_START.md
 
-  - id: servers
-    name_template: "fleetd-servers_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - id: device-api
+    builds:
+      - device-api
+    name_template: "device-api_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+  - id: platform-api
+    builds:
+      - platform-api
+    name_template: "platform-api_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
@@ -183,24 +196,6 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
 
-  - id: fleetd
-    ids:
-      - fleetd
-    image_templates:
-      - "ghcr.io/fleetd-sh/fleetd:latest"
-      - "ghcr.io/fleetd-sh/fleetd:{{ .Tag }}"
-      - "ghcr.io/fleetd-sh/fleetd:{{ .Major }}"
-      - "ghcr.io/fleetd-sh/fleetd:{{ .Major }}.{{ .Minor }}"
-    dockerfile: Dockerfile
-    skip_push: auto
-    use: buildx
-    build_flag_templates:
-      - "--platform=linux/amd64,linux/arm64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title=fleetd"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-
 brews:
   - name: fleetctl
     ids:
@@ -273,11 +268,6 @@ nfpms:
         dst: /usr/share/doc/fleetctl/LICENSE
       - src: README.md
         dst: /usr/share/doc/fleetctl/README.md
-    scripts:
-      postinstall: |
-        #!/bin/sh
-        echo "fleetctl installed successfully"
-        echo "Run 'fleetctl --help' to get started"
 
   - id: fleetd
     package_name: fleetd
@@ -298,22 +288,6 @@ nfpms:
         dst: /usr/share/doc/fleetd/LICENSE
       - src: README.md
         dst: /usr/share/doc/fleetd/README.md
-      - src: configs/fleetd.service
-        dst: /etc/systemd/system/fleetd.service
-        type: config
-      - src: configs/fleetd.toml
-        dst: /etc/fleetd/config.toml
-        type: config
-    scripts:
-      postinstall: |
-        #!/bin/sh
-        systemctl daemon-reload
-        echo "fleetd installed successfully"
-        echo "Run 'systemctl start fleetd' to start the service"
-      preremove: |
-        #!/bin/sh
-        systemctl stop fleetd || true
-        systemctl disable fleetd || true
 
 signs:
   - cmd: cosign
