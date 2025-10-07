@@ -32,9 +32,6 @@ fleet
 gen/docs/
 fleet
 
-# Generated protobuf - googleapis (causes package conflicts, regenerated in CI)
-gen/google/
-
 # Dependencies
 node_modules/
 vendor/
