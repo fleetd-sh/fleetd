@@ -43,6 +43,7 @@ type CampaignStatus struct {
 
 // rolloutState tracks the state of an ongoing rollout
 type rolloutState struct {
+	mu                 sync.RWMutex
 	deployment         *Deployment
 	manifest           *Manifest
 	campaignID         string
@@ -292,7 +293,9 @@ func (o *Orchestrator) runCanary(ctx context.Context, state *rolloutState, devic
 					fmt.Sprintf("Step %d failed: %v", stepIndex+1, err))
 				return o.rollbackDeployment(ctx, state)
 			}
+			state.mu.Lock()
 			state.campaignID = campaignID
+			state.mu.Unlock()
 
 			// Update device statuses
 			for _, deviceID := range batch {
@@ -409,7 +412,9 @@ func (o *Orchestrator) deployToBatch(ctx context.Context, state *rolloutState, d
 	}
 
 	// Store campaign ID
+	state.mu.Lock()
 	state.campaignID = campaignID
+	state.mu.Unlock()
 
 	// Update device deployment status
 	for _, deviceID := range devices {
@@ -613,8 +618,12 @@ func (o *Orchestrator) PauseDeployment(ctx context.Context, deploymentID string)
 		return fmt.Errorf("deployment %s is not running", deploymentID)
 	}
 
-	if state.campaignID != "" {
-		return o.updateClient.PauseCampaign(ctx, state.campaignID)
+	state.mu.RLock()
+	campaignID := state.campaignID
+	state.mu.RUnlock()
+
+	if campaignID != "" {
+		return o.updateClient.PauseCampaign(ctx, campaignID)
 	}
 
 	return o.updateDeploymentStatus(ctx, deploymentID, DeploymentStatusPaused)
@@ -631,8 +640,12 @@ func (o *Orchestrator) ResumeDeployment(ctx context.Context, deploymentID string
 		return o.StartDeployment(ctx, deploymentID)
 	}
 
-	if state.campaignID != "" {
-		return o.updateClient.ResumeCampaign(ctx, state.campaignID)
+	state.mu.RLock()
+	campaignID := state.campaignID
+	state.mu.RUnlock()
+
+	if campaignID != "" {
+		return o.updateClient.ResumeCampaign(ctx, campaignID)
 	}
 
 	return o.updateDeploymentStatus(ctx, deploymentID, DeploymentStatusRunning)
@@ -652,8 +665,12 @@ func (o *Orchestrator) CancelDeployment(ctx context.Context, deploymentID string
 	// Signal cancellation
 	close(state.cancelCh)
 
-	if state.campaignID != "" {
-		err := o.updateClient.CancelCampaign(ctx, state.campaignID)
+	state.mu.RLock()
+	campaignID := state.campaignID
+	state.mu.RUnlock()
+
+	if campaignID != "" {
+		err := o.updateClient.CancelCampaign(ctx, campaignID)
 		if err != nil {
 			return err
 		}
