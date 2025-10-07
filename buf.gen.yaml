@@ -7,7 +7,6 @@ managed:
 
 inputs:
   - directory: proto
-  - module: buf.build/googleapis/googleapis
 
 plugins:
   # Base types for Go. Generates message and enum types
