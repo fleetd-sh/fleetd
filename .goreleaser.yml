@@ -173,8 +173,11 @@ dockers:
     dockerfile: container/device.dockerfile
     use: buildx
     build_flag_templates:
-      - "--push"
       - "--platform=linux/amd64,linux/arm64"
+      - "--builder={{ .Env.DOCKER_BUILDX_BUILDER }}"
+      - "--cache-from=type=gha"
+      - "--cache-to=type=gha,mode=max"
+      - "--output=type=image,push=true,push-by-digest=false"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=device-api"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -191,8 +194,11 @@ dockers:
     dockerfile: container/platform.dockerfile
     use: buildx
     build_flag_templates:
-      - "--push"
       - "--platform=linux/amd64,linux/arm64"
+      - "--builder={{ .Env.DOCKER_BUILDX_BUILDER }}"
+      - "--cache-from=type=gha"
+      - "--cache-to=type=gha,mode=max"
+      - "--output=type=image,push=true,push-by-digest=false"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title=platform-api"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
