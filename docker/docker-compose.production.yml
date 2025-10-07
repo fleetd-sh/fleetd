@@ -55,7 +55,7 @@ services:
 
   # Platform API Service
   platform-api:
-    image: ${DOCKER_REGISTRY:-ghcr.io}/fleetd-sh/fleetd/platform-api:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io}/fleetd-sh/platform-api:${VERSION:-latest}
     container_name: fleetd-platform-api
     restart: unless-stopped
     depends_on:
@@ -117,7 +117,7 @@ services:
 
   # Device API Service
   device-api:
-    image: ${DOCKER_REGISTRY:-ghcr.io}/fleetd-sh/fleetd/device-api:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io}/fleetd-sh/device-api:${VERSION:-latest}
     container_name: fleetd-device-api
     restart: unless-stopped
     depends_on:
@@ -176,7 +176,7 @@ services:
 
   # Web Studio UI (Optional)
   studio:
-    image: ${DOCKER_REGISTRY:-ghcr.io}/fleetd-sh/fleetd/studio:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io}/fleetd-sh/studio:${VERSION:-latest}
     container_name: fleetd-studio
     restart: unless-stopped
     depends_on:

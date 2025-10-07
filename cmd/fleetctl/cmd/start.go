@@ -329,9 +329,9 @@ func checkDockerCompose() error {
 func buildDockerImages(projectRoot string) error {
 	// Check if images exist
 	images := []string{
-		"fleetd.sh/platform-api:latest",
-		"fleetd.sh/device-api:latest",
-		"fleetd.sh/studio:latest",
+		"ghcr.io/fleetd-sh/platform-api:latest",
+		"ghcr.io/fleetd-sh/device-api:latest",
+		"ghcr.io/fleetd-sh/studio:latest",
 	}
 
 	for _, image := range images {
@@ -511,7 +511,7 @@ func startPlatformAPI(containerName string, secrets map[string]string, projectRo
 		"-e", "FLEETD_AUTH_MODE=development",
 		"-e", "LOG_LEVEL=info",
 		"--restart", "unless-stopped",
-		"fleetd.sh/platform-api:latest",
+		"ghcr.io/fleetd-sh/platform-api:latest",
 	)
 	return cmd.Run()
 }
@@ -533,7 +533,7 @@ func startDeviceAPI(containerName string, secrets map[string]string, projectRoot
 		"-e", "FLEETD_AUTH_MODE=development",
 		"-e", "LOG_LEVEL=info",
 		"--restart", "unless-stopped",
-		"fleetd.sh/device-api:latest",
+		"ghcr.io/fleetd-sh/device-api:latest",
 	)
 	return cmd.Run()
 }
@@ -550,7 +550,7 @@ func startFleetWeb(containerName, projectRoot string) error {
 		"-e", "NEXT_PUBLIC_DEVICE_API_URL=http://localhost:8082",
 		"-e", "DEVICE_API_URL=http://fleetd-device-api:8080",
 		"--restart", "unless-stopped",
-		"fleetd.sh/studio:latest",
+		"ghcr.io/fleetd-sh/studio:latest",
 	)
 	return cmd.Run()
 }

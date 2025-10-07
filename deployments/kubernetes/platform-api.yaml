@@ -44,7 +44,7 @@ spec:
       containers:
         - name: platform-api
           # Replace with your registry
-          image: ghcr.io/fleetd-sh/fleetd/platform-api:latest
+          image: ghcr.io/fleetd-sh/platform-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

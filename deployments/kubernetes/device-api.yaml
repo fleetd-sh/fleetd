@@ -44,7 +44,7 @@ spec:
       containers:
         - name: device-api
           # Replace with your registry
-          image: ghcr.io/fleetd-sh/fleetd/device-api:latest
+          image: ghcr.io/fleetd-sh/device-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

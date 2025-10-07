@@ -90,7 +90,7 @@ services:
       retries: 5
 
   platform-api:
-    image: fleetd.sh/platform-api:latest
+    image: ghcr.io/fleetd-sh/platform-api:latest
     container_name: fleetd-platform-api
     ports:
       - "8090:8090"
@@ -121,7 +121,7 @@ services:
       retries: 5
 
   device-api:
-    image: fleetd.sh/device-api:latest
+    image: ghcr.io/fleetd-sh/device-api:latest
     container_name: fleetd-device-api
     ports:
       - "8082:8080"
@@ -151,7 +151,7 @@ services:
       retries: 5
 
   studio:
-    image: fleetd.sh/studio:latest
+    image: ghcr.io/fleetd-sh/studio:latest
     container_name: fleetd-studio
     ports:
       - "3000:3000"

@@ -430,15 +430,15 @@ docker-build-all tag="latest": (docker-build-platform-api tag) (docker-build-dev
 
 # Build Platform API Docker image
 docker-build-platform-api tag="latest":
-    docker build -t fleetd.sh/platform-api:{{tag}} -f Dockerfile.platform-api .
+    docker build -t ghcr.io/fleetd-sh/platform-api:{{tag}} -f Dockerfile.platform-api .
 
 # Build Device API Docker image
 docker-build-device-api tag="latest":
-    docker build -t fleetd.sh/device-api:{{tag}} -f Dockerfile.device-api .
+    docker build -t ghcr.io/fleetd-sh/device-api:{{tag}} -f Dockerfile.device-api .
 
 # Build Studio (web UI) Docker image
 docker-build-studio tag="latest":
-    docker build -t fleetd.sh/studio:{{tag}} -f studio/Dockerfile ./studio
+    docker build -t ghcr.io/fleetd-sh/studio:{{tag}} -f studio/Dockerfile ./studio
 
 # Build all images for fleetctl start (replaces build-go + docker builds)
 build-docker tag="latest": (docker-build-all tag)
