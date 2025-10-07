@@ -269,22 +269,6 @@ brews:
       output = Utils.safe_popen_read("#{bin}/fleetctl", "completion", "fish")
       (fish_completion/"fleetctl.fish").write output
 
-scoops:
-  - repository:
-      owner: fleetd-sh
-      name: scoop-fleetd
-      branch: main
-      token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
-    commit_author:
-      name: goreleaserbot
-      email: goreleaser@fleetd.sh
-    homepage: "https://fleetd.sh"
-    description: "Fleet management CLI tool for edge device orchestration"
-    license: MIT
-    persist:
-      - "data"
-      - "config.toml"
-
 nfpms:
   - id: fleetctl
     builds: [fleetctl]
