@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # fleetd CLI Installer Script
-# Usage: curl -fsSL https://get.fleetd.sh | bash
-# or:    wget -qO- https://get.fleetd.sh | bash
+# Usage: curl -sSL https://get.fleetd.sh | sh
+# or:    wget -qO- https://get.fleetd.sh | sh
 
 set -euo pipefail
 
@@ -22,19 +22,19 @@ NC='\033[0m' # No Color
 
 # Helper functions
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    printf "${BLUE}[INFO]${NC} %s\n" "$1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    printf "${GREEN}[SUCCESS]${NC} %s\n" "$1"
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    printf "${YELLOW}[WARNING]${NC} %s\n" "$1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    printf "${RED}[ERROR]${NC} %s\n" "$1"
     exit 1
 }
 
@@ -204,9 +204,9 @@ install_completions() {
 
 # Main installation flow
 main() {
-    echo -e "${BLUE}╔════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║   fleetd CLI Installer             ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════╝${NC}"
+    printf "${BLUE}╔════════════════════════════════════╗${NC}\n"
+    printf "${BLUE}║   fleetd CLI Installer             ║${NC}\n"
+    printf "${BLUE}╚════════════════════════════════════╝${NC}\n"
     echo
     
     # Parse command line arguments

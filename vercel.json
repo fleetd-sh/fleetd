@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://github.com/fleetd-sh/fleetd/releases/latest/download/install.sh",
+      "permanent": true
+    }
+  ]
+}
