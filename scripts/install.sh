@@ -13,28 +13,21 @@ BINARY_NAME="fleetctl"
 GITHUB_API="https://api.github.com"
 GITHUB_REPO="${GITHUB_API}/repos/${REPO_OWNER}/${REPO_NAME}"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
 # Helper functions
 log_info() {
-    printf "${BLUE}[INFO]${NC} %s\n" "$1"
+    printf "[INFO] %s\n" "$1"
 }
 
 log_success() {
-    printf "${GREEN}[SUCCESS]${NC} %s\n" "$1"
+    printf "[SUCCESS] %s\n" "$1"
 }
 
 log_warning() {
-    printf "${YELLOW}[WARNING]${NC} %s\n" "$1"
+    printf "[WARNING] %s\n" "$1"
 }
 
 log_error() {
-    printf "${RED}[ERROR]${NC} %s\n" "$1"
+    printf "[ERROR] %s\n" "$1"
     exit 1
 }
 
@@ -204,9 +197,9 @@ install_completions() {
 
 # Main installation flow
 main() {
-    printf "${BLUE}╔════════════════════════════════════╗${NC}\n"
-    printf "${BLUE}║   fleetd CLI Installer             ║${NC}\n"
-    printf "${BLUE}╚════════════════════════════════════╝${NC}\n"
+    printf "╔════════════════════════════════════╗\n"
+    printf "║   fleetd CLI Installer             ║\n"
+    printf "╚════════════════════════════════════╝\n"
     echo
     
     # Parse command line arguments
