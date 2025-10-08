@@ -74,7 +74,7 @@ else
 fi
 
 # User should already be created by userconf.txt
-# Just ensure they have sudo access
+# Ensure user has sudo access
 if id -u fleetd &>/dev/null; then
     log "Ensuring fleetd user has sudo access..."
     usermod -aG sudo fleetd || true

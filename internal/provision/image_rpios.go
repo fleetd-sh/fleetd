@@ -46,7 +46,7 @@ func (p *RaspberryPiOSProvider) GetImageName() string {
 
 // ValidateImage validates the downloaded image
 func (p *RaspberryPiOSProvider) ValidateImage(imagePath string) error {
-	// For now, just check if file exists and is not empty
+	// TODO: Add checksum validation
 	fi, err := os.Stat(imagePath)
 	if err != nil {
 		return err

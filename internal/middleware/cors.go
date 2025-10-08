@@ -109,7 +109,7 @@ func NewCORS(config *CORSConfig) *cors.Cors {
 	needsCustomValidator := false
 	for _, origin := range config.AllowedOrigins {
 		if strings.Contains(origin, "*") && origin != "*" {
-			// Pattern with wildcard (not just "*")
+			// Pattern with wildcard (excluding wildcard-only)
 			needsCustomValidator = true
 			break
 		}

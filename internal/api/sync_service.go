@@ -218,7 +218,7 @@ func (s *SyncService) StreamSync(
 	stream *connect.BidiStream[pb.StreamSyncRequest, pb.StreamSyncResponse],
 ) error {
 	// This would implement real-time bidirectional sync
-	// For now, just a placeholder
+	// TODO: Implement streaming sync
 	return connect.NewError(connect.CodeUnimplemented, fmt.Errorf("streaming sync not yet implemented"))
 }
 

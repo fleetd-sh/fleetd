@@ -84,8 +84,7 @@ func (s *AuthService) Login(ctx context.Context, req *connect.Request[publicv1.L
 
 // Logout invalidates tokens
 func (s *AuthService) Logout(ctx context.Context, req *connect.Request[publicv1.LogoutRequest]) (*connect.Response[emptypb.Empty], error) {
-	// In a production system, we would invalidate the refresh token here
-	// For now, just return success
+	// TODO: Invalidate refresh token in production
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
 

@@ -843,7 +843,7 @@ func (s *FleetService) GetDeploymentStatus(ctx context.Context, req *connect.Req
 
 	percentComplete := float64(0)
 	if total > 0 {
-		// Progress is based on completed devices (succeeded + failed), not just succeeded
+		// Progress includes both succeeded and failed devices
 		completed := succeeded + failed
 		percentComplete = float64(completed) / float64(total) * 100
 	}

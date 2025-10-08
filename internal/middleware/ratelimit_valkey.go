@@ -136,7 +136,7 @@ func (r *ValkeyRateLimiter) checkRateLimit(ctx context.Context, clientID string)
 		remaining = 0
 	}
 
-	// If over limit, remove the request we just added
+	// If over limit, remove the added request
 	if !allowed {
 		r.client.ZRem(ctx, key, fmt.Sprintf("%d:%d", now, time.Now().UnixNano()))
 	}

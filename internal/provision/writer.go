@@ -220,7 +220,7 @@ func (w *SDCardWriter) MountPartitions(bootLabel, rootLabel string) (bootPath, r
 			// On macOS, we might not be able to mount ext4 root partition
 			if runtime.GOOS == "darwin" && strings.Contains(err.Error(), "failed to mount") {
 				fmt.Println("Note: Cannot mount root partition on macOS (likely ext4 filesystem)")
-				// Continue with just boot partition mounted
+				// Continue with boot partition only
 				cleanup = func() {
 					// Only unmount if we mounted it
 					if strings.Contains(bootPath, "fleetd-boot") {
@@ -481,7 +481,7 @@ type deviceWriter interface {
 func (w *SDCardWriter) openDeviceForWriting() (deviceWriter, error) {
 	// Check if this is a regular file (disk image) vs block device
 	if isDiskImage(w.devicePath) {
-		// For disk images, just open as a regular file
+		// For disk images, open as regular file
 		file, err := os.OpenFile(w.devicePath, os.O_RDWR|os.O_CREATE, 0o644)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open disk image: %w", err)

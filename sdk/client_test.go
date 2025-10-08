@@ -122,7 +122,7 @@ func TestUserAgentInterceptor(t *testing.T) {
 
 func TestListDevices(t *testing.T) {
 	// This test would typically use a mock server or mock client
-	// For now, we'll just test the method signature
+	// Test the method signature
 	client, err := NewClient("https://api.example.com", Options{
 		APIKey: "test-key",
 	})

@@ -286,7 +286,7 @@ func (o *Orchestrator) runCanary(ctx context.Context, state *rolloutState, devic
 
 		// For canary with approval, we need special handling
 		if config.RequireApproval && stepIndex < len(config.Steps)-1 {
-			// Don't wait for full completion, just start the deployment
+			// Start deployment without waiting for completion
 			campaignID, err := o.updateClient.CreateCampaign(ctx, state.deployment, batch)
 			if err != nil {
 				o.recordEvent(ctx, state.deployment.ID, "", "canary_failed",
@@ -302,8 +302,8 @@ func (o *Orchestrator) runCanary(ctx context.Context, state *rolloutState, devic
 				o.updateDeviceStatus(ctx, state.deployment.ID, deviceID, "running", 0, "Deployment started")
 			}
 
-			// Don't monitor to completion - just verify it started
-			time.Sleep(50 * time.Millisecond) // Brief wait to let it start
+			// Verify deployment started without monitoring completion
+			time.Sleep(50 * time.Millisecond) // Brief wait for startup
 		} else {
 			// Normal deployment - wait for completion
 			if err := o.deployToBatch(ctx, state, batch); err != nil {
@@ -351,7 +351,7 @@ func (o *Orchestrator) runCanary(ctx context.Context, state *rolloutState, devic
 
 			// Update deployment status to indicate waiting for approval
 			// In a real system, this would wait for an external approval signal
-			// For now, we'll just return to keep the deployment in running state
+			// Return to keep deployment in running state
 			return nil
 		}
 	}
@@ -658,7 +658,7 @@ func (o *Orchestrator) CancelDeployment(ctx context.Context, deploymentID string
 	o.mu.Unlock()
 
 	if !exists {
-		// Just update status if not running
+		// Update status if not running
 		return o.updateDeploymentStatus(ctx, deploymentID, DeploymentStatusCancelled)
 	}
 

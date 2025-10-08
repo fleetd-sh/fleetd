@@ -24,10 +24,10 @@ func SecurityHeaders() func(http.Handler) http.Handler {
 			// Permissions policy (formerly Feature Policy)
 			w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), interest-cohort=()")
 
-			// Content Security Policy - adjust based on your needs
+			// Content Security Policy - configure per environment
 			csp := []string{
 				"default-src 'self'",
-				"script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Adjust for production
+				"script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Remove unsafe-* in production
 				"style-src 'self' 'unsafe-inline'",
 				"img-src 'self' data: https:",
 				"font-src 'self' data:",
