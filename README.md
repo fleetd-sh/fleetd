@@ -284,6 +284,18 @@ just pre-commit
 
 The `fleetctl` CLI provides comprehensive fleet management capabilities:
 
+### Updating fleetctl
+
+```bash
+# Check for updates
+fleetctl update
+
+# Update automatically
+fleetctl update --yes
+```
+
+fleetctl will automatically check for updates when running `fleetctl start`.
+
 ### Authentication
 
 ```bash
