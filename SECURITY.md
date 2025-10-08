@@ -8,8 +8,7 @@ Security vulnerabilities should be reported responsibly to help improve the proj
 
 **DO NOT** create public GitHub issues for security vulnerabilities.
 
-Please report security vulnerabilities by emailing:
-**security@fleetd.sh**
+Please report security vulnerabilities using [GitHub Security Advisories](https://github.com/fleetd-sh/fleetd/security/advisories/new).
 
 ### What to Include
 
@@ -206,19 +205,18 @@ Before going to production:
 Stay informed about security updates:
 
 1. Watch the [GitHub repository](https://github.com/fleetd-sh/fleetd)
-2. Subscribe to security advisories
-3. Join our [security mailing list](mailto:security-announce@fleetd.sh)
-4. Check the [CHANGELOG](CHANGELOG.md) for security fixes
+2. Subscribe to [GitHub Security Advisories](https://github.com/fleetd-sh/fleetd/security/advisories)
+3. Check the [CHANGELOG](CHANGELOG.md) for security fixes
 
-## Contact
+## Resources
 
-For security concerns, contact:
-- Email: security@fleetd.sh
-- PGP Key: [Available on request]
+For security concerns:
+- [GitHub Security Advisories](https://github.com/fleetd-sh/fleetd/security/advisories)
 
 For general support:
-- GitHub Issues: https://github.com/fleetd-sh/fleetd/issues
-- Documentation: https://github.com/fleetd-sh/fleetd/wiki
+- [GitHub Issues](https://github.com/fleetd-sh/fleetd/issues)
+- [GitHub Discussions](https://github.com/fleetd-sh/fleetd/discussions)
+- [Documentation](https://github.com/fleetd-sh/fleetd/wiki)
 
 ---
 

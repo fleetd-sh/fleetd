@@ -255,10 +255,10 @@ We welcome contributions! Please see our [Contributing Guide](https://github.com
 
 ## Support
 
-- 📖 [Documentation](https://github.com/fleetd-sh/fleetd/wiki)
-- 💬 [Discord Community](https://discord.gg/fleetd)
-- 🐛 [Issue Tracker](https://github.com/fleetdsh/fleetd/issues)
-- 📧 [Email Support](mailto:support@fleetd.sh)
+- [Documentation](https://github.com/fleetd-sh/fleetd/wiki)
+- [Discord Community](https://discord.gg/fleetd)
+- [GitHub Issues](https://github.com/fleetd-sh/fleetd/issues)
+- [GitHub Discussions](https://github.com/fleetd-sh/fleetd/discussions)
 
 ## License
 

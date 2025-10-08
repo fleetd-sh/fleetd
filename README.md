@@ -8,13 +8,13 @@
 
 The fleetd platform is a production-ready IoT device fleet management system that provides centralized control, monitoring, and deployment capabilities for distributed edge computing infrastructure.
 
-## 🎯 Quick Start
+## Quick Start
 
 ### One-Line Installation
 
 ```bash
 # Install fleetd CLI
-curl -sSL https://get.fleetd.sh | sh
+curl -sSL https://github.com/fleetd-sh/fleetd/releases/latest/download/install.sh | sh
 
 # Start local platform (requires Docker)
 fleetctl start
@@ -40,7 +40,7 @@ fleetctl device simulate --count 10
 open http://localhost:3000
 ```
 
-## 🚀 Features
+## Features
 
 ### Core Capabilities
 - **Device Management**: Register, monitor, and control edge devices at scale
@@ -63,7 +63,7 @@ open http://localhost:3000
 - **Metrics Collection**: Prometheus-compatible metrics endpoint
 - **Health Checks**: Liveness and readiness probes for Kubernetes
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 graph TB
@@ -103,7 +103,7 @@ graph TB
     K --> D
 ```
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 - Go 1.21+ (for development)
@@ -115,7 +115,7 @@ graph TB
 
 ```bash
 # Install fleetd CLI
-curl -sSL https://get.fleetd.sh | sh
+curl -sSL https://github.com/fleetd-sh/fleetd/releases/latest/download/install.sh | sh
 
 # Deploy with Docker Compose
 cd ~/.fleetd
@@ -160,7 +160,7 @@ fleetctl logs -f
 fleetctl stop
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -204,7 +204,7 @@ jwt_ttl = "1h"
 refresh_ttl = "7d"
 ```
 
-## 🛠️ Development
+## Development
 
 ### Building from Source
 
@@ -280,7 +280,7 @@ just lint-all
 just pre-commit
 ```
 
-## 🎮 Using fleetctl
+## Using fleetctl
 
 The `fleetctl` CLI provides comprehensive fleet management capabilities:
 
@@ -328,7 +328,7 @@ fleetctl fleet add-device production device-001 device-002
 fleetctl deploy create --fleet production --version v1.2.3
 ```
 
-## 🔒 Security
+## Security
 
 ### Default Credentials
 
@@ -358,7 +358,7 @@ fleetctl api-key create --name "CI/CD Pipeline" --scopes read,deploy
 curl -H "X-API-Key: fleetd_xxxxx" http://localhost:8090/api/v1/devices
 ```
 
-## 📊 Monitoring
+## Monitoring
 
 ### Metrics Endpoint
 
@@ -380,7 +380,7 @@ Access Grafana at `http://localhost:3001` (admin/admin) for:
 - `/health/live` - Kubernetes liveness probe
 - `/health/ready` - Kubernetes readiness probe
 
-## 🚢 Deployment
+## Deployment
 
 ### Docker Compose
 
@@ -427,7 +427,7 @@ sudo mv fleetctl-linux-amd64 /usr/local/bin/fleetctl
 fleetctl start --profile production
 ```
 
-## 📈 Performance
+## Performance
 
 ### Benchmarks
 
@@ -444,7 +444,7 @@ fleetctl start --profile production
 - **Medium (1,000 - 10,000 devices)**: 3 replicas with load balancing
 - **Large (> 10,000 devices)**: Horizontal pod autoscaling with dedicated database cluster
 
-## 🤝 Contributing
+## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
@@ -456,23 +456,22 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Built with [Connect-RPC](https://connectrpc.com/) for efficient API communication
 - Uses [VictoriaMetrics](https://victoriametrics.com/) for time-series data
 - Powered by [Valkey](https://valkey.io/) for caching and rate limiting
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 
-## 📞 Support
+## Support
 
-- 📖 Documentation: [GitHub Wiki](https://github.com/fleetd-sh/fleetd/wiki)
-- 🐛 Issues: [GitHub Issues](https://github.com/fleetd-sh/fleetd/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/fleetd-sh/fleetd/discussions)
-- 📧 Security: security@fleetd.sh
+- Documentation: [GitHub Wiki](https://github.com/fleetd-sh/fleetd/wiki)
+- Issues: [GitHub Issues](https://github.com/fleetd-sh/fleetd/issues)
+- Discussions: [GitHub Discussions](https://github.com/fleetd-sh/fleetd/discussions)
 
 ---
 
