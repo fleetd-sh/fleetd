@@ -3,8 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
 
 permissions:
   contents: write
@@ -12,8 +12,8 @@ permissions:
   id-token: write
 
 env:
-  GO_VERSION: '1.23'
-  NODE_VERSION: '24.9.0'
+  GO_VERSION: "1.23"
+  NODE_VERSION: "24.9.0"
   REGISTRY: ghcr.io
 
 jobs:
@@ -143,7 +143,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: '~> v2'
+          version: "~> v2"
           args: release --clean --skip=docker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -183,9 +183,24 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
 
+      - name: Build and push studio
+        uses: docker/build-push-action@v6
+        with:
+          context: ./studio
+          file: ./studio/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/fleetd-sh/studio:latest
+            ${{ env.REGISTRY }}/fleetd-sh/studio:${{ steps.version.outputs.VERSION }}
+          labels: |
+            org.opencontainers.image.source=${{ github.repositoryUrl }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
+
       - name: Sign container images
         run: |
           cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/device-api:latest
           cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/platform-api:latest
+          cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/studio:latest
         continue-on-error: true
-
