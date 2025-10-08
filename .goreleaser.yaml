@@ -274,6 +274,42 @@ dockers_v2:
       org.opencontainers.image.version: "{{.Version}}"
       org.opencontainers.image.source: "{{.GitURL}}"
 
+  - id: studio
+    images:
+      - "ghcr.io/fleetd-sh/studio"
+    tags:
+      - "latest"
+      - "{{ .Tag }}"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+    dockerfile: studio/Dockerfile
+    goarch: amd64
+    goos: linux
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.title: "studio"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.source: "{{.GitURL}}"
+
+  - id: studio-arm64
+    images:
+      - "ghcr.io/fleetd-sh/studio"
+    tags:
+      - "latest"
+      - "{{ .Tag }}"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+    dockerfile: studio/Dockerfile
+    goarch: arm64
+    goos: linux
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.title: "studio"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.source: "{{.GitURL}}"
+
 docker_signs:
   - cmd: cosign
     output: true
