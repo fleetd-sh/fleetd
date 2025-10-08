@@ -176,19 +176,23 @@ func setDefaults() {
 // Helper functions for consistent output
 
 func printSuccess(format string, a ...any) {
-	fmt.Printf("%s %s\n", green("[OK]"), fmt.Sprintf(format, a...))
+	message := fmt.Sprintf(format, a...)
+	fmt.Printf("%s %s\n", green("[OK]"), message)
 }
 
 func printError(format string, a ...any) {
-	fmt.Printf("%s %s\n", red("[ERROR]"), fmt.Sprintf(format, a...))
+	message := fmt.Sprintf(format, a...)
+	fmt.Printf("%s %s\n", red("[ERROR]"), message)
 }
 
 func printWarning(format string, a ...any) {
-	fmt.Printf("%s %s\n", yellow("[WARN]"), fmt.Sprintf(format, a...))
+	message := fmt.Sprintf(format, a...)
+	fmt.Printf("%s %s\n", yellow("[WARN]"), message)
 }
 
 func printInfo(format string, a ...any) {
-	fmt.Printf("%s %s\n", blue("[INFO]"), fmt.Sprintf(format, a...))
+	message := fmt.Sprintf(format, a...)
+	fmt.Printf("%s %s\n", blue("[INFO]"), message)
 }
 
 func printHeader(text string) {
