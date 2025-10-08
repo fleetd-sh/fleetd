@@ -238,8 +238,9 @@ func isWritable(path string) bool {
 }
 
 func replaceBinary(src, dest string) error {
-	// Backup current binary
-	backup := dest + ".old"
+	// Backup current binary with version number
+	currentVersion := strings.TrimPrefix(version.Version, "v")
+	backup := dest + "." + currentVersion
 	if err := os.Rename(dest, backup); err != nil {
 		return fmt.Errorf("failed to backup current binary: %w", err)
 	}
@@ -256,18 +257,32 @@ func replaceBinary(src, dest string) error {
 		return fmt.Errorf("failed to set permissions: %w", err)
 	}
 
-	// Remove backup
-	os.Remove(backup)
+	printInfo("Backed up previous version to: %s", backup)
 
 	return nil
 }
 
 func replaceBinaryWithSudo(src, dest string) error {
-	// Use sudo to replace the binary
-	cmd := exec.Command("sudo", "cp", src, dest)
+	// Backup current binary with version number
+	currentVersion := strings.TrimPrefix(version.Version, "v")
+	backup := dest + "." + currentVersion
+
+	// Move current binary to backup
+	cmd := exec.Command("sudo", "mv", dest, backup)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to backup current binary: %w", err)
+	}
+
+	// Copy new binary
+	cmd = exec.Command("sudo", "cp", src, dest)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		// Restore backup on failure
+		restoreCmd := exec.Command("sudo", "mv", backup, dest)
+		restoreCmd.Run()
 		return fmt.Errorf("failed to copy with sudo: %w", err)
 	}
 
@@ -276,6 +291,8 @@ func replaceBinaryWithSudo(src, dest string) error {
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to set permissions: %w", err)
 	}
+
+	printInfo("Backed up previous version to: %s", backup)
 
 	return nil
 }
