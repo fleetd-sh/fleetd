@@ -10,8 +10,9 @@ RUN addgroup -g 1000 -S fleetd && \
 
 WORKDIR /app
 
-# Copy pre-built binary from GoReleaser
-COPY device-api /app/
+# Copy pre-built binary from GoReleaser (uses TARGETPLATFORM for multi-arch)
+ARG TARGETPLATFORM
+COPY ${TARGETPLATFORM}/device-api /app/
 
 # Create data directory
 RUN mkdir -p /data && chown -R fleetd:fleetd /data /app

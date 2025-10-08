@@ -201,28 +201,9 @@ dockers_v2:
       - "{{ .Major }}"
       - "{{ .Major }}.{{ .Minor }}"
     dockerfile: container/device.dockerfile
-    goarch: amd64
-    goos: linux
-    labels:
-      org.opencontainers.image.created: "{{.Date}}"
-      org.opencontainers.image.title: "device-api"
-      org.opencontainers.image.revision: "{{.FullCommit}}"
-      org.opencontainers.image.version: "{{.Version}}"
-      org.opencontainers.image.source: "{{.GitURL}}"
-
-  - id: device-api-arm64
-    ids:
-      - device-api
-    images:
-      - "ghcr.io/fleetd-sh/device-api"
-    tags:
-      - "latest"
-      - "{{ .Tag }}"
-      - "{{ .Major }}"
-      - "{{ .Major }}.{{ .Minor }}"
-    dockerfile: container/device.dockerfile
-    goarch: arm64
-    goos: linux
+    platforms:
+      - linux/amd64
+      - linux/arm64
     labels:
       org.opencontainers.image.created: "{{.Date}}"
       org.opencontainers.image.title: "device-api"
@@ -241,30 +222,9 @@ dockers_v2:
       - "{{ .Major }}"
       - "{{ .Major }}.{{ .Minor }}"
     dockerfile: container/platform.dockerfile
-    goarch: amd64
-    goos: linux
-    extra_files:
-      - internal/database/migrations
-    labels:
-      org.opencontainers.image.created: "{{.Date}}"
-      org.opencontainers.image.title: "platform-api"
-      org.opencontainers.image.revision: "{{.FullCommit}}"
-      org.opencontainers.image.version: "{{.Version}}"
-      org.opencontainers.image.source: "{{.GitURL}}"
-
-  - id: platform-api-arm64
-    ids:
-      - platform-api
-    images:
-      - "ghcr.io/fleetd-sh/platform-api"
-    tags:
-      - "latest"
-      - "{{ .Tag }}"
-      - "{{ .Major }}"
-      - "{{ .Major }}.{{ .Minor }}"
-    dockerfile: container/platform.dockerfile
-    goarch: arm64
-    goos: linux
+    platforms:
+      - linux/amd64
+      - linux/arm64
     extra_files:
       - internal/database/migrations
     labels:
@@ -283,26 +243,9 @@ dockers_v2:
       - "{{ .Major }}"
       - "{{ .Major }}.{{ .Minor }}"
     dockerfile: studio/Dockerfile
-    goarch: amd64
-    goos: linux
-    labels:
-      org.opencontainers.image.created: "{{.Date}}"
-      org.opencontainers.image.title: "studio"
-      org.opencontainers.image.revision: "{{.FullCommit}}"
-      org.opencontainers.image.version: "{{.Version}}"
-      org.opencontainers.image.source: "{{.GitURL}}"
-
-  - id: studio-arm64
-    images:
-      - "ghcr.io/fleetd-sh/studio"
-    tags:
-      - "latest"
-      - "{{ .Tag }}"
-      - "{{ .Major }}"
-      - "{{ .Major }}.{{ .Minor }}"
-    dockerfile: studio/Dockerfile
-    goarch: arm64
-    goos: linux
+    platforms:
+      - linux/amd64
+      - linux/arm64
     labels:
       org.opencontainers.image.created: "{{.Date}}"
       org.opencontainers.image.title: "studio"

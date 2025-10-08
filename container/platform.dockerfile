@@ -10,8 +10,9 @@ RUN addgroup -g 1000 -S fleetd && \
 
 WORKDIR /app
 
-# Copy pre-built binary from GoReleaser
-COPY platform-api /app/
+# Copy pre-built binary from GoReleaser (uses TARGETPLATFORM for multi-arch)
+ARG TARGETPLATFORM
+COPY ${TARGETPLATFORM}/platform-api /app/
 COPY internal/database/migrations /app/internal/database/migrations
 
 # Create data directory
