@@ -153,6 +153,15 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      - name: Determine if prerelease
+        id: prerelease
+        run: |
+          if [[ "${{ steps.version.outputs.VERSION }}" =~ -rc\.|alpha|beta ]]; then
+            echo "IS_PRERELEASE=true" >> $GITHUB_OUTPUT
+          else
+            echo "IS_PRERELEASE=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push studio
         uses: docker/build-push-action@v6
         with:
@@ -161,14 +170,15 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.REGISTRY }}/fleetd-sh/studio:latest
             ${{ env.REGISTRY }}/fleetd-sh/studio:${{ steps.version.outputs.VERSION }}
+            ${{ steps.prerelease.outputs.IS_PRERELEASE == 'false' && format('{0}/fleetd-sh/studio:latest', env.REGISTRY) || '' }}
           labels: |
             org.opencontainers.image.source=${{ github.repositoryUrl }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
 
       - name: Sign container images
+        if: steps.prerelease.outputs.IS_PRERELEASE == 'false'
         run: |
           cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/studio:latest
         continue-on-error: true

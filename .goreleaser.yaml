@@ -196,15 +196,14 @@ dockers_v2:
     images:
       - "ghcr.io/fleetd-sh/device-api"
     tags:
-      - "latest"
       - "{{ .Tag }}"
-      - "{{ .Major }}"
-      - "{{ .Major }}.{{ .Minor }}"
+      - '{{ if not .IsNightly }}{{ if not .Prerelease }}latest{{ end }}{{ end }}'
+      - '{{ if not .IsNightly }}{{ if not .Prerelease }}{{ .Major }}{{ end }}{{ end }}'
+      - '{{ if not .IsNightly }}{{ if not .Prerelease }}{{ .Major }}.{{ .Minor }}{{ end }}{{ end }}'
     dockerfile: container/device.dockerfile
     platforms:
       - linux/amd64
       - linux/arm64
-    skip_push: false
     labels:
       org.opencontainers.image.created: "{{.Date}}"
       org.opencontainers.image.title: "device-api"
@@ -218,15 +217,14 @@ dockers_v2:
     images:
       - "ghcr.io/fleetd-sh/platform-api"
     tags:
-      - "latest"
       - "{{ .Tag }}"
-      - "{{ .Major }}"
-      - "{{ .Major }}.{{ .Minor }}"
+      - '{{ if not .IsNightly }}{{ if not .Prerelease }}latest{{ end }}{{ end }}'
+      - '{{ if not .IsNightly }}{{ if not .Prerelease }}{{ .Major }}{{ end }}{{ end }}'
+      - '{{ if not .IsNightly }}{{ if not .Prerelease }}{{ .Major }}.{{ .Minor }}{{ end }}{{ end }}'
     dockerfile: container/platform.dockerfile
     platforms:
       - linux/amd64
       - linux/arm64
-    skip_push: false
     extra_files:
       - internal/database/migrations
     labels:

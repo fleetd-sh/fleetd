@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"fleetd.sh/internal/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -50,6 +51,9 @@ This command starts:
 }
 
 func runStart(cmd *cobra.Command, args []string) error {
+	// Check for updates in background
+	go CheckForUpdates()
+
 	// Check Docker availability
 	if err := checkDocker(); err != nil {
 		return err
@@ -327,11 +331,14 @@ func checkDockerCompose() error {
 }
 
 func buildDockerImages(projectRoot string) error {
+	// Determine image tag based on fleetctl version
+	imageTag := getImageTag()
+
 	// Check if images exist
 	images := []string{
-		"ghcr.io/fleetd-sh/platform-api:latest",
-		"ghcr.io/fleetd-sh/device-api:latest",
-		"ghcr.io/fleetd-sh/studio:latest",
+		fmt.Sprintf("ghcr.io/fleetd-sh/platform-api:%s", imageTag),
+		fmt.Sprintf("ghcr.io/fleetd-sh/device-api:%s", imageTag),
+		fmt.Sprintf("ghcr.io/fleetd-sh/studio:%s", imageTag),
 	}
 
 	missingImages := []string{}
@@ -344,7 +351,7 @@ func buildDockerImages(projectRoot string) error {
 	}
 
 	if len(missingImages) > 0 {
-		printInfo("Pulling required Docker images...")
+		printInfo("Pulling required Docker images (tag: %s)...", imageTag)
 		for _, image := range missingImages {
 			printInfo("Pulling %s...", image)
 			cmd := exec.Command("docker", "pull", image)
@@ -360,6 +367,25 @@ func buildDockerImages(projectRoot string) error {
 	}
 
 	return nil
+}
+
+// getImageTag determines which Docker image tag to use based on fleetctl version
+func getImageTag() string {
+	v := version.Version
+
+	// If development version, use latest
+	if v == "development" || v == "" {
+		return "latest"
+	}
+
+	// If prerelease (contains -rc, -alpha, -beta), use exact version tag
+	if strings.Contains(v, "-rc") || strings.Contains(v, "-alpha") || strings.Contains(v, "-beta") {
+		// Remove leading 'v' if present
+		return strings.TrimPrefix(v, "v")
+	}
+
+	// For stable releases, use latest
+	return "latest"
 }
 
 func getServicesToStart(noServer, noWeb bool, exclude []string) []string {
