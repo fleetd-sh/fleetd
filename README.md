@@ -14,7 +14,7 @@ The fleetd platform is a production-ready IoT device fleet management system tha
 
 ```bash
 # Install fleetd CLI
-curl -sSL https://github.com/fleetd-sh/fleetd/releases/latest/download/install.sh | sh
+curl -sSL https://get.fleetd.sh | sh
 
 # Start local platform (requires Docker)
 fleetctl start
@@ -115,7 +115,7 @@ graph TB
 
 ```bash
 # Install fleetd CLI
-curl -sSL https://github.com/fleetd-sh/fleetd/releases/latest/download/install.sh | sh
+curl -sSL https://get.fleetd.sh | sh
 
 # Deploy with Docker Compose
 cd ~/.fleetd
