@@ -123,7 +123,7 @@ archives:
       - README.md
 
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 
 source:
   enabled: true
@@ -136,28 +136,28 @@ changelog:
   use: github
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-      - '^chore:'
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
       - Merge pull request
       - Merge branch
   groups:
-    - title: 'New Features'
+    - title: "New Features"
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
       order: 0
-    - title: 'Bug Fixes'
+    - title: "Bug Fixes"
       regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 1
-    - title: 'Performance Improvements'
+    - title: "Performance Improvements"
       regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
       order: 2
-    - title: 'Code Refactoring'
+    - title: "Code Refactoring"
       regexp: '^.*?refactor(\([[:word:]]+\))??!?:.+$'
       order: 3
-    - title: 'Security Updates'
+    - title: "Security Updates"
       regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
       order: 4
-    - title: 'Other Changes'
+    - title: "Other Changes"
       order: 999
 
 release:
@@ -189,44 +189,90 @@ signs:
     artifacts: checksum
     output: true
 
-dockers:
+dockers_v2:
   - id: device-api
     ids:
       - device-api
-    image_templates:
-      - "ghcr.io/fleetd-sh/device-api:latest"
-      - "ghcr.io/fleetd-sh/device-api:{{ .Tag }}"
-      - "ghcr.io/fleetd-sh/device-api:{{ .Major }}"
-      - "ghcr.io/fleetd-sh/device-api:{{ .Major }}.{{ .Minor }}"
+    images:
+      - "ghcr.io/fleetd-sh/device-api"
+    tags:
+      - "latest"
+      - "{{ .Tag }}"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
     dockerfile: container/device.dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--platform=linux/amd64,linux/arm64"
-      - "--output=type=image,push=true"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title=device-api"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
+    goarch: amd64
+    goos: linux
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.title: "device-api"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.source: "{{.GitURL}}"
+
+  - id: device-api-arm64
+    ids:
+      - device-api
+    images:
+      - "ghcr.io/fleetd-sh/device-api"
+    tags:
+      - "latest"
+      - "{{ .Tag }}"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+    dockerfile: container/device.dockerfile
+    goarch: arm64
+    goos: linux
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.title: "device-api"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.source: "{{.GitURL}}"
 
   - id: platform-api
     ids:
       - platform-api
-    image_templates:
-      - "ghcr.io/fleetd-sh/platform-api:latest"
-      - "ghcr.io/fleetd-sh/platform-api:{{ .Tag }}"
-      - "ghcr.io/fleetd-sh/platform-api:{{ .Major }}"
-      - "ghcr.io/fleetd-sh/platform-api:{{ .Major }}.{{ .Minor }}"
+    images:
+      - "ghcr.io/fleetd-sh/platform-api"
+    tags:
+      - "latest"
+      - "{{ .Tag }}"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
     dockerfile: container/platform.dockerfile
-    use: buildx
-    build_flag_templates:
-      - "--platform=linux/amd64,linux/arm64"
-      - "--output=type=image,push=true"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title=platform-api"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
+    goarch: amd64
+    goos: linux
+    extra_files:
+      - internal/database/migrations
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.title: "platform-api"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.source: "{{.GitURL}}"
+
+  - id: platform-api-arm64
+    ids:
+      - platform-api
+    images:
+      - "ghcr.io/fleetd-sh/platform-api"
+    tags:
+      - "latest"
+      - "{{ .Tag }}"
+      - "{{ .Major }}"
+      - "{{ .Major }}.{{ .Minor }}"
+    dockerfile: container/platform.dockerfile
+    goarch: arm64
+    goos: linux
+    extra_files:
+      - internal/database/migrations
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.title: "platform-api"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.source: "{{.GitURL}}"
 
 docker_signs:
   - cmd: cosign

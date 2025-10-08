@@ -144,7 +144,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
-          args: release --clean --skip=docker
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
@@ -152,36 +152,6 @@ jobs:
       - name: Extract version
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Build and push device-api
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./container/device.dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/fleetd-sh/device-api:latest
-            ${{ env.REGISTRY }}/fleetd-sh/device-api:${{ steps.version.outputs.VERSION }}
-          labels: |
-            org.opencontainers.image.source=${{ github.repositoryUrl }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
-
-      - name: Build and push platform-api
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./container/platform.dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/fleetd-sh/platform-api:latest
-            ${{ env.REGISTRY }}/fleetd-sh/platform-api:${{ steps.version.outputs.VERSION }}
-          labels: |
-            org.opencontainers.image.source=${{ github.repositoryUrl }}
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
 
       - name: Build and push studio
         uses: docker/build-push-action@v6
@@ -200,7 +170,5 @@ jobs:
 
       - name: Sign container images
         run: |
-          cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/device-api:latest
-          cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/platform-api:latest
           cosign sign --yes ${{ env.REGISTRY }}/fleetd-sh/studio:latest
         continue-on-error: true

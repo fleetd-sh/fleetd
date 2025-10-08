@@ -1,28 +1,8 @@
-# Multi-stage build for platform-api
-FROM golang:1.21-alpine AS builder
-
-# Install build dependencies
-RUN apk add --no-cache git make
-
-WORKDIR /build
-
-# Copy go mod files
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copy source code
-COPY . .
-
-# Build the binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo \
-    -ldflags="-w -s" \
-    -o platform-api cmd/platform-api/main.go
-
-# Final stage
+# GoReleaser compatible Dockerfile for platform-api
 FROM alpine:3.19
 
 # Install runtime dependencies
-RUN apk --no-cache add ca-certificates tzdata
+RUN apk --no-cache add ca-certificates tzdata wget
 
 # Create non-root user
 RUN addgroup -g 1000 -S fleetd && \
@@ -30,9 +10,9 @@ RUN addgroup -g 1000 -S fleetd && \
 
 WORKDIR /app
 
-# Copy binary from builder
-COPY --from=builder /build/platform-api /app/
-COPY --from=builder /build/internal/database/migrations /app/internal/database/migrations
+# Copy pre-built binary from GoReleaser
+COPY platform-api /app/
+COPY internal/database/migrations /app/internal/database/migrations
 
 # Create data directory
 RUN mkdir -p /data && chown -R fleetd:fleetd /data /app
