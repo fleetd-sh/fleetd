@@ -15,19 +15,19 @@ GITHUB_REPO="${GITHUB_API}/repos/${REPO_OWNER}/${REPO_NAME}"
 
 # Helper functions
 log_info() {
-    printf "[INFO] %s\n" "$1"
+    printf "[INFO] %s\n" "$1" >&2
 }
 
 log_success() {
-    printf "[SUCCESS] %s\n" "$1"
+    printf "[SUCCESS] %s\n" "$1" >&2
 }
 
 log_warning() {
-    printf "[WARNING] %s\n" "$1"
+    printf "[WARNING] %s\n" "$1" >&2
 }
 
 log_error() {
-    printf "[ERROR] %s\n" "$1"
+    printf "[ERROR] %s\n" "$1" >&2
     exit 1
 }
 
@@ -197,10 +197,10 @@ install_completions() {
 
 # Main installation flow
 main() {
-    printf "╔════════════════════════════════════╗\n"
-    printf "║   fleetd CLI Installer             ║\n"
-    printf "╚════════════════════════════════════╝\n"
-    echo
+    printf "╔════════════════════════════════════╗\n" >&2
+    printf "║   fleetd CLI Installer             ║\n" >&2
+    printf "╚════════════════════════════════════╝\n" >&2
+    echo >&2
     
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
@@ -247,17 +247,17 @@ main() {
     
     # Cleanup
     rm -rf "${tmp_dir}"
-    
-    echo
+
+    echo >&2
     log_success "Installation complete!"
-    echo
-    echo "To get started, run:"
-    echo "  ${BINARY_NAME} init        # Initialize a new fleetd project"
-    echo "  ${BINARY_NAME} start       # Start local fleetd stack"
-    echo "  ${BINARY_NAME} help        # Show available commands"
-    echo
-    echo "Documentation: https://docs.fleetd.sh"
-    echo "GitHub: https://github.com/${REPO_OWNER}/${REPO_NAME}"
+    echo >&2
+    echo "To get started, run:" >&2
+    echo "  ${BINARY_NAME} init        # Initialize a new fleetd project" >&2
+    echo "  ${BINARY_NAME} start       # Start local fleetd stack" >&2
+    echo "  ${BINARY_NAME} help        # Show available commands" >&2
+    echo >&2
+    echo "Documentation: https://docs.fleetd.sh" >&2
+    echo "GitHub: https://github.com/${REPO_OWNER}/${REPO_NAME}" >&2
 }
 
 main "$@"
