@@ -204,6 +204,7 @@ dockers_v2:
     platforms:
       - linux/amd64
       - linux/arm64
+    skip_push: false
     labels:
       org.opencontainers.image.created: "{{.Date}}"
       org.opencontainers.image.title: "device-api"
@@ -225,6 +226,7 @@ dockers_v2:
     platforms:
       - linux/amd64
       - linux/arm64
+    skip_push: false
     extra_files:
       - internal/database/migrations
     labels:

@@ -334,20 +334,31 @@ func buildDockerImages(projectRoot string) error {
 		"ghcr.io/fleetd-sh/studio:latest",
 	}
 
+	missingImages := []string{}
 	for _, image := range images {
 		cmd := exec.Command("docker", "images", "-q", image)
 		output, _ := cmd.Output()
 		if strings.TrimSpace(string(output)) == "" {
-			printInfo("Image %s not found, building...", image)
-			// Build using Justfile
-			serviceName := strings.Split(strings.Split(image, "/")[1], ":")[0]
-			cmd = exec.Command("just", fmt.Sprintf("docker-build-%s", serviceName))
-			cmd.Dir = projectRoot
+			missingImages = append(missingImages, image)
+		}
+	}
+
+	if len(missingImages) > 0 {
+		printInfo("Pulling required Docker images...")
+		for _, image := range missingImages {
+			printInfo("Pulling %s...", image)
+			cmd := exec.Command("docker", "pull", image)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
 			if err := cmd.Run(); err != nil {
-				printWarning("Failed to build %s: %v", image, err)
+				printError("Failed to pull %s", image)
+				printError("Make sure the images are available in the registry.")
+				printError("If you're developing locally, build the images with: just docker-build-all")
+				return fmt.Errorf("failed to pull Docker image %s: %w", image, err)
 			}
 		}
 	}
+
 	return nil
 }
 
