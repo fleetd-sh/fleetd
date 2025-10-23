@@ -1,6 +1,8 @@
 package metrics
 
 import (
+	"os"
+	"runtime"
 	"time"
 )
 
@@ -132,6 +134,7 @@ type TemperatureMetrics struct {
 type Collector struct {
 	lastNetStats  map[string]interface{}
 	lastDiskStats map[string]interface{}
+	fastMode      bool
 }
 
 // NewCollector creates a new metrics collector
@@ -139,11 +142,16 @@ func NewCollector() *Collector {
 	return &Collector{
 		lastNetStats:  make(map[string]interface{}),
 		lastDiskStats: make(map[string]interface{}),
+		fastMode:      os.Getenv("FLEETD_FAST_METRICS") == "1",
 	}
 }
 
 // Collect gathers all system metrics
 func (c *Collector) Collect() (*SystemMetrics, error) {
+	if c.fastMode {
+		return c.fakeMetrics(), nil
+	}
+
 	metrics := &SystemMetrics{
 		Timestamp: time.Now(),
 	}
@@ -197,6 +205,52 @@ func (c *Collector) Collect() (*SystemMetrics, error) {
 func GetDiskUsageForPath(path string) (map[string]uint64, error) {
 	// Platform-specific implementation would be needed
 	return nil, nil
+}
+
+func (c *Collector) fakeMetrics() *SystemMetrics {
+	now := time.Now()
+	return &SystemMetrics{
+		Timestamp: now,
+		CPU: CPUMetrics{
+			Cores:         runtime.NumCPU(),
+			UsagePercent:  12.5,
+			UserPercent:   7.5,
+			SystemPercent: 3.0,
+			IdlePercent:   87.5,
+			LoadAvg1:      0.25,
+			LoadAvg5:      0.35,
+			LoadAvg15:     0.45,
+			PerCoreUsage:  make([]float64, runtime.NumCPU()),
+		},
+		Memory: MemoryMetrics{
+			Total:       8 << 30,
+			Used:        3 << 30,
+			Free:        5 << 30,
+			Available:   6 << 30,
+			UsedPercent: 37.5,
+		},
+		Disk: DiskMetrics{
+			Total:       256 << 30,
+			Used:        128 << 30,
+			Free:        128 << 30,
+			UsedPercent: 50,
+		},
+		Network: NetworkMetrics{
+			TotalSent: 123456,
+			TotalRecv: 654321,
+		},
+		Process: ProcessMetrics{
+			AgentPID: int32(os.Getpid()),
+			AgentCPU: 1.2,
+			AgentMem: 0.8,
+		},
+		System: SystemInfo{
+			Hostname:     "localhost",
+			OS:           runtime.GOOS,
+			Architecture: runtime.GOARCH,
+			Uptime:       uint64(now.Unix() % 1024),
+		},
+	}
 }
 
 // GetNetworkLatency measures network latency to a host

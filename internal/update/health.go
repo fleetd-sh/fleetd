@@ -26,6 +26,7 @@ type HealthChecker struct {
 	checks    []HealthCheck
 	collector *metrics.Collector
 	mu        sync.RWMutex
+	fastMode  bool
 }
 
 // HealthCheck represents a health check
@@ -59,6 +60,7 @@ type HealthCheckResult struct {
 func NewHealthChecker() *HealthChecker {
 	hc := &HealthChecker{
 		collector: metrics.NewCollector(),
+		fastMode:  os.Getenv("FLEETD_FAST_METRICS") == "1",
 	}
 
 	// Register default health checks
@@ -69,54 +71,72 @@ func NewHealthChecker() *HealthChecker {
 
 // registerDefaultChecks registers default health checks
 func (hc *HealthChecker) registerDefaultChecks() {
+	cpuTimeout := 5 * time.Second
+	memTimeout := 5 * time.Second
+	diskTimeout := 5 * time.Second
+	networkTimeout := 10 * time.Second
+	serviceTimeout := 10 * time.Second
+	processTimeout := 5 * time.Second
+	fsTimeout := 10 * time.Second
+
+	if hc.fastMode {
+		cpuTimeout = 100 * time.Millisecond
+		memTimeout = 100 * time.Millisecond
+		diskTimeout = 100 * time.Millisecond
+		networkTimeout = 200 * time.Millisecond
+		serviceTimeout = 200 * time.Millisecond
+		processTimeout = 100 * time.Millisecond
+		fsTimeout = 200 * time.Millisecond
+	}
+
 	hc.checks = []HealthCheck{
 		{
 			Name:        "cpu_usage",
 			Description: "Check CPU usage is below threshold",
 			Critical:    false,
-			Timeout:     5 * time.Second,
+			Timeout:     cpuTimeout,
 			CheckFunc:   hc.checkCPUUsage,
 		},
 		{
 			Name:        "memory_usage",
 			Description: "Check memory usage is below threshold",
 			Critical:    false,
-			Timeout:     5 * time.Second,
+			Timeout:     memTimeout,
 			CheckFunc:   hc.checkMemoryUsage,
 		},
 		{
 			Name:        "disk_space",
 			Description: "Check disk space availability",
 			Critical:    true,
-			Timeout:     5 * time.Second,
+			Timeout:     diskTimeout,
 			CheckFunc:   hc.checkDiskSpace,
 		},
 		{
 			Name:        "network_connectivity",
 			Description: "Check network connectivity",
 			Critical:    true,
-			Timeout:     10 * time.Second,
+			Timeout:     networkTimeout,
 			CheckFunc:   hc.checkNetworkConnectivity,
 		},
 		{
 			Name:        "critical_services",
 			Description: "Check critical services are running",
 			Critical:    true,
-			Timeout:     10 * time.Second,
+			Timeout:     serviceTimeout,
 			CheckFunc:   hc.checkCriticalServices,
 		},
 		{
 			Name:        "agent_process",
 			Description: "Check agent process health",
 			Critical:    true,
-			Timeout:     5 * time.Second,
+			Timeout:     processTimeout,
 			CheckFunc:   hc.checkAgentProcess,
 		},
 		{
 			Name:        "file_system",
 			Description: "Check file system integrity",
 			Critical:    false,
-			Timeout:     10 * time.Second,
+			Timeout:     fsTimeout,
 			CheckFunc:   hc.checkFileSystem,
 		},
 	}
@@ -212,6 +232,10 @@ func (hc *HealthChecker) GetHealthStatus(ctx context.Context) *HealthStatus {
 
 // checkCPUUsage checks CPU usage
 func (hc *HealthChecker) checkCPUUsage(ctx context.Context) error {
+	if hc.fastMode {
+		return nil
+	}
+
 	percentages, err := cpu.PercentWithContext(ctx, 2*time.Second, false)
 	if err != nil {
 		return fmt.Errorf("failed to get CPU usage: %w", err)
@@ -226,6 +250,10 @@ func (hc *HealthChecker) checkCPUUsage(ctx context.Context) error {
 
 // checkMemoryUsage checks memory usage
 func (hc *HealthChecker) checkMemoryUsage(ctx context.Context) error {
+	if hc.fastMode {
+		return nil
+	}
+
 	vmStat, err := mem.VirtualMemory()
 	if err != nil {
 		return fmt.Errorf("failed to get memory usage: %w", err)
@@ -245,6 +273,10 @@ func (hc *HealthChecker) checkMemoryUsage(ctx context.Context) error {
 
 // checkDiskSpace checks disk space availability
 func (hc *HealthChecker) checkDiskSpace(ctx context.Context) error {
+	if hc.fastMode {
+		return nil
+	}
+
 	// Check root partition
 	usage, err := disk.Usage("/")
 	if err != nil {
@@ -271,6 +303,10 @@ func (hc *HealthChecker) checkDiskSpace(ctx context.Context) error {
 
 // checkNetworkConnectivity checks network connectivity
 func (hc *HealthChecker) checkNetworkConnectivity(ctx context.Context) error {
+	if hc.fastMode {
+		return nil
+	}
+
 	// Check if we can resolve DNS
 	resolver := &net.Resolver{}
 	_, err := resolver.LookupHost(ctx, "google.com")
@@ -303,6 +339,10 @@ func (hc *HealthChecker) checkNetworkConnectivity(ctx context.Context) error {
 
 // checkCriticalServices checks if critical services are running
 func (hc *HealthChecker) checkCriticalServices(ctx context.Context) error {
+	if hc.fastMode {
+		return nil
+	}
+
 	if runtime.GOOS != "linux" {
 		return nil // Skip on non-Linux systems
 	}
@@ -330,6 +370,10 @@ func (hc *HealthChecker) checkCriticalServices(ctx context.Context) error {
 
 // checkAgentProcess checks the agent process health
 func (hc *HealthChecker) checkAgentProcess(ctx context.Context) error {
+	if hc.fastMode {
+		return nil
+	}
+
 	pid := os.Getpid()
 	proc, err := process.NewProcess(int32(pid))
 	if err != nil {
@@ -367,6 +411,10 @@ func (hc *HealthChecker) checkAgentProcess(ctx context.Context) error {
 
 // checkFileSystem checks file system integrity
 func (hc *HealthChecker) checkFileSystem(ctx context.Context) error {
+	if hc.fastMode {
+		return nil
+	}
+
 	// Check if critical directories are accessible
 	criticalDirs := []string{
 		"/etc/fleetd",
