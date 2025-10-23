@@ -57,3 +57,4 @@ dev/data/
 *.db-shm
 *.db-wal
 .vercel
+fleetd.config.toml
