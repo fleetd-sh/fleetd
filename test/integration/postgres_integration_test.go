@@ -38,6 +38,8 @@ func TestPostgreSQLIntegration(t *testing.T) {
 // setupTestPostgres returns connection string to shared PostgreSQL container
 // Uses the shared container from TestMain for speed
 func setupTestPostgres(t *testing.T) (string, func()) {
+	requireDocker(t)
+
 	// Use shared container if available
 	if sharedConnStr != "" {
 		// Cleanup function that cleans tables instead of terminating container
@@ -50,17 +52,19 @@ func setupTestPostgres(t *testing.T) (string, func()) {
 	// Fallback: Create isolated container (for tests run outside TestMain)
 	ctx := context.Background()
 
-	pgContainer, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:17-alpine"),
-		postgres.WithDatabase("fleetd_test"),
-		postgres.WithUsername("fleetd"),
-		postgres.WithPassword("testpass"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(30*time.Second),
-		),
-	)
+	pgContainer, err := runContainerSafe(func() (*postgres.PostgresContainer, error) {
+		return postgres.RunContainer(ctx,
+			testcontainers.WithImage("postgres:17-alpine"),
+			postgres.WithDatabase("fleetd_test"),
+			postgres.WithUsername("fleetd"),
+			postgres.WithPassword("testpass"),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2).
+					WithStartupTimeout(30*time.Second),
+			),
+		)
+	})
 	require.NoError(t, err)
 
 	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")

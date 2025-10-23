@@ -3,9 +3,11 @@ package integration
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -17,26 +19,39 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+const dockerCheckTimeout = 3 * time.Second
+
 var (
 	// Shared PostgreSQL container and connection pool
-	sharedDB       *sql.DB
-	sharedConnStr  string
-	containerMutex sync.Mutex
-	containerSetup sync.Once
-	schemaSetup    sync.Once
-	containerCtx   = context.Background()
-	pgContainer    testcontainers.Container
+	sharedDB        *sql.DB
+	sharedConnStr   string
+	containerMutex  sync.Mutex
+	containerSetup  sync.Once
+	schemaSetup     sync.Once
+	containerCtx    = context.Background()
+	pgContainer     *postgres.PostgresContainer
+	dockerCheckOnce sync.Once
+	dockerCheckErr  error
 )
 
 // TestMain sets up shared resources for all integration tests
 func TestMain(m *testing.M) {
 	var cleanup func()
 
+	// Use lightweight metrics collection during integration tests to avoid long gopsutil sampling delays
+	if os.Getenv("FLEETD_FAST_METRICS") == "" {
+		os.Setenv("FLEETD_FAST_METRICS", "1")
+	}
+
 	// Check if we should use shared container
 	if os.Getenv("INTEGRATION") != "" {
-		sharedDB, cleanup = setupSharedPostgres()
-		if sharedDB != nil {
-			defer cleanup()
+		if err := checkDocker(); err != nil {
+			fmt.Printf("Skipping shared PostgreSQL setup: %v\n", err)
+		} else {
+			sharedDB, cleanup = setupSharedPostgres()
+			if sharedDB != nil && cleanup != nil {
+				defer cleanup()
+			}
 		}
 	}
 
@@ -50,25 +65,26 @@ func setupSharedPostgres() (*sql.DB, func()) {
 	var err error
 
 	// Start PostgreSQL container once
-	pgContainer, err = postgres.RunContainer(containerCtx,
-		testcontainers.WithImage("postgres:17-alpine"),
-		postgres.WithDatabase("fleetd_test"),
-		postgres.WithUsername("fleetd"),
-		postgres.WithPassword("testpass"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(30*time.Second),
-		),
-	)
+	pgContainer, err = runContainerSafe(func() (*postgres.PostgresContainer, error) {
+		return postgres.RunContainer(containerCtx,
+			testcontainers.WithImage("postgres:17-alpine"),
+			postgres.WithDatabase("fleetd_test"),
+			postgres.WithUsername("fleetd"),
+			postgres.WithPassword("testpass"),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2).
+					WithStartupTimeout(30*time.Second),
+			),
+		)
+	})
 	if err != nil {
 		fmt.Printf("Failed to start shared PostgreSQL container: %v\n", err)
 		return nil, func() {}
 	}
 
 	// Get connection string
-	pgContainerTyped := pgContainer.(*postgres.PostgresContainer)
-	sharedConnStr, err = pgContainerTyped.ConnectionString(containerCtx, "sslmode=disable")
+	sharedConnStr, err = pgContainer.ConnectionString(containerCtx, "sslmode=disable")
 	if err != nil {
 		fmt.Printf("Failed to get connection string: %v\n", err)
 		pgContainer.Terminate(containerCtx)
@@ -246,6 +262,9 @@ func setupSharedSchema(db *sql.DB) error {
 // NOTE: For true parallel test isolation, tests should NOT run in parallel (remove t.Parallel())
 // OR we accept that tests run sequentially but share the same container startup cost
 func setupTestDatabase(t *testing.T) *sql.DB {
+	requireIntegrationMode(t)
+	requireDocker(t)
+
 	// If shared DB is available, use it with simple cleanup
 	if sharedDB != nil {
 		// Clean all tables before test starts
@@ -266,24 +285,26 @@ func setupTestDatabase(t *testing.T) *sql.DB {
 	// Fallback: Create isolated container (for tests run outside TestMain)
 	ctx := context.Background()
 
-	pgContainer, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:17-alpine"),
-		postgres.WithDatabase("fleetd_test"),
-		postgres.WithUsername("fleetd"),
-		postgres.WithPassword("testpass"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(30*time.Second),
-		),
-	)
+	pgContainerInstance, err := runContainerSafe(func() (*postgres.PostgresContainer, error) {
+		return postgres.RunContainer(ctx,
+			testcontainers.WithImage("postgres:17-alpine"),
+			postgres.WithDatabase("fleetd_test"),
+			postgres.WithUsername("fleetd"),
+			postgres.WithPassword("testpass"),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2).
+					WithStartupTimeout(30*time.Second),
+			),
+		)
+	})
 	require.NoError(t, err)
 
-	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
+	connStr, err := pgContainerInstance.ConnectionString(ctx, "sslmode=disable")
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		if err := pgContainer.Terminate(ctx); err != nil {
+		if err := pgContainerInstance.Terminate(ctx); err != nil {
 			t.Logf("Failed to terminate postgres container: %v", err)
 		}
 	})
@@ -359,27 +380,33 @@ func safeCloseDB(db *sql.DB) {
 
 // setupBenchDatabase creates a database for benchmarks
 func setupBenchDatabase(b *testing.B) *sql.DB {
+	if err := checkDocker(); err != nil {
+		b.Skipf("Docker not available: %v", err)
+	}
+
 	ctx := context.Background()
 
 	// Start PostgreSQL container
-	pgContainer, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:17-alpine"),
-		postgres.WithDatabase("fleetd_bench"),
-		postgres.WithUsername("fleetd"),
-		postgres.WithPassword("testpass"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(30*time.Second),
-		),
-	)
+	pgContainerInstance, err := runContainerSafe(func() (*postgres.PostgresContainer, error) {
+		return postgres.RunContainer(ctx,
+			testcontainers.WithImage("postgres:17-alpine"),
+			postgres.WithDatabase("fleetd_bench"),
+			postgres.WithUsername("fleetd"),
+			postgres.WithPassword("testpass"),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2).
+					WithStartupTimeout(30*time.Second),
+			),
+		)
+	})
 	require.NoError(b, err)
 
-	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
+	connStr, err := pgContainerInstance.ConnectionString(ctx, "sslmode=disable")
 	require.NoError(b, err)
 
 	b.Cleanup(func() {
-		if err := pgContainer.Terminate(ctx); err != nil {
+		if err := pgContainerInstance.Terminate(ctx); err != nil {
 			b.Logf("Failed to terminate postgres container: %v", err)
 		}
 	})
@@ -461,8 +488,8 @@ func skipIfShort(t *testing.T) {
 
 // requireDocker checks if Docker is available
 func requireDocker(t *testing.T) {
-	if _, err := exec.Command("docker", "version").Output(); err != nil {
-		t.Skip("Docker not available")
+	if err := checkDocker(); err != nil {
+		t.Skipf("Docker not available: %v", err)
 	}
 }
 
@@ -471,4 +498,42 @@ func requireIntegrationMode(t *testing.T) {
 	if os.Getenv("INTEGRATION") == "" {
 		t.Skip("Integration tests not enabled (set INTEGRATION=true)")
 	}
+}
+
+func checkDocker() error {
+	dockerCheckOnce.Do(func() {
+		dockerCheckErr = ensureDockerAvailable(dockerCheckTimeout)
+	})
+	return dockerCheckErr
+}
+
+func ensureDockerAvailable(timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "docker", "info")
+	output, err := cmd.CombinedOutput()
+	if ctx.Err() == context.DeadlineExceeded {
+		return fmt.Errorf("docker command timed out after %s", timeout)
+	}
+	if err != nil {
+		if errors.Is(err, exec.ErrNotFound) {
+			return fmt.Errorf("docker binary not found in PATH")
+		}
+		msg := strings.TrimSpace(string(output))
+		if msg != "" {
+			return fmt.Errorf("%w: %s", err, msg)
+		}
+		return err
+	}
+	return nil
+}
+
+func runContainerSafe[T any](fn func() (T, error)) (container T, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("testcontainers panic: %v", r)
+		}
+	}()
+	return fn()
 }

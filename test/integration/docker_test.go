@@ -31,21 +31,24 @@ func TestWithPostgresContainer(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping container test in short mode")
 	}
+	requireDocker(t)
 
 	ctx := context.Background()
 
 	// Start PostgreSQL container
-	postgresContainer, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:17-alpine"),
-		postgres.WithDatabase("fleetd_test"),
-		postgres.WithUsername("fleetd_test"),
-		postgres.WithPassword("test_password"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(30*time.Second),
-		),
-	)
+	postgresContainer, err := runContainerSafe(func() (*postgres.PostgresContainer, error) {
+		return postgres.RunContainer(ctx,
+			testcontainers.WithImage("postgres:17-alpine"),
+			postgres.WithDatabase("fleetd_test"),
+			postgres.WithUsername("fleetd_test"),
+			postgres.WithPassword("test_password"),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2).
+					WithStartupTimeout(30*time.Second),
+			),
+		)
+	})
 	require.NoError(t, err)
 	defer postgresContainer.Terminate(ctx)
 
@@ -116,18 +119,21 @@ func TestWithRedisContainer(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping container test in short mode")
 	}
+	requireDocker(t)
 
 	ctx := context.Background()
 
 	// Start Redis container
-	redisContainer, err := redis.RunContainer(ctx,
-		testcontainers.WithImage("redis:7-alpine"),
-		redis.WithLogLevel(redis.LogLevelDebug),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("Ready to accept connections").
-				WithStartupTimeout(30*time.Second),
-		),
-	)
+	redisContainer, err := runContainerSafe(func() (*redis.RedisContainer, error) {
+		return redis.RunContainer(ctx,
+			testcontainers.WithImage("redis:7-alpine"),
+			redis.WithLogLevel(redis.LogLevelDebug),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("Ready to accept connections").
+					WithStartupTimeout(30*time.Second),
+			),
+		)
+	})
 	require.NoError(t, err)
 	defer redisContainer.Terminate(ctx)
 
@@ -150,33 +156,38 @@ func TestFullStackWithContainers(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping container test in short mode")
 	}
+	requireDocker(t)
 
 	ctx := context.Background()
 
 	// Start PostgreSQL
-	postgresContainer, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:17-alpine"),
-		postgres.WithDatabase("fleetd_test"),
-		postgres.WithUsername("fleetd_test"),
-		postgres.WithPassword("test_password"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).
-				WithStartupTimeout(30*time.Second),
-		),
-	)
+	postgresContainer, err := runContainerSafe(func() (*postgres.PostgresContainer, error) {
+		return postgres.RunContainer(ctx,
+			testcontainers.WithImage("postgres:17-alpine"),
+			postgres.WithDatabase("fleetd_test"),
+			postgres.WithUsername("fleetd_test"),
+			postgres.WithPassword("test_password"),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2).
+					WithStartupTimeout(30*time.Second),
+			),
+		)
+	})
 	require.NoError(t, err)
 	defer postgresContainer.Terminate(ctx)
 
 	// Start Redis
-	redisContainer, err := redis.RunContainer(ctx,
-		testcontainers.WithImage("redis:7-alpine"),
-		redis.WithLogLevel(redis.LogLevelDebug),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("Ready to accept connections").
-				WithStartupTimeout(30*time.Second),
-		),
-	)
+	redisContainer, err := runContainerSafe(func() (*redis.RedisContainer, error) {
+		return redis.RunContainer(ctx,
+			testcontainers.WithImage("redis:7-alpine"),
+			redis.WithLogLevel(redis.LogLevelDebug),
+			testcontainers.WithWaitStrategy(
+				wait.ForLog("Ready to accept connections").
+					WithStartupTimeout(30*time.Second),
+			),
+		)
+	})
 	require.NoError(t, err)
 	defer redisContainer.Terminate(ctx)
 
@@ -243,6 +254,7 @@ func TestDockerComposeWithExec(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping container test in short mode")
 	}
+	requireDocker(t)
 
 	// Check if docker-compose is available
 	if err := exec.Command("docker-compose", "version").Run(); err != nil {
