@@ -11,7 +11,7 @@ services:
   platform-api:
     build:
       context: ..
-      dockerfile: Dockerfile.platform-api
+      dockerfile: cmd/platform-api/Dockerfile
     volumes:
       - ../:/app
       - /app/vendor
@@ -24,7 +24,7 @@ services:
   device-api:
     build:
       context: ..
-      dockerfile: Dockerfile.device-api
+      dockerfile: cmd/device-api/Dockerfile
     volumes:
       - ../:/app
       - /app/vendor

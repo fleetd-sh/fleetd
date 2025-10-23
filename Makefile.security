@@ -257,11 +257,11 @@ container-scan:
 
 	# Build images first
 	@echo "Building Docker images..."
-	@if [ -f "Dockerfile.device-api" ]; then \
-		docker build -f Dockerfile.device-api -t fleetd/device-api:security-test .; \
+	@if [ -f "cmd/device-api/Dockerfile" ]; then \
+		docker build -f cmd/device-api/Dockerfile -t fleetd/device-api:security-test .; \
 	fi
-	@if [ -f "Dockerfile.platform-api" ]; then \
-		docker build -f Dockerfile.platform-api -t fleetd/platform-api:security-test .; \
+	@if [ -f "cmd/platform-api/Dockerfile" ]; then \
+		docker build -f cmd/platform-api/Dockerfile -t fleetd/platform-api:security-test .; \
 	fi
 
 	# Scan with Trivy

@@ -430,11 +430,11 @@ docker-build-all tag="latest": (docker-build-platform-api tag) (docker-build-dev
 
 # Build Platform API Docker image
 docker-build-platform-api tag="latest":
-    docker build -t ghcr.io/fleetd-sh/platform-api:{{tag}} -f Dockerfile.platform-api .
+    docker build -t ghcr.io/fleetd-sh/platform-api:{{tag}} -f cmd/platform-api/Dockerfile .
 
 # Build Device API Docker image
 docker-build-device-api tag="latest":
-    docker build -t ghcr.io/fleetd-sh/device-api:{{tag}} -f Dockerfile.device-api .
+    docker build -t ghcr.io/fleetd-sh/device-api:{{tag}} -f cmd/device-api/Dockerfile .
 
 # Build Studio (web UI) Docker image
 docker-build-studio tag="latest":

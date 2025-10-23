@@ -13,8 +13,8 @@ This guide provides basic Kubernetes manifests for deploying the fleetd platform
 1. **Build and push Docker images**:
 ```bash
 # Build images
-docker build -f Dockerfile.platform-api -t your-registry/fleetd/platform-api:latest .
-docker build -f Dockerfile.device-api -t your-registry/fleetd/device-api:latest .
+docker build -f cmd/platform-api/Dockerfile -t your-registry/fleetd/platform-api:latest .
+docker build -f cmd/device-api/Dockerfile -t your-registry/fleetd/device-api:latest .
 
 # Push to your registry
 docker push your-registry/fleetd/platform-api:latest

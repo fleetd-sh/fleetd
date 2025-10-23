@@ -3,12 +3,12 @@ name: Security Scanning
 on:
   schedule:
     # Run security scans weekly on Mondays at 2 AM UTC
-    - cron: '0 2 * * 1'
+    - cron: "0 2 * * 1"
   workflow_dispatch:
 
 env:
-  GO_VERSION: '1.23'
-  NODE_VERSION: '24.9.0'
+  GO_VERSION: "1.23"
+  NODE_VERSION: "24.9.0"
 
 jobs:
   # Main security-tests job disabled until test/security framework is implemented
@@ -50,16 +50,16 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: "trivy-results.sarif"
 
   container-security:
     name: Container Security Scan
@@ -74,22 +74,22 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -f Dockerfile.device-api -t fleetd/device-api:test . || echo "device-api Dockerfile not found"
-          docker build -f Dockerfile.platform-api -t fleetd/platform-api:test . || echo "platform-api Dockerfile not found"
+          docker build -f cmd/device-api/Dockerfile -t fleetd/device-api:test . || echo "device-api Dockerfile not found"
+          docker build -f cmd/platform-api/Dockerfile -t fleetd/platform-api:test . || echo "platform-api Dockerfile not found"
 
       - name: Run Trivy container scan
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
         with:
-          image-ref: 'fleetd/device-api:test'
-          format: 'sarif'
-          output: 'trivy-container-results.sarif'
+          image-ref: "fleetd/device-api:test"
+          format: "sarif"
+          output: "trivy-container-results.sarif"
 
       - name: Upload container scan results
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
-          sarif_file: 'trivy-container-results.sarif'
+          sarif_file: "trivy-container-results.sarif"
 
   security-baseline:
     name: Security Baseline Check

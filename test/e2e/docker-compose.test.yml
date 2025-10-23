@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Simulated Raspberry Pi device
@@ -18,8 +18,8 @@ services:
     networks:
       - fleetd-test
     ports:
-      - "5022:22"     # SSH
-      - "8088:8088"   # Agent RPC
+      - "5022:22" # SSH
+      - "8088:8088" # Agent RPC
     environment:
       - FLEET_SERVER=http://device-api:8080
       - DEVICE_NAME=test-pi-001
@@ -56,7 +56,7 @@ services:
   device-api:
     build:
       context: ../../
-      dockerfile: Dockerfile.device-api
+      dockerfile: cmd/device-api/Dockerfile
     container_name: device-api-test
     ports:
       - "8080:8080"
@@ -79,7 +79,7 @@ services:
   platform-api:
     build:
       context: ../../
-      dockerfile: Dockerfile.platform-api
+      dockerfile: cmd/platform-api/Dockerfile
     container_name: platform-api-test
     ports:
       - "8090:8090"
