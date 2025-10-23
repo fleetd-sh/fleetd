@@ -8,10 +8,12 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -412,28 +414,66 @@ func (a *Agent) processUpdate(ctx context.Context, update *UpdateCommand) {
 func (a *Agent) downloadUpdate(ctx context.Context, update *UpdateCommand) (string, error) {
 	// Create temp directory for downloads
 	tempDir := filepath.Join(a.config.DataDir, "downloads")
-	os.MkdirAll(tempDir, 0755)
+	if err := os.MkdirAll(tempDir, 0755); err != nil {
+		return "", err
+	}
 
 	// Download file
 	fileName := fmt.Sprintf("update-%s.tar.gz", update.Version)
 	filePath := filepath.Join(tempDir, fileName)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", update.URL, nil)
+	updateURL, err := url.Parse(update.URL)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("invalid update URL: %w", err)
 	}
 
-	a.setAuthHeaders(req)
+	var reader io.ReadCloser
 
-	resp, err := a.client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
+	switch updateURL.Scheme {
+	case "file":
+		localPath, err := url.PathUnescape(updateURL.Path)
+		if err != nil {
+			return "", fmt.Errorf("invalid file URL path: %w", err)
+		}
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("download failed with status %d", resp.StatusCode)
+		if updateURL.Host != "" && updateURL.Host != "localhost" {
+			localPath = fmt.Sprintf("//%s%s", updateURL.Host, localPath)
+		}
+
+		if runtime.GOOS == "windows" {
+			if strings.HasPrefix(localPath, "/") && len(localPath) > 2 && localPath[2] == ':' {
+				localPath = localPath[1:]
+			}
+			localPath = filepath.FromSlash(localPath)
+		}
+
+		reader, err = os.Open(localPath)
+		if err != nil {
+			return "", fmt.Errorf("failed to open update file: %w", err)
+		}
+	case "http", "https":
+		req, err := http.NewRequestWithContext(ctx, "GET", update.URL, nil)
+		if err != nil {
+			return "", err
+		}
+
+		a.setAuthHeaders(req)
+
+		resp, err := a.client.Do(req)
+		if err != nil {
+			return "", err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			return "", fmt.Errorf("download failed with status %d", resp.StatusCode)
+		}
+
+		reader = resp.Body
+	default:
+		return "", fmt.Errorf("unsupported update URL scheme: %s", updateURL.Scheme)
 	}
+	defer reader.Close()
 
 	// Create file
 	file, err := os.Create(filePath)
@@ -443,8 +483,7 @@ func (a *Agent) downloadUpdate(ctx context.Context, update *UpdateCommand) (stri
 	defer file.Close()
 
 	// Copy content
-	_, err = io.Copy(file, resp.Body)
-	if err != nil {
+	if _, err := io.Copy(file, reader); err != nil {
 		os.Remove(filePath)
 		return "", err
 	}
