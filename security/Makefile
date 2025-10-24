@@ -55,9 +55,9 @@ security-help:
 	@echo "  SECURITY_PARALLEL     - Parallel workers (default: 10)"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make security-test-quick SECURITY_TARGET=https://api.fleetd.sh"
-	@echo "  make security-auth SECURITY_THRESHOLD=Medium"
-	@echo "  make security-ci SECURITY_CATEGORIES=auth,injection"
+	@echo "  make -f security/Makefile security-test-quick SECURITY_TARGET=https://api.fleetd.sh"
+	@echo "  make -f security/Makefile security-auth SECURITY_THRESHOLD=Medium"
+	@echo "  make -f security/Makefile security-ci SECURITY_CATEGORIES=auth,injection"
 
 # Install security testing dependencies
 security-install:
@@ -238,7 +238,7 @@ dependency-check:
 	@if command -v govulncheck >/dev/null 2>&1; then \
 		govulncheck ./... | tee $(SECURITY_OUTPUT)/go-vulnerabilities.txt; \
 	else \
-		echo "⚠️  govulncheck not installed. Run 'make security-install' first."; \
+		echo "⚠️  govulncheck not installed. Run 'make -f security/Makefile security-install' first."; \
 	fi
 
 	# Node.js vulnerability check
@@ -272,7 +272,7 @@ container-scan:
 		trivy image fleetd/device-api:security-test | tee $(SECURITY_OUTPUT)/container-scan-device-api.txt; \
 		trivy image fleetd/platform-api:security-test | tee $(SECURITY_OUTPUT)/container-scan-platform-api.txt; \
 	else \
-		echo "⚠️  Trivy not installed. Run 'make security-install' first."; \
+		echo "⚠️  Trivy not installed. Run 'make -f security/Makefile security-install' first."; \
 	fi
 
 	@echo "✅ Container scan completed. Results in $(SECURITY_OUTPUT)/"

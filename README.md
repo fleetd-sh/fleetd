@@ -144,6 +144,18 @@ just device-api-dev    # Device API on :8080
 just web-dev          # Studio UI on :3000
 ```
 
+### Security Testing
+
+```bash
+# Run the quick security sweep (approx. 15 minutes)
+make -f security/Makefile security-test-quick
+
+# Run the full security suite (approx. 30 minutes)
+make -f security/Makefile security-test-full
+```
+
+Pass additional options (for example, `SECURITY_TARGET` or `SECURITY_THRESHOLD`) using standard `make` variables.
+
 ### Using fleetctl
 
 ```bash
